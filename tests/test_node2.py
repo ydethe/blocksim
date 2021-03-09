@@ -5,6 +5,8 @@ import unittest
 import numpy as np
 from numpy import cos, sin, sqrt, exp
 from numpy.polynomial.polynomial import Polynomial
+from scipy.signal import cont2discrete, dlti
+import scipy.linalg as lin
 from matplotlib import pyplot as plt
 import pytest
 
@@ -17,7 +19,7 @@ from blocksim.Node import Frame, Input, Output, AComputer, connect
 class SetPoint(AComputer):
     def __init__(self, name: str):
         AComputer.__init__(self, name)
-        self.defineOutput("setpoint", initial_state=np.array([0]))
+        self.defineOutput("setpoint", initial_state=np.array([1]))
 
     def updateAllOutput(self, frame: Frame):
         pass
@@ -87,31 +89,30 @@ class System(AComputer):
         otp.setData(np.array([y, v]))
 
 
-def plotAnalyticsolution(tps):
+def plotAnalyticsolution(tps, cons):
     P, I, D = 7679, 20480, 960
     k = 1
     m = 40
+    dt = tps[1] - tps[0]
 
-    p = Polynomial([I, k + P, D, m])
-    l1, l2, l3 = p.roots()
-    det = (
-        l2 * l3 ** 2
-        - l1 * l3 ** 2
-        - l2 ** 2 * l3
-        + l1 ** 2 * l3
-        + l1 * l2 ** 2
-        - l1 ** 2 * l2
-    )
-    A1 = (l2 ** 2 - l3 ** 2) / det
-    A2 = (l3 ** 2 - l1 ** 2) / det
-    A3 = (l1 ** 2 - l2 ** 2) / det
+    Ac = np.array([[0, 1, 0], [0, 0, 1], [0, -k / m, 0]])
+    Bc = np.array([[0, -1], [0, 0], [1 / m, 0]])
+    Cc = np.array([[0, 1, 0]])
+    Dc = np.array([[0, 0]])
+    F = -np.array([[I, P, D], [0, 0, 0]])
+    G = np.array([[0, 1]]).T
 
-    ns = len(tps)
-    x = np.empty(ns)
-    for ii in range(ns):
-        t = tps[ii]
-        dW = -(exp(l1 * t) * l1 * A1 + exp(l2 * t) * l2 * A2 + exp(l3 * t) * l3 * A3)
-        x[ii] = np.real(dW)
+    Ad, Bd, Cd, Dd, _ = cont2discrete((Ac, Bc, Cc, Dc), dt=dt)
+
+    # Closing the loop
+    M = Ad + Bd @ F
+    N = Bd @ G * cons
+    Co = Cd + Dd @ F
+    Do = Dd @ G * cons
+
+    sys = dlti(M, N, Co, Do, dt=dt)
+    _, x = sys.step(x0=np.array([0, -1, 0]), t=tps)
+    x = np.array(x[0].flat)
 
     return x
 
@@ -163,7 +164,7 @@ class TestSimpleControl(TestBase):
             self.assertNotEqual(frame, frame0)
             x[k], v = sys.getDataForOuput(frame, oid1)
 
-        x_ref = plotAnalyticsolution(tps)
+        x_ref = plotAnalyticsolution(tps, cons=1)
 
         fig = plt.figure()
         axe = fig.add_subplot(111)
@@ -177,9 +178,9 @@ class TestSimpleControl(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
 
-    # a = TestSimpleControl()
-    # a.test_simple_control()
+    a = TestSimpleControl()
+    a.test_simple_control()
 
-    # plt.show()
+    plt.show()

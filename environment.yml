@@ -1,4 +1,5 @@
 # conda env export --no-builds > environment.yml
+# conda env create -f environment.yml
 name: blocksim
 channels:
   - conda-forge
