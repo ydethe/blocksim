@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 from numpy import cos, sin, sqrt, exp
 from numpy.polynomial.polynomial import Polynomial
-from scipy.signal import cont2discrete, dlti
+from scipy.signal import cont2discrete, lti, dlti
 import scipy.linalg as lin
 from matplotlib import pyplot as plt
 import pytest
@@ -65,7 +65,7 @@ class System(AComputer):
     def __init__(self, name: str):
         AComputer.__init__(self, name)
         self.defineInput("command")
-        self.defineOutput("output", initial_state=np.array([-1, 0]))
+        self.defineOutput("output", initial_state=np.array([0, 0]))
 
     def updateAllOutput(self, frame: Frame):
         inp = self.getInputByName("command")
@@ -93,26 +93,14 @@ def plotAnalyticsolution(tps, cons):
     P, I, D = 7679, 20480, 960
     k = 1
     m = 40
-    dt = tps[1] - tps[0]
 
-    Ac = np.array([[0, 1, 0], [0, 0, 1], [0, -k / m, 0]])
-    Bc = np.array([[0, -1], [0, 0], [1 / m, 0]])
-    Cc = np.array([[0, 1, 0]])
-    Dc = np.array([[0, 0]])
-    F = -np.array([[I, P, D], [0, 0, 0]])
-    G = np.array([[0, 1]]).T
+    # H = (D * s ^ 2 + P * s + I) / (m * s ^ 3 + D * s ^ 2 + (k + P) * s + I)
+    # H = -1 / (s + a) + (2 * a) / (s + a) ^ 2 + (-a ^ 2 * m - k) / (m * (s + a) ^ 3) + 1 / s
+    num = [D, P, I]
+    den = [m, D, k + P, I]
 
-    Ad, Bd, Cd, Dd, _ = cont2discrete((Ac, Bc, Cc, Dc), dt=dt)
-
-    # Closing the loop
-    M = Ad + Bd @ F
-    N = Bd @ G * cons
-    Co = Cd + Dd @ F
-    Do = Dd @ G * cons
-
-    sys = dlti(M, N, Co, Do, dt=dt)
-    _, x = sys.step(x0=np.array([0, -1, 0]), t=tps)
-    x = np.array(x[0].flat)
+    sys = lti(num, den)
+    _, x = sys.step(T=tps)
 
     return x
 
