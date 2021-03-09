@@ -1,0 +1,35 @@
+# conda env export --no-builds > environment.yml
+name: blocksim
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - conda=4.9.2
+  - conda-build=3.21.4
+  - control=0.8.4
+  - ipython=7.16.1
+  - matplotlib=3.3.4
+  - networkx=2.5
+  - numpy=1.19.2
+  - pillow=8.1.1
+  - pip=21.0.1
+  - pyserial=3.4
+  - python=3.6.13
+  - pyyaml=5.4.1
+  - scipy=1.4.1
+  - setuptools=52.0.0
+  - slycot=0.4.0.0
+  - tqdm=4.56.0
+  - pip:
+    - codecov==2.1.11
+    - coverage==5.5
+    - docutils==0.13.1
+    - dummyserial==1.0.0
+    - pre-commit==2.10.1
+    - pytest==6.2.2
+    - pytest-cov==2.11.1
+    - pytest-mpl==0.12
+    - tox==3.23.0
+    - tox-conda==0.7.1
+    - virtualenv==20.4.2
+    - wheel==0.29.0

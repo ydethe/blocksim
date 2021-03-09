@@ -1,0 +1,19 @@
+include AUTHORS.rst
+include CONTRIBUTING.rst
+include LICENSE
+include README.rst
+include CHANGELOG
+include TODO
+include requirements.txt
+
+recursive-exclude tests *
+recursive-exclude docs *
+recursive-exclude .tox *
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+
+recursive-include * requirements.txt
+
+prune doc*
+prune tests*
+prune .tox*
