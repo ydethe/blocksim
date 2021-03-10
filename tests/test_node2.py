@@ -4,9 +4,6 @@ import unittest
 
 import numpy as np
 from numpy import cos, sin, sqrt, exp
-from numpy.polynomial.polynomial import Polynomial
-from scipy.signal import cont2discrete, lti, dlti
-import scipy.linalg as lin
 from scipy.integrate import ode
 from matplotlib import pyplot as plt
 import pytest
@@ -45,7 +42,7 @@ class Controller(AComputer):
         k = 10
         m = 1
 
-        a = 20
+        a = 8
         P = -k + 3 * a ** 2 * m
 
         u = P * (yest - stp)
@@ -69,7 +66,7 @@ class System(AComputer):
         y0 = otp.getDataForFrame(frame)
 
         k = 10
-        f = 100
+        f = 5
         m = 1
 
         def fct(t, y, u):
@@ -85,18 +82,50 @@ class System(AComputer):
         otp.setData(y1)
 
 
-def plotAnalyticsolution(tps, cons):
-    P = 1190
+def exact(t, yyp, vvp, u):
     k = 10
-    f = 100
+    f = 5
     m = 1
 
-    # H = P / (m * s ^ 2 + k + P)
-    num = [P]
-    den = [m, f, k + P]
+    w_0 = sqrt(4 * k * m - f ** 2) / (2 * m)
+    x = (
+        (
+            (4 * f * m ** 2 * w_0 ** 2 + f ** 3) * sin(t * w_0)
+            + (8 * m ** 3 * w_0 ** 3 + 2 * f ** 2 * m * w_0) * cos(t * w_0)
+        )
+        * yyp
+        + (8 * m ** 3 * vvp * w_0 ** 2 + 2 * f ** 2 * m * vvp - 4 * f * m * u)
+        * sin(t * w_0)
+        - 8 * m ** 2 * u * w_0 * cos(t * w_0)
+        + 8 * m ** 2 * exp((f * t) / (2 * m)) * u * w_0
+    ) / (
+        8 * m ** 3 * exp((f * t) / (2 * m)) * w_0 ** 3
+        + 2 * f ** 2 * m * exp((f * t) / (2 * m)) * w_0
+    )
+    v = -(
+        exp(-(f * t) / (2 * m))
+        * (
+            (4 * m ** 2 * w_0 ** 2 + f ** 2) * sin(t * w_0) * yyp
+            + (2 * f * m * vvp - 4 * m * u) * sin(t * w_0)
+            - 4 * m ** 2 * vvp * w_0 * cos(t * w_0)
+        )
+    ) / (4 * m ** 2 * w_0)
 
-    sys = lti(num, den)
-    _, x = sys.step(T=tps)
+    return x, v
+
+
+def plotAnalyticsolution(tps, cons):
+    ns = len(tps)
+    dt = tps[1] - tps[0]
+
+    P = 182
+
+    x = np.empty(ns)
+    yp, vp = 0, 0
+    for k in range(ns):
+        x[k] = yp
+        u = -P * (yp - cons)
+        yp, vp = exact(dt, yp, vp, u)
 
     return x
 
@@ -146,6 +175,7 @@ class TestSimpleControl(TestBase):
             x[k], v = np.real(sys.getDataForOuput(frame, name="output"))
 
         x_ref = plotAnalyticsolution(tps, cons=1)
+        self.assertAlmostEqual(np.max(np.abs(x - x_ref)), 0, delta=2e-4)
 
         fig = plt.figure()
         axe = fig.add_subplot(111)
