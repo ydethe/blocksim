@@ -7,7 +7,8 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase
 
-from blocksim.Node import Frame, Input, Output, AComputer, connect
+from blocksim.Node import Frame, Input, Output, AComputer
+from blocksim.Simulation import Simulation
 
 
 class SetPoint(AComputer):
@@ -24,7 +25,7 @@ class Controller(AComputer):
         AComputer.__init__(self, name)
         self.defineInput("setpoint")
         self.defineInput("estimation")
-        otp = self.defineOutput("command", initial_state=np.array([2]))
+        self.defineOutput("command", initial_state=np.array([2]))
 
     def updateAllOutput(self, frame: Frame):
         print("update %s..." % self.getName())
@@ -68,29 +69,17 @@ class TestNode(TestBase):
         ctl = Controller("ctl")
         sys = System("sys")
 
-        connect(
-            computer_src=ctl,
-            output_name="command",
-            computer_dst=sys,
-            intput_name="command",
-        )
-        connect(
-            computer_src=sys,
-            output_name="output",
-            computer_dst=ctl,
-            intput_name="estimation",
-        )
-        connect(
-            computer_src=stp,
-            output_name="setpoint",
-            computer_dst=ctl,
-            intput_name="setpoint",
-        )
+        sim = Simulation()
+        sim.addComputer(stp)
+        sim.addComputer(ctl)
+        sim.addComputer(sys)
+
+        sim.connect(src_name="ctl.command", dst_name="sys.command")
+        sim.connect(src_name="sys.output", dst_name="ctl.estimation")
+        sim.connect(src_name="stp.setpoint", dst_name="ctl.setpoint")
 
         frame = Frame()
-        stp.reset(frame)
-        ctl.reset(frame)
-        sys.reset(frame)
+        sim.reset(frame)
 
         otp = sys.getOutputByName("output")
         oid1 = otp.getID()

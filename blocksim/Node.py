@@ -1,82 +1,10 @@
-from abc import ABCMeta, abstractmethod
 from typing import Iterable
 from uuid import UUID, uuid4
 
 import numpy as np
 
-
-class Frame(object):
-    def __init__(self, start_timestamp: float = 0, stop_timestamp: float = 0):
-        self.__start_timestamp = start_timestamp
-        self.__stop_timestamp = stop_timestamp
-        self.__id = uuid4()
-
-    def __repr__(self):
-        s = "<%s %s> start=%g, stop=%g <end>" % (
-            self.__class__.__name__,
-            self.getFrameID(),
-            self.getStartTimeStamp(),
-            self.getStopTimeStamp(),
-        )
-        return s
-
-    def getStartTimeStamp(self) -> float:
-        return self.__start_timestamp
-
-    def getStopTimeStamp(self) -> float:
-        return self.__stop_timestamp
-
-    def getTimeStep(self) -> float:
-        return self.__stop_timestamp - self.__start_timestamp
-
-    def getFrameID(self) -> UUID:
-        return self.__id
-
-    def updateByStep(self, step: float):
-        if step == 0:
-            return
-
-        self.__start_timestamp = self.__stop_timestamp
-        self.__stop_timestamp += step
-        self.__id = uuid4()
-
-    def copy(self) -> "Frame":
-        res = Frame(
-            start_timestamp=self.getStartTimeStamp(),
-            stop_timestamp=self.getStopTimeStamp(),
-        )
-        res.__id = self.getFrameID()
-        return res
-
-    def __eq__(self, y: "Frame") -> bool:
-        return self.getFrameID() == y.getFrameID()
-
-
-class ABaseNode(metaclass=ABCMeta):
-    def __init__(self, name: str):
-        self.__name = name
-        self.__id = uuid4()
-        self.__current_frame = None
-        self.__data = np.array([])
-
-    def getName(self):
-        return self.__name
-
-    def getID(self) -> UUID:
-        return self.__id
-
-    def setData(self, data: np.array):
-        self.__data = data
-
-    def getCurrentFrame(self) -> UUID:
-        return self.__current_frame
-
-    def setFrame(self, frame: Frame):
-        self.__current_frame = frame.copy()
-
-    @abstractmethod
-    def updateAllOutput(self, frame: Frame):
-        pass
+from .Frame import Frame
+from .ABaseNode import ABaseNode
 
 
 class Input(ABaseNode):
@@ -216,11 +144,3 @@ class AComputer(ABaseNode):
             print("[ERROR]")
 
         return otp.getDataForFrame(frame)
-
-
-def connect(
-    computer_src: AComputer, output_name: str, computer_dst: AComputer, intput_name: str
-):
-    otp = computer_src.getOutputByName(output_name)
-    inp = computer_dst.getInputByName(intput_name)
-    inp.setOutput(otp)

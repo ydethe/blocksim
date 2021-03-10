@@ -11,7 +11,8 @@ import pytest
 sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase
 
-from blocksim.Node import Frame, Input, Output, AComputer, connect
+from blocksim.Node import Frame, Input, Output, AComputer
+from blocksim.Simulation import Simulation
 
 
 class SetPoint(AComputer):
@@ -31,11 +32,8 @@ class Controller(AComputer):
         self.defineOutput("command", initial_state=np.array([0]))
 
     def updateAllOutput(self, frame: Frame):
-        inp = self.getInputByName("setpoint")
-        stp = self.getDataFromInput(frame, inp.getID())
-
-        inp = self.getInputByName("estimation")
-        yest, vest = self.getDataFromInput(frame, inp.getID())
+        stp = self.getDataFromInput(frame, name="setpoint")
+        yest, vest = self.getDataFromInput(frame, name="estimation")
 
         otp = self.getOutputByName("command")
 
@@ -45,9 +43,9 @@ class Controller(AComputer):
         a = 8
         P = -k + 3 * a ** 2 * m
 
-        u = P * (yest - stp)
+        u = -P * (yest - stp)
 
-        otp.setData(-u)
+        otp.setData(u)
 
 
 class System(AComputer):
@@ -57,8 +55,7 @@ class System(AComputer):
         self.defineOutput("output", initial_state=np.array([0, 0]))
 
     def updateAllOutput(self, frame: Frame):
-        inp = self.getInputByName("command")
-        (u,) = self.getDataFromInput(frame, inp.getID())
+        (u,) = self.getDataFromInput(frame, name="command")
 
         otp = self.getOutputByName("output")
         t0 = frame.getStartTimeStamp()
@@ -137,29 +134,17 @@ class TestSimpleControl(TestBase):
         ctl = Controller("ctl")
         sys = System("sys")
 
-        connect(
-            computer_src=ctl,
-            output_name="command",
-            computer_dst=sys,
-            intput_name="command",
-        )
-        connect(
-            computer_src=sys,
-            output_name="output",
-            computer_dst=ctl,
-            intput_name="estimation",
-        )
-        connect(
-            computer_src=stp,
-            output_name="setpoint",
-            computer_dst=ctl,
-            intput_name="setpoint",
-        )
+        sim = Simulation()
+        sim.addComputer(stp)
+        sim.addComputer(ctl)
+        sim.addComputer(sys)
+
+        sim.connect(src_name="ctl.command", dst_name="sys.command")
+        sim.connect(src_name="sys.output", dst_name="ctl.estimation")
+        sim.connect(src_name="stp.setpoint", dst_name="ctl.setpoint")
 
         frame = Frame()
-        stp.reset(frame)
-        ctl.reset(frame)
-        sys.reset(frame)
+        sim.reset(frame)
 
         frame0 = frame.copy()
         self.assertEqual(frame, frame0)
@@ -172,16 +157,21 @@ class TestSimpleControl(TestBase):
             dt = tps[k] - tps[k - 1]
             frame.updateByStep(dt)
             self.assertNotEqual(frame, frame0)
+            # Controllers shall be updated last
+            # _=ctl.getDataForOuput(frame, name='command')
+            _ = stp.getDataForOuput(frame, name="setpoint")
             x[k], v = np.real(sys.getDataForOuput(frame, name="output"))
 
         x_ref = plotAnalyticsolution(tps, cons=1)
-        self.assertAlmostEqual(np.max(np.abs(x - x_ref)), 0, delta=2e-4)
+        err = np.max(np.abs(x - x_ref))
+        self.assertAlmostEqual(err, 0, delta=2e-4)
 
         fig = plt.figure()
         axe = fig.add_subplot(111)
         axe.plot(tps, x, label="bs")
         axe.plot(tps, x_ref, label="analytic")
         axe.plot(tps, x * 0 + 1, label="setpoint")
+        # axe.plot(tps, x-x_ref)
         axe.grid(True)
         axe.legend(loc="best")
 
