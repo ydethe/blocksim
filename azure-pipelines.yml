@@ -19,8 +19,7 @@ steps:
 - bash: conda create -f environment.yml
   displayName: Create Anaconda environment
       
-- bash: |
-    source activate blocksim
+- bash: source activate blocksim
   displayName: Activate Anaconda environment
       
 - bash: |
