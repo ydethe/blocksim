@@ -11,8 +11,8 @@ variables:
   TWINE_PASSWORD: "$PYPI_TOKEN"
 
 before_script:
-  - apt-get update -yqq
-  - apt-get install -yqq --no-install-recommends build-essential
+  # - apt-get update -yqq
+  # - apt-get install -yqq --no-install-recommends build-essential
   - conda env create -f environment.yml
   - source activate blocksim
 
@@ -27,9 +27,9 @@ stages:
 test:
   stage: test
   script:
-    - apt-get install -yqq --no-install-recommends make gcc g++ swig
-    - python3.6 -m pip install tox==3.23.0 docutils==0.16 codecov==2.1.11
-    - python3 --version
+    # - apt-get install -yqq --no-install-recommends make gcc g++ swig
+    # - python3.6 -m pip install tox==3.23.0 docutils==0.16 codecov==2.1.11
+    # - python3 --version
     - tox -e py3
     - codecov
     - coverage html
