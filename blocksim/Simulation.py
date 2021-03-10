@@ -1,13 +1,19 @@
 from .core.Frame import Frame
 from .core.Node import Input, Output, AComputer
+from .Logger import Logger
 
 
 class Simulation(object):
     def __init__(self):
         self.__computers = []
+        self.__logger = Logger()
 
     def addComputer(self, computer: AComputer):
-        self.__computers.append(computer)
+        # Controllers shall be updated last
+        if computer.isController():
+            self.__computers.append(computer)
+        else:
+            self.__computers.insert(0, computer)
 
     def getComputerByName(self, name: str) -> AComputer:
         for c in self.__computers:
@@ -15,8 +21,45 @@ class Simulation(object):
                 return c
 
     def reset(self, frame: Frame):
+        self.__logger.reset()
+
+        t = frame.getStartTimeStamp()
+        self.__logger.log(name="t", val=t)
+
         for c in self.__computers:
             c.reset(frame)
+            c_name = c.getName()
+            for oid in c.getListOutputsIds():
+                otp = c.getOutputById(oid)
+                o_name = otp.getName()
+                data = otp.getDataForFrame(frame)
+
+                for k, x in enumerate(data):
+                    self.__logger.log(
+                        name="%s_%s_%i" % (c_name, o_name, k), val=data[k]
+                    )
+
+            c.reset(frame)
+
+    def update(self, frame: Frame):
+        t = frame.getStartTimeStamp()
+        self.__logger.log(name="t", val=t)
+
+        # Controllers shall be updated last
+        for c in self.__computers:
+            c_name = c.getName()
+            for oid in c.getListOutputsIds():
+                otp = c.getOutputById(oid)
+                o_name = otp.getName()
+                data = otp.getDataForFrame(frame)
+
+                for k, x in enumerate(data):
+                    self.__logger.log(
+                        name="%s_%s_%i" % (c_name, o_name, k), val=data[k]
+                    )
+
+    def getLogger(self) -> Logger:
+        return self.__logger
 
     def connect(self, src_name: str, dst_name: str):
         src_comp_name, src_out_name = src_name.split(".")

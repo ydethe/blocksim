@@ -11,7 +11,6 @@ class ABaseNode(metaclass=ABCMeta):
         self.__name = name
         self.__id = uuid4()
         self.__current_frame = None
-        self.__data = np.array([])
 
     def isController(self):
         """Checks if the element is derived from AController
@@ -29,9 +28,6 @@ class ABaseNode(metaclass=ABCMeta):
 
     def getID(self) -> UUID:
         return self.__id
-
-    def setData(self, data: np.array):
-        self.__data = data
 
     def getCurrentFrame(self) -> UUID:
         return self.__current_frame

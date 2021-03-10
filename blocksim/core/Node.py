@@ -29,6 +29,7 @@ class Output(ABaseNode):
     def __init__(self, name: str):
         ABaseNode.__init__(self, name)
         self.__computer = None
+        self.__data = np.array([])
 
     def setInitialState(self, initial_state: np.array):
         self.__initial_state = initial_state.copy()
@@ -66,6 +67,17 @@ class AComputer(ABaseNode):
         ABaseNode.__init__(self, name)
         self.__inputs = {}
         self.__outputs = {}
+
+    def isController(self):
+        """Checks if the element is derived from AController
+
+        Returns:
+          True if the element is derived from AController
+
+        """
+        from ..blocks.Controller import AController
+
+        return isinstance(self, AController)
 
     def setInitialStateForOutput(self, initial_state: np.array, name: str):
         otp = self.getOutputByName(name)
