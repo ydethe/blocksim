@@ -14,10 +14,10 @@ strategy:
 
 steps:
 - bash: echo "##vso[task.prependpath]$CONDA/bin"
-    displayName: Add conda to PATH
+  displayName: Add conda to PATH
 
 - bash: conda create -f environment.yml
-    displayName: Create Anaconda environment
+  displayName: Create Anaconda environment
       
 - bash: |
     source activate blocksim
@@ -28,4 +28,3 @@ steps:
     codecov
     coverage html
   displayName: Tests
-  
