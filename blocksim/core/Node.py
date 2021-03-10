@@ -26,9 +26,11 @@ class Input(ABaseNode):
 
 
 class Output(ABaseNode):
-    def __init__(self, name: str, initial_state: np.array):
+    def __init__(self, name: str):
         ABaseNode.__init__(self, name)
         self.__computer = None
+
+    def setInitialState(self, initial_state: np.array):
         self.__initial_state = initial_state.copy()
 
     def reset(self, frame: Frame = None):
@@ -65,6 +67,10 @@ class AComputer(ABaseNode):
         self.__inputs = {}
         self.__outputs = {}
 
+    def setInitialStateForOutput(self, initial_state: np.array, name: str):
+        otp = self.getOutputByName(name)
+        otp.setInitialState(initial_state)
+
     def reset(self, frame: Frame = None):
         if frame is None:
             frame = Frame(start_timestamp=0, stop_timestamp=0)
@@ -79,8 +85,8 @@ class AComputer(ABaseNode):
     def getListInputsIds(self) -> Iterable:
         return self.__inputs.keys()
 
-    def defineOutput(self, name: str, initial_state: np.array) -> Output:
-        otp = Output(name=name, initial_state=initial_state)
+    def defineOutput(self, name: str) -> Output:
+        otp = Output(name=name)
         otp.setComputer(self)
         self.__outputs[otp.getID()] = otp
         return otp

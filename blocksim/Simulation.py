@@ -1,5 +1,5 @@
-from .Frame import Frame
-from .Node import Input, Output, AComputer
+from .core.Frame import Frame
+from .core.Node import Input, Output, AComputer
 
 
 class Simulation(object):

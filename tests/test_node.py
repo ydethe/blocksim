@@ -7,14 +7,15 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase
 
-from blocksim.Node import Frame, Input, Output, AComputer
+from blocksim.core.Node import Frame, Input, Output, AComputer
 from blocksim.Simulation import Simulation
 
 
 class SetPoint(AComputer):
     def __init__(self, name: str):
         AComputer.__init__(self, name)
-        otp = self.defineOutput("setpoint", initial_state=np.array([1]))
+        otp = self.defineOutput("setpoint")
+        otp.setInitialState(np.array([1]))
 
     def updateAllOutput(self, frame: Frame):
         print("update %s..." % self.getName())
@@ -25,7 +26,8 @@ class Controller(AComputer):
         AComputer.__init__(self, name)
         self.defineInput("setpoint")
         self.defineInput("estimation")
-        self.defineOutput("command", initial_state=np.array([2]))
+        otp = self.defineOutput("command")
+        otp.setInitialState(np.array([2]))
 
     def updateAllOutput(self, frame: Frame):
         print("update %s..." % self.getName())
@@ -46,7 +48,8 @@ class System(AComputer):
     def __init__(self, name: str):
         AComputer.__init__(self, name)
         self.defineInput("command")
-        otp = self.defineOutput("output", initial_state=np.array([4]))
+        otp = self.defineOutput("output")
+        otp.setInitialState(np.array([4]))
 
     def updateAllOutput(self, frame: Frame):
         print("update %s..." % self.getName())

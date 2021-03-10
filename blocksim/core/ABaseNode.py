@@ -13,6 +13,17 @@ class ABaseNode(metaclass=ABCMeta):
         self.__current_frame = None
         self.__data = np.array([])
 
+    def isController(self):
+        """Checks if the element is derived from AController
+
+        Returns:
+          True if the element is derived from AController
+
+        """
+        from .Node import AController
+
+        return isinstance(self, AController)
+
     def getName(self):
         return self.__name
 

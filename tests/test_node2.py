@@ -4,79 +4,34 @@ import unittest
 
 import numpy as np
 from numpy import cos, sin, sqrt, exp
-from scipy.integrate import ode
 from matplotlib import pyplot as plt
 import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase
 
-from blocksim.Node import Frame, Input, Output, AComputer
+from blocksim.core.Node import Frame
+from blocksim.blocks.SetPoint import Step
+from blocksim.blocks.System import ASystem
+from blocksim.blocks.Controller import PController
 from blocksim.Simulation import Simulation
 
 
-class SetPoint(AComputer):
+class System(ASystem):
     def __init__(self, name: str):
-        AComputer.__init__(self, name)
-        self.defineOutput("setpoint", initial_state=np.array([1]))
+        ASystem.__init__(self, name)
+        self.setInitialStateForOutput(np.zeros(2), "output")
 
-    def updateAllOutput(self, frame: Frame):
-        pass
-
-
-class Controller(AComputer):
-    def __init__(self, name: str):
-        AComputer.__init__(self, name)
-        self.defineInput("setpoint")
-        self.defineInput("estimation")
-        self.defineOutput("command", initial_state=np.array([0]))
-
-    def updateAllOutput(self, frame: Frame):
-        stp = self.getDataFromInput(frame, name="setpoint")
-        yest, vest = self.getDataFromInput(frame, name="estimation")
-
-        otp = self.getOutputByName("command")
-
-        k = 10
-        m = 1
-
-        a = 8
-        P = -k + 3 * a ** 2 * m
-
-        u = -P * (yest - stp)
-
-        otp.setData(u)
-
-
-class System(AComputer):
-    def __init__(self, name: str):
-        AComputer.__init__(self, name)
-        self.defineInput("command")
-        self.defineOutput("output", initial_state=np.array([0, 0]))
-
-    def updateAllOutput(self, frame: Frame):
-        (u,) = self.getDataFromInput(frame, name="command")
-
-        otp = self.getOutputByName("output")
-        t0 = frame.getStartTimeStamp()
-        t1 = frame.getStopTimeStamp()
-        y0 = otp.getDataForFrame(frame)
-
+    def transition(self, t: float, y: np.array, u: np.array) -> np.array:
         k = 10
         f = 5
         m = 1
 
-        def fct(t, y, u):
-            yp, vp = y
-            a = (-f * vp - k * yp + u) / m
-            dy = np.array([vp, a])
-            return dy
+        yp, vp = y
+        a = (-f * vp - k * yp + u[0]) / m
+        dy = np.array([vp, a])
 
-        r = ode(fct).set_integrator("zvode", method="bdf")
-        r.set_initial_value(y0, t0).set_f_params(u).set_jac_params(u)
-        y1 = r.integrate(t1)
-
-        otp.setData(y1)
+        return dy
 
 
 def exact(t, yyp, vvp, u):
@@ -130,8 +85,13 @@ def plotAnalyticsolution(tps, cons):
 class TestSimpleControl(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
     def test_simple_control(self):
-        stp = SetPoint("stp")
-        ctl = Controller("ctl")
+        k = 10
+        m = 1
+        a = 8
+        P = -k + 3 * a ** 2 * m
+
+        stp = Step("stp", cons=np.array([1]))
+        ctl = PController("ctl", coeff_P=P)
         sys = System("sys")
 
         sim = Simulation()
