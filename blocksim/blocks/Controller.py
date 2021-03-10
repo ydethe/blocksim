@@ -22,10 +22,10 @@ class PController(AController):
 
     def updateAllOutput(self, frame: Frame):
         stp = self.getDataFromInput(frame, name="setpoint")
-        yest, vest = self.getDataFromInput(frame, name="estimation")
+        X = self.getDataFromInput(frame, name="estimation")
 
         otp = self.getOutputByName("command")
 
-        u = -self.__coeff_P * (yest - stp)
+        u = -self.__coeff_P * (X - stp)
 
         otp.setData(u)

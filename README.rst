@@ -40,6 +40,7 @@ With conda::
 
     conda env create -f environment.yml
     source activate blocksim
+    D:\Users\blaudiy\Documents\Mes Outils Personnels\myenv
     python setup.py develop
 
 Features
