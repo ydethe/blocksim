@@ -7,6 +7,7 @@ from numpy import cos, sin, sqrt, exp
 from numpy.polynomial.polynomial import Polynomial
 from scipy.signal import cont2discrete, lti, dlti
 import scipy.linalg as lin
+from scipy.integrate import ode
 from matplotlib import pyplot as plt
 import pytest
 
@@ -31,7 +32,6 @@ class Controller(AComputer):
         self.defineInput("setpoint")
         self.defineInput("estimation")
         self.defineOutput("command", initial_state=np.array([0]))
-        self.defineOutput("state", initial_state=np.array([0]))
 
     def updateAllOutput(self, frame: Frame):
         inp = self.getInputByName("setpoint")
@@ -41,23 +41,15 @@ class Controller(AComputer):
         yest, vest = self.getDataFromInput(frame, inp.getID())
 
         otp = self.getOutputByName("command")
-        ste = self.getOutputByName("state")
 
-        (itg,) = ste.getDataForFrame(frame)
+        k = 10
+        m = 1
 
-        k = 1
-        m = 40
-        a = 8
+        a = 20
         P = -k + 3 * a ** 2 * m
-        I = a ** 3 * m
-        D = 3 * a * m
 
-        u = P * (yest - stp) + I * itg + D * vest
+        u = P * (yest - stp)
 
-        dt = frame.getTimeStep()
-        itg += (yest - stp) * dt
-
-        ste.setData(np.array([itg]))
         otp.setData(-u)
 
 
@@ -72,32 +64,36 @@ class System(AComputer):
         (u,) = self.getDataFromInput(frame, inp.getID())
 
         otp = self.getOutputByName("output")
-        dt = frame.getTimeStep()
-        yp, vp = otp.getDataForFrame(frame)
+        t0 = frame.getStartTimeStamp()
+        t1 = frame.getStopTimeStamp()
+        y0 = otp.getDataForFrame(frame)
 
-        k = 1
-        m = 40
-        y = (
-            (cos((sqrt(k) * dt) / sqrt(m)) * (k * yp - u)) / k
-            + (sqrt(m) * sin((sqrt(k) * dt) / sqrt(m)) * vp) / sqrt(k)
-            + u / k
-        )
-        v = cos((sqrt(k) * dt) / sqrt(m)) * vp - (
-            sin((sqrt(k) * dt) / sqrt(m)) * (k * yp - u)
-        ) / (sqrt(k) * sqrt(m))
+        k = 10
+        f = 100
+        m = 1
 
-        otp.setData(np.array([y, v]))
+        def fct(t, y, u):
+            yp, vp = y
+            a = (-f * vp - k * yp + u) / m
+            dy = np.array([vp, a])
+            return dy
+
+        r = ode(fct).set_integrator("zvode", method="bdf")
+        r.set_initial_value(y0, t0).set_f_params(u).set_jac_params(u)
+        y1 = r.integrate(t1)
+
+        otp.setData(y1)
 
 
 def plotAnalyticsolution(tps, cons):
-    P, I, D = 7679, 20480, 960
-    k = 1
-    m = 40
+    P = 1190
+    k = 10
+    f = 100
+    m = 1
 
-    # H = (D * s ^ 2 + P * s + I) / (m * s ^ 3 + D * s ^ 2 + (k + P) * s + I)
-    # H = -1 / (s + a) + (2 * a) / (s + a) ^ 2 + (-a ^ 2 * m - k) / (m * (s + a) ^ 3) + 1 / s
-    num = [D, P, I]
-    den = [m, D, k + P, I]
+    # H = P / (m * s ^ 2 + k + P)
+    num = [P]
+    den = [m, f, k + P]
 
     sys = lti(num, den)
     _, x = sys.step(T=tps)
@@ -139,18 +135,15 @@ class TestSimpleControl(TestBase):
         frame0 = frame.copy()
         self.assertEqual(frame, frame0)
 
-        otp = sys.getOutputByName("output")
-        oid1 = otp.getID()
-
-        tps = np.arange(0, 2, 0.05)
+        tps = np.arange(0, 2, 0.001)
         ns = len(tps)
         x = np.empty(ns)
-        x[0], _ = sys.getDataForOuput(frame, oid1)
+        x[0], _ = sys.getDataForOuput(frame, name="output")
         for k in range(1, ns):
             dt = tps[k] - tps[k - 1]
             frame.updateByStep(dt)
             self.assertNotEqual(frame, frame0)
-            x[k], v = sys.getDataForOuput(frame, oid1)
+            x[k], v = np.real(sys.getDataForOuput(frame, name="output"))
 
         x_ref = plotAnalyticsolution(tps, cons=1)
 
@@ -158,7 +151,7 @@ class TestSimpleControl(TestBase):
         axe = fig.add_subplot(111)
         axe.plot(tps, x, label="bs")
         axe.plot(tps, x_ref, label="analytic")
-        axe.plot(tps, x * 0, label="setpoint")
+        axe.plot(tps, x * 0 + 1, label="setpoint")
         axe.grid(True)
         axe.legend(loc="best")
 

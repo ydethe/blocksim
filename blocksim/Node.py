@@ -184,17 +184,36 @@ class AComputer(ABaseNode):
 
         return None
 
-    def getDataFromInput(self, frame: Frame, input_id: UUID) -> np.array:
-        inp = self.getInputById(input_id)
+    def getDataFromInput(
+        self, frame: Frame, uid: UUID = None, name: str = None
+    ) -> np.array:
+        if uid is None and name is None:
+            print("[ERROR]")
+        elif uid is None and not name is None:
+            inp = self.getInputByName(name)
+        elif not uid is None and name is None:
+            inp = self.getInputById(uid)
+        else:
+            print("[ERROR]")
+
         data = inp.getDataForFrame(frame)
         return data
 
-    def getDataForOuput(self, frame: Frame, output_id: UUID) -> np.array:
+    def getDataForOuput(
+        self, frame: Frame, uid: UUID = None, name: str = None
+    ) -> np.array:
         if self.getCurrentFrame() != frame:
             self.setFrame(frame)
             self.updateAllOutput(frame)
 
-        otp = self.getOutputById(output_id)
+        if uid is None and name is None:
+            print("[ERROR]")
+        elif uid is None and not name is None:
+            otp = self.getOutputByName(name)
+        elif not uid is None and name is None:
+            otp = self.getOutputById(uid)
+        else:
+            print("[ERROR]")
 
         return otp.getDataForFrame(frame)
 
