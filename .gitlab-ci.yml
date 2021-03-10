@@ -25,7 +25,7 @@ stages:
 test:
   stage: test
   script:
-    - tox -e py3
+    - python -m pytest --mpl --mpl-generate-summary=html --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
     - codecov
     - coverage html
   artifacts:
