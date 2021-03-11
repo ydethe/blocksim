@@ -92,8 +92,8 @@ class TestNode(TestBase):
         ref_out = np.array([5])
 
         frame = Frame(start_timestamp=0, stop_timestamp=0.1)
-        sys_out = sys.getDataForOuput(frame, oid1)
-        ctl_out = ctl.getDataForOuput(frame, oid2)
+        sys_out = sys.getDataForOutput(frame, oid1)
+        ctl_out = ctl.getDataForOutput(frame, oid2)
 
         self.assertAlmostEqual(np.abs(sys_out - ref_out), 0, delta=1e-10)
         self.assertAlmostEqual(np.abs(ctl_out - ref_out), 0, delta=1e-10)

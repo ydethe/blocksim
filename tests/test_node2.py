@@ -16,7 +16,8 @@ from blocksim.blocks.System import ASystem
 from blocksim.blocks.Controller import PController
 from blocksim.Simulation import Simulation
 
-# D:\Users\blaudiy\Documents\Mes Outils Personnels\myenv
+
+# source activate "D:\Users\blaudiy\Documents\Mes Outils Personnels\myenv"
 class System(ASystem):
     def __init__(self, name: str):
         ASystem.__init__(self, name)
@@ -103,24 +104,11 @@ class TestSimpleControl(TestBase):
         sim.connect(src_name="sys.output", dst_name="ctl.estimation")
         sim.connect(src_name="stp.setpoint", dst_name="ctl.setpoint")
 
-        frame = Frame()
-        sim.reset(frame)
-
-        frame0 = frame.copy()
-        self.assertEqual(frame, frame0)
-
         tps = np.arange(0, 2, 0.001)
-        ns = len(tps)
-        x = np.empty(ns)
-        x[0], _ = sys.getDataForOuput(frame, name="output")
-        for k in range(1, ns):
-            dt = tps[k] - tps[k - 1]
-            frame.updateByStep(dt)
-            self.assertNotEqual(frame, frame0)
-            # Controllers shall be updated last
-            # _=ctl.getDataForOuput(frame, name='command')
-            _ = stp.getDataForOuput(frame, name="setpoint")
-            x[k], v = np.real(sys.getDataForOuput(frame, name="output"))
+        sim.simulate(tps, progress_bar=False)
+
+        log = sim.getLogger()
+        x = log.getValue("sys_output_0")
 
         x_ref = plotAnalyticsolution(tps, cons=1)
         err = np.max(np.abs(x - x_ref))

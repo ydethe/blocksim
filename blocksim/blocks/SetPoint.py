@@ -9,9 +9,14 @@ __all__ = ["ASetPoint", "Step"]
 class ASetPoint(AComputer):
     """Abstract class for a set point
 
-    Implement the method **transition** to make it concrete
+    Implement the method **updateAllOutput** to make it concrete
 
     This element has no input
+    The output name of the computer is **setpoint**
+
+    Args:
+      name
+        Name of the element
 
     """
 
@@ -24,14 +29,13 @@ class Step(ASetPoint):
     """Step set point
 
     This element has no input
+    The output name of the computer is **setpoint**
 
     Args:
       name
         Name of the element
       cons
         Amplitude of the steps
-      name_of_outputs
-        Names of the states of the element
 
     """
 

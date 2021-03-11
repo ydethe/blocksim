@@ -6,30 +6,105 @@ from scipy.integrate import ode
 from ..core.Frame import Frame
 from ..core.Node import AComputer
 
-__all__ = ["ASystem", "PController"]
+
+__all__ = ["ASystem"]
 
 
 class ASystem(AComputer):
-    def __init__(self, name: str):
+    """Abstract class for a physical system
+
+    Implement the method **transition** to make it concrete
+    You can also implement the method **jacobian**
+    (see :class:`blocksim.blocks.System.ASystem.example_jacobian`)
+    to use the integrators that need the jacobian.
+
+    The input name of the computer is **command**
+    The output name of the computer is **output**
+
+    Args:
+      name
+        Name of the system
+      method, optional
+        Integrator selected for scipy.ode. Default : 'dop853'.
+        See `SciPy doc`_.
+
+    .. _SciPy doc: https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.integrate.ode.html#scipy.integrate.ode
+
+    """
+
+    def __init__(self, name: str, method: str = "dop853"):
         AComputer.__init__(self, name)
         self.defineInput("command")
         self.defineOutput("output")
 
-        self.__integ = ode(self.transition).set_integrator("zvode", method="bdf")
+        has_jacobian = hasattr(self, "jacobian")
+
+        if has_jacobian:
+            self.__integ = ode(self.transition, self.jacobian)
+        else:
+            self.__integ = ode(self.transition)
+
+        self.__integ.set_integrator(method, nsteps=10000)
 
     @abstractmethod
     def transition(self, t: float, y: np.array, u: np.array) -> np.array:
+        """Defines the transition function f(t,x,u) :
+
+        x' = f(t,x,u)
+
+        Args:
+          t
+            Date of the current state
+          x
+            Current state
+          u
+            Command applied to the system
+
+        Returns:
+          The derivative of the state
+
+        """
         pass
 
+    def example_jacobian(self, t: float, x: np.array, u: np.array) -> np.array:
+        """Defines the jacobian of
+        the transition function f(t,x,u) with respect to x:
+
+        x' = f(t,x,u)
+
+        Args:
+          t
+            Date of the current state
+          x
+            Current state
+          u
+            Command applied to the system
+
+        Returns:
+          The jacobian of the transition function with respect to x
+
+        """
+        return
+
     def updateAllOutput(self, frame: Frame):
-        u = self.getDataFromInput(frame, name="command")
-        y0 = self.getDataForOuput(frame, name="output")
+        u = self.getDataForInput(frame, name="command")
+        y0 = self.getDataForOutput(frame, name="output")
 
         t0 = frame.getStartTimeStamp()
         t1 = frame.getStopTimeStamp()
 
         self.__integ.set_initial_value(y0, t0).set_f_params(u).set_jac_params(u)
-        y1 = self.__integ.integrate(t1)
+        try:
+            y1 = self.__integ.integrate(t1)
+        except Exception as e:
+            print(72 * "=")
+            print("When updating '%s'" % self.getName())
+            print("t", t0)
+            print("x", y0)
+            print("u", u)
+            print("dx", self.transition(t0, y0, u))
+            print(72 * "=")
+            raise e
 
         otp = self.getOutputByName("output")
         otp.setData(y1)
