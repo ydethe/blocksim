@@ -1,3 +1,5 @@
+import numpy as np
+
 from .core.Frame import Frame
 from .core.Node import Input, Output, AComputer
 from .Logger import Logger
@@ -23,23 +25,10 @@ class Simulation(object):
     def reset(self, frame: Frame):
         self.__logger.reset()
 
-        t = frame.getStartTimeStamp()
-        self.__logger.log(name="t", val=t)
-
         for c in self.__computers:
             c.reset(frame)
-            c_name = c.getName()
-            for oid in c.getListOutputsIds():
-                otp = c.getOutputById(oid)
-                o_name = otp.getName()
-                data = otp.getDataForFrame(frame)
 
-                for k, x in enumerate(data):
-                    self.__logger.log(
-                        name="%s_%s_%i" % (c_name, o_name, k), val=data[k]
-                    )
-
-            c.reset(frame)
+        self.update(frame)
 
     def update(self, frame: Frame):
         t = frame.getStartTimeStamp()
@@ -57,6 +46,16 @@ class Simulation(object):
                     self.__logger.log(
                         name="%s_%s_%i" % (c_name, o_name, k), val=data[k]
                     )
+
+    def simulate(self, tps: np.array):
+        frame = Frame(start_timestamp=tps[0], stop_timestamp=tps[0])
+        self.reset(frame)
+
+        ns = len(tps)
+        for k in range(1, ns):
+            dt = tps[k] - tps[k - 1]
+            frame.updateByStep(dt)
+            self.update(frame)
 
     def getLogger(self) -> Logger:
         return self.__logger
