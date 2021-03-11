@@ -236,7 +236,7 @@ class Simulation(object):
           >>> frame = Frame()
           >>> sim.reset(frame)
           >>> sim.getComputerOutputByName(frame, 'el.out')
-          array([0], dtype=int64)
+          array([0]...
           >>> sim.getComputerOutputByName(frame, 'el.out[0]')
           0
 
