@@ -61,7 +61,7 @@ def assignVector(
 
     Examples:
       >>> v = np.arange(5)
-      >>> assignVector(v, (5,), 'elem', 'v')
+      >>> assignVector(v, (5,), 'elem', 'v', np.float64)
       array([0., 1., 2., 3., 4.])
 
     """

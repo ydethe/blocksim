@@ -116,7 +116,7 @@ class Output(ABaseNode):
         self.__initial_state = valid_data
 
     def reset(self, frame: Frame = None):
-        """Resets the element internal state the value given by :class:`blocksim.core.Output.setInitialState`"""
+        """Resets the element internal state the value given by :class:`blocksim.core.Node.Output.setInitialState`"""
         if frame is None:
             frame = Frame(start_timestamp=0, stop_timestamp=0)
         self.setFrame(frame)
@@ -181,8 +181,8 @@ class Output(ABaseNode):
 
 class AComputer(ABaseNode):
     """Abstract class for all the computers of the control chain.
-    A AComputer contains a list of :class:`blocksim.blocks.Node.Input`
-    and a list of :class:`blocksim.blocks.Node.Output`
+    A AComputer contains a list of :class:`blocksim.core.Node.Input`
+    and a list of :class:`blocksim.core.Node.Output`
 
     Args:
       name
@@ -445,8 +445,8 @@ class AComputer(ABaseNode):
 class DummyComputer(AComputer):
     def __init__(self, name: str):
         AComputer.__init__(self, name)
-        self.defineInput("in")
-        self.defineOutput("out")
+        self.defineInput("in", nscal=1, dtype=np.int64)
+        self.defineOutput("out", nscal=1, dtype=np.int64)
         self.setInitialStateForOutput(np.array([0]), output_name="out")
 
     def updateAllOutput(self, frame: Frame):

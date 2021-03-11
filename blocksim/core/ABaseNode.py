@@ -10,7 +10,7 @@ class ABaseNode(metaclass=ABCMeta):
     """This base class is the parent class for :
 
     * :class:`blocksim.core.Node.Input`
-    * :class:`blocksim.core.Node.Ouput`
+    * :class:`blocksim.core.Node.Output`
     * :class:`blocksim.core.Node.AComputer`
 
     Args:
@@ -75,7 +75,7 @@ class ABaseNode(metaclass=ABCMeta):
     @abstractmethod
     def updateAllOutput(self, frame: Frame):
         """Method used to update a Node.
-        Useful only for :class:`blocksim.blocks.Node.AComputer` to update its outputs
+        Useful only for :class:`blocksim.core.Node.AComputer` to update its outputs
 
         Args:
           frame
