@@ -10,7 +10,6 @@ dependencies:
   - control=0.8.4
   - ipython=7.16.1
   - matplotlib=3.3.4
-  - networkx=2.5
   - numpy=1.19.2
   - pillow=8.1.1
   - pip=21.0.1
