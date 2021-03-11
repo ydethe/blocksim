@@ -17,12 +17,16 @@ class ASetPoint(AComputer):
     Args:
       name
         Name of the element
+      nscal
+        Number of scalars in the data expected by the input
+      dtype
+        Data type (typically np.float64 or np.complex128)
 
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, nscal: int, dtype):
         AComputer.__init__(self, name)
-        self.defineOutput("setpoint")
+        self.defineOutput("setpoint", nscal=nscal, dtype=dtype)
 
 
 class Step(ASetPoint):
@@ -40,7 +44,9 @@ class Step(ASetPoint):
     """
 
     def __init__(self, name: str, cons: np.array):
-        ASetPoint.__init__(self, name)
+        nscal = cons.shape
+        dtype = cons.dtype
+        ASetPoint.__init__(self, name, nscal=nscal, dtype=dtype)
         otp = self.getOutputByName("setpoint")
         otp.setInitialState(cons)
 

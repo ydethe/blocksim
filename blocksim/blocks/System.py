@@ -19,11 +19,17 @@ class ASystem(AComputer):
     to use the integrators that need the jacobian.
 
     The input name of the computer is **command**
-    The output name of the computer is **output**
+    The output name of the computer is **state**
 
     Args:
       name
         Name of the system
+      nscal_command
+        Number of scalars in the data expected by the command
+      nscal_state
+        Number of scalars in the data expected by the state
+      dtype
+        Data type (typically np.float64 or np.complex128)
       method, optional
         Integrator selected for scipy.ode. Default : 'dop853'.
         See `SciPy doc`_.
@@ -32,10 +38,17 @@ class ASystem(AComputer):
 
     """
 
-    def __init__(self, name: str, method: str = "dop853"):
+    def __init__(
+        self,
+        name: str,
+        nscal_command: int,
+        nscal_state: int,
+        dtype=np.float64,
+        method: str = "dop853",
+    ):
         AComputer.__init__(self, name)
-        self.defineInput("command")
-        self.defineOutput("output")
+        self.defineInput("command", nscal_command, dtype)
+        self.defineOutput("state", nscal_state, dtype)
 
         has_jacobian = hasattr(self, "jacobian")
 
@@ -88,7 +101,7 @@ class ASystem(AComputer):
 
     def updateAllOutput(self, frame: Frame):
         u = self.getDataForInput(frame, name="command")
-        y0 = self.getDataForOutput(frame, name="output")
+        y0 = self.getDataForOutput(frame, name="state")
 
         t0 = frame.getStartTimeStamp()
         t1 = frame.getStopTimeStamp()
@@ -106,5 +119,5 @@ class ASystem(AComputer):
             print(72 * "=")
             raise e
 
-        otp = self.getOutputByName("output")
+        otp = self.getOutputByName("state")
         otp.setData(y1)

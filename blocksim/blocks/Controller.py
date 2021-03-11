@@ -17,14 +17,16 @@ class AController(AComputer):
     Args:
       name
         Name of the element
+      nscal_estimation
+        Number of scalars in the data expected by the estimation
 
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, nscal_estimation: int):
         AComputer.__init__(self, name)
-        self.defineInput("setpoint")
-        self.defineInput("estimation")
-        self.defineOutput("command")
+        self.defineInput("setpoint", nscal=1, dtype=np.float64)
+        self.defineInput("estimation", nscal=nscal_estimation, dtype=np.float64)
+        self.defineOutput("command", nscal=1, dtype=np.float64)
         self.setInitialStateForOutput(np.array([0]), "command")
 
 
@@ -39,13 +41,15 @@ class PController(AController):
     Args:
       name
         Name of the element
+      nscal_estimation
+        Number of scalars in the data expected by the estimation
       coeff_P
         Coefficient of the proportionnal retroaction
 
     """
 
-    def __init__(self, name: str, coeff_P: float):
-        AController.__init__(self, name)
+    def __init__(self, name: str, nscal_estimation: int, coeff_P: float):
+        AController.__init__(self, name, nscal_estimation)
         self.__coeff_P = coeff_P
 
     def updateAllOutput(self, frame: Frame):
@@ -54,6 +58,6 @@ class PController(AController):
 
         otp = self.getOutputByName("command")
 
-        u = -self.__coeff_P * (X - stp)
+        u = -self.__coeff_P * np.array([X[0] - stp[0]])
 
         otp.setData(u)

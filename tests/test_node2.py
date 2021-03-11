@@ -20,8 +20,8 @@ from blocksim.Simulation import Simulation
 # source activate "D:\Users\blaudiy\Documents\Mes Outils Personnels\myenv"
 class System(ASystem):
     def __init__(self, name: str):
-        ASystem.__init__(self, name)
-        self.setInitialStateForOutput(np.zeros(2), "output")
+        ASystem.__init__(self, name, nscal_command=1, nscal_state=2)
+        self.setInitialStateForOutput(np.zeros(2), "state")
 
     def transition(self, t: float, y: np.array, u: np.array) -> np.array:
         k = 10
@@ -92,7 +92,7 @@ class TestSimpleControl(TestBase):
         P = -k + 3 * a ** 2 * m
 
         stp = Step("stp", cons=np.array([1]))
-        ctl = PController("ctl", coeff_P=P)
+        ctl = PController("ctl", nscal_estimation=2, coeff_P=P)
         sys = System("sys")
 
         sim = Simulation()
@@ -101,26 +101,24 @@ class TestSimpleControl(TestBase):
         sim.addComputer(sys)
 
         sim.connect(src_name="ctl.command", dst_name="sys.command")
-        sim.connect(src_name="sys.output", dst_name="ctl.estimation")
+        sim.connect(src_name="sys.state", dst_name="ctl.estimation")
         sim.connect(src_name="stp.setpoint", dst_name="ctl.setpoint")
 
         tps = np.arange(0, 2, 0.001)
         sim.simulate(tps, progress_bar=False)
 
-        log = sim.getLogger()
-        x = log.getValue("sys_output_0")
+        self.log = sim.getLogger()
 
+        x = self.log.getValue("sys_state_0")
         x_ref = plotAnalyticsolution(tps, cons=1)
         err = np.max(np.abs(x - x_ref))
         self.assertAlmostEqual(err, 0, delta=2e-4)
 
         fig = plt.figure()
         axe = fig.add_subplot(111)
-        axe.plot(tps, x, label="bs")
+        self.plotVerif("sys_state_0", axe, label="bs")
         axe.plot(tps, x_ref, label="analytic")
-        axe.plot(tps, x * 0 + 1, label="setpoint")
-        # axe.plot(tps, x-x_ref)
-        axe.grid(True)
+        self.plotVerif("stp_setpoint_0", axe, label="setpoint")
         axe.legend(loc="best")
 
         return fig

@@ -3,24 +3,36 @@ from uuid import UUID, uuid4
 
 import numpy as np
 
+from ..exceptions import *
 from .Frame import Frame
 from .ABaseNode import ABaseNode
+from .. import logger
+from ..utils import assignVector
 
 
 class Input(ABaseNode):
     """Input node
 
-    The extra attribute is __output, which links the :class:`blocksim.core.Node.Input` with an :class:`blocksim.core.Node.Output`
+    The extra attributes  are:
+    * __output, which links the :class:`blocksim.core.Node.Input` with an :class:`blocksim.core.Node.Output`
+    * __nscal, which is the number of scalars in the data expected by the input
+    * __dtype, which is the data type
 
     Args:
       name
         Name of the Input
+      nscal
+        Number of scalars in the data expected by the input
+      dtype
+        Data type (typically np.float64 or np.complex128)
 
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, nscal: int, dtype):
         ABaseNode.__init__(self, name)
         self.__output = None
+        self.__nscal = nscal
+        self.__dtype = dtype
 
     def setOutput(self, output: "Output"):
         """Sets the output connected to the Input
@@ -31,6 +43,9 @@ class Input(ABaseNode):
 
         """
         self.__output = output
+
+    def getNumberScalar(self) -> int:
+        return self.__nscal
 
     def getOutput(self) -> "Output":
         """Gets the output connected to the Input
@@ -48,7 +63,12 @@ class Input(ABaseNode):
             The data coming from the connected output
 
         """
-        return self.getOutput().getDataForFrame(frame)
+        otp = self.getOutput()
+        data = otp.getDataForFrame(frame)
+        valid_data = assignVector(
+            data, self.getNumberScalar(), self.getName(), otp.getName(), self.__dtype
+        )
+        return valid_data
 
     def updateAllOutput(self, frame: Frame):
         """Unused for an input"""
@@ -62,17 +82,25 @@ class Output(ABaseNode):
 
     * __computer, which contains the output
     * __data, which contains the data communicated to the connected Inputs
+    * __nscal, which is the number of scalars in the data expected by the input
+    * __dtype, which is the data type
 
     Args:
       name
         Name of the Output
+      nscal
+        Number of scalars in the data expected by the input
+      dtype
+        Data type (typically np.float64 or np.complex128)
 
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, nscal: int, dtype=np.float64):
         ABaseNode.__init__(self, name)
         self.__computer = None
         self.__data = np.array([])
+        self.__nscal = nscal
+        self.__dtype = dtype
 
     def setInitialState(self, initial_state: np.array):
         """Sets the element's initial state vector
@@ -82,15 +110,20 @@ class Output(ABaseNode):
             The element's initial state vector
 
         """
-        self.__initial_state = initial_state.copy()
+        valid_data = assignVector(
+            initial_state, self.getNumberScalar(), self.getName(), "<arg>", self.__dtype
+        )
+        self.__initial_state = valid_data
 
     def reset(self, frame: Frame = None):
         """Resets the element internal state the value given by :class:`blocksim.core.Output.setInitialState`"""
         if frame is None:
             frame = Frame(start_timestamp=0, stop_timestamp=0)
         self.setFrame(frame)
-        data = self.__initial_state.copy()
-        self.setData(data)
+        self.__data = self.__initial_state.copy()
+
+    def getNumberScalar(self) -> int:
+        return self.__nscal
 
     def setComputer(self, computer: "Computer"):
         """Sets the computer containing the Output
@@ -119,7 +152,10 @@ class Output(ABaseNode):
             The data for the output
 
         """
-        self.__data = data
+        valid_data = assignVector(
+            data, self.getNumberScalar(), self.getName(), "<arg>", self.__dtype
+        )
+        self.__data = valid_data
 
     def getDataForFrame(self, frame: Frame) -> np.array:
         """Gets the data for the Output at the given time frame
@@ -162,7 +198,7 @@ class AComputer(ABaseNode):
         self.__inputs = {}
         self.__outputs = {}
 
-    def isController(self):
+    def isController(self) -> bool:
         """Checks if the element is derived from AController
         See :class:`blocksim.blocks.Controller.AController`
 
@@ -225,34 +261,42 @@ class AComputer(ABaseNode):
         """
         return self.__inputs.keys()
 
-    def defineOutput(self, name: str) -> Output:
+    def defineOutput(self, name: str, nscal: int, dtype) -> Output:
         """Creates an output for the computer
 
         Args:
           name
             Name of the output
+          nscal
+            Number of scalars in the data expected by the input
+          dtype
+            Data type (typically np.float64 or np.complex128)
 
         Returns:
           The created output
 
         """
-        otp = Output(name=name)
+        otp = Output(name=name, nscal=nscal, dtype=dtype)
         otp.setComputer(self)
         self.__outputs[otp.getID()] = otp
         return otp
 
-    def defineInput(self, name: str) -> Input:
+    def defineInput(self, name: str, nscal: int, dtype) -> Input:
         """Creates an input for the computer
 
         Args:
           name
             Name of the input
+          nscal
+            Number of scalars in the data expected by the input
+          dtype
+            Data type (typically np.float64 or np.complex128)
 
         Returns:
           The created input
 
         """
-        inp = Input(name)
+        inp = Input(name, nscal=nscal, dtype=dtype)
         self.__inputs[inp.getID()] = inp
         return inp
 
