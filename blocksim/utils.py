@@ -1,3 +1,5 @@
+from typing import Iterable
+
 import numpy as np
 
 from .exceptions import *
@@ -95,3 +97,238 @@ def assignVector(
 
     else:
         return np.array(v.copy(), dtype=dtype)
+
+
+def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> np.array:
+    """
+    https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix
+
+    Args:
+      qr
+        Real part of the quaternion
+      qi
+        First imaginary of the quaternion
+      qj
+        Second imaginary of the quaternion
+      qk
+        Third imaginary of the quaternion
+
+    Returns:
+      Rotation matrix
+
+    Examples:
+      >>> R = quat_to_matrix(1.,0.,0.,0.)
+      >>> lin.norm(R - np.eye(3)) # doctest: +ELLIPSIS
+      0.0...
+
+    """
+    res = np.empty((3, 3))
+
+    res[0, 0] = qr ** 2 + qi ** 2 - qj ** 2 - qk ** 2
+    res[1, 1] = qr ** 2 - qi ** 2 + qj ** 2 - qk ** 2
+    res[2, 2] = qr ** 2 - qi ** 2 - qj ** 2 + qk ** 2
+    res[0, 1] = 2 * (qi * qj - qk * qr)
+    res[0, 2] = 2 * (qi * qk + qj * qr)
+    res[1, 0] = 2 * (qi * qj + qk * qr)
+    res[1, 2] = 2 * (qj * qk - qi * qr)
+    res[2, 0] = 2 * (qi * qk - qj * qr)
+    res[2, 1] = 2 * (qj * qk + qi * qr)
+
+    return res
+
+
+def matrix_to_quat(R: np.array) -> Iterable[float]:
+    """
+
+    Examples:
+      >>> q = np.array([2, -3, 4, -5])
+      >>> q = q/lin.norm(q)
+      >>> qr,qx,qy,qz = q
+      >>> R = quat_to_matrix(qr,qx,qy,qz)
+      >>> q2 = matrix_to_quat(R)
+      >>> lin.norm(q-q2) # doctest: +ELLIPSIS
+      0.0...
+
+    """
+    K = np.empty((4, 4))
+    K[0, 0] = R[0, 0] - R[1, 1] - R[2, 2]
+    K[1, 0] = K[0, 1] = R[1, 0] + R[0, 1]
+    K[2, 0] = K[0, 2] = R[2, 0] + R[0, 2]
+    K[3, 0] = K[0, 3] = R[1, 2] - R[2, 1]
+
+    K[1, 1] = R[1, 1] - R[0, 0] - R[2, 2]
+    K[1, 2] = K[2, 1] = R[2, 1] + R[1, 2]
+    K[1, 3] = K[3, 1] = R[2, 0] - R[0, 2]
+
+    K[2, 2] = R[2, 2] - R[0, 0] - R[1, 1]
+    K[2, 3] = K[3, 2] = R[0, 1] - R[1, 0]
+
+    K[3, 3] = R[0, 0] + R[1, 1] + R[2, 2]
+
+    w, v = lin.eig(K / 3)
+    # w,v = lin.eigh(K/3)
+    i = np.argmax(w)
+    qi, qj, qk, qr = v[:, i]
+
+    return np.array([-qr, qi, qj, qk])
+
+
+def matrix_to_euler(R: np.array) -> Iterable[float]:
+    """
+
+    https://www.learnopencv.com/rotation-matrix-to-euler-angles/
+
+    Examples:
+      >>> q = np.array([2, -3, 4, -5])
+      >>> q = q/lin.norm(q)
+      >>> qr,qx,qy,qz = q
+      >>> R = quat_to_matrix(qr,qx,qy,qz)
+      >>> qr,qi,qj,qk = matrix_to_quat(R)
+      >>> r0,p0,y0 = quat_to_euler(qr,qi,qj,qk)
+      >>> r,p,y = matrix_to_euler(R)
+      >>> np.abs(r-r0) < 1e-10
+      True
+      >>> np.abs(p-p0) < 1e-10
+      True
+      >>> np.abs(y-y0) < 1e-10
+      True
+
+    """
+    sy = np.sqrt(R[0, 0] * R[0, 0] + R[1, 0] * R[1, 0])
+
+    singular = sy < 1e-6
+
+    if not singular:
+        r = np.arctan2(R[2, 1], R[2, 2])
+        p = np.arctan2(-R[2, 0], sy)
+        y = np.arctan2(R[1, 0], R[0, 0])
+    else:
+        r = np.arctan2(-R[1, 2], R[1, 1])
+        p = np.arctan2(-R[2, 0], sy)
+        y = 0
+
+    return r, p, y
+
+
+def euler_to_matrix(roll: float, pitch: float, yaw: float) -> np.array:
+    """
+
+    https://www.learnopencv.com/rotation-matrix-to-euler-angles/
+
+    Examples:
+      >>> roll = 1; pitch = -2; yaw = 3
+      >>> qr,qi,qj,qk = euler_to_quat(roll, pitch, yaw)
+      >>> R0 = quat_to_matrix(qr,qi,qj,qk)
+      >>> R = euler_to_matrix(roll, pitch, yaw)
+      >>> lin.norm(R-R0) < 1e-10
+      True
+
+    """
+    Ry = np.array(
+        [[np.cos(yaw), -np.sin(yaw), 0], [np.sin(yaw), np.cos(yaw), 0], [0, 0, 1]]
+    )
+    Rp = np.array(
+        [
+            [np.cos(pitch), 0, np.sin(pitch)],
+            [0, 1, 0],
+            [-np.sin(pitch), 0, np.cos(pitch)],
+        ]
+    )
+    Rr = np.array(
+        [[1, 0, 0], [0, np.cos(roll), -np.sin(roll)], [0, np.sin(roll), np.cos(roll)]]
+    )
+    R = Ry @ Rp @ Rr
+    return R
+
+
+def quat_to_euler(
+    qr: float, qi: float, qj: float, qk: float, normalize: bool = False
+) -> Iterable[float]:
+    """
+    https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+
+    Args:
+      qr
+        Real part of the quaternion
+      qi
+        First imaginary of the quaternion
+      qj
+        Second imaginary of the quaternion
+      qk
+        Third imaginary of the quaternion
+      normalize
+        Pass True to force normalization
+
+    Returns:
+      Roll angle (rad)
+
+      Pitch angle (rad)
+
+      Yaw angle (rad)
+
+    Examples:
+      >>> quat_to_euler(1.,0.,0.,0.)
+      (0.0, -0.0, 0.0)
+
+    """
+    if normalize:
+        q = np.array([qr, qi, qj, qk])
+        qr, qi, qj, qk = q / lin.norm(q)
+
+    roll = np.arctan2(qr * qi + qj * qk, 0.5 - qi * qi - qj * qj)
+    t2 = -2.0 * (qi * qk - qr * qj)
+    if t2 > 1.0:
+        t2 = 1.0
+    if t2 < -1.0:
+        t2 = -1.0
+    pitch = np.arcsin(t2)
+    yaw = np.arctan2(qi * qj + qr * qk, 0.5 - qj * qj - qk * qk)
+
+    return roll, pitch, yaw
+
+
+def euler_to_quat(roll: float, pitch: float, yaw: float) -> Iterable[float]:
+    """
+    https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+
+    Args:
+      roll
+        Roll angle (rad)
+      pitch
+        Pitch angle (rad)
+      yaw
+        Yaw angle (rad)
+
+    Returns:
+      Real part of the quaternion
+
+      First imaginary of the quaternion
+
+      Second imaginary of the quaternion
+
+      Third imaginary of the quaternion
+
+    Examples:
+      >>> qr,qi,qj,qk = euler_to_quat(10.*np.pi/180., 20.*np.pi/180., 30.*np.pi/180.)
+      >>> r,p,y = quat_to_euler(qr,qi,qj,qk)
+      >>> r*180/np.pi # doctest: +ELLIPSIS
+      10.0
+      >>> p*180/np.pi # doctest: +ELLIPSIS
+      20.0
+      >>> y*180/np.pi # doctest: +ELLIPSIS
+      29.999...
+
+    """
+    cy = np.cos(yaw * 0.5)
+    sy = np.sin(yaw * 0.5)
+    cr = np.cos(roll * 0.5)
+    sr = np.sin(roll * 0.5)
+    cp = np.cos(pitch * 0.5)
+    sp = np.sin(pitch * 0.5)
+
+    qr = cy * cr * cp + sy * sr * sp
+    qi = cy * sr * cp - sy * cr * sp
+    qj = cy * cr * sp + sy * sr * cp
+    qk = sy * cr * cp - cy * sr * sp
+
+    return qr, qi, qj, qk

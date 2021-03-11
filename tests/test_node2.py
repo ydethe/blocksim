@@ -13,7 +13,7 @@ from TestBase import TestBase
 from blocksim.core.Node import Frame
 from blocksim.blocks.SetPoint import Step
 from blocksim.blocks.System import ASystem
-from blocksim.blocks.Controller import PController
+from blocksim.blocks.Controller import PIDController
 from blocksim.Simulation import Simulation
 
 
@@ -23,16 +23,16 @@ class System(ASystem):
         ASystem.__init__(self, name, nscal_command=1, nscal_state=2)
         self.setInitialStateForOutput(np.zeros(2), "state")
 
-    def transition(self, t: float, y: np.array, u: np.array) -> np.array:
+    def transition(self, t: float, x: np.array, u: np.array) -> np.array:
         k = 10
         f = 5
         m = 1
 
-        yp, vp = y
+        yp, vp = x
         a = (-f * vp - k * yp + u[0]) / m
-        dy = np.array([vp, a])
+        dx = np.array([vp, a])
 
-        return dy
+        return dx
 
 
 def exact(t, yyp, vvp, u):
@@ -72,12 +72,17 @@ def plotAnalyticsolution(tps, cons):
     dt = tps[1] - tps[0]
 
     P = 182
+    I = 512
+    D = 24
+
+    ix = 0
 
     x = np.empty(ns)
     yp, vp = 0, 0
     for k in range(ns):
         x[k] = yp
-        u = -P * (yp - cons)
+        u = -P * (yp - cons) - I * ix - D * vp
+        ix += dt * (yp - cons)
         yp, vp = exact(dt, yp, vp, u)
 
     return x
@@ -90,9 +95,11 @@ class TestSimpleControl(TestBase):
         m = 1
         a = 8
         P = -k + 3 * a ** 2 * m
+        I = a ** 3 * m
+        D = 3 * a * m
 
         stp = Step("stp", cons=np.array([1]))
-        ctl = PController("ctl", nscal_estimation=2, coeff_P=P)
+        ctl = PIDController("ctl", nscal_estimation=2, coeffs=(P, I, D))
         sys = System("sys")
 
         sim = Simulation()
@@ -112,7 +119,7 @@ class TestSimpleControl(TestBase):
         x = self.log.getValue("sys_state_0")
         x_ref = plotAnalyticsolution(tps, cons=1)
         err = np.max(np.abs(x - x_ref))
-        self.assertAlmostEqual(err, 0, delta=2e-4)
+        self.assertAlmostEqual(err, 0, delta=1e-10)
 
         fig = plt.figure()
         axe = fig.add_subplot(111)
