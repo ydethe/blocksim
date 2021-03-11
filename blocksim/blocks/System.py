@@ -178,7 +178,7 @@ class LTISystem(ASystem):
         )
 
     def getDiscreteMatrices(
-        self, frame: Frame, method: str = "zoh", alpha: float = None
+        self, dt: float, method: str = "zoh", alpha: float = None
     ) -> Iterable[np.array]:
         """
 
@@ -204,7 +204,7 @@ class LTISystem(ASystem):
         Examples:
           >>> m = 1. # Mass
           >>> k = 40. # Spring rate
-          >>> sys = LTISystem('sys', nscal_command=1,nscal_state=2)
+          >>> sys = LTISystem('sys', nscal_command=1, nscal_state=2)
           >>> sys.A = np.array([[0,1],[-k/m,0]])
           >>> sys.B = np.array([[0,1/m]]).T
           >>> Kk = 1/m
@@ -218,14 +218,13 @@ class LTISystem(ASystem):
           True
 
         """
-        dt = frame.getTimeStep()
         n = self.getOutputByName("state").getNumberScalar()
-        m = self.getOutputByName("command").getNumberScalar()
+        m = self.getInputByName("command").getNumberScalar()
 
         C = np.zeros((1, n))
         D = np.zeros((1, m))
         sys = (self.A, self.B, C, D)
-        Ad, Bd, Cd, Dd, dt = cont2discrete(sys, dt, method, alpha)
+        Ad, Bd, _, _, _ = cont2discrete(sys, dt, method, alpha)
         return Ad, Bd
 
     def transition(self, t: float, x: np.array, u: np.array) -> np.array:
