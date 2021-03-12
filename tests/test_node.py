@@ -3,73 +3,50 @@ import os
 import unittest
 
 import numpy as np
+from numpy import cos, sin, sqrt, exp
+from matplotlib import pyplot as plt
+import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
-from TestBase import TestBase
+from TestBase import TestBase, plotAnalyticsolution
 
-from blocksim.core.Node import Frame, Input, Output, AComputer
+from blocksim.core.Node import Frame
+from blocksim.blocks.SetPoint import Step
+from blocksim.blocks.System import ASystem
+from blocksim.blocks.Controller import PIDController
 from blocksim.Simulation import Simulation
 
 
-class SetPoint(AComputer):
+# source activate "D:\Users\blaudiy\Documents\Mes Outils Personnels\myenv"
+class System(ASystem):
     def __init__(self, name: str):
-        AComputer.__init__(self, name)
-        otp = self.defineOutput("setpoint", nscal=1, dtype=np.int64)
-        otp.setInitialState(np.array([1]))
+        ASystem.__init__(self, name, shape_command=1, snames_state=["x", "v"])
+        self.setInitialStateForOutput(np.zeros(2), "state")
 
-    def updateAllOutput(self, frame: Frame):
-        print("update %s..." % self.getName())
+    def transition(self, t: float, x: np.array, u: np.array) -> np.array:
+        k = 10
+        f = 5
+        m = 1
 
+        yp, vp = x
+        a = (-f * vp - k * yp + u[0]) / m
+        dx = np.array([vp, a])
 
-class Controller(AComputer):
-    def __init__(self, name: str):
-        AComputer.__init__(self, name)
-        self.defineInput("setpoint", nscal=1, dtype=np.int64)
-        self.defineInput("estimation", nscal=1, dtype=np.int64)
-        otp = self.defineOutput("command", nscal=1, dtype=np.int64)
-        otp.setInitialState(np.array([2]))
-
-    def updateAllOutput(self, frame: Frame):
-        print("update %s..." % self.getName())
-        data = np.array([0])
-        for iid in self.getListInputsIds():
-            inp = self.getInputById(iid)
-            idat = inp.getDataForFrame(frame)
-            data += idat
-            print("got data from %s.%s: %i" % (self.getName(), inp.getName(), idat[0]))
-
-        for oid in self.getListOutputsIds():
-            otp = self.getOutputById(oid)
-            otp.setData(data)
-            print("set data for %s.%s : %i" % (self.getName(), otp.getName(), data[0]))
+        return dx
 
 
-class System(AComputer):
-    def __init__(self, name: str):
-        AComputer.__init__(self, name)
-        self.defineInput("command", nscal=1, dtype=np.int64)
-        otp = self.defineOutput("output", nscal=1, dtype=np.int64)
-        otp.setInitialState(np.array([4]))
+class TestSimpleControl(TestBase):
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_simple_control(self):
+        k = 10
+        m = 1
+        a = 8
+        P = -k + 3 * a ** 2 * m
+        I = a ** 3 * m
+        D = 3 * a * m
 
-    def updateAllOutput(self, frame: Frame):
-        print("update %s..." % self.getName())
-        data = np.array([0])
-        for iid in self.getListInputsIds():
-            inp = self.getInputById(iid)
-            idat = inp.getDataForFrame(frame)
-            data += idat
-            print("got data from %s.%s: %i" % (self.getName(), inp.getName(), idat[0]))
-
-        for oid in self.getListOutputsIds():
-            otp = self.getOutputById(oid)
-            otp.setData(data)
-            print("set data for %s.%s : %i" % (self.getName(), otp.getName(), data[0]))
-
-
-class TestNode(TestBase):
-    def test_node_dag(self):
-        stp = SetPoint("stp")
-        ctl = Controller("ctl")
+        stp = Step("stp", snames=["c"], cons=np.array([1]))
+        ctl = PIDController("ctl", shape_estimation=2, snames=["u"], coeffs=(P, I, D))
         sys = System("sys")
 
         sim = Simulation()
@@ -78,26 +55,29 @@ class TestNode(TestBase):
         sim.addComputer(sys)
 
         sim.connect(src_name="ctl.command", dst_name="sys.command")
-        sim.connect(src_name="sys.output", dst_name="ctl.estimation")
+        sim.connect(src_name="sys.state", dst_name="ctl.estimation")
         sim.connect(src_name="stp.setpoint", dst_name="ctl.setpoint")
 
-        frame = Frame()
-        sim.reset(frame)
+        tps = np.arange(0, 2, 0.01)
+        sim.simulate(tps, progress_bar=False)
 
-        otp = sys.getOutputByName("output")
-        oid1 = otp.getID()
-        otp = ctl.getOutputByName("command")
-        oid2 = otp.getID()
+        self.log = sim.getLogger()
 
-        ref_out = np.array([5])
+        x = self.log.getValue("sys_state_x")
+        x_ref = plotAnalyticsolution(tps, xv0=(0, 0), cons=1, PID=(182, 512, 24))
+        err = np.max(np.abs(x - x_ref))
+        self.assertAlmostEqual(err, 0, delta=1e-10)
 
-        frame = Frame(start_timestamp=0, stop_timestamp=0.1)
-        sys_out = sys.getDataForOutput(frame, oid1)
-        ctl_out = ctl.getDataForOutput(frame, oid2)
-
-        self.assertAlmostEqual(np.abs(sys_out - ref_out), 0, delta=1e-10)
-        self.assertAlmostEqual(np.abs(ctl_out - ref_out), 0, delta=1e-10)
+        return self.plotVerif(
+            "Figure 1",
+            [{"var": "sys_state_x"}, {"var": "stp_setpoint_c"}],
+        )
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+
+    a = TestSimpleControl()
+    a.test_simple_control()
+
+    plt.show()

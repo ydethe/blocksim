@@ -1,6 +1,8 @@
 from typing import Iterable
+from itertools import product
 
 import numpy as np
+from scipy.interpolate import interp1d
 
 from ..core.Frame import Frame
 from ..core.Node import AComputer
@@ -26,16 +28,17 @@ class ASetPoint(AComputer):
     Args:
       name
         Name of the element
-      nscal
-        Number of scalars in the data expected by the input
+      snames
+        Name of each of the scalar components of the setpoint.
+        Its shape defines the shape of the data
       dtype
         Data type (typically np.float64 or np.complex128)
 
     """
 
-    def __init__(self, name: str, nscal: int, dtype):
+    def __init__(self, name: str, snames: Iterable[str], dtype):
         AComputer.__init__(self, name)
-        self.defineOutput("setpoint", nscal=nscal, dtype=dtype)
+        self.defineOutput("setpoint", snames=snames, dtype=dtype)
 
 
 class Step(ASetPoint):
@@ -47,15 +50,17 @@ class Step(ASetPoint):
     Args:
       name
         Name of the element
+      snames
+        Name of each of the scalar components of the setpoint.
+        Its shape defines the shape of the data
       cons
         Amplitude of the steps
 
     """
 
-    def __init__(self, name: str, cons: np.array):
-        nscal = cons.shape
+    def __init__(self, name: str, snames: Iterable[str], cons: np.array):
         dtype = cons.dtype
-        ASetPoint.__init__(self, name, nscal=nscal, dtype=dtype)
+        ASetPoint.__init__(self, name=name, snames=snames, dtype=dtype)
         otp = self.getOutputByName("setpoint")
         otp.setInitialState(cons)
 
@@ -76,14 +81,35 @@ class InterpolatedSetPoint(ASetPoint):
     Args:
       name
         Name of the element
+      snames
+        Name of each of the scalar components of the setpoint.
+        Its shape defines the shape of the data
 
     """
 
-    def __init__(self, name: str, nscal: int, dtype=np.float64):
-        ASetPoint.__init__(self, name, nscal=nscal, dtype=dtype)
+    def __init__(self, name: str, snames: Iterable[str], dtype=np.float64):
+        ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
         otp = self.getOutputByName("setpoint")
-        otp.setInitialState(np.zeros(nscal, dtype=dtype))
+        otp.setInitialState(np.zeros(otp.getDataShape(), dtype=dtype))
         self.interpolators = dict()
+
+    def evalState(self, t: float) -> np.array:
+        otp = self.getOutputByName("setpoint")
+        ns = otp.getDataShape()
+        x0 = np.empty(ns, dtype=otp.getDataType())
+
+        # Creating iterables, to handle the case where
+        # the output 'setpoint' is a matrix
+        it = []
+        for k in ns:
+            it.append(range(k))
+
+        # Iterate over all dimproductensions
+        for iscal in product(*it):
+            f = self.interpolators[iscal]
+            x0[iscal] = f(t)
+
+        return x0
 
     def setInterpolatorForOutput(
         self,
@@ -125,12 +151,9 @@ class InterpolatedSetPoint(ASetPoint):
 
     def updateAllOutput(self, frame: Frame):
         t2 = frame.getStopTimeStamp()
+        sp = self.evalState(t2)
+
         otp = self.getOutputByName("setpoint")
-        n = otp.getNumberScalar()
-        sp = np.empty(n)
-        for iscal in range(n):
-            f = self.interpolators[iscal]
-            sp[i] = f(t2)
         otp.setData(sp)
 
 
@@ -151,26 +174,45 @@ class Sinusoid(ASetPoint):
     Args:
       name
         Name of the element
+      snames
+        Name of each of the scalar components of the setpoint.
+        Its shape defines the shape of the data
 
     """
 
-    def __init__(self, name: str, nscal: int, dtype=np.float64):
-        ASetPoint.__init__(self, name, nscal=nscal, dtype=dtype)
+    def __init__(self, name: str, snames: Iterable[str], dtype=np.float64):
+        ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
         otp = self.getOutputByName("setpoint")
-        otp.setInitialState(np.zeros(nscal, dtype=dtype))
-        self.amp = np.empty(nscal)
-        self.freq = np.empty(nscal)
-        self.pha = np.empty(nscal)
+        shape = otp.getDataShape()
+        otp.setInitialState(np.zeros(shape), dtype=dtype)
+        self.amp = np.empty(shape)
+        self.freq = np.empty(shape)
+        self.pha = np.empty(shape)
+
+    def evalState(self, t: float) -> np.array:
+        otp = self.getOutputByName("setpoint")
+        ns = otp.getDataShape()
+        x0 = np.empty(ns, dtype=otp.getDataType())
+
+        # Creating iterables, to handle the case where
+        # the output 'setpoint' is a matrix
+        it = []
+        for k in ns:
+            it.append(range(k))
+
+        # Iterate over all dimensions
+        for iscal in product(*it):
+            x0[iscal] = self.amp[iscal] * np.sin(
+                2 * np.pi * self.freq[iscal] * t + self.pha[iscal]
+            )
+
+        return x0
 
     def updateAllOutput(self, frame: Frame):
         t2 = frame.getStopTimeStamp()
+        sp = self.evalState(t2)
+
         otp = self.getOutputByName("setpoint")
-        n = otp.getNumberScalar()
-        sp = np.empty(n)
-        for iscal in range(n):
-            sp[i] = self.amp[iscal] * np.sin(
-                2 * np.pi * self.freq[iscal] * t2 + self.pha[iscal]
-            )
         otp.setData(sp)
 
 
@@ -187,26 +229,37 @@ class Ramp(ASetPoint):
     Args:
       name
         Name of the element
+      snames
+        Name of each of the scalar components of the setpoint.
+        Its shape defines the shape of the data
       slopes
         Gradients of the slopes
 
     """
 
-    def __init__(self, name: str, slopes: np.array):
-        nscal = slopes.shape
+    def __init__(self, name: str, snames: Iterable[str], slopes: np.array):
         dtype = slopes.dtype
-        ASetPoint.__init__(self, name, nscal=nscal, dtype=dtype)
+        ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
         otp = self.getOutputByName("setpoint")
         self.slopes = slopes
-        otp.setInitialState(np.zeros(nscal, dtype=dtype))
+        otp.setInitialState(np.zeros(otp.getDataShape(), dtype=dtype))
 
     def updateAllOutput(self, frame: Frame):
         t2 = frame.getStopTimeStamp()
         otp = self.getOutputByName("setpoint")
-        n = otp.getNumberScalar()
-        sp = np.empty(n)
-        for iscal in range(n):
-            sp[i] = self.slopes[iscal] * t2
+        ns = otp.getDataShape()
+        sp = np.empty(ns, dtype=otp.getDataType())
+
+        # Creating iterables, to handle the case where
+        # the output 'setpoint' is a matrix
+        it = []
+        for k in ns:
+            it.append(range(k))
+
+        # Iterate over all dimensions
+        for iscal in product(*it):
+            sp[iscal] = self.slopes[iscal] * t2
+
         otp.setData(sp)
 
 
@@ -218,22 +271,21 @@ class Rectangular(ASetPoint):
 
     The parameters are :
 
-    * slopes : Gradients of the slopes
-
-    The parameters are :
-
     * doors : Doors descriptions
+        Each key of doors is a the coordinate in the data vector
+        Each value of doors is a tuple :
+
+        * tdeb : date of the beginning of the door
+        * xon : value of the door inside [tdeb,tfin[
+        * xoff : value of the door outside [tdeb,tfin[
+        * tfin : date of the end of the door
 
     Args:
       name
         Name of the element
-      doors
-        Each element of doors is a tuple :
-
-        * tdeb : date of the beginning of the door
-        * xon : value of the door inside [tdeb,tfin]
-        * xoff : value of the door outside [tdeb,tfin]
-        * tfin : date of the end of the door
+      snames
+        Name of each of the scalar components of the setpoint.
+        Its shape defines the shape of the data
 
     """
 
@@ -242,23 +294,35 @@ class Rectangular(ASetPoint):
     def __init__(
         self,
         name: str,
-        doors: Iterable[tuple],
+        snames: Iterable[str],
         dtype=np.float64,
     ):
-        nscal = len(doors)
-        ASetPoint.__init__(self, name, nscal=nscal, dtype=dtype)
-        self.doors = doors
+        ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
+
+    def evalState(self, t: float) -> np.array:
+        otp = self.getOutputByName("setpoint")
+        ns = otp.getDataShape()
+        res = np.empty(ns, dtype=otp.getDataType())
+
+        # Creating iterables, to handle the case where
+        # the output 'setpoint' is a matrix
+        it = []
+        for k in ns:
+            it.append(range(k))
+
+        # Iterate over all dimensions
+        for iscal in product(*it):
+            tdeb, xon, xoff, tfin = self.doors[iscal]
+            if t >= tdeb and t < tfin:
+                res[iscal] = xon
+            else:
+                res[iscal] = xoff
+
+        return res
 
     def updateAllOutput(self, frame: Frame):
         t2 = frame.getStopTimeStamp()
-        otp = self.getOutputByName("setpoint")
-        n = otp.getNumberScalar()
-        res = np.empty(n)
-        for k in range(n):
-            tdeb, xon, xoff, tfin = self.doors[k]
-            if t2 >= tdeb and t2 <= tfin:
-                res[k] = xon
-            else:
-                res[k] = xoff
+        res = self.evalState(t2)
 
-        return res
+        otp = self.getOutputByName("setpoint")
+        otp.setData(res)

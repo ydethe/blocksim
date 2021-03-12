@@ -63,18 +63,6 @@ class Simulation(object):
         else:
             self.__computers.insert(0, computer)
 
-    def reset(self, frame: Frame):
-        """Resets the computer internal state to zero,
-        and erases the logger's informations
-
-        """
-        self.__logger.reset()
-
-        for c in self.__computers:
-            c.reset(frame)
-
-        self.update(frame)
-
     def getComputerByName(self, name: str) -> AComputer:
         """Returns the computer named *name*
 
@@ -131,18 +119,14 @@ class Simulation(object):
             for oid in c.getListOutputsIds():
                 otp = c.getOutputById(oid)
                 o_name = otp.getName()
-                data = otp.getDataForFrame(frame)
 
-                for k, x in enumerate(data):
-                    self.__logger.log(
-                        name="%s_%s_%i" % (c_name, o_name, k), val=data[k]
-                    )
+                for n, x in otp.iterScalarNameValue(frame):
+                    self.__logger.log(name="%s_%s_%s" % (c_name, o_name, n), val=x)
 
     def simulate(self, tps: np.array, progress_bar: bool = True):
         """Resets the simulator, and simulates the closed-loop system
         up to the date given as an argument :
 
-        * A call to reset
         * As much calls to update as time samples in the *tps* argument
 
         Args:
@@ -153,7 +137,7 @@ class Simulation(object):
 
         """
         frame = Frame(start_timestamp=tps[0], stop_timestamp=tps[0])
-        self.reset(frame)
+        self.update(frame)
 
         if progress_bar:
             itr = tqdm.tqdm(range(len(tps) - 1))
@@ -234,7 +218,6 @@ class Simulation(object):
           >>> sim = Simulation()
           >>> sim.addComputer(el)
           >>> frame = Frame()
-          >>> sim.reset(frame)
           >>> sim.getComputerOutputByName(frame, 'el.out')
           array([0]...
           >>> sim.getComputerOutputByName(frame, 'el.out[0]')

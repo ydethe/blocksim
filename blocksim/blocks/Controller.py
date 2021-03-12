@@ -1,3 +1,5 @@
+from typing import Iterable
+
 import numpy as np
 
 from ..core.Frame import Frame
@@ -17,16 +19,19 @@ class AController(AComputer):
     Args:
       name
         Name of the element
-      nscal_estimation
-        Number of scalars in the data expected by the estimation
+      shape_estimation
+        Number of scalars in the estimation data
+      snames
+        Name of each of the scalar components of the estimation.
+        Its shape defines the shape of the data
 
     """
 
-    def __init__(self, name: str, nscal_estimation: int):
+    def __init__(self, name: str, shape_estimation: tuple, snames: Iterable[str]):
         AComputer.__init__(self, name)
-        self.defineInput("setpoint", nscal=1, dtype=np.float64)
-        self.defineInput("estimation", nscal=nscal_estimation, dtype=np.float64)
-        self.defineOutput("command", nscal=1, dtype=np.float64)
+        self.defineInput("setpoint", shape=1, dtype=np.float64)
+        self.defineInput("estimation", shape=shape_estimation, dtype=np.float64)
+        self.defineOutput("command", snames=snames, dtype=np.float64)
         self.setInitialStateForOutput(np.array([0]), "command")
 
 
@@ -43,16 +48,18 @@ class PIDController(AController):
     Args:
       name
         Name of the element
-      nscal_estimation
+      shape_estimation
         Number of scalars in the data expected by the estimation (> 2)
       coeffs
         Coefficients of the retroaction (P, I, D)
 
     """
 
-    def __init__(self, name: str, nscal_estimation: int, coeffs: float):
-        AController.__init__(self, name, nscal_estimation)
-        self.defineOutput("integral", nscal=1, dtype=np.float64)
+    def __init__(
+        self, name: str, shape_estimation: tuple, snames: Iterable[str], coeffs: float
+    ):
+        AController.__init__(self, name, shape_estimation, snames)
+        self.defineOutput("integral", snames=["int"], dtype=np.float64)
         self.setInitialStateForOutput(np.array([0]), "integral")
         self.__coeffs = coeffs
 
