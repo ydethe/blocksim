@@ -39,7 +39,7 @@ class ASensors(AComputer):
       name
         Name of the element
       shape_state
-        Number of scalars in the state data
+        Shape of the state data
       snames
         Name of each of the scalar components of the measurement.
         Its shape defines the shape of the data
