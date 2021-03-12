@@ -1,4 +1,5 @@
-from typing import Iterable
+from typing import Iterable, Iterator
+from itertools import product
 from uuid import UUID, uuid4
 
 import numpy as np
@@ -15,23 +16,26 @@ class Input(ABaseNode):
 
     The extra attributes  are:
     * __output, which links the :class:`blocksim.core.Node.Input` with an :class:`blocksim.core.Node.Output`
-    * __nscal, which is the number of scalars in the data expected by the input
+    * __shape, which is the number of scalars in the data expected by the input
     * __dtype, which is the data type
 
     Args:
       name
         Name of the Input
-      nscal
-        Number of scalars in the data expected by the input
+      shape
+        Shape of the data expected by the input
       dtype
         Data type (typically np.float64 or np.complex128)
 
     """
 
-    def __init__(self, name: str, nscal: int, dtype):
+    def __init__(self, name: str, shape: tuple, dtype):
         ABaseNode.__init__(self, name)
         self.__output = None
-        self.__nscal = nscal
+        if isinstance(shape, int):
+            self.__shape = (shape,)
+        else:
+            self.__shape = shape
         self.__dtype = dtype
 
     def setOutput(self, output: "Output"):
@@ -44,8 +48,8 @@ class Input(ABaseNode):
         """
         self.__output = output
 
-    def getNumberScalar(self) -> int:
-        return self.__nscal
+    def getDataShape(self) -> int:
+        return self.__shape
 
     def getOutput(self) -> "Output":
         """Gets the output connected to the Input
@@ -66,7 +70,7 @@ class Input(ABaseNode):
         otp = self.getOutput()
         data = otp.getDataForFrame(frame)
         valid_data = assignVector(
-            data, self.getNumberScalar(), self.getName(), otp.getName(), self.__dtype
+            data, self.getDataShape(), self.getName(), otp.getName(), self.__dtype
         )
         return valid_data
 
@@ -82,25 +86,29 @@ class Output(ABaseNode):
 
     * __computer, which contains the output
     * __data, which contains the data communicated to the connected Inputs
-    * __nscal, which is the number of scalars in the data expected by the input
+    * __shape, which is the number of scalars in the data expected by the input
     * __dtype, which is the data type
+    * __initial_state, which is the state used to reinitialize the Output
+    * __snames, which is the name of the scalars
 
     Args:
       name
         Name of the Output
-      nscal
-        Number of scalars in the data expected by the input
+      snames
+        Name of each of the scalar components of the data.
+        Its shape defines the shap of the data
       dtype
         Data type (typically np.float64 or np.complex128)
 
     """
 
-    def __init__(self, name: str, nscal: int, dtype=np.float64):
+    def __init__(self, name: str, snames: Iterable[str], dtype=np.float64):
         ABaseNode.__init__(self, name)
         self.__computer = None
         self.__data = np.array([])
-        self.__nscal = nscal
         self.__dtype = dtype
+        self.__snames = np.array(snames)
+        self.__shape = self.__snames.shape
 
     def setInitialState(self, initial_state: np.array):
         """Sets the element's initial state vector
@@ -111,9 +119,60 @@ class Output(ABaseNode):
 
         """
         valid_data = assignVector(
-            initial_state, self.getNumberScalar(), self.getName(), "<arg>", self.__dtype
+            initial_state,
+            self.getDataShape(),
+            self.getName(),
+            "<arg>",
+            self.getDataType(),
         )
         self.__initial_state = valid_data
+
+    def getScalarNames(self) -> Iterable[str]:
+        """Gets the name of each of the scalar components of the data
+
+        Returns:
+          The name of each of the scalar components of the data
+
+        """
+        return self.__snames
+
+    def iterScalarNameValue(self, frame: Frame) -> Iterator:
+        """Iterate through all the data, and yield the name and the value of the scalar
+
+        Examples:
+          >>> otp=Output(name='otp', snames=[['a00','a01'],['a10','a11']])
+          >>> otp.setInitialState(np.zeros((2,2)))
+          >>> frame = Frame()
+          >>> otp.reset(frame)
+          >>> for n,v in otp.iterScalarNameValue(frame):
+          ...    print(n,v)
+          a00 0.0
+          a01 0.0
+          a10 0.0
+          a11 0.0
+
+        """
+        ns = self.getDataShape()
+        dat = self.getDataForFrame(frame)
+
+        # Creating iterables, to handle the case where
+        # the output 'setpoint' is a matrix
+        it = []
+        for k in ns:
+            it.append(range(k))
+
+        # Iterate over all dimensions
+        for iscal in product(*it):
+            yield self.__snames[iscal], dat[iscal]
+
+    def getInitialeState(self) -> np.array:
+        """Gets the element's initial state vector
+
+        Returns:
+          The element's initial state vector
+
+        """
+        return self.__initial_state
 
     def reset(self, frame: Frame = None):
         """Resets the element internal state the value given by :class:`blocksim.core.Node.Output.setInitialState`"""
@@ -122,8 +181,11 @@ class Output(ABaseNode):
         self.setFrame(frame)
         self.__data = self.__initial_state.copy()
 
-    def getNumberScalar(self) -> int:
-        return self.__nscal
+    def getDataShape(self) -> tuple:
+        return self.__shape
+
+    def getDataType(self):
+        return self.__dtype
 
     def setComputer(self, computer: "Computer"):
         """Sets the computer containing the Output
@@ -153,7 +215,7 @@ class Output(ABaseNode):
 
         """
         valid_data = assignVector(
-            data, self.getNumberScalar(), self.getName(), "<arg>", self.__dtype
+            data, self.getDataShape(), self.getName(), "<arg>", self.__dtype
         )
         self.__data = valid_data
 
@@ -261,14 +323,15 @@ class AComputer(ABaseNode):
         """
         return self.__inputs.keys()
 
-    def defineOutput(self, name: str, nscal: int, dtype) -> Output:
+    def defineOutput(self, name: str, snames: Iterator[str], dtype) -> Output:
         """Creates an output for the computer
 
         Args:
           name
             Name of the output
-          nscal
-            Number of scalars in the data expected by the input
+          snames
+            Name of each of the scalar components of the data.
+            Its shape defines the shap of the data
           dtype
             Data type (typically np.float64 or np.complex128)
 
@@ -276,18 +339,18 @@ class AComputer(ABaseNode):
           The created output
 
         """
-        otp = Output(name=name, nscal=nscal, dtype=dtype)
+        otp = Output(name=name, snames=snames, dtype=dtype)
         otp.setComputer(self)
         self.__outputs[otp.getID()] = otp
         return otp
 
-    def defineInput(self, name: str, nscal: int, dtype) -> Input:
+    def defineInput(self, name: str, shape: int, dtype) -> Input:
         """Creates an input for the computer
 
         Args:
           name
             Name of the input
-          nscal
+          shape
             Number of scalars in the data expected by the input
           dtype
             Data type (typically np.float64 or np.complex128)
@@ -296,7 +359,7 @@ class AComputer(ABaseNode):
           The created input
 
         """
-        inp = Input(name, nscal=nscal, dtype=dtype)
+        inp = Input(name, shape=shape, dtype=dtype)
         self.__inputs[inp.getID()] = inp
         return inp
 
@@ -445,8 +508,8 @@ class AComputer(ABaseNode):
 class DummyComputer(AComputer):
     def __init__(self, name: str):
         AComputer.__init__(self, name)
-        self.defineInput("in", nscal=1, dtype=np.int64)
-        self.defineOutput("out", nscal=1, dtype=np.int64)
+        self.defineInput("in", shape=1, dtype=np.int64)
+        self.defineOutput("out", snames=["x"], dtype=np.int64)
         self.setInitialStateForOutput(np.array([0]), output_name="out")
 
     def updateAllOutput(self, frame: Frame):

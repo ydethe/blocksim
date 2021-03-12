@@ -131,12 +131,9 @@ class Simulation(object):
             for oid in c.getListOutputsIds():
                 otp = c.getOutputById(oid)
                 o_name = otp.getName()
-                data = otp.getDataForFrame(frame)
 
-                for k, x in enumerate(data):
-                    self.__logger.log(
-                        name="%s_%s_%i" % (c_name, o_name, k), val=data[k]
-                    )
+                for n, x in otp.iterScalarNameValue(frame):
+                    self.__logger.log(name="%s_%s_%s" % (c_name, o_name, n), val=x)
 
     def simulate(self, tps: np.array, progress_bar: bool = True):
         """Resets the simulator, and simulates the closed-loop system

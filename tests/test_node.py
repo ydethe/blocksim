@@ -14,7 +14,7 @@ from blocksim.Simulation import Simulation
 class SetPoint(AComputer):
     def __init__(self, name: str):
         AComputer.__init__(self, name)
-        otp = self.defineOutput("setpoint", nscal=1, dtype=np.int64)
+        otp = self.defineOutput("setpoint", snames=["c"], dtype=np.int64)
         otp.setInitialState(np.array([1]))
 
     def updateAllOutput(self, frame: Frame):
@@ -24,9 +24,9 @@ class SetPoint(AComputer):
 class Controller(AComputer):
     def __init__(self, name: str):
         AComputer.__init__(self, name)
-        self.defineInput("setpoint", nscal=1, dtype=np.int64)
-        self.defineInput("estimation", nscal=1, dtype=np.int64)
-        otp = self.defineOutput("command", nscal=1, dtype=np.int64)
+        self.defineInput("setpoint", shape=1, dtype=np.int64)
+        self.defineInput("estimation", shape=1, dtype=np.int64)
+        otp = self.defineOutput("command", snames=["u"], dtype=np.int64)
         otp.setInitialState(np.array([2]))
 
     def updateAllOutput(self, frame: Frame):
@@ -47,8 +47,8 @@ class Controller(AComputer):
 class System(AComputer):
     def __init__(self, name: str):
         AComputer.__init__(self, name)
-        self.defineInput("command", nscal=1, dtype=np.int64)
-        otp = self.defineOutput("output", nscal=1, dtype=np.int64)
+        self.defineInput("command", shape=1, dtype=np.int64)
+        otp = self.defineOutput("output", snames=["x"], dtype=np.int64)
         otp.setInitialState(np.array([4]))
 
     def updateAllOutput(self, frame: Frame):

@@ -29,10 +29,11 @@ class ASystem(AComputer):
     Args:
       name
         Name of the system
-      nscal_command
+      shape_command
         Number of scalars in the data expected by the command
-      nscal_state
-        Number of scalars in the data expected by the state
+      snames_state
+        Name of each of the scalar components of the state.
+        Its shape defines the shape of the data
       dtype
         Data type (typically np.float64 or np.complex128)
       method, optional
@@ -46,14 +47,14 @@ class ASystem(AComputer):
     def __init__(
         self,
         name: str,
-        nscal_command: int,
-        nscal_state: int,
+        shape_command: int,
+        snames_state: Iterable[str],
         dtype=np.float64,
         method: str = "dop853",
     ):
         AComputer.__init__(self, name)
-        self.defineInput("command", nscal_command, dtype)
-        self.defineOutput("state", nscal_state, dtype)
+        self.defineInput("command", shape_command, dtype)
+        self.defineOutput("state", snames_state, dtype)
 
         has_jacobian = hasattr(self, "jacobian")
 
@@ -143,16 +144,17 @@ class LTISystem(ASystem):
 
     with :
 
-    * n number of states (nscal_state in the init arguments)
-    * m number of commands (nscal_command in the init arguments)
+    * n number of states (shape of snames_state in the init arguments)
+    * m number of commands (shape_command in the init arguments)
 
     Args:
       name
         Name of the system
-      nscal_command
+      shape_command
         Number of scalars in the data expected by the command
-      nscal_state
-        Number of scalars in the data expected by the state
+      snames_state
+        Name of each of the scalar components of the state.
+        Its shape defines the shape of the data
       dtype
         Data type (typically np.float64 or np.complex128)
       method
@@ -163,16 +165,16 @@ class LTISystem(ASystem):
     def __init__(
         self,
         name: str,
-        nscal_command: int,
-        nscal_state: int,
+        shape_command: int,
+        snames_state: Iterable[str],
         dtype=np.float64,
         method: str = "dop853",
     ):
         ASystem.__init__(
             self,
             name=name,
-            nscal_command=nscal_command,
-            nscal_state=nscal_state,
+            shape_command=shape_command,
+            snames_state=snames_state,
             dtype=dtype,
             method=method,
         )
@@ -204,7 +206,7 @@ class LTISystem(ASystem):
         Examples:
           >>> m = 1. # Mass
           >>> k = 40. # Spring rate
-          >>> sys = LTISystem('sys', nscal_command=1, nscal_state=2)
+          >>> sys = LTISystem('sys', shape_command=1, snames_state=['x','v'])
           >>> sys.A = np.array([[0,1],[-k/m,0]])
           >>> sys.B = np.array([[0,1/m]]).T
           >>> Kk = 1/m
@@ -218,8 +220,8 @@ class LTISystem(ASystem):
           True
 
         """
-        n = self.getOutputByName("state").getNumberScalar()
-        m = self.getInputByName("command").getNumberScalar()
+        n = self.getOutputByName("state").getDataShape()[0]
+        m = self.getInputByName("command").getDataShape()[0]
 
         C = np.zeros((1, n))
         D = np.zeros((1, m))
@@ -277,7 +279,7 @@ class G6DOFSystem(ASystem):
     http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf
 
     The input of the element is **command**
-    The output name of the computer is **state**
+    The outputs name of the computer are **state** and **euler**
 
     The following parameters must be defined by the user :
 
@@ -294,12 +296,17 @@ class G6DOFSystem(ASystem):
     * vx
     * vy
     * vz
-    * roll
-    * pitch
-    * yaw
+    * qr
+    * qx
+    * qy
+    * qz
     * wx
     * wy
     * wz
+    euler:
+    * roll
+    * pitch
+    * yaw
 
     Args:
       name
@@ -311,17 +318,35 @@ class G6DOFSystem(ASystem):
         ASystem.__init__(
             self,
             name,
-            nscal_command=6,
-            nscal_state=12,
+            shape_command=6,
+            snames_state=[
+                "px",
+                "py",
+                "pz",
+                "vx",
+                "vy",
+                "vz",
+                "qr",
+                "qx",
+                "qy",
+                "qz",
+                "wx",
+                "wy",
+                "wz",
+            ],
             dtype=np.float64,
             method="dop853",
         )
         self.m = 1
         self.J = np.eye(3) * 1e-3
         self.max_q_denorm = 1e-6
+        self.defineOutput(
+            name="euler", snames=["roll", "pitch", "yaw"], dtype=np.float64
+        )
         self.setInitialStateForOutput(
             np.array([0, 0, 0, 0, 0, 0, 1.0, 0.0, 0, 0, 0, 0, 0]), output_name="state"
         )
+        self.setInitialStateForOutput(np.array([0, 0, 0]), output_name="euler")
 
     def vecBodyToEarth(self, frame: Frame, x: np.array) -> np.array:
         """Expresses a vector from the body frame to the Earth's frame
@@ -435,12 +460,13 @@ class G6DOFSystem(ASystem):
         u = self.getDataForInput(frame, name="command")
         x = self.getDataForOutput(frame, name="state")
         otp = self.getOutputByName("state")
+        euler = self.getOutputByName("euler")
+        ns = otp.getDataShape()[0]
 
         t1 = frame.getStartTimeStamp()
         t2 = frame.getStopTimeStamp()
         h = t2 - t1
 
-        ns = otp.getNumberScalar()
         k = np.zeros((ns, s))
         q = x[6:10]
         w = x[10:13]
@@ -477,3 +503,5 @@ class G6DOFSystem(ASystem):
         res[6:10] = q
 
         otp.setData(res)
+        euler_att = np.array(quat_to_euler(*res[6:10]))
+        euler.setData(euler_att)

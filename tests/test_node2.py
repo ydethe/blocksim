@@ -20,7 +20,7 @@ from blocksim.Simulation import Simulation
 # source activate "D:\Users\blaudiy\Documents\Mes Outils Personnels\myenv"
 class System(ASystem):
     def __init__(self, name: str):
-        ASystem.__init__(self, name, nscal_command=1, nscal_state=2)
+        ASystem.__init__(self, name, shape_command=1, snames_state=["x", "v"])
         self.setInitialStateForOutput(np.zeros(2), "state")
 
     def transition(self, t: float, x: np.array, u: np.array) -> np.array:
@@ -98,8 +98,8 @@ class TestSimpleControl(TestBase):
         I = a ** 3 * m
         D = 3 * a * m
 
-        stp = Step("stp", cons=np.array([1]))
-        ctl = PIDController("ctl", nscal_estimation=2, coeffs=(P, I, D))
+        stp = Step("stp", snames=["c"], cons=np.array([1]))
+        ctl = PIDController("ctl", shape_estimation=2, snames=["u"], coeffs=(P, I, D))
         sys = System("sys")
 
         sim = Simulation()
@@ -116,19 +116,15 @@ class TestSimpleControl(TestBase):
 
         self.log = sim.getLogger()
 
-        x = self.log.getValue("sys_state_0")
+        x = self.log.getValue("sys_state_x")
         x_ref = plotAnalyticsolution(tps, cons=1)
         err = np.max(np.abs(x - x_ref))
         self.assertAlmostEqual(err, 0, delta=1e-10)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        self.plotVerif("sys_state_0", axe, label="bs")
-        axe.plot(tps, x_ref, label="analytic")
-        self.plotVerif("stp_setpoint_0", axe, label="setpoint")
-        axe.legend(loc="best")
-
-        return fig
+        return self.plotVerif(
+            "Figure 1",
+            [{"var": "sys_state_x"}, {"var": "stp_setpoint_c"}],
+        )
 
 
 if __name__ == "__main__":
