@@ -137,7 +137,9 @@ class Output(ABaseNode):
         return self.__snames
 
     def iterScalarNameValue(self, frame: Frame) -> Iterator:
-        """Iterate through all the data, and yield the name and the value of the scalar"""
+        """Iterate through all the data, and yield the name and the value of the scalar
+
+        """
         ns = self.getDataShape()
         dat = self.getDataForFrame(frame)
 
