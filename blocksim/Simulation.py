@@ -123,7 +123,7 @@ class Simulation(object):
                 for n, x in otp.iterScalarNameValue(frame):
                     self.__logger.log(name="%s_%s_%s" % (c_name, o_name, n), val=x)
 
-    def simulate(self, tps: np.array, progress_bar: bool = True):
+    def simulate(self, tps: np.array, progress_bar: bool = True) -> Frame:
         """Resets the simulator, and simulates the closed-loop system
         up to the date given as an argument :
 
@@ -134,6 +134,9 @@ class Simulation(object):
             Dates to be simulated (s)
           progress_bar
             True to display a progress bar in the terminal
+
+        Returns:
+          The time frame used for the simulation
 
         """
         frame = Frame(start_timestamp=tps[0], stop_timestamp=tps[0])
@@ -148,6 +151,8 @@ class Simulation(object):
             dt = tps[k + 1] - tps[k]
             frame.updateByStep(dt)
             self.update(frame)
+
+        return frame
 
     def setOutputLoggerFile(self, fic: str, binary: bool = False):
         """Sets a file to write the logs in

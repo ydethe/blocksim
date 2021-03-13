@@ -137,9 +137,7 @@ class Output(ABaseNode):
         return self.__snames
 
     def iterScalarNameValue(self, frame: Frame) -> Iterator:
-        """Iterate through all the data, and yield the name and the value of the scalar
-
-        """
+        """Iterate through all the data, and yield the name and the value of the scalar"""
         ns = self.getDataShape()
         dat = self.getDataForFrame(frame)
 
@@ -355,6 +353,12 @@ class AComputer(ABaseNode):
         otp.setComputer(self)
         self.__outputs[otp.getID()] = otp
 
+    def replaceOutput(self, old_name: str, new_output: Output):
+        otp = self.getOutputByName(old_name)
+        oid = otp.getID()
+        del self.__outputs[oid]
+        self.addOutput(new_output)
+
     def defineInput(self, name: str, shape: int, dtype) -> Input:
         """Creates an input for the computer
 
@@ -385,6 +389,8 @@ class AComputer(ABaseNode):
           The Output
 
         """
+        if not output_id in self.__outputs.keys():
+            logger.error("In '%s' : id not found '%s'" % (self.getName(), output_id))
         return self.__outputs[output_id]
 
     def getOutputByName(self, name: str) -> Output:
@@ -455,13 +461,19 @@ class AComputer(ABaseNode):
 
         """
         if uid is None and name is None:
-            print("[ERROR]")
+            logger.error(
+                "In '%s' : Unable to find input id=%s, name='%s'"
+                % (self.getName(), uid, name)
+            )
         elif uid is None and not name is None:
             inp = self.getInputByName(name)
         elif not uid is None and name is None:
             inp = self.getInputById(uid)
         else:
-            print("[ERROR]")
+            logger.error(
+                "In '%s' : Unable to find input id=%s, name='%s'"
+                % (self.getName(), uid, name)
+            )
 
         data = inp.getDataForFrame(frame)
         return data
@@ -489,13 +501,19 @@ class AComputer(ABaseNode):
             self.updateAllOutput(frame)
 
         if uid is None and name is None:
-            print("[ERROR]")
+            logger.error(
+                "In '%s' : Unable to find output id=%s, name='%s'"
+                % (self.getName(), uid, name)
+            )
         elif uid is None and not name is None:
             otp = self.getOutputByName(name)
         elif not uid is None and name is None:
             otp = self.getOutputById(uid)
         else:
-            print("[ERROR]")
+            logger.error(
+                "In '%s' : Unable to find output id=%s, name='%s'"
+                % (self.getName(), uid, name)
+            )
 
         return otp.getDataForFrame(frame)
 

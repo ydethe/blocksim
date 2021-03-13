@@ -97,3 +97,6 @@ class Frame(object):
 
     def __eq__(self, y: "Frame") -> bool:
         return self.getFrameID() == y.getFrameID()
+
+    def __hash__(self):
+        return self.getFrameID().int
