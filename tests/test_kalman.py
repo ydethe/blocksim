@@ -154,7 +154,7 @@ class TestKalman(TestBase):
         sim.connect("kal.state", "ctl.estimation")
 
         tps = np.arange(0, 4, dt)
-        frame = sim.simulate(tps, progress_bar=True)
+        frame = sim.simulate(tps, progress_bar=False)
 
         self.log = sim.getLogger()
 

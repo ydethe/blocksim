@@ -259,10 +259,16 @@ class AWGNOutput(Output):
         return state + bg
 
     def getDataForFrame(self, frame: Frame) -> np.array:
-        data = super().getDataForFrame(frame)
-        noisy = self.addGaussianNoise(data)
-        self.setData(noisy)
-        return noisy
+        if self.getCurrentFrame() != frame:
+            self.setFrame(frame)
+            if frame.getTimeStep() == 0:
+                self.setData(self.getInitialeState())
+                self.resetCallback(frame)
+            data = self.getComputer().getDataForOutput(frame, self.getID())
+            noisy = self.addGaussianNoise(data)
+            self.setData(noisy)
+
+        return super().getDataForFrame(frame)
 
 
 class AComputer(ABaseNode):

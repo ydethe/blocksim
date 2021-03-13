@@ -113,20 +113,32 @@ class ASystem(AComputer):
         t1 = frame.getStopTimeStamp()
 
         self.__integ.set_initial_value(y0, t0).set_f_params(u).set_jac_params(u)
-        try:
-            y1 = self.__integ.integrate(t1)
-        except Exception as e:
-            print(72 * "=")
-            print("When updating '%s'" % self.getName())
-            print("t", t0)
-            print("x", y0)
-            print("u", u)
-            print("dx", self.transition(t0, y0, u))
-            print(72 * "=")
-            raise e
+
+        if frame.getTimeStep() != 0:
+            try:
+
+                y0 = self.__integ.integrate(t1)
+
+            except Exception as e:
+
+                print(72 * "=")
+
+                print("When updating '%s'" % self.getName())
+
+                print("t", t0)
+
+                print("x", y0)
+
+                print("u", u)
+
+                print("dx", self.transition(t0, y0, u))
+
+                print(72 * "=")
+
+                raise e
 
         otp = self.getOutputByName("state")
-        otp.setData(y1)
+        otp.setData(y0)
 
 
 class LTISystem(ASystem):
