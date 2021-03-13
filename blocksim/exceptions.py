@@ -2,6 +2,22 @@ import numpy as np
 import scipy.linalg as lin
 
 
+class IncompatibleShapes(Exception):
+    def __init__(self, src_name: str, src_shape, dst_name: str, dst_shape):
+        self.src_name = src_name
+        self.src_shape = src_shape
+        self.dst_name = dst_name
+        self.dst_shape = dst_shape
+
+    def __str__(self):
+        return "%s[%s] not incompatible of %s[%s]" % (
+            self.src_name,
+            self.src_shape,
+            self.dst_name,
+            self.dst_shape,
+        )
+
+
 class InvalidLogFile(Exception):
     def __init__(self, name):
         self.name = name

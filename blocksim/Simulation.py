@@ -194,6 +194,12 @@ class Simulation(object):
 
         otp = src.getOutputByName(src_out_name)
         inp = dst.getInputByName(dst_in_name)
+
+        if inp.getDataShape() != otp.getDataShape():
+            raise IncompatibleShapes(
+                src_name, otp.getDataShape(), dst_name, inp.getDataShape()
+            )
+
         inp.setOutput(otp)
 
     def getComputerOutputByName(self, frame: Frame, name: str) -> np.array:
