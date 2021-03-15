@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Iterable, Iterator
 from itertools import product
 from uuid import UUID, uuid4
@@ -37,6 +38,10 @@ class Input(ABaseNode):
         else:
             self.__shape = shape
         self.__dtype = dtype
+
+    def __repr__(self):
+        s = "%s%s" % (self.getName(), self.getDataShape())
+        return s
 
     def setOutput(self, output: "Output"):
         """Sets the output connected to the Input
@@ -109,6 +114,10 @@ class Output(ABaseNode):
         self.__dtype = dtype
         self.__snames = np.array(snames)
         self.__shape = self.__snames.shape
+
+    def __repr__(self):
+        s = "%s%s" % (self.getName(), self.getDataShape())
+        return s
 
     def setInitialState(self, initial_state: np.array):
         """Sets the element's initial state vector
@@ -276,6 +285,8 @@ class AComputer(ABaseNode):
     A AComputer contains a list of :class:`blocksim.core.Node.Input`
     and a list of :class:`blocksim.core.Node.Output`
 
+    Implement **compute_outputs** to make it concrete
+
     Args:
       name
         Name of the element
@@ -289,6 +300,54 @@ class AComputer(ABaseNode):
         ABaseNode.__init__(self, name)
         self.__inputs = {}
         self.__outputs = {}
+
+    def __repr__(self):
+        s = ""
+        sn = "'%s'" % self.getName()
+        sc = self.__class__.__name__
+        tot_w = 2 + len(sn)
+        tot_w = max(tot_w, len(sc) + 2)
+
+        s_out = []
+        for otp in self.getListOutputs():
+            s_out.append(str(otp))
+
+        s_inp = []
+        for inp in self.getListInputs():
+            s_inp.append(str(inp))
+
+        out_w = 2 + max([len(s) for s in s_out])
+        inp_w = 2 + max([len(s) for s in s_inp])
+
+        tot_w = max(tot_w, out_w - 2 + inp_w)
+
+        s += "   =" + tot_w * "=" + "=\n"
+        s += "   |" + sn.center(tot_w) + "|\n"
+        s += "   |" + sc.center(tot_w) + "|\n"
+        s += "   =" + tot_w * "=" + "=\n"
+        s += "   |" + tot_w * " " + "|\n"
+
+        for k in range(max(len(s_out), len(s_inp))):
+            if k < len(s_inp):
+                xin = s_inp[k]
+                pre = "-> "
+            else:
+                xin = "|"
+                pre = "   "
+
+            if k < len(s_out):
+                xout = s_out[k]
+                post = " ->"
+            else:
+                xout = "|"
+                post = "   "
+
+            s += pre + xin.ljust(inp_w) + xout.rjust(out_w) + post + "\n"
+            s += "   |" + tot_w * " " + "|\n"
+
+        s += "   =" + tot_w * "=" + "=\n"
+
+        return s
 
     def isController(self) -> bool:
         """Checks if the element is derived from AController
@@ -315,6 +374,15 @@ class AComputer(ABaseNode):
         otp = self.getOutputByName(output_name)
         otp.setInitialState(initial_state)
 
+    def getListOutputs(self) -> Iterable[Output]:
+        """Gets the list of the outputs
+
+        Returns:
+          The list of outputs
+
+        """
+        return self.__outputs.values()
+
     def getListOutputsIds(self) -> Iterable[UUID]:
         """Gets the list of the outputs' ids
 
@@ -324,6 +392,26 @@ class AComputer(ABaseNode):
         """
         return self.__outputs.keys()
 
+    def getListOutputsNames(self) -> Iterable[str]:
+        """Gets the list of the outputs' names
+
+        Returns:
+          The list of names
+
+        """
+        for oid in self.getListOutputsIds():
+            otp = self.getOutputById(oid)
+            yield otp.getName()
+
+    def getListInputs(self) -> Iterable[Input]:
+        """Gets the list of the inputs
+
+        Returns:
+          The list of inputs
+
+        """
+        return self.__inputs.values()
+
     def getListInputsIds(self) -> Iterable[UUID]:
         """Gets the list of the inputs' ids
 
@@ -332,6 +420,17 @@ class AComputer(ABaseNode):
 
         """
         return self.__inputs.keys()
+
+    def getListInputsNames(self) -> Iterable[str]:
+        """Gets the list of the inputs' names
+
+        Returns:
+          The list of names
+
+        """
+        for iid in self.getListInputsIds():
+            inp = self.getInputById(iid)
+            yield inp.getName()
 
     def defineOutput(self, name: str, snames: Iterator[str], dtype) -> Output:
         """Creates an output for the computer
@@ -539,13 +638,45 @@ class AComputer(ABaseNode):
 
         return res
 
-
-class DummyComputer(AComputer):
-    def __init__(self, name: str):
-        AComputer.__init__(self, name)
-        self.defineInput("in", shape=1, dtype=np.int64)
-        self.defineOutput("out", snames=["x"], dtype=np.int64)
-        self.setInitialStateForOutput(np.array([0]), output_name="out")
+    @abstractmethod
+    def compute_outputs(self, **inputs: dict) -> dict:
+        pass
 
     def updateAllOutput(self, frame: Frame):
-        pass
+        inputs = {}
+        for inp in self.getListInputs():
+            k = inp.getName()
+            v = inp.getDataForFrame(frame)
+            inputs[k] = v
+        for otp in self.getListOutputs():
+            k = otp.getName()
+            v = otp.getDataForFrame(frame)
+            inputs[k] = v
+        inputs["t1"] = frame.getStartTimeStamp()
+        inputs["t2"] = frame.getStopTimeStamp()
+
+        outputs = self.compute_outputs(**inputs)
+
+        for otp in self.getListOutputs():
+            k = otp.getName()
+            otp.setData(outputs[k])
+
+
+class DummyComputer(AComputer):
+    def __init__(self, name: str, with_input: bool = True):
+        AComputer.__init__(self, name)
+        if with_input:
+            self.defineInput("xin", shape=1, dtype=np.int64)
+        self.defineOutput("xout", snames=["x"], dtype=np.int64)
+        self.setInitialStateForOutput(np.array([0]), output_name="xout")
+
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        **inputs,
+    ) -> dict:
+        outputs = {}
+        outputs["xout"] = np.array([0])
+
+        return outputs

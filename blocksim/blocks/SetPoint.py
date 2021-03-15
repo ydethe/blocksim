@@ -20,7 +20,7 @@ __all__ = [
 class ASetPoint(AComputer):
     """Abstract class for a set point
 
-    Implement the method **updateAllOutput** to make it concrete
+    Implement the method **compute_outputs** to make it concrete
 
     This element has no input
     The output name of the computer is **setpoint**
@@ -64,8 +64,16 @@ class Step(ASetPoint):
         otp = self.getOutputByName("setpoint")
         otp.setInitialState(cons)
 
-    def updateAllOutput(self, frame: Frame):
-        pass
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        setpoint: np.array,
+    ) -> dict:
+        outputs = {}
+        outputs["setpoint"] = setpoint
+
+        return outputs
 
 
 class InterpolatedSetPoint(ASetPoint):
@@ -104,7 +112,7 @@ class InterpolatedSetPoint(ASetPoint):
         for k in ns:
             it.append(range(k))
 
-        # Iterate over all dimproductensions
+        # Iterate over all dimensions
         for iscal in product(*it):
             f = self.interpolators[iscal]
             x0[iscal] = f(t)
@@ -149,12 +157,18 @@ class InterpolatedSetPoint(ASetPoint):
         )
         self.interpolators[iscal] = f
 
-    def updateAllOutput(self, frame: Frame):
-        t2 = frame.getStopTimeStamp()
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        setpoint: np.array,
+    ) -> dict:
         sp = self.evalState(t2)
 
-        otp = self.getOutputByName("setpoint")
-        otp.setData(sp)
+        outputs = {}
+        outputs["setpoint"] = sp
+
+        return outputs
 
 
 class Sinusoid(ASetPoint):
@@ -208,12 +222,18 @@ class Sinusoid(ASetPoint):
 
         return x0
 
-    def updateAllOutput(self, frame: Frame):
-        t2 = frame.getStopTimeStamp()
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        setpoint: np.array,
+    ) -> dict:
         sp = self.evalState(t2)
 
-        otp = self.getOutputByName("setpoint")
-        otp.setData(sp)
+        outputs = {}
+        outputs["setpoint"] = sp
+
+        return outputs
 
 
 class Ramp(ASetPoint):
@@ -244,11 +264,14 @@ class Ramp(ASetPoint):
         self.slopes = slopes
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=dtype))
 
-    def updateAllOutput(self, frame: Frame):
-        t2 = frame.getStopTimeStamp()
-        otp = self.getOutputByName("setpoint")
-        ns = otp.getDataShape()
-        sp = np.empty(ns, dtype=otp.getDataType())
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        setpoint: np.array,
+    ) -> dict:
+        ns = setpoint.shape
+        sp = np.empty(ns, dtype=setpoint.dtype)
 
         # Creating iterables, to handle the case where
         # the output 'setpoint' is a matrix
@@ -260,7 +283,10 @@ class Ramp(ASetPoint):
         for iscal in product(*it):
             sp[iscal] = self.slopes[iscal] * t2
 
-        otp.setData(sp)
+        outputs = {}
+        outputs["setpoint"] = sp
+
+        return outputs
 
 
 class Rectangular(ASetPoint):
@@ -288,8 +314,6 @@ class Rectangular(ASetPoint):
         Its shape defines the shape of the data
 
     """
-
-    __slots__ = []
 
     def __init__(
         self,
@@ -320,9 +344,15 @@ class Rectangular(ASetPoint):
 
         return res
 
-    def updateAllOutput(self, frame: Frame):
-        t2 = frame.getStopTimeStamp()
-        res = self.evalState(t2)
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        setpoint: np.array,
+    ) -> dict:
+        sp = self.evalState(t2)
 
-        otp = self.getOutputByName("setpoint")
-        otp.setData(res)
+        outputs = {}
+        outputs["setpoint"] = sp
+
+        return outputs

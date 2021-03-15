@@ -24,7 +24,7 @@ __all__ = [
 class ASensors(AComputer):
     """Abstract class for a set of sensors
 
-    Implement the method **updateAllOutput** to make it concrete
+    Implement the method **compute_outputs** to make it concrete
 
     The input of the computer is **state**
     The output of the computer is **measurement**
@@ -99,8 +99,6 @@ class ProportionalSensors(ASensors):
 
     """
 
-    __slots__ = []
-
     def __init__(
         self, name: str, shape_state: tuple, snames: Iterable[str], dtype=np.float64
     ):
@@ -108,10 +106,19 @@ class ProportionalSensors(ASensors):
             self, name=name, shape_state=shape_state, snames=snames, dtype=dtype
         )
 
-    def updateAllOutput(self, frame: Frame):
-        x = self.getDataForInput(frame, name="state")
-        meas = self.getOutputByName("measurement")
-        meas.setData(self.C @ x)
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        measurement: np.array,
+        state: np.array,
+    ) -> dict:
+        meas = self.C @ state
+
+        outputs = {}
+        outputs["measurement"] = meas
+
+        return outputs
 
 
 class LinearSensors(ASensors):
@@ -162,11 +169,20 @@ class LinearSensors(ASensors):
         )
         self.defineInput("command", shape_command, dtype=dtype)
 
-    def updateAllOutput(self, frame: Frame):
-        x = self.getDataForInput(frame, name="state")
-        u = self.getDataForInput(frame, name="command")
-        meas = self.getOutputByName("measurement")
-        meas.setData(self.C @ x + self.D @ u)
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        command: np.array,
+        measurement: np.array,
+        state: np.array,
+    ) -> dict:
+        meas = self.C @ state + self.D @ command
+
+        outputs = {}
+        outputs["measurement"] = meas
+
+        return outputs
 
 
 class StreamSensors(AComputer):

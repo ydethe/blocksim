@@ -101,7 +101,7 @@ class ConvergedStateCovariance(Output):
 class AEstimator(AComputer):
     """Abstract class for a state estimator
 
-    Implement the method **updateAllOutput** to make it concrete
+    Implement the method **compute_outputs** to make it concrete
 
     The input name of the element are **command** and **measurement**
     The outputs of the computer are **state** and **output**
@@ -229,7 +229,7 @@ class AKalmanFilter(AEstimator):
         otp.setInitialState(matK0)
 
     @abstractmethod
-    def A(self, frame: Frame) -> np.array:
+    def A(self, t1: float, t2: float) -> np.array:
         """(n x n) State (or system) matrix
 
         Args:
@@ -240,7 +240,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def B(self, frame: Frame) -> np.array:
+    def B(self, t1: float, t2: float) -> np.array:
         """(n x m) Input matrix
 
         Args:
@@ -251,7 +251,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def C(self, frame: Frame) -> np.array:
+    def C(self, t: float) -> np.array:
         """(p x n) Output matrix
 
         Args:
@@ -262,7 +262,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def D(self, frame: Frame) -> np.array:
+    def D(self, t: float) -> np.array:
         """(p x m) Feedthrough (or feedforward) matrix
 
         Args:
@@ -273,7 +273,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def Q(self, frame: Frame) -> np.array:
+    def Q(self, t: float) -> np.array:
         """(n x n) Gaussian noise covariance for the state vector
 
         Args:
@@ -284,7 +284,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def R(self, frame: Frame) -> np.array:
+    def R(self, t: float) -> np.array:
         """(n x n) Gaussian noise covariance for the measurement vector
 
         Args:
@@ -294,46 +294,54 @@ class AKalmanFilter(AEstimator):
         """
         pass
 
-    def _prediction(self, xest: np.array, P: np.array, u: np.array, frame: Frame):
-        if np.abs(frame.getTimeStep()) < 1e-9:
-            return xest.copy(), self.C(frame) @ xest + self.D(frame) @ u, P.copy()
+    def _prediction(
+        self, xest: np.array, P: np.array, u: np.array, t1: float, t2: float
+    ):
+        if np.abs(t2 - t1) < 1e-9:
+            return xest.copy(), self.C(t2) @ xest + self.D(t2) @ u, P.copy()
 
-        xest_pred = self.A(frame) @ xest + self.B(frame) @ u
-        meas_pred = self.C(frame) @ xest_pred + self.D(frame) @ u
-        P_pred = self.A(frame) @ P @ np.transpose(self.A(frame)) + self.Q(frame)
+        xest_pred = self.A(t1, t2) @ xest + self.B(t1, t2) @ u
+        meas_pred = self.C(t2) @ xest_pred + self.D(t2) @ u
+        P_pred = self.A(t1, t2) @ P @ np.transpose(self.A(t1, t2)) + self.Q(t2)
 
         return xest_pred, meas_pred, P_pred
 
-    def _update(self, xest_pred, meas_pred, P_pred, u, meas, frame):
+    def _update(self, xest_pred, meas_pred, P_pred, u, meas, t1, t2):
         y = meas - meas_pred
 
-        S = self.C(frame) @ P_pred @ np.transpose(self.C(frame)) + self.R(frame)
-        K = P_pred @ np.transpose(self.C(frame)) @ lin.inv(S)
+        S = self.C(t2) @ P_pred @ np.transpose(self.C(t2)) + self.R(t2)
+        K = P_pred @ np.transpose(self.C(t2)) @ lin.inv(S)
 
         xest = xest_pred + K @ y
-        P = (np.eye(len(xest_pred)) - K @ self.C(frame)) @ P_pred
+        P = (np.eye(len(xest_pred)) - K @ self.C(t2)) @ P_pred
 
         return xest, K, P
 
-    def updateAllOutput(self, frame: Frame):
-        u = self.getDataForInput(frame, name="command")
-        meas = self.getDataForInput(frame, name="measurement")
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        command: np.array,
+        measurement: np.array,
+        state: np.array,
+        output: np.array,
+        statecov: np.array,
+        matK: np.array,
+    ) -> dict:
+        xest_pred, meas_pred, P_pred = self._prediction(
+            state, statecov, command, t1, t2
+        )
+        xest, K, P = self._update(
+            xest_pred, meas_pred, P_pred, command, measurement, t1, t2
+        )
 
-        state = self.getOutputByName("state")
-        output = self.getOutputByName("output")
-        matK = self.getOutputByName("matK")
-        statecov = self.getOutputByName("statecov")
+        outputs = {}
+        outputs["output"] = meas_pred
+        outputs["statecov"] = P
+        outputs["matK"] = K
+        outputs["state"] = xest
 
-        xest = state.getDataForFrame(frame)
-        P = statecov.getDataForFrame(frame)
-
-        xest_pred, meas_pred, P_pred = self._prediction(xest, P, u, frame)
-        xest, K, P = self._update(xest_pred, meas_pred, P_pred, u, meas, frame)
-
-        output.setData(meas_pred)
-        statecov.setData(P)
-        matK.setData(K)
-        state.setData(xest)
+        return outputs
 
 
 class TimeInvariantKalmanFilter(AKalmanFilter):
@@ -444,7 +452,7 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         Ad, Bd, Cd, Dd, dt = cont2discrete(sys, dt, method=method, alpha=alpha)
         return Ad, Bd, Cd, Dd
 
-    def A(self, frame: Frame) -> np.array:
+    def A(self, t1: float, t2: float) -> np.array:
         """(n x n) State (or system) matrix
 
         Args:
@@ -452,11 +460,11 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
             Time frame
 
         """
-        dt = frame.getTimeStep()
+        dt = t2 - t1
         Ad, Bd, Cd, Dd = self.discretize(dt)
         return Ad
 
-    def B(self, frame: Frame) -> np.array:
+    def B(self, t1: float, t2: float) -> np.array:
         """(n x m) Input matrix
 
         Args:
@@ -464,11 +472,11 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
             Time frame
 
         """
-        dt = frame.getTimeStep()
+        dt = t2 - t1
         Ad, Bd, Cd, Dd = self.discretize(dt)
         return Bd
 
-    def C(self, frame: Frame) -> np.array:
+    def C(self, t: float) -> np.array:
         """(p x n) Output matrix
 
         Args:
@@ -478,7 +486,7 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         """
         return self.matC
 
-    def D(self, frame: Frame) -> np.array:
+    def D(self, test_ss_kal: float) -> np.array:
         """(p x m) Feedthrough (or feedforward) matrix
 
         Args:
@@ -488,7 +496,7 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         """
         return self.matD
 
-    def Q(self, frame: Frame) -> np.array:
+    def Q(self, t: float) -> np.array:
         """(n x n) Gaussian noise covariance for the state vector
 
         Args:
@@ -498,7 +506,7 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         """
         return self.matQ
 
-    def R(self, frame: Frame) -> np.array:
+    def R(self, t: float) -> np.array:
         """(n x n) Gaussian noise covariance for the measurement vector
 
         Args:
@@ -604,27 +612,30 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         )
         self.replaceOutput(old_name="matK", new_output=matK)
 
-    def updateAllOutput(self, frame: Frame):
-        dt = frame.getTimeStep()
-        assert np.abs(dt) / self.dt < 1e-5 or np.abs(dt - self.dt) / self.dt < 1e-5
-        u = self.getDataForInput(frame, name="command")
-        meas = self.getDataForInput(frame, name="measurement")
-
-        state = self.getOutputByName("state")
-        output = self.getOutputByName("output")
-        matK = self.getOutputByName("matK")
-        statecov = self.getOutputByName("statecov")
-
-        xest = state.getDataForFrame(frame)
-        P = statecov.getDataForFrame(frame)
-        K = matK.getDataForFrame(frame)
-
-        xest_pred, meas_pred, P_pred = self._prediction(xest, P, u, frame)
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        command: np.array,
+        measurement: np.array,
+        state: np.array,
+        output: np.array,
+        statecov: np.array,
+        matK: np.array,
+    ) -> dict:
+        xest_pred, meas_pred, P_pred = self._prediction(
+            state, statecov, command, t1, t2
+        )
 
         # Modified update with converged gain matrix
-        y = meas - meas_pred
-        xest = xest_pred + K @ y
+        y = measurement - meas_pred
+        xest = xest_pred + matK @ y
         # [END]Modified update with converged gain matrix
 
-        state.setData(xest)
-        output.setData(meas_pred)
+        outputs = {}
+        outputs["output"] = meas_pred
+        outputs["statecov"] = statecov.copy()
+        outputs["matK"] = matK.copy()
+        outputs["state"] = xest
+
+        return outputs

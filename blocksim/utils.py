@@ -95,6 +95,11 @@ def assignVector(
         logger.error(txt)
         raise InvalidAssignedVector(txt)
 
+    elif not (dtype == np.complex64 or dtype == np.complex128) and (
+        v.dtype == np.complex64 or v.dtype == np.complex128
+    ):
+        raise WrongDataType
+
     else:
         return np.array(v.copy(), dtype=dtype)
 

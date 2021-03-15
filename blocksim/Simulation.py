@@ -225,13 +225,13 @@ class Simulation(object):
             If the data cannot be found
 
         Examples:
-          >>> el = DummyComputer('el')
+          >>> el = DummyComputer('el', with_input=False)
           >>> sim = Simulation()
           >>> sim.addComputer(el)
           >>> frame = Frame()
-          >>> sim.getComputerOutputByName(frame, 'el.out')
+          >>> sim.getComputerOutputByName(frame, 'el.xout')
           array([0]...
-          >>> sim.getComputerOutputByName(frame, 'el.out[0]')
+          >>> sim.getComputerOutputByName(frame, 'el.xout[0]')
           0
 
         """

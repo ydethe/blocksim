@@ -11,7 +11,7 @@ __all__ = ["AController", "PIDController"]
 class AController(AComputer):
     """Abstract class for a scalar controller
 
-    Implement the method **updateAllOutput** to make it concrete
+    Implement the method **compute_outputs** to make it concrete
 
     The inputs of the computer are **estimation** and **setpoint**
     The output of the computer is **command**
@@ -63,22 +63,28 @@ class PIDController(AController):
         self.setInitialStateForOutput(np.array([0]), "integral")
         self.__coeffs = coeffs
 
-    def updateAllOutput(self, frame: Frame):
-        stp = self.getInputByName("setpoint")
-        state = self.getInputByName("estimation")
-
-        cmd = self.getOutputByName("command")
-        itg = self.getOutputByName("integral")
-
-        (c,) = stp.getDataForFrame(frame)
-        data = state.getDataForFrame(frame)
-        x = data[0]
-        dx = data[1]
-        (ix,) = itg.getDataForFrame(frame)
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        integral: np.array,
+        setpoint: np.array,
+        estimation: np.array,
+        command: np.array,
+    ) -> dict:
+        (ix,) = integral
+        x = estimation[0]
+        dx = estimation[1]
+        (c,) = setpoint
 
         P, I, D = self.__coeffs
         u = P * (x - c) + I * ix + D * dx
 
-        dt = frame.getTimeStep()
-        itg.setData(np.array([ix + dt * (x - c)]))
-        cmd.setData(-np.array([u]))
+        dt = t2 - t1
+        ix = np.array([ix + dt * (x - c)])
+
+        outputs = {}
+        outputs["command"] = -np.array([u])
+        outputs["integral"] = ix
+
+        return outputs

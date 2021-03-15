@@ -105,40 +105,34 @@ class ASystem(AComputer):
         """
         return
 
-    def updateAllOutput(self, frame: Frame):
-        u = self.getDataForInput(frame, name="command")
-        y0 = self.getDataForOutput(frame, name="state")
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        command: np.array,
+        state: np.array,
+    ) -> dict:
+        self.__integ.set_initial_value(state, t1).set_f_params(command).set_jac_params(
+            command
+        )
 
-        t0 = frame.getStartTimeStamp()
-        t1 = frame.getStopTimeStamp()
-
-        self.__integ.set_initial_value(y0, t0).set_f_params(u).set_jac_params(u)
-
-        if frame.getTimeStep() != 0:
+        if t1 != t2:
             try:
-
-                y0 = self.__integ.integrate(t1)
-
+                state = self.__integ.integrate(t2)
             except Exception as e:
-
                 print(72 * "=")
-
                 print("When updating '%s'" % self.getName())
-
-                print("t", t0)
-
-                print("x", y0)
-
-                print("u", u)
-
-                print("dx", self.transition(t0, y0, u))
-
+                print("t", t1)
+                print("x", state)
+                print("u", command)
+                print("dx", self.transition(t1, state, command))
                 print(72 * "=")
-
                 raise e
 
-        otp = self.getOutputByName("state")
-        otp.setData(y0)
+        outputs = {}
+        outputs["state"] = state
+
+        return outputs
 
 
 class LTISystem(ASystem):
@@ -432,16 +426,14 @@ class G6DOFSystem(ASystem):
         dX = np.array([vx, vy, vz, dvx, dvy, dvz, dqw, dqx, dqy, dqz, dwx, dwy, dwz])
         return dX
 
-    def updateAllOutput(self, frame: Frame):
-        """Updates the state of the element
-
-        Called at each simulation step
-
-        Args:
-          frame
-            The time frame
-
-        """
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        command: np.array,
+        state: np.array,
+        euler: np.array,
+    ) -> dict:
         # Crouch-Grossman method CG4
         # http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf
         s = 5
@@ -469,24 +461,18 @@ class G6DOFSystem(ASystem):
         a[4, 3] = -1.1092979392113565
         c[4] = 0.8768903263420429
 
-        u = self.getDataForInput(frame, name="command")
-        x = self.getDataForOutput(frame, name="state")
-        otp = self.getOutputByName("state")
-        euler = self.getOutputByName("euler")
-        ns = otp.getDataShape()[0]
+        ns = state.shape[0]
 
-        t1 = frame.getStartTimeStamp()
-        t2 = frame.getStopTimeStamp()
         h = t2 - t1
 
         k = np.zeros((ns, s))
-        q = x[6:10]
-        w = x[10:13]
+        q = state[6:10]
+        w = state[10:13]
         for i in range(s):
             dx = np.zeros(ns)
             for j in range(i):
                 dx += a[i, j] * k[:, j]
-            k[:, i] = h * self.transition(t1 + c[i] * h, x + dx, u)
+            k[:, i] = h * self.transition(t1 + c[i] * h, state + dx, command)
 
             wk = w + c[i] * k[10:13, 0]
             Nwk = lin.norm(wk)
@@ -509,11 +495,15 @@ class G6DOFSystem(ASystem):
         if np.abs(Nq2 - 1) > self.max_q_denorm:
             raise DenormalizedQuaternion(self.getName(), q)
 
-        res = x.copy()
+        res = state.copy()
         for i in range(s):
             res += b[i] * k[:, i]
         res[6:10] = q
 
-        otp.setData(res)
         euler_att = np.array(quat_to_euler(*res[6:10]))
-        euler.setData(euler_att)
+
+        outputs = {}
+        outputs["euler"] = euler_att
+        outputs["state"] = res
+
+        return outputs

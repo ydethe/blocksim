@@ -2,6 +2,14 @@ import numpy as np
 import scipy.linalg as lin
 
 
+class WrongDataType(Exception):
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return "Trying to affect a complex vector into a real or integer vector"
+
+
 class IncompatibleShapes(Exception):
     def __init__(self, src_name: str, src_shape, dst_name: str, dst_shape):
         self.src_name = src_name

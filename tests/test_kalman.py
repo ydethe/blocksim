@@ -157,6 +157,8 @@ class TestKalman(TestBase):
         frame = sim.simulate(tps, progress_bar=False)
 
         self.log = sim.getLogger()
+        kal_bias = self.log.getValue("kal_state_b")
+        self.assertAlmostEqual(np.abs(kal_bias[-1] - bias), 0, delta=5e-3)
 
         return self.plotVerif(
             "test_ss_kal",
