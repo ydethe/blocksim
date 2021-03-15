@@ -13,9 +13,10 @@ from TestBase import TestBase
 from blocksim.core.Node import Frame
 from blocksim.blocks.SetPoint import Step
 from blocksim.blocks.System import LTISystem
-from blocksim.blocks.Controller import PIDController
+from blocksim.blocks.Controller import PIDController, LQRegulator
 from blocksim.blocks.Estimator import SteadyStateKalmanFilter, TimeInvariantKalmanFilter
 from blocksim.blocks.Sensors import LinearSensors
+from blocksim.blocks.Route import Split
 from blocksim.Simulation import Simulation
 
 
@@ -128,21 +129,25 @@ class TestKalman(TestBase):
         cpt.setCovariance(np.eye(1) / 200)
         cpt.setMean(np.array([bias]))
 
-        a = 8
-        P = -k + 3 * a ** 2 * m
-        I = a ** 3 * m
-        D = 3 * a * m
-        ctl = PIDController(
-            "ctl", shape_estimation=(3,), snames=["u"], coeffs=(P, I, D)
-        )
+        ctl = LQRegulator("ctl", shape_estimation=(2,), snames=["u"])
+        ctl.A = sys.A
+        ctl.B = sys.B
+        ctl.C = kal.matC[:, :2]
+        ctl.D = kal.matD
+        ctl.computeGain(Q=np.eye(2) / 10000, R=np.eye(1) / 100)
 
         stp = Step(name="stp", snames=["c"], cons=np.array([1]))
+
+        split = Split(
+            "split", signal_shape=(3,), snames=["x", "v"], selected_input=[0, 1]
+        )
 
         sim = Simulation()
         sim.addComputer(sys)
         sim.addComputer(ctl)
         sim.addComputer(cpt)
         sim.addComputer(kal)
+        sim.addComputer(split)
         sim.addComputer(stp)
 
         sim.connect("stp.setpoint", "ctl.setpoint")
@@ -151,7 +156,8 @@ class TestKalman(TestBase):
         sim.connect("ctl.command", "cpt.command")
         sim.connect("cpt.measurement", "kal.measurement")
         sim.connect("ctl.command", "kal.command")
-        sim.connect("kal.state", "ctl.estimation")
+        sim.connect("kal.state", "split.signal")
+        sim.connect("split.split", "ctl.estimation")
 
         tps = np.arange(0, 4, dt)
         frame = sim.simulate(tps, progress_bar=False)

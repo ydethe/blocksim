@@ -122,7 +122,8 @@ class Split(AComputer):
     """
     Splits one signal into n
 
-    The input of the element is *in_signal*
+    The input of the element is *signal*
+    The output of the element is *split*
 
     Args:
       name
@@ -246,8 +247,6 @@ class Multiplier(AComputer):
              [2., 2.]]...
 
     """
-
-    __slots__ = []
 
     def __init__(
         self,
