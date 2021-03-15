@@ -10,6 +10,7 @@ from scipy.signal import firwin, fftconvolve
 
 from .exceptions import *
 from .utils import deg, rad
+from .dsp.DSPSignal import DSPSignal
 
 
 __all__ = ["Logger"]
@@ -305,6 +306,30 @@ class Logger(object):
         foo_func = FunctionType(foo_code.co_consts[0], globals(), "__tmp")
 
         return foo_func(self)
+
+    def getSignal(self, name: str) -> DSPSignal:
+        """Get the value of a logged variable
+        The argument can be an expression. It can combine several variables
+        numpy functions can be used with the module name 'np': for example : np.cos
+
+        Args:
+          name
+            Name or expression
+
+        Returns:
+          A :class:`blocksim.dsp.DSPSignal.DSPSignal`
+
+        Examples:
+          >>> log = Logger()
+          >>> _ = [log.log('t',a) for a in np.linspace(0,2*np.pi,200)]
+          >>> sig = log.getSignal('np.cos(t)**2 + np.sin(t)**2')
+          >>> np.max(np.abs(sig.y_serie-1)) < 1e-15
+          True
+
+        """
+        tps = self.getValue("t")
+        val = self.getValue(name)
+        return DSPSignal.fromTimeAndSamples(name=name, tps=tps, y_serie=val)
 
     def getFilteredValue(
         self, name: str, ntaps: int, cutoff: float, window: str = "hamming"

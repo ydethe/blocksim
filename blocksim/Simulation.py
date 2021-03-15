@@ -110,7 +110,7 @@ class Simulation(object):
             Time frame
 
         """
-        t = frame.getStartTimeStamp()
+        t = frame.getStopTimeStamp()
         self.__logger.log(name="t", val=t)
 
         # Controllers shall be updated last

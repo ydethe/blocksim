@@ -7,6 +7,7 @@ from scipy.interpolate import interp1d
 from ..core.Frame import Frame
 from ..core.Node import AComputer
 
+
 __all__ = [
     "ASetPoint",
     "InterpolatedSetPoint",

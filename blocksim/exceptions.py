@@ -3,11 +3,11 @@ import scipy.linalg as lin
 
 
 class WrongDataType(Exception):
-    def __init__(self):
-        pass
+    def __init__(self, txt):
+        self.txt = txt
 
     def __str__(self):
-        return "Trying to affect a complex vector into a real or integer vector"
+        return self.txt
 
 
 class IncompatibleShapes(Exception):

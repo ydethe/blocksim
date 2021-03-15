@@ -98,7 +98,11 @@ def assignVector(
     elif not (dtype == np.complex64 or dtype == np.complex128) and (
         v.dtype == np.complex64 or v.dtype == np.complex128
     ):
-        raise WrongDataType
+        txt = "Element '%s' : Argument '%s' - trying to affect a complex vector into a real or integer vector" % (
+            dst_name,
+            src_name,
+        )
+        raise WrongDataType(txt)
 
     else:
         return np.array(v.copy(), dtype=dtype)
