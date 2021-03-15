@@ -250,8 +250,4 @@ class Simulation(object):
         else:
             return data[idx]
 
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()
+            

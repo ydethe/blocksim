@@ -245,9 +245,5 @@ def createFigureFromSpec(spec, log, fig=None):
     fig.tight_layout()
 
     return fig
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()
+    
+    

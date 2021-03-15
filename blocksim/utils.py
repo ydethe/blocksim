@@ -321,9 +321,9 @@ def euler_to_quat(roll: float, pitch: float, yaw: float) -> Iterable[float]:
       >>> qr,qi,qj,qk = euler_to_quat(10.*np.pi/180., 20.*np.pi/180., 30.*np.pi/180.)
       >>> r,p,y = quat_to_euler(qr,qi,qj,qk)
       >>> r*180/np.pi # doctest: +ELLIPSIS
-      10.0
+      10.0...
       >>> p*180/np.pi # doctest: +ELLIPSIS
-      20.0
+      20.0...
       >>> y*180/np.pi # doctest: +ELLIPSIS
       29.999...
 
