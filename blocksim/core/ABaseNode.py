@@ -19,6 +19,8 @@ class ABaseNode(metaclass=ABCMeta):
 
     """
 
+    __slots__ = ["__name", "__id", "__current_frame"]
+
     def __init__(self, name: str):
         self.__name = name
         self.__id = uuid4()

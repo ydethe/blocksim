@@ -41,12 +41,12 @@ class TestPVTOL(TestBase):
             ],
         )
         self.sys.setInitialStateForOutput((np.random.rand(6) - 0.5) * 20, "state")
-        self.sys.A = np.zeros((6, 6))
-        self.sys.A[0:3, 3:6] = np.eye(3)
-        self.sys.B = np.zeros((6, 3))
-        self.sys.B[3:6, :] = np.eye(3)
-        self.sys.m = 0.458
-        self.sys.g = 9.81
+        self.sys.matA = np.zeros((6, 6))
+        self.sys.matA[0:3, 3:6] = np.eye(3)
+        self.sys.matB = np.zeros((6, 3))
+        self.sys.matB[3:6, :] = np.eye(3)
+        self.sys.createParameter("m", value=0.458)
+        self.sys.createParameter("g", value=9.81)
 
         self.splt = Split(
             name="split",
@@ -62,10 +62,14 @@ class TestPVTOL(TestBase):
         self.lqr = LQRegulator(
             "lqr", shape_setpoint=(4,), shape_estimation=(3,), snames=["fx", "fy", "fz"]
         )
-        self.lqr.C = np.zeros((3, 6))
-        self.lqr.C[:, 0:3] = np.eye(3)
-        self.lqr.D = np.zeros((3, 3))
-        self.lqr.computeGain(np.eye(6), np.eye(3) * 5, self.sys)
+        self.lqr.matA = self.sys.matA
+        self.lqr.matB = self.sys.matB
+        self.lqr.matC = np.zeros((3, 6))
+        self.lqr.matC[:, 0:3] = np.eye(3)
+        self.lqr.matD = np.zeros((3, 3))
+        self.lqr.matQ = np.eye(6)
+        self.lqr.matR = np.eye(3) * 5
+        self.lqr.computeGain()
 
         self.ctl = VTOLPilot(self.sys, self.lqr, complex_quad=False)
 

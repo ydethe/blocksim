@@ -46,6 +46,8 @@ class ASensors(AComputer):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self, name: str, shape_state: tuple, snames: Iterable[str], dtype=np.float64
     ):
@@ -86,7 +88,7 @@ class ProportionalSensors(ASensors):
     * mean : Mean of the gaussian noise. Dimension (n,1)
     * cov : Covariance of the gaussian noise. Dimension (n,n)
     * cho : Cholesky decomposition of cov, computed after a call to *updateAllOutput*. Dimension (n,n)
-    * C : Matrix which turns a state into a noiseless measurement
+    * matC : Matrix which turns a state into a noiseless measurement
 
     Args:
       name
@@ -99,12 +101,15 @@ class ProportionalSensors(ASensors):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self, name: str, shape_state: tuple, snames: Iterable[str], dtype=np.float64
     ):
         ASensors.__init__(
             self, name=name, shape_state=shape_state, snames=snames, dtype=dtype
         )
+        self.createParameter("matC", value=0)
 
     def compute_outputs(
         self,
@@ -113,7 +118,7 @@ class ProportionalSensors(ASensors):
         measurement: np.array,
         state: np.array,
     ) -> dict:
-        meas = self.C @ state
+        meas = self.matC @ state
 
         outputs = {}
         outputs["measurement"] = meas
@@ -140,8 +145,8 @@ class LinearSensors(ASensors):
     * mean : Mean of the gaussian noise. Dimension (n,1)
     * cov : Covariance of the gaussian noise. Dimension (n,n)
     * cho : Cholesky decomposition of cov, computed after a call to *updateAllOutput*. Dimension (n,n)
-    * C : (p x n) Output matrix
-    * D : (p x m) Feedthrough (or feedforward) matrix
+    * matC : (p x n) Output matrix
+    * matD : (p x m) Feedthrough (or feedforward) matrix
 
     Args:
       name
@@ -156,6 +161,8 @@ class LinearSensors(ASensors):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self,
         name: str,
@@ -168,6 +175,8 @@ class LinearSensors(ASensors):
             self, name=name, shape_state=shape_state, snames=snames, dtype=dtype
         )
         self.defineInput("command", shape_command, dtype=dtype)
+        self.createParameter("matC", value=0)
+        self.createParameter("matD", value=0)
 
     def compute_outputs(
         self,
@@ -177,7 +186,7 @@ class LinearSensors(ASensors):
         measurement: np.array,
         state: np.array,
     ) -> dict:
-        meas = self.C @ state + self.D @ command
+        meas = self.matC @ state + self.matD @ command
 
         outputs = {}
         outputs["measurement"] = meas
@@ -200,6 +209,8 @@ class StreamSensors(AComputer):
 
     """
 
+    __slots__ = []
+
     def __init__(self, name: str, strm_data: OrderedDict, dtype=np.float64):
         if not isinstance(strm_data, OrderedDict):
             raise UnorderedDict(self.__class__)
@@ -209,8 +220,7 @@ class StreamSensors(AComputer):
         snames = list(strm_data.keys())[1:]
         otp = self.defineOutput("measurement", snames=snames, dtype=dtype)
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=otp.getDataType()))
-
-        self.strm_data = strm_data
+        self.createParameter("strm_data", value=strm_data)
 
     def updateAllOutput(self, frame: Frame):
         t2 = frame.getStopTimeStamp()
@@ -253,7 +263,7 @@ class StreamCSVSensors(StreamSensors):
 
         StreamSensors.__init__(self, name, strm_data, dtype=dtype)
 
-        self.pth = pth
+        self.createParameter("pth", value=pth)
 
     def resetCallback(self, frame: Frame):
         super().resetCallback(frame)

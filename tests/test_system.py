@@ -23,8 +23,8 @@ class TestSystem(TestBase):
         k = 10
         f = 5
         m = 1
-        sys.A = np.array([[0, 1], [-k / m, -f / m]])
-        sys.B = np.array([[0, 1 / m]]).T
+        sys.matA = np.array([[0, 1], [-k / m, -f / m]])
+        sys.matB = np.array([[0, 1 / m]]).T
         sys.setInitialStateForOutput(np.array([1, 0]), "state")
 
         sim = Simulation()

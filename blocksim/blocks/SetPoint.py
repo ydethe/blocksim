@@ -37,6 +37,8 @@ class ASetPoint(AComputer):
 
     """
 
+    __slots__ = []
+
     def __init__(self, name: str, snames: Iterable[str], dtype):
         AComputer.__init__(self, name)
         self.defineOutput("setpoint", snames=snames, dtype=dtype)
@@ -58,6 +60,8 @@ class Step(ASetPoint):
         Amplitude of the steps
 
     """
+
+    __slots__ = []
 
     def __init__(self, name: str, snames: Iterable[str], cons: np.array):
         dtype = cons.dtype
@@ -96,11 +100,13 @@ class InterpolatedSetPoint(ASetPoint):
 
     """
 
+    __slots__ = []
+
     def __init__(self, name: str, snames: Iterable[str], dtype=np.float64):
         ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
         otp = self.getOutputByName("setpoint")
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=dtype))
-        self.interpolators = dict()
+        self.createParameter("interpolators", value=dict())
 
     def evalState(self, t: float) -> np.array:
         otp = self.getOutputByName("setpoint")
@@ -195,14 +201,16 @@ class Sinusoid(ASetPoint):
 
     """
 
+    __slots__ = []
+
     def __init__(self, name: str, snames: Iterable[str], dtype=np.float64):
         ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
         otp = self.getOutputByName("setpoint")
         shape = otp.getDataShape()
         otp.setInitialState(np.zeros(shape), dtype=dtype)
-        self.amp = np.empty(shape)
-        self.freq = np.empty(shape)
-        self.pha = np.empty(shape)
+        self.createParameter("amp", value=np.empty(shape))
+        self.createParameter("freq", value=np.empty(shape))
+        self.createParameter("pha", value=np.empty(shape))
 
     def evalState(self, t: float) -> np.array:
         otp = self.getOutputByName("setpoint")
@@ -258,12 +266,14 @@ class Ramp(ASetPoint):
 
     """
 
+    __slots__ = []
+
     def __init__(self, name: str, snames: Iterable[str], slopes: np.array):
         dtype = slopes.dtype
         ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
         otp = self.getOutputByName("setpoint")
-        self.slopes = slopes
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=dtype))
+        self.createParameter("slopes", value=slopes)
 
     def compute_outputs(
         self,
@@ -316,6 +326,8 @@ class Rectangular(ASetPoint):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self,
         name: str,
@@ -323,6 +335,7 @@ class Rectangular(ASetPoint):
         dtype=np.float64,
     ):
         ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
+        self.createParameter("doors", value=[])
 
     def evalState(self, t: float) -> np.array:
         otp = self.getOutputByName("setpoint")

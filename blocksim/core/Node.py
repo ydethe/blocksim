@@ -30,6 +30,8 @@ class Input(ABaseNode):
 
     """
 
+    __slots__ = ["__output", "__shape", "__dtype"]
+
     def __init__(self, name: str, shape: tuple, dtype):
         ABaseNode.__init__(self, name)
         self.__output = None
@@ -106,6 +108,15 @@ class Output(ABaseNode):
         Data type (typically np.float64 or np.complex128)
 
     """
+
+    __slots__ = [
+        "__computer",
+        "__shape",
+        "__dtype",
+        "__data",
+        "__snames",
+        "__initial_state",
+    ]
 
     def __init__(self, name: str, snames: Iterable[str], dtype=np.float64):
         ABaseNode.__init__(self, name)
@@ -233,6 +244,9 @@ class Output(ABaseNode):
 
 
 class AWGNOutput(Output):
+
+    __slots__ = ["mean", "cov", "cho"]
+
     def resetCallback(self, frame: Frame):
         """Resets the element internal state to zero."""
         np.random.seed(1253767)
@@ -295,6 +309,8 @@ class AComputer(ABaseNode):
       >>> e = DummyComputer(name='tst')
 
     """
+
+    __slots__ = ["__inputs", "__outputs", "__parameters"]
 
     def __init__(self, name: str):
         ABaseNode.__init__(self, name)
@@ -707,6 +723,9 @@ class AComputer(ABaseNode):
 
 
 class DummyComputer(AComputer):
+
+    __slots__ = []
+
     def __init__(self, name: str, with_input: bool = True):
         AComputer.__init__(self, name)
         if with_input:

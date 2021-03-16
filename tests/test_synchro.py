@@ -25,8 +25,8 @@ class TestSynchro(TestBase):
         m = 1.0  # Mass
         k = (2 * np.pi) ** 2  # Spring rate
         sys = LTISystem("sys", shape_command=1, snames_state=["x", "v"])
-        sys.A = np.array([[0, 1], [-k / m, 0]])
-        sys.B = np.array([[0, 1 / m]]).T
+        sys.matA = np.array([[0, 1], [-k / m, 0]])
+        sys.matB = np.array([[0, 1 / m]]).T
         sys.setInitialStateForOutput(np.array([-1.0, 0.0]), "state")
 
         # =========================
@@ -42,8 +42,8 @@ class TestSynchro(TestBase):
         )
         cpt.setMean(np.zeros(2))
         cpt.setCovariance(np.zeros((2, 2)))
-        cpt.C = np.eye(2)
-        cpt.D = np.zeros((2, 1))
+        cpt.matC = np.eye(2)
+        cpt.matD = np.zeros((2, 1))
 
         # =========================
         # Definition of the simulation graph

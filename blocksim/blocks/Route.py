@@ -30,6 +30,8 @@ class IQExtract(AComputer):
 
     """
 
+    __slots__ = []
+
     def __init__(self, name: str):
         AComputer.__init__(self, name)
         self.defineInput("signal", shape=(1,), dtype=np.complex128)
@@ -76,6 +78,8 @@ class Clip(AComputer):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self,
         name: str,
@@ -90,7 +94,7 @@ class Clip(AComputer):
         )
         self.defineInput("signal", shape=signal_shape, dtype=dtype)
         self.defineOutput("clipped", snames=snames, dtype=dtype)
-        self.clipping_values = clipping_values
+        self.createParameter("clipping_values", value=clipping_values)
 
     def compute_outputs(
         self, t1: float, t2: float, signal: np.array, clipped: np.array
@@ -144,6 +148,8 @@ class Split(AComputer):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self,
         name: str,
@@ -155,7 +161,7 @@ class Split(AComputer):
         AComputer.__init__(self, name)
         self.defineInput("signal", shape=signal_shape, dtype=dtype)
         self.defineOutput("split", snames=snames, dtype=dtype)
-        self.selected_input = list(selected_input)
+        self.createParameter("selected_input", value=list(selected_input))
 
     def compute_outputs(
         self,
@@ -194,6 +200,8 @@ class Group(AComputer):
       array([ 2., -1.]...
 
     """
+
+    __slots__ = []
 
     def __init__(
         self,
@@ -248,6 +256,8 @@ class Multiplier(AComputer):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self,
         name: str,
@@ -255,7 +265,7 @@ class Multiplier(AComputer):
         dtype=np.float64,
     ):
         AComputer.__init__(self, name)
-        self.coeff = np.array(coeff, dtype=dtype)
+        self.createParameter("coeff", value=np.array(coeff, dtype=dtype))
         ns = self.coeff.shape
         self.defineInput("signal", shape=ns, dtype=dtype)
 

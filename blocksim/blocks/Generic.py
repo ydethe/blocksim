@@ -5,6 +5,9 @@ import numpy as np
 from blocksim.core.Node import AComputer
 
 
+__all__ = ["GenericComputer"]
+
+
 class GenericComputer(AComputer):
     """Generic computer, that uses a vector function to transform an input
 
@@ -29,6 +32,8 @@ class GenericComputer(AComputer):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self,
         name: str,
@@ -45,7 +50,7 @@ class GenericComputer(AComputer):
         self.setInitialStateForOutput(
             np.zeros(otp.getDataShape(), dtype=dtype), output_name="xout"
         )
-        self.callable = callable
+        self.createParameter("callable", value=callable)
 
     def compute_outputs(
         self,

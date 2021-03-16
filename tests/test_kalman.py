@@ -29,8 +29,8 @@ class TestKalman(TestBase):
         dt = 0.05
 
         sys = LTISystem("sys", shape_command=(1,), snames_state=["x", "v"])
-        sys.A = np.array([[0, 1], [-k / m, -f / m]])
-        sys.B = np.array([[0, 1 / m]]).T
+        sys.matA = np.array([[0, 1], [-k / m, -f / m]])
+        sys.matB = np.array([[0, 1 / m]]).T
         sys.setInitialStateForOutput(np.array([-1.0, 0.0]), "state")
 
         kal = SteadyStateKalmanFilter(
@@ -41,16 +41,16 @@ class TestKalman(TestBase):
             snames_state=["x", "v"],
             snames_output=["x"],
         )
-        kal.matA = sys.A
-        kal.matB = sys.B
+        kal.matA = sys.matA
+        kal.matB = sys.matB
         kal.matC = np.array([[1, 0]])
         kal.matD = np.zeros((1, 1))
         kal.matQ = np.eye(2) / 10000
         kal.matR = np.eye(1) / 100
 
         cpt = LinearSensors("cpt", shape_state=(2,), shape_command=(1,), snames=["x"])
-        cpt.C = np.array([1, 0])
-        cpt.D = np.zeros((1, 1))
+        cpt.matC = np.array([1, 0])
+        cpt.matD = np.zeros((1, 1))
         cpt.setCovariance(np.eye(1) / 200)
         cpt.setMean(np.zeros(1))
 
@@ -103,8 +103,8 @@ class TestKalman(TestBase):
         bias = 0.5
 
         sys = LTISystem("sys", shape_command=(1,), snames_state=["x", "v"])
-        sys.A = np.array([[0, 1], [-k / m, -f / m]])
-        sys.B = np.array([[0, 1 / m]]).T
+        sys.matA = np.array([[0, 1], [-k / m, -f / m]])
+        sys.matB = np.array([[0, 1 / m]]).T
         sys.setInitialStateForOutput(np.array([-1.0, 0.0]), "state")
 
         kal = TimeInvariantKalmanFilter(
@@ -115,28 +115,30 @@ class TestKalman(TestBase):
             snames_output=["x"],
         )
         kal.matA = np.zeros((3, 3))
-        kal.matA[:2, :2] = sys.A
+        kal.matA[:2, :2] = sys.matA
         kal.matB = np.zeros((3, 1))
-        kal.matB[:2] = sys.B
+        kal.matB[:2] = sys.matB
         kal.matC = np.array([[1, 0, 1]])
         kal.matD = np.zeros((1, 1))
         kal.matQ = np.eye(3) / 10000
         kal.matR = np.eye(1) / 100
 
         cpt = LinearSensors("cpt", shape_state=(2,), shape_command=(1,), snames=["x"])
-        cpt.C = np.array([1, 0])
-        cpt.D = np.zeros((1, 1))
+        cpt.matC = np.array([1, 0])
+        cpt.matD = np.zeros((1, 1))
         cpt.setCovariance(np.eye(1) / 200)
         cpt.setMean(np.array([bias]))
 
         ctl = LQRegulator(
             "ctl", shape_setpoint=(1,), shape_estimation=(2,), snames=["u"]
         )
-        ctl.A = sys.A
-        ctl.B = sys.B
-        ctl.C = kal.matC[:, :2]
-        ctl.D = kal.matD
-        ctl.computeGain(Q=np.eye(2) / 10000, R=np.eye(1) / 100)
+        ctl.matA = sys.matA
+        ctl.matB = sys.matB
+        ctl.matC = kal.matC[:, :2]
+        ctl.matD = kal.matD
+        ctl.matQ = np.eye(2) / 10000
+        ctl.matR = np.eye(1) / 100
+        ctl.computeGain()
 
         stp = Step(name="stp", snames=["c"], cons=np.array([1]))
 

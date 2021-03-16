@@ -27,6 +27,9 @@ __all__ = [
 
 
 class ConvergedGainMatrix(Output):
+
+    __slots__ = []
+
     def __init__(self, name: str, state: Output, meas: Input, dtype):
         ny = state.getDataShape()[0]
         nx = meas.getDataShape()[0]
@@ -61,6 +64,9 @@ class ConvergedGainMatrix(Output):
 
 
 class ConvergedStateCovariance(Output):
+
+    __slots__ = []
+
     def __init__(self, name: str, state: Output, dtype):
         nx = state.getDataShape()[0]
         state_names = state.getScalarNames()
@@ -121,6 +127,8 @@ class AEstimator(AComputer):
         Its shape defines the shape of the data
 
     """
+
+    __slots__ = []
 
     def __init__(
         self,
@@ -184,6 +192,8 @@ class AKalmanFilter(AEstimator):
         Its shape defines the shape of the data
 
     """
+
+    __slots__ = []
 
     def __init__(
         self,
@@ -399,6 +409,8 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self,
         name: str,
@@ -417,6 +429,12 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
             snames_output=snames_output,
             dtype=dtype,
         )
+        self.createParameter("matA", value=0)
+        self.createParameter("matB", value=0)
+        self.createParameter("matC", value=0)
+        self.createParameter("matD", value=0)
+        self.createParameter("matQ", value=0)
+        self.createParameter("matR", value=0)
 
     @lru_cache(maxsize=None)
     def discretize(
@@ -578,6 +596,8 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self,
         name: str,
@@ -597,7 +617,6 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
             snames_output=snames_output,
             dtype=dtype,
         )
-        self.dt = dt
 
         statecov = ConvergedStateCovariance(
             "statecov", state=self.getOutputByName("state"), dtype=dtype
@@ -611,6 +630,8 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
             dtype=dtype,
         )
         self.replaceOutput(old_name="matK", new_output=matK)
+
+        self.createParameter("dt", value=dt)
 
     def compute_outputs(
         self,

@@ -44,6 +44,8 @@ class ASystem(AComputer):
 
     """
 
+    __slots__ = ["__integ"]
+
     def __init__(
         self,
         name: str,
@@ -145,8 +147,8 @@ class LTISystem(ASystem):
 
     The matrix A and B are parameters that must be defined by the user :
 
-    * A : (n x n) State (or system) matrix
-    * B : (n x m) Input matrix
+    * matA : (n x n) State (or system) matrix
+    * matB : (n x m) Input matrix
 
     with :
 
@@ -168,6 +170,8 @@ class LTISystem(ASystem):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self,
         name: str,
@@ -184,6 +188,8 @@ class LTISystem(ASystem):
             dtype=dtype,
             method=method,
         )
+        self.createParameter("matA", value=0)
+        self.createParameter("matB", value=0)
 
     def getDiscreteMatrices(
         self, dt: float, method: str = "zoh", alpha: float = None
@@ -213,8 +219,8 @@ class LTISystem(ASystem):
           >>> m = 1. # Mass
           >>> k = 40. # Spring rate
           >>> sys = LTISystem('sys', shape_command=1, snames_state=['x','v'])
-          >>> sys.A = np.array([[0,1],[-k/m,0]])
-          >>> sys.B = np.array([[0,1/m]]).T
+          >>> sys.matA = np.array([[0,1],[-k/m,0]])
+          >>> sys.matB = np.array([[0,1/m]]).T
           >>> Kk = 1/m
           >>> Ka = np.sqrt(k/m)
           >>> def A(t1, t2):
@@ -231,7 +237,7 @@ class LTISystem(ASystem):
 
         C = np.zeros((1, n))
         D = np.zeros((1, m))
-        sys = (self.A, self.B, C, D)
+        sys = (self.matA, self.matB, C, D)
         Ad, Bd, _, _, _ = cont2discrete(sys, dt, method, alpha)
         return Ad, Bd
 
@@ -252,7 +258,7 @@ class LTISystem(ASystem):
           The derivative of the state
 
         """
-        dX = self.A @ x + self.B @ u
+        dX = self.matA @ x + self.matB @ u
         return dX
 
     def jacobian(self, t: float, x: np.array, u: np.array) -> np.array:
@@ -273,7 +279,7 @@ class LTISystem(ASystem):
           The jacobian of the transition function with respect to x
 
         """
-        return self.A
+        return self.matA
 
 
 class G6DOFSystem(ASystem):
@@ -320,6 +326,8 @@ class G6DOFSystem(ASystem):
 
     """
 
+    __slots__ = []
+
     def __init__(self, name):
         ASystem.__init__(
             self,
@@ -343,9 +351,6 @@ class G6DOFSystem(ASystem):
             dtype=np.float64,
             method="dop853",
         )
-        self.m = 1
-        self.J = np.eye(3) * 1e-3
-        self.max_q_denorm = 1e-6
         self.defineOutput(
             name="euler", snames=["roll", "pitch", "yaw"], dtype=np.float64
         )
@@ -353,6 +358,10 @@ class G6DOFSystem(ASystem):
             np.array([0, 0, 0, 0, 0, 0, 1.0, 0.0, 0, 0, 0, 0, 0]), output_name="state"
         )
         self.setInitialStateForOutput(np.array([0, 0, 0]), output_name="euler")
+
+        self.createParameter("m", 1)
+        self.createParameter("J", np.eye(3) * 1e-3)
+        self.createParameter("max_q_denorm", 1e-6)
 
     def vecBodyToEarth(self, frame: Frame, x: np.array) -> np.array:
         """Expresses a vector from the body frame to the Earth's frame

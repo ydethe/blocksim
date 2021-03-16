@@ -37,6 +37,8 @@ class AController(AComputer):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self,
         name: str,
@@ -70,6 +72,8 @@ class PIDController(AController):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self, name: str, shape_estimation: tuple, snames: Iterable[str], coeffs: float
     ):
@@ -82,7 +86,10 @@ class PIDController(AController):
         )
         self.defineOutput("integral", snames=["int"], dtype=np.float64)
         self.setInitialStateForOutput(np.array([0]), "integral")
-        self.__coeffs = coeffs
+        (P, I, D) = coeffs
+        self.createParameter("P", value=P)
+        self.createParameter("I", value=I)
+        self.createParameter("D", value=D)
 
     def compute_outputs(
         self,
@@ -98,8 +105,7 @@ class PIDController(AController):
         dx = estimation[1]
         (c,) = setpoint
 
-        P, I, D = self.__coeffs
-        u = P * (x - c) + I * ix + D * dx
+        u = self.P * (x - c) + self.I * ix + self.D * dx
 
         dt = t2 - t1
         ix = np.array([ix + dt * (x - c)])
@@ -140,6 +146,8 @@ class AntiWindupPIDController(AController):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self, name: str, shape_estimation: tuple, snames: Iterable[str], coeffs: float
     ):
@@ -152,7 +160,13 @@ class AntiWindupPIDController(AController):
         )
         self.defineOutput("integral", snames=["usat", "int", "corr"], dtype=np.float64)
         self.setInitialStateForOutput(np.array([0]), "integral")
-        self.__coeffs = coeffs
+        (P, I, D, Umin, Umax, Ks) = coeffs
+        self.createParameter("P", value=P)
+        self.createParameter("I", value=I)
+        self.createParameter("D", value=D)
+        self.createParameter("Umin", value=Umin)
+        self.createParameter("Umax", value=Umax)
+        self.createParameter("Ks", value=Ks)
 
     def compute_outputs(
         self,
@@ -211,6 +225,8 @@ class LQRegulator(AController):
 
     """
 
+    __slots__ = []
+
     def __init__(
         self,
         name: str,
@@ -225,12 +241,20 @@ class LQRegulator(AController):
             shape_estimation=shape_estimation,
             snames=snames,
         )
+        self.createParameter(name="matA", value=0.0)
+        self.createParameter(name="matB", value=0.0)
+        self.createParameter(name="matC", value=0.0)
+        self.createParameter(name="matD", value=0.0)
+        self.createParameter(name="matQ", value=0.0)
+        self.createParameter(name="matR", value=0.0)
+
+        self.createParameter(name="matK", value=0.0)
+        self.createParameter(name="matS", value=0.0)
+        self.createParameter(name="matE", value=0.0)
+        self.createParameter(name="matN", value=0.0)
 
     def computeGain(
         self,
-        Q: np.array = None,
-        R: np.array = None,
-        sys: LTISystem = None,
         precomp: bool = True,
     ):
         """Computes the optimal gain K, and the correct precompensation gain N
@@ -240,25 +264,23 @@ class LQRegulator(AController):
 
         and N is such that the steady-state error is 0
 
+        Needs to have the following parameters set:
+
+        * matA (n x n) State (or system) matrix
+        * matB (n x m) Input matrix
+        * matC (p x n) Output matrix
+        * matD (p x m) Feedthrough (or feedforward) matrix
+        * matQ covariance matrix of model noise
+        * matR covariance matrix of measurement noise
+
         At the end of the call, the following attributes are updated :
 
-        * Q : copy of the given Q matrix
-        * R : copy of the given R matrix
-        * K : optimal gain
-        * S : solution to Riccati equation
-        * E : eigenvalues of the closed loop system
-        * N : precompensation gain
+        * matK : optimal gain
+        * matS : solution to Riccati equation
+        * matE : eigenvalues of the closed loop system
+        * matN : precompensation gain
 
         Args:
-          sys
-            The system you want to control. Must be an instance of :class:`SystemControl.blocks.System.LTISystem`
-            If None, LQRegulator uses the parameters A, B, C and D
-          Q
-            The state weight matrix
-            If None, LQRegulator uses the parameters A, B, C and D
-          R
-            The command weight matrix
-            If None, LQRegulator uses the parameters A, B, C and D
           precomp
             If True, also computes the N matrix such as for a setpoint c,
             the command u = N.c - K.x suppresses the steady-state error.
@@ -268,38 +290,27 @@ class LQRegulator(AController):
 
         control.use_numpy_matrix(flag=False)
 
-        if Q is None:
-            Q = self.Q
-
-        if R is None:
-            R = self.R
-
-        if sys is None:
-            A = self.A
-            B = self.B
-        else:
-            A = sys.A
-            B = sys.B
-
-        C = self.C
-        D = self.D
+        Q = self.matQ
+        R = self.matR
+        A = self.matA
+        B = self.matB
+        C = self.matC
+        D = self.matD
 
         K, S, E = control.lqr(A, B, Q, R)
 
-        self.Q = Q.copy()
-        self.R = R.copy()
-        self.K = K
-        self.S = S
-        self.E = E
+        self.matK = K
+        self.matS = S
+        self.matE = E
 
         if precomp:
             # Computation of the precompensation gain
-            iABK = lin.inv(A - B @ self.K)
-            M = -(C - D @ self.K) @ iABK @ B + D
-            self.N = lin.inv(M)
+            iABK = lin.inv(A - B @ self.matK)
+            M = -(C - D @ self.matK) @ iABK @ B + D
+            self.matN = lin.inv(M)
         else:
             nout = D.shape[0]
-            self.N = np.eye(nout)
+            self.matN = np.eye(nout)
 
     def compute_outputs(
         self,
@@ -309,7 +320,7 @@ class LQRegulator(AController):
         estimation: np.array,
         command: np.array,
     ) -> dict:
-        u = self.N @ setpoint - self.K @ estimation
+        u = self.matN @ setpoint - self.matK @ estimation
 
         outputs = {}
         outputs["command"] = u

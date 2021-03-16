@@ -42,7 +42,7 @@ class VTOLPilot(AController):
     ) -> dict:
         pos_d = setpoint[:3]
         yaw_d = setpoint[3]
-        A0 = self.lqr.N @ pos_d - self.lqr.K @ estimation[:6]
+        A0 = self.lqr.matN @ pos_d - self.lqr.matK @ estimation[:6]
 
         A = A0 + np.array([0, 0, self.sys.g])
         A_cons = lin.norm(A)
