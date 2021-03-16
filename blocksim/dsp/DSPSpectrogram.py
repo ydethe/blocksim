@@ -135,5 +135,3 @@ class DSPSpectrogram(object):
             % (self.__class__.name_of_x_var, x_unit_lbl, self.__class__.unit_of_x_var)
         )
         return ret
-        
-        

@@ -30,7 +30,7 @@ class ASystem(AComputer):
       name
         Name of the system
       shape_command
-        Number of scalars in the data expected by the command
+        Shape of the data expected by the command
       snames_state
         Name of each of the scalar components of the state.
         Its shape defines the shape of the data
@@ -157,7 +157,7 @@ class LTISystem(ASystem):
       name
         Name of the system
       shape_command
-        Number of scalars in the data expected by the command
+        Shape of the data expected by the command
       snames_state
         Name of each of the scalar components of the state.
         Its shape defines the shape of the data

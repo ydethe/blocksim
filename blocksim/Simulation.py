@@ -249,5 +249,3 @@ class Simulation(object):
             return data
         else:
             return data[idx]
-
-            

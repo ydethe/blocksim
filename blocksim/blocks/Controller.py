@@ -27,20 +27,27 @@ class AController(AComputer):
     Args:
       name
         Name of the element
+      shape_setpoint
+        Shape of the setpoint data
       shape_estimation
-        Number of scalars in the estimation data
+        Shape of the estimation data
       snames
         Name of each of the scalar components of the estimation.
         Its shape defines the shape of the data
 
     """
 
-    def __init__(self, name: str, shape_estimation: tuple, snames: Iterable[str]):
+    def __init__(
+        self,
+        name: str,
+        shape_setpoint: tuple,
+        shape_estimation: tuple,
+        snames: Iterable[str],
+    ):
         AComputer.__init__(self, name)
-        self.defineInput("setpoint", shape=1, dtype=np.float64)
+        self.defineInput("setpoint", shape=shape_setpoint, dtype=np.float64)
         self.defineInput("estimation", shape=shape_estimation, dtype=np.float64)
         self.defineOutput("command", snames=snames, dtype=np.float64)
-        self.setInitialStateForOutput(np.array([0]), "command")
 
 
 class PIDController(AController):
@@ -57,7 +64,7 @@ class PIDController(AController):
       name
         Name of the element
       shape_estimation
-        Number of scalars in the data expected by the estimation (> 2)
+        Shape of the data expected by the estimation (> 2)
       coeffs
         Coefficients of the retroaction (P, I, D)
 
@@ -66,7 +73,13 @@ class PIDController(AController):
     def __init__(
         self, name: str, shape_estimation: tuple, snames: Iterable[str], coeffs: float
     ):
-        AController.__init__(self, name, shape_estimation, snames)
+        AController.__init__(
+            self,
+            name,
+            shape_setpoint=(1,),
+            shape_estimation=shape_estimation,
+            snames=snames,
+        )
         self.defineOutput("integral", snames=["int"], dtype=np.float64)
         self.setInitialStateForOutput(np.array([0]), "integral")
         self.__coeffs = coeffs
@@ -121,7 +134,7 @@ class AntiWindupPIDController(AController):
       name
         Name of the element
       shape_estimation
-        Number of scalars in the data expected by the estimation (> 2)
+        Shape of the data expected by the estimation (> 2)
       coeffs
         Coefficients of the retroaction (P, I, D, Umin, Umax, Ks)
 
@@ -130,7 +143,13 @@ class AntiWindupPIDController(AController):
     def __init__(
         self, name: str, shape_estimation: tuple, snames: Iterable[str], coeffs: float
     ):
-        AController.__init__(self, name, shape_estimation, snames)
+        AController.__init__(
+            self,
+            name,
+            shape_setpoint=(1,),
+            shape_estimation=shape_estimation,
+            snames=snames,
+        )
         self.defineOutput("integral", snames=["usat", "int", "corr"], dtype=np.float64)
         self.setInitialStateForOutput(np.array([0]), "integral")
         self.__coeffs = coeffs
@@ -185,13 +204,27 @@ class LQRegulator(AController):
     Args:
       name
         Name of the element
+      shape_setpoint
+        Shape of the setpoint data
       shape_estimation
-        Number of scalars in the data expected by the estimation (> 2)
+        Shape of the data expected by the estimation (> 2)
 
     """
 
-    def __init__(self, name: str, shape_estimation: tuple, snames: Iterable[str]):
-        AController.__init__(self, name, shape_estimation, snames)
+    def __init__(
+        self,
+        name: str,
+        shape_setpoint: tuple,
+        shape_estimation: tuple,
+        snames: Iterable[str],
+    ):
+        AController.__init__(
+            self,
+            name,
+            shape_setpoint=shape_setpoint,
+            shape_estimation=shape_estimation,
+            snames=snames,
+        )
 
     def computeGain(
         self,

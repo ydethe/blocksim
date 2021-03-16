@@ -300,6 +300,7 @@ class AComputer(ABaseNode):
         ABaseNode.__init__(self, name)
         self.__inputs = {}
         self.__outputs = {}
+        self.__parameters = {}
 
     def __repr__(self):
         s = ""
@@ -316,8 +317,15 @@ class AComputer(ABaseNode):
         for inp in self.getListInputs():
             s_inp.append(str(inp))
 
-        out_w = 2 + max([len(s) for s in s_out])
-        inp_w = 2 + max([len(s) for s in s_inp])
+        if len(s_out) == 0:
+            out_w = 2
+        else:
+            out_w = 2 + max([len(s) for s in s_out])
+
+        if len(s_inp) == 0:
+            inp_w = 2
+        else:
+            inp_w = 2 + max([len(s) for s in s_inp])
 
         tot_w = max(tot_w, out_w - 2 + inp_w)
 
@@ -348,6 +356,42 @@ class AComputer(ABaseNode):
         s += "   =" + tot_w * "=" + "=\n"
 
         return s
+
+    def createParameter(self, name: str, value: float, read_only: bool = False):
+        """This method creates an attribute, with getter an optional setter
+
+        Args:
+          name
+            Name of the parameter to be created
+          value
+            Value of the parameter to be created
+
+        Examples:
+          >>> e = DummyElement('el')
+          >>> e.createParameter('val', 0)
+          >>> e.val
+          0
+          >>> e.val = 2
+          >>> e.val
+          2
+          >>> e.createParameter('ro_val', 1, read_only=True)
+          >>> e.ro_val
+          1
+
+        """
+        self.__parameters[name] = value
+
+        def get(self):
+            return self.__parameters[name]
+
+        if read_only:
+            setattr(self.__class__, name, property(get))
+        else:
+
+            def set(self, val):
+                self.__parameters[name] = val
+
+            setattr(self.__class__, name, property(get, set))
 
     def isController(self) -> bool:
         """Checks if the element is derived from AController
@@ -471,7 +515,7 @@ class AComputer(ABaseNode):
           name
             Name of the input
           shape
-            Number of scalars in the data expected by the input
+            Shape of the data expected by the input
           dtype
             Data type (typically np.float64 or np.complex128)
 

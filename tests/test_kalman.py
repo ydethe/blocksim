@@ -129,7 +129,9 @@ class TestKalman(TestBase):
         cpt.setCovariance(np.eye(1) / 200)
         cpt.setMean(np.array([bias]))
 
-        ctl = LQRegulator("ctl", shape_estimation=(2,), snames=["u"])
+        ctl = LQRegulator(
+            "ctl", shape_setpoint=(1,), shape_estimation=(2,), snames=["u"]
+        )
         ctl.A = sys.A
         ctl.B = sys.B
         ctl.C = kal.matC[:, :2]

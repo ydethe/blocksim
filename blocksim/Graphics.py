@@ -245,5 +245,3 @@ def createFigureFromSpec(spec, log, fig=None):
     fig.tight_layout()
 
     return fig
-    
-    

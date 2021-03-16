@@ -92,7 +92,7 @@ class ProportionalSensors(ASensors):
       name
         Name of the element
       shape_state
-        Number of scalars in the state data
+        Shape of the state data
       snames
         Name of each of the scalar components of the measurement.
         Its shape defines the shape of the data
@@ -147,9 +147,9 @@ class LinearSensors(ASensors):
       name
         Name of the element
       shape_state
-        Number of scalars in the state
+        Shape of the state
       shape_command
-        Number of scalars in the command
+        Shape of the command
       snames
         Name of each of the scalar components of the measurement.
         Its shape defines the shape of the data

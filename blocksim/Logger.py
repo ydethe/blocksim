@@ -377,5 +377,3 @@ class Logger(object):
     def __del__(self):
         if not self._dst is None:
             self._dst.close()
-            
-            
