@@ -367,7 +367,7 @@ class AComputer(ABaseNode):
             Value of the parameter to be created
 
         Examples:
-          >>> e = DummyElement('el')
+          >>> e = DummyComputer('el')
           >>> e.createParameter('val', 0)
           >>> e.val
           0

@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.linalg as lin
 
-from SystemControl.blocks.Controller import AController
+from blocksim.blocks.Controller import AController
 
 
 # name_of_outputs=['s0_cons','s1_cons','s2_cons','s3_cons']

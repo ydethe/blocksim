@@ -3,8 +3,8 @@ from typing import Iterable
 import numpy as np
 import scipy.linalg as lin
 
-from SystemControl.blocks.System import G6DOFSystem
-from SystemControl.utils import quat_to_matrix, quat_to_euler
+from blocksim.blocks.System import G6DOFSystem
+from blocksim.utils import quat_to_matrix, quat_to_euler
 
 
 # name_of_outputs=['px','py','pz','vx','vy','vz','roll','pitch','yaw','wx','wy','wz']
