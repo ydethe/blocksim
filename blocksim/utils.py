@@ -1,7 +1,14 @@
-from typing import Iterable
+from datetime import datetime, timedelta, timezone
+from typing import Iterable, Tuple
 
+from scipy import linalg as lin
 import numpy as np
+import astropy.coordinates as coord
+from skyfield.api import Topos, load
+from skyfield.timelib import Time
 
+from . import logger
+from .constants import *
 from .exceptions import *
 from . import logger
 
@@ -67,6 +74,15 @@ def assignVector(
       array([0., 1., 2., 3., 4.])
 
     """
+    if np.any(np.isnan(v)):
+        txt = "Element '%s' : Argument '%s'=%s has NaN" % (
+            dst_name,
+            src_name,
+            v,
+        )
+        logger.error(txt)
+        raise InvalidAssignedVector(txt)
+
     if isinstance(v.shape, int):
         vshape = (v.shape,)
     else:
@@ -106,6 +122,38 @@ def assignVector(
 
     else:
         return np.array(v.copy(), dtype=dtype)
+
+
+def datetime_to_skyfield(td: datetime) -> Time:
+    """
+    Converts a datetime struct to a skyfield Time struct
+
+    Args:
+      td : a datetime instance or array of datetime
+        Time to convert
+
+    Returns:
+      Skyfield date and time structure
+
+    """
+    ts = load.timescale(builtin=True)
+    t = ts.utc(td)
+    return t
+
+
+def skyfield_to_datetime(t: Time) -> datetime:
+    """
+    Converts a skyfield Time struct to a datetime struct
+
+    Args:
+      t
+        Skyfield date and time structure
+
+    Returns:
+      A datetime instance
+
+    """
+    return t.utc_datetime()
 
 
 def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> np.array:
