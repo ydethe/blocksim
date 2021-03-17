@@ -15,9 +15,9 @@ from ..core.Node import AComputer
 
 
 class Satellite(AComputer):
-    """
+    """Earth-orbiting satellite, using SGP4 propagator
 
-    The output name of the computer is **itrf**
+    The output name of the computer are **itrf** and **subpoint**
 
     Args:
       name
