@@ -341,3 +341,51 @@ def euler_to_quat(roll: float, pitch: float, yaw: float) -> Iterable[float]:
     qk = sy * cr * cp - cy * sr * sp
 
     return qr, qi, qj, qk
+
+
+def vecBodyToEarth(attitude: np.array, x: np.array) -> np.array:
+    """Expresses a vector from the body frame to the Earth's frame
+
+    Args:
+      attitude
+        If 3 elements array, roll, pitch, yaw (rad)
+        If 4 elements array, qw, qx, qy, qz
+      x
+        Vector expressed in the body frame
+
+    Returns:
+        Vector x expressed in Earth's frame
+
+    """
+    if len(attitude) == 3:
+        R = euler_to_matrix(*attitude)
+    elif len(attitude) == 4:
+        R = quat_to_matrix(*attitude)
+    else:
+        raise ValueError
+
+    return R @ x
+
+
+def vecEarthToBody(attitude: np.array, x: np.array) -> np.array:
+    """Expresses a vector from Earth's frame to the body's frame
+
+    Args:
+      attitude
+        If 3 elements array, roll, pitch, yaw (rad)
+        If 4 elements array, qw, qx, qy, qz
+      x
+        Vector expressed in Earth's frame
+
+    Returns:
+        Vector x expressed in the body frame
+
+    """
+    if len(attitude) == 3:
+        R = euler_to_matrix(*attitude)
+    elif len(attitude) == 4:
+        R = quat_to_matrix(*attitude)
+    else:
+        raise ValueError
+
+    return R.T @ x

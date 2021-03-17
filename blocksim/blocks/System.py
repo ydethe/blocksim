@@ -7,7 +7,7 @@ from scipy.signal import cont2discrete
 import scipy.linalg as lin
 
 from ..exceptions import *
-from ..utils import quat_to_matrix, quat_to_euler
+from ..utils import vecBodyToEarth, vecEarthToBody, quat_to_euler
 from ..core.Frame import Frame
 from ..core.Node import AComputer
 
@@ -379,8 +379,7 @@ class G6DOFSystem(ASystem):
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = self.getDataForOutput(
             frame, name="state"
         )
-        R = quat_to_matrix(qw, qx, qy, qz)
-        return R @ x
+        return vecBodyToEarth(np.array([qw, qx, qy, qz]), x)
 
     def vecEarthToBody(self, frame: Frame, x: np.array) -> np.array:
         """Expresses a vector from Earth's frame to the body's frame
@@ -398,8 +397,7 @@ class G6DOFSystem(ASystem):
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = self.getDataForOutput(
             frame, name="state"
         )
-        R = quat_to_matrix(qw, qx, qy, qz)
-        return R.T @ x
+        return vecEarthToBody(np.array([qw, qx, qy, qz]), x)
 
     def transition(self, t: float, x: np.array, u: np.array) -> np.array:
         """Defines the transition function f(t,x,u) :

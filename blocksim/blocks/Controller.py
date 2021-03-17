@@ -149,7 +149,11 @@ class AntiWindupPIDController(AController):
     __slots__ = []
 
     def __init__(
-        self, name: str, shape_estimation: tuple, snames: Iterable[str], coeffs: float
+        self,
+        name: str,
+        shape_estimation: tuple,
+        snames: Iterable[str],
+        coeffs: float = (0, 0, 0, 0, 0, 0),
     ):
         AController.__init__(
             self,
@@ -159,7 +163,6 @@ class AntiWindupPIDController(AController):
             snames=snames,
         )
         self.defineOutput("integral", snames=["usat", "int", "corr"], dtype=np.float64)
-        self.setInitialStateForOutput(np.array([0]), "integral")
         (P, I, D, Umin, Umax, Ks) = coeffs
         self.createParameter("P", value=P)
         self.createParameter("I", value=I)

@@ -213,8 +213,11 @@ class Output(ABaseNode):
             The data for the output
 
         """
+        comp = self.getComputer()
+        nc = comp.getName()
+        no = self.getName()
         valid_data = assignVector(
-            data, self.getDataShape(), self.getName(), "<arg>", self.__dtype
+            data, self.getDataShape(), "%s.%s" % (nc, no), "<arg>", self.__dtype
         )
         self.__data = valid_data
 
@@ -434,6 +437,20 @@ class AComputer(ABaseNode):
         otp = self.getOutputByName(output_name)
         otp.setInitialState(initial_state)
 
+    def getInitialStateForOutput(self, output_name: str) -> np.array:
+        """Sets the initial state vector for a given output
+
+        Args:
+          output_name
+            The output's initial state vector
+
+        Returns:
+          The initial state vector
+
+        """
+        otp = self.getOutputByName(output_name)
+        return otp.getInitialeState()
+
     def getListOutputs(self) -> Iterable[Output]:
         """Gets the list of the outputs
 
@@ -542,6 +559,15 @@ class AComputer(ABaseNode):
         inp = Input(name, shape=shape, dtype=dtype)
         self.__inputs[inp.getID()] = inp
         return inp
+
+    def addInput(self, inp: Input):
+        self.__inputs[inp.getID()] = inp
+
+    def replaceInput(self, old_name: str, new_input: Input):
+        inp = self.getInputByName(old_name)
+        iid = inp.getID()
+        del self.__inputs[iid]
+        self.addInput(new_input)
 
     def getOutputById(self, output_id: UUID) -> Output:
         """Get an output with its id

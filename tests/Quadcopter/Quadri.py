@@ -3,8 +3,9 @@ from typing import Iterable
 import numpy as np
 import scipy.linalg as lin
 
+from blocksim.core.Node import Input
 from blocksim.blocks.System import G6DOFSystem
-from blocksim.utils import quat_to_matrix, quat_to_euler
+from blocksim.utils import vecBodyToEarth, vecEarthToBody
 
 
 # name_of_outputs=['px','py','pz','vx','vy','vz','roll','pitch','yaw','wx','wy','wz']
@@ -21,27 +22,9 @@ class Quadri(G6DOFSystem):
         G6DOFSystem.__init__(
             self,
             "sys",
-            name_of_outputs=[
-                "px",
-                "py",
-                "pz",
-                "vx",
-                "vy",
-                "vz",
-                "fx",
-                "fy",
-                "fz",
-                "roll",
-                "pitch",
-                "yaw",
-                "wx",
-                "wy",
-                "wz",
-                "tx",
-                "ty",
-                "tz",
-            ],
         )
+        inp = Input("command", shape=(4,), dtype=np.float64)
+        self.replaceInput(old_name="command", new_input=inp)
         self.m = 0.458
         self.J = np.diag([14.6, 10.8, 7.8]) * 1e-3
         self.createParameter("mot", mot)
@@ -50,11 +33,13 @@ class Quadri(G6DOFSystem):
         self.createParameter("l", 22.5e-2)
         self.createParameter("Jr", 3.4e-5)
 
-    def getActions(self, u: np.array) -> Iterable[np.array]:
+    def getActions(self, x: np.array, u: np.array) -> Iterable[np.array]:
         s1, s2, s3, s4 = u
+        px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = x
+        att = np.array([qw, qx, qy, qz])
 
         e3 = np.array([0, 0, 1])
-        t3 = self.vecBodyToEarth(e3)
+        t3 = vecBodyToEarth(att, e3)
         force = -self.m * self.g * e3 + self.b * np.sum(u ** 2) * t3
         torque = np.array(
             [
@@ -67,7 +52,7 @@ class Quadri(G6DOFSystem):
         return force, torque
 
     def transition(self, t: float, x: np.array, u: np.array) -> np.array:
-        force, torque = self.getActions(u)
+        force, torque = self.getActions(x, u)
 
         a = np.hstack((force, torque))
 
@@ -76,48 +61,3 @@ class Quadri(G6DOFSystem):
     def getEquilibriumSpeed(self):
         s_eq = np.sqrt(self.m * self.g / 4 / self.b)
         return s_eq
-
-    def compute_output(self, t: float, state: np.array, inputs: dict) -> np.array:
-        """Function that computes the output of the element from its state and its inputs.
-
-        Args:
-          t
-            Date of the current state (s)
-          state
-            Current state
-          inputs
-            Dictionnary of the inputs :
-
-            * key = name of the source element
-            * value = source's state vector
-
-        """
-        u = self.getDataForInput(inputs, "command")
-        force, torque = self.getActions(u)
-        fx, fy, fz = force
-        tx, ty, tz = torque
-        px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = state
-        roll, pitch, yaw = quat_to_euler(qw, qx, qy, qz)
-        y = np.array(
-            [
-                px,
-                py,
-                pz,
-                vx,
-                vy,
-                vz,
-                fx,
-                fy,
-                fz,
-                roll,
-                pitch,
-                yaw,
-                wx,
-                wy,
-                wz,
-                tx,
-                ty,
-                tz,
-            ]
-        )
-        return y

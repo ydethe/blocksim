@@ -137,11 +137,13 @@ class Split(AComputer):
       snames
         Name of each of the scalar components of the clipped data.
         Its shape defines the shape of the data
-      selected_input
-        Number of the input parameters that will be present in the output signal
+      outputs
+        Dictionary of outputs :
+         * the keys are the names of the outputs
+         * the values are the corresponding shape
 
     Examples:
-      >>> spt = Split("spt", signal_shape=(5,), snames=["ss0", "ss2"], selected_input=[0, 2])
+      >>> spt = Split("spt", signal_shape=(5,), snames=["ss0", "ss2"], outputs={'split':[0, 2]})
       >>> out = spt.compute_outputs(t1=0, t2=1, signal=np.arange(5), split=np.zeros(2))
       >>> out["split"]
       array([0, 2]...
@@ -154,26 +156,32 @@ class Split(AComputer):
         self,
         name: str,
         signal_shape: tuple,
-        snames: Iterable[str],
-        selected_input: Iterable[int],
+        outputs: dict,
         dtype=np.float64,
     ):
         AComputer.__init__(self, name)
         self.defineInput("signal", shape=signal_shape, dtype=dtype)
-        self.defineOutput("split", snames=snames, dtype=dtype)
-        self.createParameter("selected_input", value=list(selected_input))
+        for k in outputs.keys():
+            selected_input = outputs[k]
+            snames = ["spt%i" % x for x in selected_input]
+            self.defineOutput(k, snames=snames, dtype=dtype)
 
     def compute_outputs(
         self,
         t1: float,
         t2: float,
         signal: np.array,
-        split: np.array,
+        **lotp,
     ) -> dict:
-        res = np.array(signal[self.selected_input], dtype=signal.dtype)
-
         outputs = {}
-        outputs["split"] = res
+
+        for otp in self.getListOutputs():
+            oname = otp.getName()
+            res = np.empty(otp.getDataShape(), dtype=otp.getDataType())
+            for k, sn in enumerate(otp.getScalarNames()):
+                idx = int(sn[3:])
+                res[k] = signal[idx]
+            outputs[oname] = res
 
         return outputs
 

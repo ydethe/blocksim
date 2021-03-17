@@ -18,9 +18,9 @@ from blocksim.blocks.Route import Group, Split
 sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase
 
-# from Quadcopter.Quadri import Quadri
-# from Quadcopter.AttPilot import AttPilot
-# from Quadcopter.Motor import Motor
+from Quadcopter.Quadri import Quadri
+from Quadcopter.AttPilot import AttPilot
+from Quadcopter.Motor import Motor
 from Quadcopter.VTOLPilot import VTOLPilot
 
 
@@ -56,7 +56,7 @@ class TestPVTOL(TestBase):
                 "fy",
                 "fz",
             ],
-            selected_input=[0, 1, 2],
+            outputs={"split": [0, 1, 2]},
         )
 
         self.lqr = LQRegulator(
@@ -78,10 +78,10 @@ class TestPVTOL(TestBase):
             cons=np.array([1, 1, 1, 0]),
             snames=["x_cons", "y_cons", "z_cons", "psi_cons"],
         )
-        print(self.stp)
-        print(self.sys)
-        print(self.ctl)
-        print(self.splt)
+        # print(self.stp)
+        # print(self.sys)
+        # print(self.ctl)
+        # print(self.splt)
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
     def test_quad_simplified(self):

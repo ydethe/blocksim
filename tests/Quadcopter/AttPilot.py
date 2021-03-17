@@ -4,65 +4,34 @@ import scipy.linalg as lin
 from blocksim.blocks.Controller import AController
 
 
-# name_of_outputs=['s0_cons','s1_cons','s2_cons','s3_cons']
 class AttPilot(AController):
     __slots__ = []
 
-    def __init__(self, sys, mot):
-        name_of_outputs = ["s0_cons", "s1_cons", "s2_cons", "s3_cons"]
-        name_of_states = ["state_" + x for x in name_of_outputs]
-        name_of_states.extend(["Gr", "Gp", "Gy"])
+    def __init__(self, name, sys, mot):
         AController.__init__(
             self,
-            "ctlatt",
-            name_of_outputs=name_of_outputs,
-            name_of_states=name_of_states,
+            name,
+            shape_setpoint=(4,),
+            shape_estimation=(13,),
+            snames=["s0", "s1", "s2", "s3", "Gr", "Gp", "Gy"],
         )
+        self.defineInput("euler", shape=(3,), dtype=np.float64)
         self.createParameter("sys", sys)
         self.createParameter("mot", mot)
 
-    def compute_state(self, t1: float, t2: float, inputs: dict) -> np.array:
-        """Updates the state of the element
-
-        Called at each simulation step
-
-        Args:
-          t1
-            Current date (s)
-          t2
-            The date after the update (s)
-          inputs
-            Dictionnary of the inputs :
-
-            * key = name of the source element
-            * value = source's state vector
-
-        Returns:
-          The new state of the element
-
-        """
-        (
-            px,
-            py,
-            pz,
-            vx,
-            vy,
-            vz,
-            fx,
-            fy,
-            fz,
-            roll,
-            pitch,
-            yaw,
-            wx,
-            wy,
-            wz,
-            tx,
-            ty,
-            tz,
-        ) = self.getDataForInput(inputs, "estimation")
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        setpoint: np.array,
+        estimation: np.array,
+        command: np.array,
+        euler: np.array,
+    ) -> dict:
+        (px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz) = estimation
+        roll, pitch, yaw = euler
         w = np.array([wx, wy, wz])
-        r_cons, p_cons, y_cons, A_cons = self.getDataForInput(inputs, "setpoint")
+        r_cons, p_cons, y_cons, A_cons = setpoint
 
         J1 = self.sys.J[0, 0]
         J2 = self.sys.J[1, 1]
@@ -161,7 +130,9 @@ class AttPilot(AController):
             / 2
         )
 
-        return np.array([s1, s2, s3, s4, Gr, Gp, Gy])
+        u = np.array([s1, s2, s3, s4, Gr, Gp, Gy])
 
-    def compute_output(self, t: float, state: np.array, inputs: dict) -> np.array:
-        return state[:4]
+        outputs = {}
+        outputs["command"] = u
+
+        return outputs

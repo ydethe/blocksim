@@ -14,9 +14,11 @@ class Motor(ASystem):
         ASystem.__init__(
             self,
             "mot%i" % num,
-            name_of_states=["state_s%i" % num],
-            name_of_outputs=["s%i" % num, "ds%i" % num],
+            shape_command=(1,),
+            snames_state=["s"],
+            dtype=np.float64,
         )
+        self.defineOutput("vel", snames=["s", "ds"], dtype=np.float64)
         self.createParameter("num", num)
         self.createParameter("km", 4.3e-3)
         self.createParameter("Jr", 3.4e-5)
@@ -37,8 +39,18 @@ class Motor(ASystem):
         dX = np.array([ds])
         return dX
 
-    def compute_output(self, t: float, state: np.array, inputs: dict) -> np.array:
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        command: np.array,
+        state: np.array,
+        vel: np.array,
+    ) -> dict:
+        outputs = super().compute_outputs(t1, t2, command, state)
+        (ds,) = self.transition(t2, state, command)
         (s,) = state
-        u = self.getDataForInput(inputs, "command")
-        (ds,) = self.transition(t, state, u)
-        return np.array([s, ds])
+
+        outputs["vel"] = np.array([s, ds])
+
+        return outputs

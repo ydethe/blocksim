@@ -143,7 +143,7 @@ class TestKalman(TestBase):
         stp = Step(name="stp", snames=["c"], cons=np.array([1]))
 
         split = Split(
-            "split", signal_shape=(3,), snames=["x", "v"], selected_input=[0, 1]
+            "split", signal_shape=(3,), snames=["x", "v"], outputs={"split": [0, 1]}
         )
 
         sim = Simulation()
