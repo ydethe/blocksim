@@ -51,9 +51,13 @@ class Satellite(AComputer):
     * vy : Y coordinate of velocity in geocentric ITRF in meters
     * vz : Z coordinate of velocity in geocentric ITRF in meters
 
+    subpoint:
+    * lon : Longitude (rad)
+    * lat : Latitude (rad)
+
     """
 
-    __slots__ = ["__mano", "__sgp4"]
+    __slots__ = ["__sgp4"]
 
     @staticmethod
     def getInitialEpoch() -> datetime:
@@ -70,8 +74,41 @@ class Satellite(AComputer):
         )
         return t0
 
-    def __init__(
-        self,
+    def __init__(self, name: str):
+        AComputer.__init__(self, name)
+        self.defineOutput(
+            name="itrf", snames=["px", "py", "pz", "vx", "vy", "vz"], dtype=np.float64
+        )
+        self.defineOutput(
+            name="subpoint", snames=["lon","lat"], dtype=np.float64
+        )
+        self.__sgp4 = None
+
+    def _setSGP4(self, sgp4):
+        self.__sgp4 = sgp4
+
+    def compute_outputs(self, t1: float, t2: float, subpoint:np.array, itrf: np.array) -> dict:
+        dt = timedelta(seconds=t2)
+        td = self.epoch + dt
+        t = datetime_to_skyfield(td)
+        pos, vel, _ = self.__sgp4.ITRF_position_velocity_error(t)
+
+        pc = Distance(au=1).m
+        vc = Velocity(au_per_d=1).m_per_s
+
+        pv = np.empty(6, dtype=np.float64)
+        pv[:3] = pos * pc
+        pv[3:] = vel * vc
+
+        outputs = {}
+        outputs["itrf"] = pv
+        outputs["subpoint"] = self.subpoint(td)
+
+        return outputs
+
+    @classmethod
+    def fromOrbitalElements(
+        cls,
         name: str,
         t: datetime,
         a: float,
@@ -83,9 +120,8 @@ class Satellite(AComputer):
         bstar: float = 0,
         ndot: float = 0,
         nddot: float = 0,
-    ):
-        AComputer.__init__(self, name)
-        t0 = Satellite.getInitialEpoch()
+    ) -> "Satellite":
+        t0 = cls.getInitialEpoch()
         epoch = (t - t0).total_seconds() / 86400
         n = np.sqrt(mu / a ** 3)
 
@@ -106,51 +142,30 @@ class Satellite(AComputer):
             n * 60,  # no_kozai: mean motion (radians/minute)
             node,  # nodeo: right ascension of ascending node (radians)
         )
+        ts = load.timescale(builtin=True)
+        sgp4 = EarthSatellite.from_satrec(satrec, ts)
+        sat = Satellite(name)
+        sat._setSGP4(sgp4)
 
-        self.__mano = mano
+        return sat
+
+    @classmethod
+    def fromTLE(cls, tle_file: str) -> "Satellite":
+        # ISS (ZARYA)
+        # 1 25544U 98067A   21076.49742957  .00000086  00000-0  97467-5 0  9995
+        # 2 25544  51.6441  76.2242 0003393 119.8379  30.2224 15.48910580274380
+        f = open(tle_file, "r")
+        name = f.readline().strip().split(" ")[0].lower()
+        line1 = f.readline()
+        line2 = f.readline()
+        f.close()
 
         ts = load.timescale(builtin=True)
-        self.__sgp4 = EarthSatellite.from_satrec(satrec, ts)
+        tle_sat = EarthSatellite(line1, line2, name=name, ts=ts)
+        sat = Satellite(name)
+        sat._setSGP4(tle_sat)
 
-        self.defineOutput(
-            name="itrf", snames=["px", "py", "pz", "vx", "vy", "vz"], dtype=np.float64
-        )
-
-    def compute_outputs(self, t1: float, t2: float, itrf: np.array) -> dict:
-        dt = timedelta(seconds=t2)
-        td = self.epoch + dt
-        t = datetime_to_skyfield(td)
-        pos, vel, _ = self.__sgp4.ITRF_position_velocity_error(t)
-
-        pc = Distance(au=1).m
-        vc = Velocity(au_per_d=1).m_per_s
-
-        pv = np.empty(6, dtype=np.float64)
-        pv[:3] = pos * pc
-        pv[3:] = vel * vc
-
-        outputs = {}
-        outputs["itrf"] = pv
-
-        return outputs
-
-    def getGeocentricITRFPositionAt(self, td: datetime) -> np.array:
-        """
-        Return the geocentric ITRF position of the satellite at a given time
-
-        Args:
-          td
-            Time of the position
-
-        Returns:
-          x, y, z (m)
-
-        """
-        t = datetime_to_skyfield(td)
-
-        ps = self.__sgp4.at(t).itrf_xyz().m
-
-        return ps
+        return sat
 
     def subpoint(self, td: datetime) -> Tuple[float]:
         """
@@ -197,6 +212,7 @@ class Satellite(AComputer):
     @classmethod
     def fromEquinoctialOrbit(
         cls,
+        name:str,
         t: datetime,
         a: float,
         ex: float,
@@ -218,7 +234,8 @@ class Satellite(AComputer):
         inc = 2 * np.arctan(tan_inc_2)
         mano = lv - wPOm
 
-        sat = Satellite(
+        sat = Satellite.fromOrbitalElements(
+            name=name,
             t=t,
             a=a,
             ecc=ecc,
@@ -233,39 +250,6 @@ class Satellite(AComputer):
 
         return sat
 
-    def geocentricITRFTrajectory(
-        self, t_start: datetime, number_of_position=200, number_of_periods=1
-    ) -> Tuple[np.array]:
-        """
-        Return the geocentric ITRF positions of the trajectory
-
-        Args:
-          t_start
-            Time of the beginning of the trajectory
-          number_of_position
-            Number of points per orbital period
-          number_of_periods
-            Number of orbit periods to plot
-
-        Returns:
-          x, y, z (m)
-
-        """
-        Ts = self.orbit_period
-        dt = number_of_periods * Ts / number_of_position
-        td = [t_start]
-        for i in range(number_of_position):
-            td.append(td[-1] + dt)
-        ts = datetime_to_skyfield(td)
-        pv = self.__sgp4.at(ts)
-
-        points = pv.itrf_xyz().m
-        x = points[0, :]
-        y = points[1, :]
-        z = points[2, :]
-
-        return x, y, z
-
     @property
     def orbit_mano(self) -> float:
         """
@@ -275,7 +259,7 @@ class Satellite(AComputer):
           mano (rad)
 
         """
-        return self.__mano
+        return self.__sgp4.model.mo
 
     @property
     def orbit_eccentricity(self) -> float:

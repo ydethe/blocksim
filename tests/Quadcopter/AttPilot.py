@@ -84,7 +84,6 @@ class AttPilot(AController):
             -z5 - al6 * z6 - a3 * x2 * x4 + d2x5_cons - al5 * x6 + al5 * dx5_cons
         ) * J3
 
-        # P = self.sys.m*self.sys.g
         s1 = (
             np.sqrt(
                 (
