@@ -5,7 +5,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - astropy=2.0.2
+  - astropy=3.2.3
   - conda=4.9.2
   - conda-build=3.21.4
   - control=0.8.4
@@ -20,10 +20,12 @@ dependencies:
   - pyyaml=5.4.1
   - scipy=1.4.1
   - setuptools=52.0.0
-  - sgp4=2.13
+  - sgp4=2.18
   - skyfield=1.37
   - slycot=0.4.0.0
   - tqdm=4.56.0
+  - pytest-astropy=0.8.0
+  - pytest-astropy-header=0.1.2
   - pip:
     - codecov==2.1.11
     - coverage==5.5
@@ -37,4 +39,4 @@ dependencies:
     - tox-conda==0.7.1
     - virtualenv==20.4.2
     - wheel==0.29.0
-    - twine==3.3.0 
+    - twine==3.3.0
