@@ -1,6 +1,7 @@
 import sys
 import os
 import unittest
+from collections import OrderedDict
 
 import numpy as np
 from numpy import cos, sin, sqrt, exp, pi
@@ -142,9 +143,9 @@ class TestKalman(TestBase):
 
         stp = Step(name="stp", snames=["c"], cons=np.array([1]))
 
-        split = Split(
-            "split", signal_shape=(3,), snames=["x", "v"], outputs={"split": [0, 1]}
-        )
+        spt_otp = OrderedDict()
+        spt_otp["split"] = [0, 1]
+        split = Split("split", signal_shape=(3,), outputs=spt_otp)
 
         sim = Simulation()
         sim.addComputer(sys)

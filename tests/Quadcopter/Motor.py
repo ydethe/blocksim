@@ -48,8 +48,9 @@ class Motor(ASystem):
         vel: np.array,
     ) -> dict:
         outputs = super().compute_outputs(t1, t2, command, state)
-        (ds,) = self.transition(t2, state, command)
-        (s,) = state
+
+        (s,) = outputs["state"]
+        (ds,) = self.transition(t2, (s,), command)
 
         outputs["vel"] = np.array([s, ds])
 

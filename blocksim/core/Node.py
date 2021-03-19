@@ -532,6 +532,9 @@ class AComputer(ABaseNode):
         return otp
 
     def addOutput(self, otp: Output):
+        if otp.getName() in self.getListOutputsNames():
+            raise DuplicateOutput(self.getName(), otp.getName())
+
         otp.setComputer(self)
         self.__outputs[otp.getID()] = otp
 
@@ -557,10 +560,13 @@ class AComputer(ABaseNode):
 
         """
         inp = Input(name, shape=shape, dtype=dtype)
-        self.__inputs[inp.getID()] = inp
+        self.addInput(inp)
         return inp
 
     def addInput(self, inp: Input):
+        if inp.getName() in self.getListInputsNames():
+            raise DuplicateInput(self.getName(), inp.getName())
+
         self.__inputs[inp.getID()] = inp
 
     def replaceInput(self, old_name: str, new_input: Input):

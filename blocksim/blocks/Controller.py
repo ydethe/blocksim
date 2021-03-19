@@ -162,7 +162,7 @@ class AntiWindupPIDController(AController):
             shape_estimation=shape_estimation,
             snames=snames,
         )
-        self.defineOutput("integral", snames=["usat", "int", "corr"], dtype=np.float64)
+        self.defineOutput("integral", snames=["int", "corr"], dtype=np.float64)
         (P, I, D, Umin, Umax, Ks) = coeffs
         self.createParameter("P", value=P)
         self.createParameter("I", value=I)
@@ -180,7 +180,7 @@ class AntiWindupPIDController(AController):
         estimation: np.array,
         command: np.array,
     ) -> dict:
-        _, int_x, corr = integral
+        int_x, corr = integral
 
         x = estimation[0]
         dx1 = estimation[1]
@@ -193,8 +193,8 @@ class AntiWindupPIDController(AController):
         corr = (u_sat - u) * self.Ks
 
         outputs = {}
-        outputs["command"] = np.array([u])
-        outputs["integral"] = np.array([u_sat, int_x, corr])
+        outputs["command"] = np.array([u_sat])
+        outputs["integral"] = np.array([int_x, corr])
 
         return outputs
 

@@ -295,30 +295,25 @@ class G6DOFSystem(ASystem):
 
     The following parameters must be defined by the user :
 
-    * m : Mass of the body. Default : :math:`1`
-    * J : Inertia tensor of the body. Default : :math:`10^{-3}.I_3`
+    * m : Mass of the body (kg). Default : :math:`1`
+    * J : Inertia tensor of the body (kg.m^2). Default : :math:`10^{-3}.I_3`
     * max_q_denorm : If N the square norm of the attitude quaternion is N > 1+max_q_denorm or N<1-max_q_denorm, raise an exception
 
-    command : 3D force in the fixed frame
-              3D torque in the fixed frame
+    command:
+
+    * 3D force in the fixed frame (N)
+    * 3D torque in the fixed frame (N.m)
+
     state:
-    * px
-    * py
-    * pz
-    * vx
-    * vy
-    * vz
-    * qr
-    * qx
-    * qy
-    * qz
-    * wx
-    * wy
-    * wz
+
+    * px, py, pz (m)
+    * vx, vy, vz (m/s)
+    * qr, qx, qy, qz
+    * wx, wy, wz (rad/s)
+
     euler:
-    * roll
-    * pitch
-    * yaw
+
+    * roll, pitch, yaw (rad)
 
     Args:
       name
@@ -429,7 +424,7 @@ class G6DOFSystem(ASystem):
 
         dvx, dvy, dvz = force / self.m
         dwx, dwy, dwz = lin.inv(self.J) @ (-np.cross(w, self.J @ w) + torque)
-        dqw, dqx, dqy, dqz = 1.0 / 2.0 * W @ q
+        dqw, dqx, dqy, dqz = 0.5 * W @ q
         dX = np.array([vx, vy, vz, dvx, dvy, dvz, dqw, dqx, dqy, dqz, dwx, dwy, dwz])
         return dX
 

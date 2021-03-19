@@ -30,11 +30,11 @@ class TestSatellite(TestBase):
             mano=0,  # mean anomaly (radians)
             node=0,  # nodeo: right ascension of ascending node (radians)
         )
-        pv0 = satellite.compute_outputs(0, 0, itrf=None)["itrf"]
+        pv0 = satellite.compute_outputs(0, 0, subpoint=None, itrf=None)["itrf"]
 
         dt = satellite.orbit_period
         t = dt.total_seconds()
-        pv = satellite.compute_outputs(0, t, itrf=None)["itrf"]
+        pv = satellite.compute_outputs(0, t, subpoint=None, itrf=None)["itrf"]
 
     def test_iss(self):
         satellite = Satellite.fromTLE("tests/iss.tle")

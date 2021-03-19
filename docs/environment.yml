@@ -1,3 +1,4 @@
+# conda env update --file docs/environment.yml
 name: blocksim
 channels:
   - conda-forge

@@ -2,6 +2,7 @@ import os
 import sys
 import unittest
 from typing import Iterable
+from collections import OrderedDict
 
 import numpy as np
 import scipy.linalg as lin
@@ -71,9 +72,15 @@ class TestQuad(TestBase):
         mot2 = Motor(2)
         mot3 = Motor(3)
         mot4 = Motor(4)
+
+        grp_inp = OrderedDict()
+        grp_inp["in1"] = (1,)
+        grp_inp["in2"] = (1,)
+        grp_inp["in3"] = (1,)
+        grp_inp["in4"] = (1,)
         grp = Group(
             "grp",
-            inputs={"in1": (1,), "in2": (1,), "in3": (1,), "in4": (1,)},
+            inputs=grp_inp,
             snames=["gs1", "gs2", "gs3", "gs4"],
         )
         sys = Quadri(mot1)
@@ -127,7 +134,7 @@ class TestQuad(TestBase):
 class TestCmdAtt(TestBase):
     @classmethod
     def setUpClass(cls):
-        """get_some_resource() is slow, to avoid calling it for each test use setUpClass()
+        """simulation is slow, to avoid calling it for each test use setUpClass()
         and store the result as class variable
         """
         super(TestCmdAtt, cls).setUpClass()
@@ -180,9 +187,14 @@ class TestCmdAtt(TestBase):
         ctl_mot3.Umin = -mot0.Umax
         ctl_mot3.Umax = mot0.Umax
 
+        grp_inp = OrderedDict()
+        grp_inp["in0"] = (1,)
+        grp_inp["in1"] = (1,)
+        grp_inp["in2"] = (1,)
+        grp_inp["in3"] = (1,)
         grp = Group(
             "grp",
-            inputs={"in0": (1,), "in1": (1,), "in2": (1,), "in3": (1,)},
+            inputs=grp_inp,
             snames=["gs0", "gs1", "gs2", "gs3"],
         )
         sys = Quadri(mot0)
@@ -203,10 +215,15 @@ class TestCmdAtt(TestBase):
         )
         ctl = AttPilot("ctlatt", sys, mot0)
 
+        spt_otp = OrderedDict()
+        spt_otp["u0"] = (0,)
+        spt_otp["u1"] = (1,)
+        spt_otp["u2"] = (2,)
+        spt_otp["u3"] = (3,)
         spt = Split(
             name="spt",
             signal_shape=(7,),
-            outputs={"u0": [0], "u1": [1], "u2": [2], "u3": [3]},
+            outputs=spt_otp,
         )
 
         sim = Simulation()
@@ -275,9 +292,9 @@ class TestCmdAtt(TestBase):
 
         return self.plotVerif(
             "Figure 1",
-            [{"var": "deg(roll)"}, {"var": "deg(r_cons)"}],
-            [{"var": "deg(pitch)"}, {"var": "deg(p_cons)"}],
-            [{"var": "deg(yaw)"}, {"var": "deg(y_cons)"}],
+            [{"var": "deg(sys_euler_roll)"}, {"var": "deg(stp_setpoint_r)"}],
+            [{"var": "deg(sys_euler_pitch)"}, {"var": "deg(stp_setpoint_p)"}],
+            [{"var": "deg(sys_euler_yaw)"}, {"var": "deg(stp_setpoint_y)"}],
         )
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
@@ -286,10 +303,10 @@ class TestCmdAtt(TestBase):
 
         return self.plotVerif(
             "Figure 2",
-            [{"var": "s0"}, {"var": "s0_cons"}],
-            [{"var": "s1"}, {"var": "s1_cons"}],
-            [{"var": "s2"}, {"var": "s2_cons"}],
-            [{"var": "s3"}, {"var": "s3_cons"}],
+            [{"var": "mot0_state_s"}, {"var": "ctlmot0_command_u"}],
+            [{"var": "mot1_state_s"}, {"var": "ctlmot1_command_u"}],
+            [{"var": "mot2_state_s"}, {"var": "ctlmot2_command_u"}],
+            [{"var": "mot3_state_s"}, {"var": "ctlmot3_command_u"}],
         )
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
@@ -297,7 +314,10 @@ class TestCmdAtt(TestBase):
         self.log = TestCmdAtt.log
 
         return self.plotVerif(
-            "Figure 3", [{"var": "Gr"}], [{"var": "Gp"}], [{"var": "Gy"}]
+            "Figure 3",
+            [{"var": "ctlatt_command_Gr"}],
+            [{"var": "ctlatt_command_Gp"}],
+            [{"var": "ctlatt_command_Gy"}],
         )
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
@@ -306,9 +326,8 @@ class TestCmdAtt(TestBase):
 
         return self.plotVerif(
             "Figure 4",
-            [{"var": "px"}, {"var": "py"}, {"var": "pz"}],
-            [{"var": "vx"}, {"var": "vy"}, {"var": "vz"}],
-            [{"var": "fx"}, {"var": "fy"}, {"var": "fz"}],
+            [{"var": "sys_state_px"}, {"var": "sys_state_py"}, {"var": "sys_state_pz"}],
+            [{"var": "sys_state_vx"}, {"var": "sys_state_vy"}, {"var": "sys_state_vz"}],
         )
 
 
@@ -322,6 +341,6 @@ if __name__ == "__main__":
     TestCmdAtt.setUpClass()
     a = TestCmdAtt()
     a.setUp()
-    a.test_cmd_att_final()
+    a.test_cmd_att_angles()
 
     plt.show()

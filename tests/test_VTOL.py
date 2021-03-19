@@ -2,6 +2,7 @@ import os
 import sys
 import unittest
 from typing import Iterable
+from collections import OrderedDict
 
 import numpy as np
 import scipy.linalg as lin
@@ -48,15 +49,12 @@ class TestPVTOL(TestBase):
         self.sys.createParameter("m", value=0.458)
         self.sys.createParameter("g", value=9.81)
 
+        spt_otp = OrderedDict()
+        spt_otp["split"] = [0, 1, 2]
         self.splt = Split(
             name="split",
             signal_shape=(7,),
-            snames=[
-                "fx",
-                "fy",
-                "fz",
-            ],
-            outputs={"split": [0, 1, 2]},
+            outputs=spt_otp,
         )
 
         self.lqr = LQRegulator(
@@ -78,10 +76,6 @@ class TestPVTOL(TestBase):
             cons=np.array([1, 1, 1, 0]),
             snames=["x_cons", "y_cons", "z_cons", "psi_cons"],
         )
-        # print(self.stp)
-        # print(self.sys)
-        # print(self.ctl)
-        # print(self.splt)
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
     def test_quad_simplified(self):

@@ -1,5 +1,6 @@
 from typing import Iterable
 from itertools import product
+from collections import OrderedDict
 
 import numpy as np
 from scipy import linalg as lin
@@ -143,10 +144,12 @@ class Split(AComputer):
          * the values are the corresponding shape
 
     Examples:
-      >>> spt = Split("spt", signal_shape=(5,), snames=["ss0", "ss2"], outputs={'split':[0, 2]})
+      >>> out = OrderedDict()
+      >>> out['split'] = [0, 2]
+      >>> spt = Split("spt", signal_shape=(5,), outputs=out)
       >>> out = spt.compute_outputs(t1=0, t2=1, signal=np.arange(5), split=np.zeros(2))
       >>> out["split"]
-      array([0, 2]...
+      array([0., 2.]...
 
     """
 
@@ -156,9 +159,12 @@ class Split(AComputer):
         self,
         name: str,
         signal_shape: tuple,
-        outputs: dict,
+        outputs: OrderedDict,
         dtype=np.float64,
     ):
+        if not isinstance(outputs, OrderedDict):
+            raise TypeError
+
         AComputer.__init__(self, name)
         self.defineInput("signal", shape=signal_shape, dtype=dtype)
         for k in outputs.keys():
@@ -202,7 +208,9 @@ class Group(AComputer):
         Its shape defines the shape of the data
 
     Examples:
-      >>> grp = Group("grp", snames=["gs1", "gs2"], inputs={"s1": (1,), "s2": (1,)})
+      >>> inp = OrderedDict()
+      >>> inp["s1"]=(1,); inp["s2"]=(1,)
+      >>> grp = Group("grp", snames=["gs1", "gs2"], inputs=inp)
       >>> out = grp.compute_outputs(t1=0, t2=1, grouped=np.zeros(2), s1=np.array([2]), s2=np.array([-1]))
       >>> out["grouped"]
       array([ 2., -1.]...
@@ -214,10 +222,13 @@ class Group(AComputer):
     def __init__(
         self,
         name: str,
-        inputs: dict,
+        inputs: OrderedDict,
         snames: Iterable[str],
         dtype=np.float64,
     ):
+        if not isinstance(inputs, OrderedDict):
+            raise TypeError
+
         AComputer.__init__(self, name)
         for k in inputs.keys():
             shape = inputs[k]

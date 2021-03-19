@@ -182,6 +182,18 @@ class DuplicateInput(Exception):
         )
 
 
+class DuplicateOutput(Exception):
+    def __init__(self, elem_name, output_name):
+        self.output_name = output_name
+        self.elem_name = elem_name
+
+    def __str__(self):
+        return "The new output '%s' already exists in element '%s'" % (
+            self.output_name,
+            self.elem_name,
+        )
+
+
 class InvalidSrcDataName(Exception):
     def __init__(self, src_data_name, valid_values):
         self.src_data_name = src_data_name

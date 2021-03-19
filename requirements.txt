@@ -6,3 +6,7 @@ control>=0.8.4
 tqdm>=4.56.0
 pyserial==3.4
 PyYAML>=5.4.1
+sgp4>=2.13
+skyfield>=1.37
+jplephem>=2.15
+astropy>=2.0.2

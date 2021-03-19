@@ -5,7 +5,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - astropy=3.2.3
+  - astropy=2.0.2
   - conda=4.9.2
   - conda-build=3.21.4
   - control=0.8.4
@@ -20,7 +20,7 @@ dependencies:
   - pyyaml=5.4.1
   - scipy=1.4.1
   - setuptools=52.0.0
-  - sgp4=2.18
+  - sgp4=2.13
   - skyfield=1.37
   - slycot=0.4.0.0
   - tqdm=4.56.0

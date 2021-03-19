@@ -22,36 +22,18 @@ class Satellite(AComputer):
     Args:
       name
         Name of the element
-      t : a datetime instance
-        The time of the orbit description
-      a (m)
-        Semi-major axis
-      ecc
-        Eccentricity
-      argp (rad)
-        Argument of perigee
-      inc (rad)
-        Inclination
-      mano (rad)
-        Mean anomaly
-      node (rad)
-        Right ascension of ascending node
-      bstar
-        Drag Term aka Radiation Pressure Coefficient
-      ndot
-        First Derivative of Mean Motion aka the Ballistic Coefficient
-      nddot
-        Second Derivative of Mean Motion
 
     itrf:
-    * px : X coordinate in geocentric ITRF in meters
-    * py : Y coordinate in geocentric ITRF in meters
-    * pz : Z coordinate in geocentric ITRF in meters
-    * vx : X coordinate of velocity in geocentric ITRF in meters
-    * vy : Y coordinate of velocity in geocentric ITRF in meters
-    * vz : Z coordinate of velocity in geocentric ITRF in meters
+
+    * px : X coordinate in geocentric ITRF (m)
+    * py : Y coordinate in geocentric ITRF (m)
+    * pz : Z coordinate in geocentric ITRF (m)
+    * vx : X coordinate of velocity in geocentric ITRF (m/s)
+    * vy : Y coordinate of velocity in geocentric ITRF (m/s)
+    * vz : Z coordinate of velocity in geocentric ITRF (m/s)
 
     subpoint:
+
     * lon : Longitude (rad)
     * lat : Latitude (rad)
 
@@ -66,7 +48,7 @@ class Satellite(AComputer):
         Return the inital epoch of TLEs : 1949 December 31 00:00 UT
 
         Returns:
-          Inital epoch of TLEst0
+          Inital epoch of TLEs
 
         """
         t0 = datetime(
@@ -79,15 +61,15 @@ class Satellite(AComputer):
         self.defineOutput(
             name="itrf", snames=["px", "py", "pz", "vx", "vy", "vz"], dtype=np.float64
         )
-        self.defineOutput(
-            name="subpoint", snames=["lon","lat"], dtype=np.float64
-        )
+        self.defineOutput(name="subpoint", snames=["lon", "lat"], dtype=np.float64)
         self.__sgp4 = None
 
     def _setSGP4(self, sgp4):
         self.__sgp4 = sgp4
 
-    def compute_outputs(self, t1: float, t2: float, subpoint:np.array, itrf: np.array) -> dict:
+    def compute_outputs(
+        self, t1: float, t2: float, subpoint: np.array, itrf: np.array
+    ) -> dict:
         dt = timedelta(seconds=t2)
         td = self.epoch + dt
         t = datetime_to_skyfield(td)
@@ -121,6 +103,34 @@ class Satellite(AComputer):
         ndot: float = 0,
         nddot: float = 0,
     ) -> "Satellite":
+        """Builds a Satellite from orbital elements.
+        See https://rhodesmill.org/skyfield/earth-satellites.html#build-a-satellite-from-orbital-elements
+
+        Args:
+          name
+            Name of the element
+          t : a datetime instance
+            The time of the orbit description
+          a (m)
+            Semi-major axis
+          ecc
+            Eccentricity
+          argp (rad)
+            Argument of perigee
+          inc (rad)
+            Inclination
+          mano (rad)
+            Mean anomaly
+          node (rad)
+            Right ascension of ascending node
+          bstar
+            Drag Term aka Radiation Pressure Coefficient
+          ndot
+            First Derivative of Mean Motion aka the Ballistic Coefficient
+          nddot
+            Second Derivative of Mean Motion
+
+        """
         t0 = cls.getInitialEpoch()
         epoch = (t - t0).total_seconds() / 86400
         n = np.sqrt(mu / a ** 3)
@@ -151,6 +161,14 @@ class Satellite(AComputer):
 
     @classmethod
     def fromTLE(cls, tle_file: str) -> "Satellite":
+        """Builds a Satellite from a TLE file
+        See https://en.wikipedia.org/wiki/Two-line_element_set
+
+        Args:
+          tle_file
+            TLE file path
+
+        """
         # ISS (ZARYA)
         # 1 25544U 98067A   21076.49742957  .00000086  00000-0  97467-5 0  9995
         # 2 25544  51.6441  76.2242 0003393 119.8379  30.2224 15.48910580274380
@@ -212,7 +230,7 @@ class Satellite(AComputer):
     @classmethod
     def fromEquinoctialOrbit(
         cls,
-        name:str,
+        name: str,
         t: datetime,
         a: float,
         ex: float,
@@ -221,7 +239,7 @@ class Satellite(AComputer):
         hy: float,
         lv: float,
     ) -> "Satellite":
-        """
+        """Builds a Satellite from its equinoctial elements
 
         See https://www.orekit.org/static/apidocs/org/orekit/orbits/EquinoctialOrbit.html
 

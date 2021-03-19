@@ -84,50 +84,33 @@ class AttPilot(AController):
             -z5 - al6 * z6 - a3 * x2 * x4 + d2x5_cons - al5 * x6 + al5 * dx5_cons
         ) * J3
 
-        s1 = (
-            np.sqrt(
-                (
-                    A_cons * self.sys.m * self.mot.k * self.sys.l
-                    + Gy * self.sys.b * self.sys.l
-                    + 2 * Gp * self.mot.k
-                )
-                / (self.sys.b * self.mot.k * self.sys.l)
-            )
-            / 2
-        )
-        s2 = (
-            np.sqrt(
-                -(
-                    -A_cons * self.sys.m * self.mot.k * self.sys.l
-                    + Gy * self.sys.b * self.sys.l
-                    + 2 * Gr * self.mot.k
-                )
-                / (self.sys.b * self.mot.k * self.sys.l)
-            )
-            / 2
-        )
-        s3 = (
-            np.sqrt(
-                (
-                    A_cons * self.sys.m * self.mot.k * self.sys.l
-                    + Gy * self.sys.b * self.sys.l
-                    - 2 * Gp * self.mot.k
-                )
-                / (self.sys.b * self.mot.k * self.sys.l)
-            )
-            / 2
-        )
-        s4 = (
-            np.sqrt(
-                -(
-                    -A_cons * self.sys.m * self.mot.k * self.sys.l
-                    + Gy * self.sys.b * self.sys.l
-                    - 2 * Gr * self.mot.k
-                )
-                / (self.sys.b * self.mot.k * self.sys.l)
-            )
-            / 2
-        )
+        ss1 = (
+            A_cons * self.sys.m * self.mot.k * self.sys.l
+            + Gy * self.sys.b * self.sys.l
+            + 2 * Gp * self.mot.k
+        ) / (self.sys.b * self.mot.k * self.sys.l)
+        s1 = np.sqrt(max(0, ss1)) / 2
+
+        ss2 = -(
+            -A_cons * self.sys.m * self.mot.k * self.sys.l
+            + Gy * self.sys.b * self.sys.l
+            + 2 * Gr * self.mot.k
+        ) / (self.sys.b * self.mot.k * self.sys.l)
+        s2 = np.sqrt(max(0, ss2)) / 2
+
+        ss3 = (
+            A_cons * self.sys.m * self.mot.k * self.sys.l
+            + Gy * self.sys.b * self.sys.l
+            - 2 * Gp * self.mot.k
+        ) / (self.sys.b * self.mot.k * self.sys.l)
+        s3 = np.sqrt(max(0, ss3)) / 2
+
+        ss4 = -(
+            -A_cons * self.sys.m * self.mot.k * self.sys.l
+            + Gy * self.sys.b * self.sys.l
+            - 2 * Gr * self.mot.k
+        ) / (self.sys.b * self.mot.k * self.sys.l)
+        s4 = np.sqrt(max(0, ss4)) / 2
 
         u = np.array([s1, s2, s3, s4, Gr, Gp, Gy])
 
