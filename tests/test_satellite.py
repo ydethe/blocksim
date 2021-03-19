@@ -13,45 +13,10 @@ from TestBase import TestBase
 
 from blocksim.constants import Req, omega
 from blocksim.blocks.Satellite import Satellite
+from blocksim.EarthPlotter import EarthPlotter
 
 
 class TestSatellite(TestBase):
-    def test_sat_param(self):
-        t_init = datetime(
-            year=2020, month=11, day=19, hour=0, minute=0, second=0, tzinfo=timezone.utc
-        )
-        sat = Satellite.fromOrbitalElements(
-            name="sat",
-            t=t_init,
-            a=Req + 630e3,  # semi-major axis
-            ecc=0.1,  # eccentricity
-            argp=0.2,  # argument of perigee (radians)
-            inc=0.3,  # inclination (radians)
-            mano=0.4,  # mean anomaly (radians)
-            node=0.5,  # nodeo: right ascension of ascending node (radians)
-        )
-        a, ex, ey, hx, hy, lv = sat.toEquinoctialOrbit()
-        sat2 = Satellite.fromEquinoctialOrbit("sat2", t_init, a, ex, ey, hx, hy, lv)
-        self.assertAlmostEqual(sat2.orbit_mano, sat.orbit_mano, delta=1e-9)
-        self.assertAlmostEqual(
-            sat2.orbit_semi_major_axis, sat.orbit_semi_major_axis, delta=1e-9
-        )
-        self.assertAlmostEqual(
-            sat2.orbit_inclination, sat.orbit_inclination, delta=1e-9
-        )
-        self.assertAlmostEqual(sat2.orbit_argp, sat.orbit_argp, delta=1e-9)
-        self.assertAlmostEqual(sat2.orbit_node, sat.orbit_node, delta=1e-9)
-        self.assertAlmostEqual(sat2.orbit_bstar, sat.orbit_bstar, delta=1e-9)
-        self.assertAlmostEqual(sat2.orbit_ndot, sat.orbit_ndot, delta=1e-9)
-        self.assertAlmostEqual(sat2.orbit_nddot, sat.orbit_nddot, delta=1e-9)
-        self.assertAlmostEqual(sat2.orbit_periapsis, sat.orbit_periapsis, delta=1e-9)
-        self.assertAlmostEqual(sat2.orbit_apoapsis, sat.orbit_apoapsis, delta=1e-9)
-        self.assertAlmostEqual(
-            sat2.orbital_precession, sat.orbital_precession, delta=1e-9
-        )
-        self.assertAlmostEqual(sat2.orbit_period, sat.orbit_period, delta=1e-9)
-        self.assertAlmostEqual(sat2.epoch, sat.epoch, delta=1e-9)
-
     def test_satellite(self):
         t_init = datetime(
             year=2020, month=11, day=19, hour=0, minute=0, second=0, tzinfo=timezone.utc
@@ -80,6 +45,32 @@ class TestSatellite(TestBase):
         t = dt.total_seconds()
         pv = satellite.compute_outputs(0, t, subpoint=None, itrf=None)["itrf"]
 
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_ground_track(self):
+        iss = Satellite.fromTLE("tests/iss.tle")
+        ns = 200
+        tps = np.linspace(0, 14400, ns)
+        lon = np.empty(ns)
+        lat = np.empty(ns)
+        for k in range(ns):
+            t = tps[k]
+            lon[k], lat[k] = iss.compute_outputs(0, t, subpoint=None, itrf=None)[
+                "subpoint"
+            ]
+
+        fig = plt.figure()
+        ep = EarthPlotter()
+        axe = ep.createAxe(fig)
+        ep.plotGroundTrack(axe, lon * 180 / np.pi, lat * 180 / np.pi)
+
+        return fig
+
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+
+    a = TestSatellite()
+    # a.test_satellite()
+    a.test_ground_track()
+
+    plt.show()
