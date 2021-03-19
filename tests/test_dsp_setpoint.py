@@ -10,6 +10,7 @@ import pytest
 sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase, plotAnalyticsolution
 
+from blocksim.Graphics import plotDSPLine
 from blocksim.core.Node import Frame
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.blocks.System import ASystem
@@ -74,14 +75,10 @@ class TestDSPSetpoint(TestBase):
         fig = plt.figure()
         axe = fig.add_subplot(111)
         axe.grid(True)
-        spectrum.plot(axe)
+
+        plotDSPLine(spectrum, axe)
 
         return fig
-
-        # return self.plotVerif(
-        #     "Figure 1",
-        #     [{"var": "sys_state_x"}, {"var": "re_xout_y0"}],
-        # )
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ import pytest
 sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase
 
+from blocksim.Graphics import plotDSPLine
 from blocksim.Logger import Logger
 from blocksim.dsp.DSPSignal import DSPSignal
 
@@ -42,8 +43,8 @@ class TestSignal(TestBase):
         fig = plt.figure()
         axe = fig.add_subplot(111)
 
-        y1.plot(axe, find_peaks=1, x_unit_mult=1e-6, linewidth=3, color="red")
-        y2.plot(axe, x_unit_mult=1e-6, color="black")
+        plotDSPLine(y1, axe, find_peaks=1, x_unit_mult=1e-6, linewidth=3, color="red")
+        plotDSPLine(y2, axe, x_unit_mult=1e-6, color="black")
 
         return fig
 
@@ -113,10 +114,10 @@ class TestSignal(TestBase):
         axe = fig.add_subplot(111)
         axe.grid(True)
 
-        s1.plot(axe, linestyle="--", marker="x", label="orig.")
+        plotDSPLine(s1, axe, linestyle="--", marker="x", label="orig.")
         tref = np.arange(int(50 * fs / f0)) / (50 * fs)
         axe.plot(tref, np.cos(2 * pi * f0 * tref))
-        s2.plot(axe, linestyle="--", marker="+", label="oodsp")
+        plotDSPLine(s2, axe, linestyle="--", marker="+", label="oodsp")
         axe.legend()
 
         return fig
@@ -134,8 +135,8 @@ class TestSignal(TestBase):
         fig = plt.figure()
         axe = fig.add_subplot(111)
         axe.grid(True)
-        s1.delay(1 / 60).plot(axe)
-        s1.plot(axe)
+        plotDSPLine(s1.delay(1 / 60), axe)
+        plotDSPLine(s1, axe)
 
         return fig
 

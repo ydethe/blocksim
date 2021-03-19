@@ -220,59 +220,6 @@ class DSPLine(object):
         }
         return d[mult]
 
-    def plot(self, axe, **kwargs):
-        """Plots a line with the following refinements :
-
-        * a callable *transform* is applied to all samples
-        * the X and Y axes are labeled according to *x_unit_mult*
-        * the X axe is labeled according to the class attributes name_of_x_var and unit_of_x_var
-        * the *find_peaks* highest peaks are displayed (default : 0)
-        * the label of the plot is the name given at instanciation
-
-        Args:
-          axe
-            Matplotlib axe to draw on
-          kwargs
-            Plotting options. The following extra keys are allowed:
-            * transform for a different transform from the one given at instanciation
-            * find_peaks to search peaks
-            * x_unit_mult to have a more readable unit prefix
-
-        """
-        axe.grid(True)
-        transform = kwargs.pop("transform", self.default_transform)
-        find_peaks = kwargs.pop("find_peaks", 0)
-        x_unit_mult = kwargs.pop("x_unit_mult", 1)
-        x_unit_lbl = self.getUnitAbbrev(x_unit_mult)
-        lbl = kwargs.pop("label", self.name)
-
-        ret = axe.plot(
-            self.generateXSerie() / x_unit_mult,
-            transform(self.y_serie),
-            label=lbl,
-            **kwargs
-        )
-        axe.set_xlabel(
-            "%s (%s%s)"
-            % (self.__class__.name_of_x_var, x_unit_lbl, self.__class__.unit_of_x_var)
-        )
-
-        if find_peaks > 0:
-            lpeaks = self.findPeaksWithTransform(
-                transform=transform, nb_peaks=find_peaks
-            )
-            for x in lpeaks:
-                y = transform(self.getSample(x))
-                axe.plot([x / x_unit_mult], [y], linestyle="", marker="o", color="red")
-                axe.annotate(
-                    "(%.1f %s%s,%.1f)"
-                    % (x / x_unit_mult, x_unit_lbl, self.__class__.unit_of_x_var, y),
-                    xy=(x / x_unit_mult, y),
-                    fontsize="x-small",
-                )
-
-        return ret
-
     def __len__(self):
         return len(self.y_serie)
 

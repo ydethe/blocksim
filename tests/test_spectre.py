@@ -10,6 +10,7 @@ import pytest
 sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase
 
+from blocksim.Graphics import plotDSPLine
 from blocksim.dsp.DSPSpectrum import DSPSpectrum
 from blocksim.dsp.DSPSignal import DSPSignal
 
@@ -29,7 +30,7 @@ class TestSpectre(TestBase):
         axe = fig.add_subplot(111)
 
         sp = s1.fft()
-        sp.plot(axe)
+        plotDSPLine(sp, axe)
 
         return fig
 
@@ -67,7 +68,7 @@ class TestSpectre(TestBase):
         fig = plt.figure()
         axe = fig.add_subplot(111)
 
-        sp.plot(axe)
+        plotDSPLine(sp, axe)
 
         return fig
 

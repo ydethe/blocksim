@@ -11,6 +11,7 @@ import pytest
 sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase
 
+from blocksim.Graphics import plotBode, plotDSPLine
 from blocksim.dsp.DSPFilter import DSPFilter
 from blocksim.dsp.DSPSignal import DSPSignal
 
@@ -29,7 +30,7 @@ class TestFilter(TestBase):
         axe_amp = fig.add_subplot(211)
         axe_pha = fig.add_subplot(212, sharex=axe_amp)
 
-        filt.plotBode(fs, axe_amp, axe_pha)
+        plotBode(filt, fs, axe_amp, axe_pha)
 
         return fig
 
@@ -56,8 +57,8 @@ class TestFilter(TestBase):
         fig = plt.figure()
         axe = fig.add_subplot(111)
 
-        y.plot(axe)
-        s2.plot(axe)
+        plotDSPLine(y, axe)
+        plotDSPLine(s2, axe)
 
         return fig
 
@@ -86,7 +87,7 @@ class TestFilter(TestBase):
         fig = plt.figure()
         axe = fig.add_subplot(111)
 
-        y.plot(axe, transform=np.abs)
+        plotDSPLine(y, axe, transform=np.abs)
 
         return fig
 

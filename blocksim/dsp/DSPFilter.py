@@ -71,38 +71,6 @@ class DSPFilter(object):
 
         return b
 
-    def plotBode(self, fs: float, axe_amp, axe_pha):
-        """Plots the bode diagram of the filter
-
-        Args:
-          fs (Hz)
-            The sampling frequency of the signals that will be filtered through it
-          axe_amp
-            Matplotlib axe to draw the ampltiude on
-          axe_pha
-            Matplotlib axe to draw the unfolded phase on
-
-        """
-        n = 200
-        b = self.generateCoefficients(fs)
-
-        freq = np.linspace(0, fs / 2, n)
-
-        p = Polynomial(b)
-        z = exp(-1j * 2 * pi * freq / fs)
-        y = p(z)
-
-        axe_amp.plot(freq, DSPLine.to_db(y))
-        axe_amp.grid(True)
-        axe_amp.set_ylabel("Ampliude (dB)")
-
-        pha = phase_unfold(y)
-
-        axe_pha.plot(freq, 180 / pi * pha)
-        axe_pha.grid(True)
-        axe_pha.set_xlabel("Frequency (Hz)")
-        axe_pha.set_ylabel("Phase (deg)")
-
     def apply(self, s: DSPSignal) -> DSPSignal:
         """Filters a :class:`SystemControl.dsp.DSPSignal`
 
