@@ -101,264 +101,256 @@ class TestPVTOL(TestBase):
         )
 
 
-# class TestPVTOLComplex(TestBase):
-#     @classmethod
-#     def setUpClass(cls):
-#         """get_some_resource() is slow, to avoid calling it for each test use setUpClass()
-#         and store the result as class variable
-#         """
-#         super(TestPVTOLComplex, cls).setUpClass()
+class TestPVTOLComplex(TestBase):
+    @classmethod
+    def setUpClass(cls):
+        """get_some_resource() is slow, to avoid calling it for each test use setUpClass()
+        and store the result as class variable
+        """
+        super(TestPVTOLComplex, cls).setUpClass()
 
-#         mot0 = Motor(0)
-#         mot1 = Motor(1)
-#         mot2 = Motor(2)
-#         mot3 = Motor(3)
+        mot0 = Motor(0)
+        mot1 = Motor(1)
+        mot2 = Motor(2)
+        mot3 = Motor(3)
 
-#         tau = 50e-3
-#         Ks = 0.0
+        tau = 50e-3
+        Ks = 0.0
 
-#         ctl_mot0 = AntiWindupPIDController(
-#             "ctl_mot0",
-#             name_of_outputs=["umot0"],
-#             name_of_states=["state_umot0", "int_x0", "corr0"],
-#         )
-#         ctl_mot0.D = 0.0
-#         ctl_mot0.I = mot0.km / tau
-#         ctl_mot0.P = ctl_mot0.I * mot0.Jr * mot0.R / mot0.km ** 2
-#         ctl_mot0.Ks = Ks
-#         ctl_mot0.Umin = -mot0.Umax
-#         ctl_mot0.Umax = mot0.Umax
+        ctl_mot0 = AntiWindupPIDController(
+            "ctlmot0", snames=["u"], shape_estimation=(2,)
+        )
+        ctl_mot0.D = 0.0
+        ctl_mot0.I = mot0.km / tau
+        ctl_mot0.P = ctl_mot0.I * mot0.Jr * mot0.R / mot0.km ** 2
+        ctl_mot0.Ks = Ks
+        ctl_mot0.Umin = -mot0.Umax
+        ctl_mot0.Umax = mot0.Umax
 
-#         ctl_mot1 = AntiWindupPIDController(
-#             "ctl_mot1",
-#             name_of_outputs=["umot1"],
-#             name_of_states=["state_umot1", "int_x1", "corr1"],
-#         )
-#         ctl_mot1.D = 0.0
-#         ctl_mot1.I = mot0.km / tau
-#         ctl_mot1.P = ctl_mot1.I * mot0.Jr * mot0.R / mot0.km ** 2
-#         ctl_mot1.Ks = Ks
-#         ctl_mot1.Umin = -mot0.Umax
-#         ctl_mot1.Umax = mot0.Umax
+        ctl_mot1 = AntiWindupPIDController(
+            "ctlmot1", snames=["u"], shape_estimation=(2,)
+        )
+        ctl_mot1.D = 0.0
+        ctl_mot1.I = mot0.km / tau
+        ctl_mot1.P = ctl_mot1.I * mot0.Jr * mot0.R / mot0.km ** 2
+        ctl_mot1.Ks = Ks
+        ctl_mot1.Umin = -mot0.Umax
+        ctl_mot1.Umax = mot0.Umax
 
-#         ctl_mot2 = AntiWindupPIDController(
-#             "ctl_mot2",
-#             name_of_outputs=["umot2"],
-#             name_of_states=["state_umot2", "int_x2", "corr2"],
-#         )
-#         ctl_mot2.D = 0.0
-#         ctl_mot2.I = mot0.km / tau
-#         ctl_mot2.P = ctl_mot2.I * mot0.Jr * mot0.R / mot0.km ** 2
-#         ctl_mot2.Ks = Ks
-#         ctl_mot2.Umin = -mot0.Umax
-#         ctl_mot2.Umax = mot0.Umax
+        ctl_mot2 = AntiWindupPIDController(
+            "ctlmot2", snames=["u"], shape_estimation=(2,)
+        )
+        ctl_mot2.D = 0.0
+        ctl_mot2.I = mot0.km / tau
+        ctl_mot2.P = ctl_mot2.I * mot0.Jr * mot0.R / mot0.km ** 2
+        ctl_mot2.Ks = Ks
+        ctl_mot2.Umin = -mot0.Umax
+        ctl_mot2.Umax = mot0.Umax
 
-#         ctl_mot3 = AntiWindupPIDController(
-#             "ctl_mot3",
-#             name_of_outputs=["umot3"],
-#             name_of_states=["state_umot3", "int_x3", "corr3"],
-#         )
-#         ctl_mot3.D = 0.0
-#         ctl_mot3.I = mot0.km / tau
-#         ctl_mot3.P = ctl_mot3.I * mot0.Jr * mot0.R / mot0.km ** 2
-#         ctl_mot3.Ks = Ks
-#         ctl_mot3.Umin = -mot0.Umax
-#         ctl_mot3.Umax = mot0.Umax
+        ctl_mot3 = AntiWindupPIDController(
+            "ctlmot3", snames=["u"], shape_estimation=(2,)
+        )
+        ctl_mot3.D = 0.0
+        ctl_mot3.I = mot0.km / tau
+        ctl_mot3.P = ctl_mot3.I * mot0.Jr * mot0.R / mot0.km ** 2
+        ctl_mot3.Ks = Ks
+        ctl_mot3.Umin = -mot0.Umax
+        ctl_mot3.Umax = mot0.Umax
 
-#         grp = Group(
-#             "grp",
-#             name_of_outputs=["gs0", "gs1", "gs2", "gs3"],
-#             name_of_inputs=["s0", "s1", "s2", "s3"],
-#         )
+        grp_inp = OrderedDict()
+        grp_inp["in0"] = (1,)
+        grp_inp["in1"] = (1,)
+        grp_inp["in2"] = (1,)
+        grp_inp["in3"] = (1,)
+        grp = Group(
+            "grp",
+            inputs=grp_inp,
+            snames=["gs0", "gs1", "gs2", "gs3"],
+        )
 
-#         vtol_sys = LTISystem(
-#             "sys",
-#             name_of_outputs=["x", "y", "z"],
-#             name_of_states=[
-#                 "state_x",
-#                 "state_y",
-#                 "state_z",
-#                 "state_vx",
-#                 "state_vy",
-#                 "state_vz",
-#             ],
-#         )
-#         vtol_sys.setInitialState((np.random.rand(6) - 0.5) * 20)
-#         vtol_sys.A = np.zeros((6, 6))
-#         vtol_sys.A[0:3, 3:6] = np.eye(3)
-#         vtol_sys.B = np.zeros((6, 3))
-#         vtol_sys.B[3:6, :] = np.eye(3)
-#         vtol_sys.C = np.zeros((3, 6))
-#         vtol_sys.C[:, 0:3] = np.eye(3)
-#         vtol_sys.D = np.zeros((3, 3))
-#         vtol_sys.createParameter("m", 0.458)
-#         vtol_sys.createParameter("g", 9.81)
+        vtol_sys = LTISystem(
+            "sys",
+            shape_command=(3,),
+            snames_state=[
+                "state_x",
+                "state_y",
+                "state_z",
+                "state_vx",
+                "state_vy",
+                "state_vz",
+            ],
+        )
+        vtol_sys.setInitialStateForOutput((np.random.rand(6) - 0.5) * 20, "state")
+        vtol_sys.matA = np.zeros((6, 6))
+        vtol_sys.matA[0:3, 3:6] = np.eye(3)
+        vtol_sys.matB = np.zeros((6, 3))
+        vtol_sys.matB[3:6, :] = np.eye(3)
+        vtol_sys.createParameter("m", 0.458)
+        vtol_sys.createParameter("g", 9.81)
 
-#         lqr = LQRegulator("lqr", name_of_outputs=["fx", "fy", "fz"])
-#         lqr.computeGain(np.eye(6), np.eye(3) * 5, vtol_sys)
+        lqr = LQRegulator(
+            "lqr", shape_setpoint=(4,), shape_estimation=(6,), snames=["fx", "fy", "fz"]
+        )
+        lqr.matQ = np.eye(6)
+        lqr.matR = np.eye(3) * 5
+        lqr.matA = vtol_sys.matA
+        lqr.matB = vtol_sys.matB
+        lqr.matC = np.zeros((3, 6))
+        lqr.matC[:, 0:3] = np.eye(3)
+        lqr.matD = np.zeros((3, 3))
+        lqr.computeGain()
 
-#         att_sys = Quadri(mot0)
-#         x0 = att_sys.getInitialState()
-#         x0[:6] = np.array([0, 0, 0, 2.349619, -2.409138, 4.907362])
-#         w0 = np.array([2, -1, 3]) / 2
-#         x0[10:13] = w0
-#         att_sys.setInitialState(x0)
-#         stp = Step(
-#             "stp",
-#             cons=np.array([0, 0, 0, 0]),
-#             name_of_outputs=["x_cons", "y_cons", "z_cons", "psi_cons"],
-#         )
-#         ctl_att = AttPilot(att_sys, mot0)
-#         ctl_vtol = VTOLPilot(vtol_sys, lqr, complex_quad=True)
+        att_sys = Quadri(mot0)
+        x0 = att_sys.getInitialStateForOutput("state")
+        x0[:6] = np.array([0, 0, 0, 2.349619, -2.409138, 4.907362])
+        w0 = np.array([2, -1, 3]) / 2
+        x0[10:13] = w0
+        att_sys.setInitialStateForOutput(x0, "state")
+        stp = Step(
+            "stp",
+            cons=np.array([0, 0, 0, 0]),
+            snames=["x_cons", "y_cons", "z_cons", "psi_cons"],
+        )
+        ctlatt = AttPilot("ctlatt", att_sys, mot0)
+        ctlvtol = VTOLPilot(vtol_sys, lqr, complex_quad=True)
 
-#         sim = Simulation()
-#         sim.addElement(mot0)
-#         sim.addElement(mot1)
-#         sim.addElement(mot2)
-#         sim.addElement(mot3)
-#         sim.addElement(grp)
-#         sim.addElement(stp)
-#         sim.addElement(att_sys)
-#         sim.addElement(ctl_vtol)
-#         sim.addElement(ctl_att)
-#         sim.addElement(ctl_mot0)
-#         sim.addElement(ctl_mot1)
-#         sim.addElement(ctl_mot2)
-#         sim.addElement(ctl_mot3)
+        spt_otp = OrderedDict()
+        spt_otp["u0"] = (0,)
+        spt_otp["u1"] = (1,)
+        spt_otp["u2"] = (2,)
+        spt_otp["u3"] = (3,)
+        spt = Split(
+            name="spt",
+            signal_shape=(7,),
+            outputs=spt_otp,
+        )
 
-#         sim.linkElements(
-#             src=stp, dst=ctl_vtol, src_data_name="state", dst_input_name="setpoint"
-#         )
-#         sim.linkElements(
-#             src=ctl_vtol, dst=ctl_att, src_data_name="output", dst_input_name="setpoint"
-#         )
-#         sim.linkElements(
-#             src=ctl_att,
-#             dst=ctl_mot0,
-#             src_data_name="output[0]",
-#             dst_input_name="setpoint",
-#         )
-#         sim.linkElements(
-#             src=ctl_att,
-#             dst=ctl_mot1,
-#             src_data_name="output[1]",
-#             dst_input_name="setpoint",
-#         )
-#         sim.linkElements(
-#             src=ctl_att,
-#             dst=ctl_mot2,
-#             src_data_name="output[2]",
-#             dst_input_name="setpoint",
-#         )
-#         sim.linkElements(
-#             src=ctl_att,
-#             dst=ctl_mot3,
-#             src_data_name="output[3]",
-#             dst_input_name="setpoint",
-#         )
-#         sim.linkElements(
-#             src=ctl_mot0, dst=mot0, src_data_name="output", dst_input_name="command"
-#         )
-#         sim.linkElements(
-#             src=ctl_mot1, dst=mot1, src_data_name="output", dst_input_name="command"
-#         )
-#         sim.linkElements(
-#             src=ctl_mot2, dst=mot2, src_data_name="output", dst_input_name="command"
-#         )
-#         sim.linkElements(
-#             src=ctl_mot3, dst=mot3, src_data_name="output", dst_input_name="command"
-#         )
-#         sim.linkElements(
-#             src=mot0, dst=ctl_mot0, src_data_name="output", dst_input_name="estimation"
-#         )
-#         sim.linkElements(
-#             src=mot1, dst=ctl_mot1, src_data_name="output", dst_input_name="estimation"
-#         )
-#         sim.linkElements(
-#             src=mot2, dst=ctl_mot2, src_data_name="output", dst_input_name="estimation"
-#         )
-#         sim.linkElements(
-#             src=mot3, dst=ctl_mot3, src_data_name="output", dst_input_name="estimation"
-#         )
-#         sim.linkElements(src=mot0, dst=grp, src_data_name="state", dst_input_name="s0")
-#         sim.linkElements(src=mot1, dst=grp, src_data_name="state", dst_input_name="s1")
-#         sim.linkElements(src=mot2, dst=grp, src_data_name="state", dst_input_name="s2")
-#         sim.linkElements(src=mot3, dst=grp, src_data_name="state", dst_input_name="s3")
-#         sim.linkElements(
-#             src=grp, dst=att_sys, src_data_name="output", dst_input_name="command"
-#         )
-#         sim.linkElements(
-#             src=att_sys,
-#             dst=ctl_att,
-#             src_data_name="output",
-#             dst_input_name="estimation",
-#         )
-#         sim.linkElements(
-#             src=att_sys,
-#             dst=ctl_vtol,
-#             src_data_name="output",
-#             dst_input_name="estimation",
-#         )
+        vspt_otp = OrderedDict()
+        vspt_otp["att"] = [3, 4, 5, 6]
+        vtolspt = Split(
+            name="vtolspt",
+            signal_shape=(7,),
+            outputs=vspt_otp,
+        )
 
-#         tps = np.arange(0, 20, 0.01)
-#         sim.setOutputLoggerFile(fic="tests/quadri.log")
-#         sim.simulate(tps, progress_bar=False)
+        wspt_otp = OrderedDict()
+        wspt_otp["pv"] = list(range(6))
+        wtolspt = Split(
+            name="wtolspt",
+            signal_shape=(13,),
+            outputs=wspt_otp,
+        )
 
-#         cls.log = sim.getLogger()
+        sim = Simulation()
+        sim.addComputer(mot0)
+        sim.addComputer(mot1)
+        sim.addComputer(mot2)
+        sim.addComputer(mot3)
+        sim.addComputer(grp)
+        sim.addComputer(stp)
+        sim.addComputer(att_sys)
+        sim.addComputer(ctlvtol)
+        sim.addComputer(ctlatt)
+        sim.addComputer(spt)
+        sim.addComputer(vtolspt)
+        sim.addComputer(wtolspt)
+        sim.addComputer(ctl_mot0)
+        sim.addComputer(ctl_mot1)
+        sim.addComputer(ctl_mot2)
+        sim.addComputer(ctl_mot3)
 
-#     def test_quad_complexe_final(self):
-#         self.log = TestPVTOLComplex.log
+        sim.connect("stp.setpoint", "ctlvtol.setpoint")
+        sim.connect("ctlatt.command", "spt.signal")
+        sim.connect("ctlvtol.command", "vtolspt.signal")
+        sim.connect("vtolspt.att", "ctlatt.setpoint")
+        sim.connect("spt.u0", "ctlmot0.setpoint")
+        sim.connect("spt.u1", "ctlmot1.setpoint")
+        sim.connect("spt.u2", "ctlmot2.setpoint")
+        sim.connect("spt.u3", "ctlmot3.setpoint")
+        sim.connect("ctlmot0.command", "mot0.command")
+        sim.connect("ctlmot1.command", "mot1.command")
+        sim.connect("ctlmot2.command", "mot2.command")
+        sim.connect("ctlmot3.command", "mot3.command")
+        sim.connect("mot0.vel", "ctlmot0.estimation")
+        sim.connect("mot1.vel", "ctlmot1.estimation")
+        sim.connect("mot2.vel", "ctlmot2.estimation")
+        sim.connect("mot3.vel", "ctlmot3.estimation")
+        sim.connect("mot0.state", "grp.in0")
+        sim.connect("mot1.state", "grp.in1")
+        sim.connect("mot2.state", "grp.in2")
+        sim.connect("mot3.state", "grp.in3")
+        sim.connect("grp.grouped", "sys.command")
+        sim.connect("sys.state", "ctlatt.estimation")
+        sim.connect("sys.euler", "ctlatt.euler")
+        sim.connect("sys.state", "wtolspt.signal")
+        sim.connect("wtolspt.pv", "ctlvtol.estimation")
 
-#         t = self.log.getValue("t")
-#         iok = np.where(t > 15)[0]
+        tps = np.arange(0, 20, 0.01)
+        sim.setOutputLoggerFile(fic="tests/quadri.log")
+        sim.simulate(tps, progress_bar=False)
 
-#         px = self.log.getValue("px")[iok]
-#         py = self.log.getValue("py")[iok]
-#         pz = self.log.getValue("pz")[iok]
-#         yaw = self.log.getValue("yaw")[iok]
+        cls.log = sim.getLogger()
 
-#         self.assertAlmostEqual(np.max(np.abs(px)), 0, delta=0.1)
-#         self.assertAlmostEqual(np.max(np.abs(py)), 0, delta=0.1)
-#         self.assertAlmostEqual(np.max(np.abs(pz)), 0, delta=0.1)
-#         self.assertAlmostEqual(np.max(np.abs(yaw)), 0, delta=1e-5)
+    def test_quad_complexe_final(self):
+        self.log = TestPVTOLComplex.log
 
-#     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
-#     def test_quad_complexe_yaw(self):
-#         self.log = TestPVTOLComplex.log
+        t = self.log.getValue("t")
+        iok = np.where(t > 15)[0]
 
-#         return self.plotVerif(
-#             "Figure 1",
-#             [{"var": "px"}, {"var": "py"}, {"var": "pz"}],
-#             [{"var": "deg(yaw)"}],
-#         )
+        px = self.log.getValue("sys_state_px")[iok]
+        py = self.log.getValue("sys_state_px")[iok]
+        pz = self.log.getValue("sys_state_px")[iok]
+        yaw = self.log.getValue("sys_euler_yaw")[iok]
 
-#     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
-#     def test_quad_complexe_sval(self):
-#         self.log = TestPVTOLComplex.log
+        self.assertAlmostEqual(np.max(np.abs(px)), 0, delta=0.1)
+        self.assertAlmostEqual(np.max(np.abs(py)), 0, delta=0.1)
+        self.assertAlmostEqual(np.max(np.abs(pz)), 0, delta=0.1)
+        self.assertAlmostEqual(np.max(np.abs(yaw)), 0, delta=1e-5)
 
-#         return self.plotVerif(
-#             "Figure 2", [{"var": "s0"}, {"var": "s1"}, {"var": "s2"}, {"var": "s3"}]
-#         )
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_quad_complexe_yaw(self):
+        self.log = TestPVTOLComplex.log
 
-#     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
-#     def test_quad_complexe_att(self):
-#         self.log = TestPVTOLComplex.log
+        return self.plotVerif(
+            "Figure 1",
+            [{"var": "sys_state_px"}, {"var": "sys_state_py"}, {"var": "sys_state_pz"}],
+            [{"var": "deg(sys_euler_yaw)"}],
+        )
 
-#         return self.plotVerif(
-#             "Figure 3",
-#             [
-#                 {"var": "deg(roll_cons)"},
-#                 {"var": "deg(pitch_cons)"},
-#                 {"var": "deg(yaw_cons)"},
-#             ],
-#         )
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_quad_complexe_sval(self):
+        self.log = TestPVTOLComplex.log
+
+        return self.plotVerif(
+            "Figure 2",
+            [
+                {"var": "mot0_vel_s"},
+                {"var": "mot1_vel_s"},
+                {"var": "mot2_vel_s"},
+                {"var": "mot3_vel_s"},
+            ],
+        )
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_quad_complexe_att(self):
+        self.log = TestPVTOLComplex.log
+
+        return self.plotVerif(
+            "Figure 3",
+            [
+                {"var": "deg(ctlvtol_command_roll)"},
+                {"var": "deg(ctlvtol_command_pitch)"},
+                {"var": "deg(ctlvtol_command_yaw)"},
+            ],
+        )
 
 
 if __name__ == "__main__":
-    # unittest.main()
+    unittest.main()
 
-    a = TestPVTOL()
-    a.setUp()
-    a.test_quad_simplified()
+    # a = TestPVTOLComplex()
+    # TestPVTOLComplex.setUpClass()
+    # a.setUp()
+    # a.test_quad_complexe_att()
 
-    plt.show()
+    # plt.show()
