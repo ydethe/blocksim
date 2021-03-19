@@ -588,6 +588,7 @@ class AComputer(ABaseNode):
         """
         if not output_id in self.__outputs.keys():
             logger.error("In '%s' : id not found '%s'" % (self.getName(), output_id))
+            raise UnknownOutput(self.getName(), output_id)
         return self.__outputs[output_id]
 
     def getOutputByName(self, name: str) -> Output:
@@ -606,7 +607,8 @@ class AComputer(ABaseNode):
             if otp.getName() == name:
                 return otp
 
-        return None
+        logger.error("In '%s' : output name not found '%s'" % (self.getName(), name))
+        raise UnknownOutput(self.getName(), name)
 
     def getInputById(self, input_id: UUID) -> Input:
         """Get an input with its id
@@ -619,6 +621,9 @@ class AComputer(ABaseNode):
           The Input
 
         """
+        if not input_id in self.__inputs.keys():
+            logger.error("In '%s' : id not found '%s'" % (self.getName(), input_id))
+            raise UnknownInput(self.getName(), input_id)
         return self.__inputs[input_id]
 
     def getInputByName(self, name: str) -> Input:
@@ -637,7 +642,8 @@ class AComputer(ABaseNode):
             if inp.getName() == name:
                 return inp
 
-        return None
+        logger.error("In '%s' : input name not found '%s'" % (self.getName(), name))
+        raise UnknownInput(self.getName(), name)
 
     def getDataForInput(
         self, frame: Frame, uid: UUID = None, name: str = None

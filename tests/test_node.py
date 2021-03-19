@@ -17,6 +17,16 @@ from blocksim.blocks.Controller import PIDController
 from blocksim.Simulation import Simulation
 
 
+ref_repr = """   ========================
+   |        'sys'         |
+   |        System        |
+   ========================
+   |                      |
+-> command(1,)    state(2,) ->
+   |                      |
+   ========================
+"""
+
 # source activate "D:\Users\blaudiy\Documents\Mes Outils Personnels\myenv"
 class System(ASystem):
     def __init__(self, name: str):
@@ -48,6 +58,7 @@ class TestSimpleControl(TestBase):
         stp = Step("stp", snames=["c"], cons=np.array([1]))
         ctl = PIDController("ctl", shape_estimation=2, snames=["u"], coeffs=(P, I, D))
         sys = System("sys")
+        self.assertEqual(str(sys), ref_repr)
 
         sim = Simulation()
         sim.addComputer(stp)
