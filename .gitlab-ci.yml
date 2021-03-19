@@ -1,7 +1,7 @@
 # This file is a template, and might need editing before it works on your project.
 # Official language image. Look for the different tagged releases at:
 # https://hub.docker.com/r/library/python/tags/
-# python3.6 in ubuntu:bionic
+# python3.7 in ubuntu:bionic
 image: continuumio/miniconda3:4.9.2
 
 # Change pip's cache directory to be inside the project directory since we can
@@ -23,8 +23,8 @@ test:
   script:
     - conda env create -f environment.yml
     - source activate blocksim
-    - python3.6 setup.py develop
-    - python3.6 -m pytest --mpl --mpl-generate-summary=html --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
+    - python3.7 setup.py develop
+    - python3.7 -m pytest --mpl --mpl-generate-summary=html --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
     - codecov
     - coverage html
   artifacts:
@@ -39,8 +39,8 @@ doc:
     - conda env create -f environment.yml
     - source activate blocksim
     - conda env update --file docs/environment.yml
-    - READTHEDOCS=True python3.6 setup.py develop
-    - READTHEDOCS=True python3.6 setup.py doc
+    - READTHEDOCS=True python3.7 setup.py develop
+    - READTHEDOCS=True python3.7 setup.py doc
     - mv docs/_build/html htmldoc
   artifacts:
     paths:
@@ -67,6 +67,6 @@ publish_pypi:
   script:
     - conda env create -f environment.yml
     - source activate blocksim
-    - python3.6 setup.py sdist
+    - python3.7 setup.py sdist
     - pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
     - twine upload dist/*
