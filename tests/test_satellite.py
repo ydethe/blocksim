@@ -14,6 +14,7 @@ from TestBase import TestBase
 from blocksim.constants import Req, omega
 from blocksim.blocks.Satellite import Satellite
 from blocksim.EarthPlotter import EarthPlotter
+from blocksim.Simulation import Simulation
 
 
 class TestSatellite(TestBase):
@@ -48,20 +49,22 @@ class TestSatellite(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
     def test_ground_track(self):
         iss = Satellite.fromTLE("tests/iss.tle")
+
+        sim = Simulation()
+        sim.addComputer(iss)
+
         ns = 200
         tps = np.linspace(0, 14400, ns)
-        lon = np.empty(ns)
-        lat = np.empty(ns)
-        for k in range(ns):
-            t = tps[k]
-            lon[k], lat[k] = iss.compute_outputs(0, t, subpoint=None, itrf=None)[
-                "subpoint"
-            ]
+        sim.simulate(tps, progress_bar=False)
+
+        log = sim.getLogger()
+        lon = log.getValue("deg(iss_subpoint_lon)")
+        lat = log.getValue("deg(iss_subpoint_lat)")
 
         fig = plt.figure()
         ep = EarthPlotter()
         axe = ep.createAxe(fig)
-        ep.plotGroundTrack(axe, lon * 180 / np.pi, lat * 180 / np.pi)
+        ep.plotGroundTrack(axe, lon, lat)
 
         return fig
 

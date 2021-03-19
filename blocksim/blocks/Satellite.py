@@ -84,7 +84,7 @@ class Satellite(AComputer):
 
         outputs = {}
         outputs["itrf"] = pv
-        outputs["subpoint"] = self.subpoint(td)
+        outputs["subpoint"] = np.array(self.subpoint(td))
 
         return outputs
 
