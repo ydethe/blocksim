@@ -1,8 +1,9 @@
 *.bak
 .vscode/
 results/
-docs/SystemControl*.rst
+docs/blocksim*.rst
 docs/modules.rst
+docs/examples/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
