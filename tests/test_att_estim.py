@@ -92,7 +92,7 @@ class TestIMU(TestBase):
     def test_madgwick_pitch(self):
         np.random.seed(134697)
 
-        ctrl = Step(name="ctrl", snames=["u%i"%i for i in range(9)], cons=np.zeros(9))
+        ctrl = Step(name="ctrl", snames=["u%i" % i for i in range(9)], cons=np.zeros(9))
 
         angle_ini = -60 * np.pi / 180.0
         wangle = 10.0 * np.pi / 180.0
@@ -167,7 +167,7 @@ class TestIMU(TestBase):
     def test_madgwick_yaw(self):
         np.random.seed(134697)
 
-        ctrl = Step(name="ctrl", snames=["u%i"%i for i in range(9)], cons=np.zeros(9))
+        ctrl = Step(name="ctrl", snames=["u%i" % i for i in range(9)], cons=np.zeros(9))
 
         angle_ini = -60 * np.pi / 180.0
         wangle = 10.0 * np.pi / 180.0
@@ -235,7 +235,7 @@ class TestIMU(TestBase):
     def test_mahony_pitch(self):
         np.random.seed(134697)
 
-        ctrl = Step(name="ctrl", snames=["u%i"%i for i in range(9)], cons=np.zeros(9))
+        ctrl = Step(name="ctrl", snames=["u%i" % i for i in range(9)], cons=np.zeros(9))
 
         angle_ini = -60 * np.pi / 180.0
         wangle = 10.0 * np.pi / 180.0
@@ -310,7 +310,7 @@ class TestIMU(TestBase):
     def test_mahony_yaw(self):
         np.random.seed(134697)
 
-        ctrl = Step(name="ctrl", snames=["u%i"%i for i in range(9)], cons=np.zeros(9))
+        ctrl = Step(name="ctrl", snames=["u%i" % i for i in range(9)], cons=np.zeros(9))
 
         angle_ini = -60 * np.pi / 180.0
         wangle = 10.0 * np.pi / 180.0

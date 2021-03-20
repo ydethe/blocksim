@@ -775,9 +775,7 @@ class MadgwickFilter(AComputer):
         AComputer.__init__(self, name)
         self.defineInput("measurement", shape=(9,), dtype=np.float64)
         self.defineOutput("state", snames=["q0", "q1", "q2", "q3"], dtype=np.float64)
-        self.defineOutput(
-            "euler", snames=["roll", "pitch", "yaw"], dtype=np.float64
-        )
+        self.defineOutput("euler", snames=["roll", "pitch", "yaw"], dtype=np.float64)
         self.setInitialStateForOutput(np.array([1, 0, 0, 0]), "state")
 
         # Parametres du filtre Madgwick
@@ -1045,9 +1043,7 @@ class MahonyFilter(AComputer):
         AComputer.__init__(self, name)
         self.defineInput("measurement", shape=(9,), dtype=np.float64)
         self.defineOutput("state", snames=["q0", "q1", "q2", "q3"], dtype=np.float64)
-        self.defineOutput(
-            "euler", snames=["roll", "pitch", "yaw"], dtype=np.float64
-        )
+        self.defineOutput("euler", snames=["roll", "pitch", "yaw"], dtype=np.float64)
         self.setInitialStateForOutput(np.array([1, 0, 0, 0]), "state")
 
         # Paramtres du filtre Mahony
