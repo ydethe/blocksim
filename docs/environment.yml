@@ -4,19 +4,23 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - astropy=4.2
+  - cartopy=0.18.0
   - control=0.8.4
+  - ipython=7.21.0
+  - jplephem=2.15
   - matplotlib=3.3.4
-  - matplotlib-base=3.3.4
-  - numpy=1.19.2
-  - pillow=8.1.1
+  - numpy=1.20.1
+  - pillow=8.1.2
   - pip=21.0.1
-  - pyserial=3.4
-  - python=3.6.13
+  - python=3.7.10
   - pyyaml=5.4.1
-  - scipy=1.4.1
-  - setuptools=52.0.0
+  - scipy=1.6.1
+  - setuptools=49.6.0
+  - sgp4=2.18
+  - skyfield=1.37
   - slycot=0.4.0.0
-  - tqdm=4.56.0
+  - tqdm=4.59.0
   - pip:
     - sphinx==3.5.1
     - sphinx_rtd_theme==0.4.3
