@@ -12,6 +12,7 @@ from .System import LTISystem
 from ..core.Node import AComputer, Input, Output
 from ..core.Frame import Frame
 from ..Logger import Logger
+from ..dsp.DSPSpectrogram import DSPSpectrogram
 from ..utils import quat_to_euler, euler_to_quat, assignVector
 
 
@@ -658,5 +659,572 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         outputs["statecov"] = statecov.copy()
         outputs["matK"] = matK.copy()
         outputs["state"] = xest
+
+        return outputs
+
+
+class SpectrumEstimator(SteadyStateKalmanFilter):
+    """Frequency tracker based on a Kalman filter.
+    The number of frequencies to be tracked in *tracks* and the number of states shall be equal
+
+    The inputs of the element are **command** and **measurement**
+
+    Args:
+      name
+        Name of the system
+      name_of_outputs
+        Names of the outputs of the element
+      name_of_states
+        Names of the states of the element
+      tracks (Hz)
+        List of the frequencies to be tracked
+
+    """
+
+    __slots__ = []
+
+    def __init__(
+        self,
+        name: str,
+        dt: float,
+        shape_cmd: tuple,
+        shape_meas: tuple,
+        snames_state: Iterable[str],
+        snames_output: Iterable[str],
+        tracks: np.array,
+    ):
+        SteadyStateKalmanFilter.__init__(
+            self,
+            name=name,
+            dt=dt,
+            shape_cmd=shape_cmd,
+            shape_meas=shape_meas,
+            snames_state=snames_state,
+            snames_output=snames_output,
+            dtype=np.complex128,
+        )
+        self.createParameter("tracks", tracks)
+
+        nb_tracks = len(self.tracks)
+
+        self.matA = 1j * 2 * np.pi * np.diag(self.tracks)
+        self.matB = np.zeros((nb_tracks, 1), dtype=np.complex128)
+        self.matC = np.ones((1, nb_tracks), dtype=np.complex128)
+        self.matD = np.zeros((1, 1), dtype=np.complex128)
+
+    def getSpectrogram(self, log: Logger) -> DSPSpectrogram:
+        """Gets the spectrogram from the Logger after simulation
+
+        Args:
+          log
+            The :class:`blocksim.Logger.Logger` after simulation
+
+        Returns:
+          The spectrogram
+
+        """
+        nb_tracks = len(self.tracks)
+        t_sim = log.getValue("t")
+
+        img = np.empty((nb_tracks - 1, len(t_sim)), dtype=np.complex128)
+        ns = self.getStatesNames()
+        for k in range(1, nb_tracks):
+            f = self.tracks[k]
+            x = log.getValue(ns[k])
+            y = x * exp(-1j * 2 * pi * t_sim * f)
+            img[k - 1, :] = y
+
+        df = self.tracks[1] - self.tracks[0]
+
+        spg = DSPSpectrogram(
+            name="spectrogram",
+            samplingXStart=t_sim[0] - nb_tracks * self.dt,
+            samplingXPeriod=self.dt,
+            samplingYStart=-0.5 + self.tracks[1],
+            samplingYPeriod=df,
+            img=img,
+        )
+
+        return spg
+
+
+class MadgwickFilter(AComputer):
+    """Madgwick filter
+
+    Estimates roll, pitch, yaw (rad)
+
+    The inputs of the element are **command** and **measurement**
+
+    The parameters are :
+
+    * beta : Proportional gain of the Madgwick algorithm
+    * mag_softiron_matrix : Soft iron error compensation matrix
+    * mag_offsets : Offsets applied to raw x/y/z values (uTesla)
+
+    Args:
+      name
+        Name of the element
+      beta
+        Proportional gain of the Madgwick algorithm
+
+    """
+
+    __slots__ = []
+
+    def __init__(self, name: str, beta: float = 2.0, dtype=np.float64):
+        AComputer.__init__(self, name)
+        self.defineInput("measurement", shape=(9,), dtype=np.float64)
+        self.defineOutput("state", snames=["q0", "q1", "q2", "q3"], dtype=np.float64)
+        self.defineOutput(
+            "euler", snames=["roll", "pitch", "yaw"], dtype=np.float64
+        )
+        self.setInitialStateForOutput(np.array([1, 0, 0, 0]), "state")
+
+        # Parametres du filtre Madgwick
+        self.createParameter(name="beta", value=beta)
+        self.createParameter(name="mag_softiron_matrix", value=np.eye(3))
+        self.createParameter(name="mag_offsets", value=np.zeros(3))
+
+    def setMagnetometerCalibration(self, offset: np.array, softiron_matrix: np.array):
+        """Sets the magnetometer calibration
+
+        Args:
+          offsets
+            Offsets applied to raw x/y/z values (uTesla)
+
+          softiron_matrix
+            Soft iron error compensation matrix
+
+        """
+        self.mag_offsets = assignVector(
+            offset,
+            expected_shape=(3,),
+            dst_name=self.getName(),
+            src_name="offset",
+            dtype=np.float64,
+        )
+        self.mag_softiron_matrix = assignVector(
+            softiron_matrix,
+            expected_shape=(3, 3),
+            dst_name=self.getName(),
+            src_name="softiron_matrix",
+            dtype=np.float64,
+        )
+
+    def getMagnetometerCalibration(self) -> Iterable[np.array]:
+        """Returns a copy of the elements of the magnetometer calibration
+
+        Returns:
+          Offsets applied to raw x/y/z values (uTesla)
+
+          Soft iron error compensation matrix
+
+        """
+        return self.mag_offsets.copy(), self.mag_softiron_matrix.copy()
+
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        euler: np.array,
+        measurement: np.array,
+        state: np.array,
+    ) -> dict:
+        q0, q1, q2, q3 = state
+        gx, gy, gz, ax, ay, az, mx, my, mz = measurement
+        dt = t2 - t1
+
+        acc = np.array([ax, ay, az])
+        if lin.norm(acc) < 1e-6:
+            raise TooWeakAcceleration(self.getName(), acc)
+
+        mag = np.array([mx, my, mz])
+        if lin.norm(mag) < 1e-6:
+            raise TooWeakMagneticField(self.getName(), mag)
+
+        # Apply mag offset compensation (base values in uTesla)
+        x = mx - self.mag_offsets[0]
+        y = my - self.mag_offsets[1]
+        z = mz - self.mag_offsets[2]
+
+        # Apply mag soft iron error compensation
+        mx = (
+            x * self.mag_softiron_matrix[0, 0]
+            + y * self.mag_softiron_matrix[0, 1]
+            + z * self.mag_softiron_matrix[0, 2]
+        )
+        my = (
+            x * self.mag_softiron_matrix[1, 0]
+            + y * self.mag_softiron_matrix[1, 1]
+            + z * self.mag_softiron_matrix[1, 2]
+        )
+        mz = (
+            x * self.mag_softiron_matrix[2, 0]
+            + y * self.mag_softiron_matrix[2, 1]
+            + z * self.mag_softiron_matrix[2, 2]
+        )
+
+        # Rate of change of quaternion from gyroscope
+        qDot1 = 0.5 * (-q1 * gx - q2 * gy - q3 * gz)
+        qDot2 = 0.5 * (q0 * gx + q2 * gz - q3 * gy)
+        qDot3 = 0.5 * (q0 * gy - q1 * gz + q3 * gx)
+        qDot4 = 0.5 * (q0 * gz + q1 * gy - q2 * gx)
+
+        # Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
+
+        # Normalise accelerometer measurement
+        recipNorm = 1.0 / np.sqrt(ax * ax + ay * ay + az * az)
+        ax *= recipNorm
+        ay *= recipNorm
+        az *= recipNorm
+
+        # Normalise magnetometer measurement
+        recipNorm = 1.0 / np.sqrt(mx * mx + my * my + mz * mz)
+        mx *= recipNorm
+        my *= recipNorm
+        mz *= recipNorm
+
+        # Auxiliary variables to avoid repeated arithmetic
+        _2q0mx = 2.0 * q0 * mx
+        _2q0my = 2.0 * q0 * my
+        _2q0mz = 2.0 * q0 * mz
+        _2q1mx = 2.0 * q1 * mx
+        _2q0 = 2.0 * q0
+        _2q1 = 2.0 * q1
+        _2q2 = 2.0 * q2
+        _2q3 = 2.0 * q3
+        _2q0q2 = 2.0 * q0 * q2
+        _2q2q3 = 2.0 * q2 * q3
+        q0q0 = q0 * q0
+        q0q1 = q0 * q1
+        q0q2 = q0 * q2
+        q0q3 = q0 * q3
+        q1q1 = q1 * q1
+        q1q2 = q1 * q2
+        q1q3 = q1 * q3
+        q2q2 = q2 * q2
+        q2q3 = q2 * q3
+        q3q3 = q3 * q3
+
+        # Reference direction of Earth's magnetic field
+        hx = (
+            mx * q0q0
+            - _2q0my * q3
+            + _2q0mz * q2
+            + mx * q1q1
+            + _2q1 * my * q2
+            + _2q1 * mz * q3
+            - mx * q2q2
+            - mx * q3q3
+        )
+        hy = (
+            _2q0mx * q3
+            + my * q0q0
+            - _2q0mz * q1
+            + _2q1mx * q2
+            - my * q1q1
+            + my * q2q2
+            + _2q2 * mz * q3
+            - my * q3q3
+        )
+        _2bx = np.sqrt(hx * hx + hy * hy)
+        _2bz = (
+            -_2q0mx * q2
+            + _2q0my * q1
+            + mz * q0q0
+            + _2q1mx * q3
+            - mz * q1q1
+            + _2q2 * my * q3
+            - mz * q2q2
+            + mz * q3q3
+        )
+        _4bx = 2.0 * _2bx
+        _4bz = 2.0 * _2bz
+
+        # Gradient decent algorithm corrective step
+        s0 = (
+            -_2q2 * (2.0 * q1q3 - _2q0q2 - ax)
+            + _2q1 * (2.0 * q0q1 + _2q2q3 - ay)
+            - _2bz * q2 * (_2bx * (0.5 - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx)
+            + (-_2bx * q3 + _2bz * q1)
+            * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
+            + _2bx * q2 * (_2bx * (q0q2 + q1q3) + _2bz * (0.5 - q1q1 - q2q2) - mz)
+        )
+        s1 = (
+            _2q3 * (2.0 * q1q3 - _2q0q2 - ax)
+            + _2q0 * (2.0 * q0q1 + _2q2q3 - ay)
+            - 4.0 * q1 * (1 - 2.0 * q1q1 - 2.0 * q2q2 - az)
+            + _2bz * q3 * (_2bx * (0.5 - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx)
+            + (_2bx * q2 + _2bz * q0)
+            * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
+            + (_2bx * q3 - _4bz * q1)
+            * (_2bx * (q0q2 + q1q3) + _2bz * (0.5 - q1q1 - q2q2) - mz)
+        )
+        s2 = (
+            -_2q0 * (2.0 * q1q3 - _2q0q2 - ax)
+            + _2q3 * (2.0 * q0q1 + _2q2q3 - ay)
+            - 4.0 * q2 * (1 - 2.0 * q1q1 - 2.0 * q2q2 - az)
+            + (-_4bx * q2 - _2bz * q0)
+            * (_2bx * (0.5 - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx)
+            + (_2bx * q1 + _2bz * q3)
+            * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
+            + (_2bx * q0 - _4bz * q2)
+            * (_2bx * (q0q2 + q1q3) + _2bz * (0.5 - q1q1 - q2q2) - mz)
+        )
+        s3 = (
+            _2q1 * (2.0 * q1q3 - _2q0q2 - ax)
+            + _2q2 * (2.0 * q0q1 + _2q2q3 - ay)
+            + (-_4bx * q3 + _2bz * q1)
+            * (_2bx * (0.5 - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx)
+            + (-_2bx * q0 + _2bz * q2)
+            * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
+            + _2bx * q1 * (_2bx * (q0q2 + q1q3) + _2bz * (0.5 - q1q1 - q2q2) - mz)
+        )
+        recipNorm = 1.0 / np.sqrt(
+            s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3
+        )  # normalise step magnitude
+        s0 *= recipNorm
+        s1 *= recipNorm
+        s2 *= recipNorm
+        s3 *= recipNorm
+
+        # Apply feedback step
+        qDot1 -= self.beta * s0
+        qDot2 -= self.beta * s1
+        qDot3 -= self.beta * s2
+        qDot4 -= self.beta * s3
+
+        # Integrate rate of change of quaternion to yield quaternion
+        q0 += qDot1 * dt
+        q1 += qDot2 * dt
+        q2 += qDot3 * dt
+        q3 += qDot4 * dt
+
+        # Normalise quaternion
+        recipNorm = 1.0 / np.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3)
+        q0 *= recipNorm
+        q1 *= recipNorm
+        q2 *= recipNorm
+        q3 *= recipNorm
+
+        outputs = {}
+        state = np.array([q0, q1, q2, q3])
+        outputs["state"] = state
+        outputs["euler"] = np.array(quat_to_euler(*state))
+
+        return outputs
+
+
+class MahonyFilter(AComputer):
+    """Mahony filter
+
+    Estimates roll, pitch, yaw (rad)
+
+    The inputs of the element are **command** and **measurement**
+
+    The parameters are :
+
+    * Kp : Proportional gain of the Mahony algorithm
+    * Ki : Integral gain of the Mahony algorithm
+    * mag_softiron_matrix : Soft iron error compensation matrix
+    * mag_offsets : Offsets applied to raw x/y/z values (uTesla)
+
+    Args:
+      name
+        Name of the element
+      Kp
+        Proportional gain of the Mahony algorithm
+      Ki
+        Integral gain of the Mahony algorithm
+
+    """
+
+    __slots__ = ["__integralFBx", "__integralFBy", "__integralFBz"]
+
+    def __init__(self, name: str, Kp: float = 0.5, Ki: float = 0.0, dtype=np.float64):
+        AComputer.__init__(self, name)
+        self.defineInput("measurement", shape=(9,), dtype=np.float64)
+        self.defineOutput("state", snames=["q0", "q1", "q2", "q3"], dtype=np.float64)
+        self.defineOutput(
+            "euler", snames=["roll", "pitch", "yaw"], dtype=np.float64
+        )
+        self.setInitialStateForOutput(np.array([1, 0, 0, 0]), "state")
+
+        # Paramtres du filtre Mahony
+        self.createParameter(name="Kp", value=Kp)
+        self.createParameter(name="Ki", value=Ki)
+
+        self.__integralFBx = 0.0
+        self.__integralFBy = 0.0
+        self.__integralFBz = 0.0
+
+        self.createParameter(name="mag_softiron_matrix", value=np.eye(3))
+        self.createParameter(name="mag_offsets", value=np.zeros(3))
+
+    def setMagnetometerCalibration(self, offset: np.array, softiron_matrix: np.array):
+        """Sets the magnetometer calibration
+
+        Args:
+          offsets
+            Offsets applied to raw x/y/z values (uTesla)
+
+          softiron_matrix
+            Soft iron error compensation matrix
+
+        """
+        self.mag_offsets = assignVector(
+            offset,
+            expected_shape=(3,),
+            dst_name=self.getName(),
+            src_name="offset",
+            dtype=np.float64,
+        )
+        self.mag_softiron_matrix = assignVector(
+            softiron_matrix,
+            expected_shape=(3, 3),
+            dst_name=self.getName(),
+            src_name="softiron_matrix",
+            dtype=np.float64,
+        )
+
+    def getMagnetometerCalibration(self) -> Iterable[np.array]:
+        """Returns a copy of the elements of the magnetometer calibration
+
+        Returns:
+          Offsets applied to raw x/y/z values (uTesla)
+
+          Soft iron error compensation matrix
+
+        """
+        return self.mag_offsets.copy(), self.mag_softiron_matrix.copy()
+
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        euler: np.array,
+        measurement: np.array,
+        state: np.array,
+    ) -> dict:
+        q0, q1, q2, q3 = state
+        gx, gy, gz, ax, ay, az, mx, my, mz = measurement
+        dt = t2 - t1
+
+        acc = np.array([ax, ay, az])
+        if lin.norm(acc) < 1e-6:
+            raise TooWeakAcceleration(self.getName(), acc)
+
+        mag = np.array([mx, my, mz])
+        if lin.norm(mag) < 1e-6:
+            raise TooWeakMagneticField(self.getName(), mag)
+
+        # Apply mag offset compensation (base values in uTesla)
+        x = mx - self.mag_offsets[0]
+        y = my - self.mag_offsets[1]
+        z = mz - self.mag_offsets[2]
+
+        # Apply mag soft iron error compensation
+        mx = (
+            x * self.mag_softiron_matrix[0, 0]
+            + y * self.mag_softiron_matrix[0, 1]
+            + z * self.mag_softiron_matrix[0, 2]
+        )
+        my = (
+            x * self.mag_softiron_matrix[1, 0]
+            + y * self.mag_softiron_matrix[1, 1]
+            + z * self.mag_softiron_matrix[1, 2]
+        )
+        mz = (
+            x * self.mag_softiron_matrix[2, 0]
+            + y * self.mag_softiron_matrix[2, 1]
+            + z * self.mag_softiron_matrix[2, 2]
+        )
+
+        # Normalise accelerometer measurement
+        recipNorm = 1.0 / np.sqrt(ax * ax + ay * ay + az * az)
+        ax *= recipNorm
+        ay *= recipNorm
+        az *= recipNorm
+
+        # Normalise magnetometer measurement
+        recipNorm = 1.0 / np.sqrt(mx * mx + my * my + mz * mz)
+        mx *= recipNorm
+        my *= recipNorm
+        mz *= recipNorm
+
+        # Auxiliary variables to avoid repeated arithmetic
+        q0q0 = q0 * q0
+        q0q1 = q0 * q1
+        q0q2 = q0 * q2
+        q0q3 = q0 * q3
+        q1q1 = q1 * q1
+        q1q2 = q1 * q2
+        q1q3 = q1 * q3
+        q2q2 = q2 * q2
+        q2q3 = q2 * q3
+        q3q3 = q3 * q3
+
+        # Reference direction of Earth's magnetic field
+        hx = 2.0 * (mx * (0.5 - q2q2 - q3q3) + my * (q1q2 - q0q3) + mz * (q1q3 + q0q2))
+        hy = 2.0 * (mx * (q1q2 + q0q3) + my * (0.5 - q1q1 - q3q3) + mz * (q2q3 - q0q1))
+        bx = np.sqrt(hx * hx + hy * hy)
+        bz = 2.0 * (mx * (q1q3 - q0q2) + my * (q2q3 + q0q1) + mz * (0.5 - q1q1 - q2q2))
+
+        # Estimated direction of gravity and magnetic field
+        halfvx = q1q3 - q0q2
+        halfvy = q0q1 + q2q3
+        halfvz = q0q0 - 0.5 + q3q3
+        halfwx = bx * (0.5 - q2q2 - q3q3) + bz * (q1q3 - q0q2)
+        halfwy = bx * (q1q2 - q0q3) + bz * (q0q1 + q2q3)
+        halfwz = bx * (q0q2 + q1q3) + bz * (0.5 - q1q1 - q2q2)
+
+        # Error is sum of cross product between estimated direction
+        # and measured direction of field vectors
+        halfex = (ay * halfvz - az * halfvy) + (my * halfwz - mz * halfwy)
+        halfey = (az * halfvx - ax * halfvz) + (mz * halfwx - mx * halfwz)
+        halfez = (ax * halfvy - ay * halfvx) + (mx * halfwy - my * halfwx)
+
+        # Compute and apply integral feedback if enabled
+        if self.Ki > 0.0:
+            # integral error scaled by Ki
+            self.__integralFBx += 2 * self.Ki * halfex * dt
+            self.__integralFBy += 2 * self.Ki * halfey * dt
+            self.__integralFBz += 2 * self.Ki * halfez * dt
+            gx += self.__integralFBx  # apply integral feedback
+            gy += self.__integralFBy
+            gz += self.__integralFBz
+        else:
+            self.__integralFBx = 0.0  # prevent integral windup
+            self.__integralFBy = 0.0
+            self.__integralFBz = 0.0
+
+        # Apply proportional feedback
+        gx += 2 * self.Kp * halfex
+        gy += 2 * self.Kp * halfey
+        gz += 2 * self.Kp * halfez
+
+        # Integrate rate of change of quaternion
+        gx *= 0.5 * dt  # pre-multiply common factors
+        gy *= 0.5 * dt
+        gz *= 0.5 * dt
+        qa = q0
+        qb = q1
+        qc = q2
+        q0 += -qb * gx - qc * gy - q3 * gz
+        q1 += qa * gx + qc * gz - q3 * gy
+        q2 += qa * gy - qb * gz + q3 * gx
+        q3 += qa * gz + qb * gy - qc * gx
+
+        # Normalise quaternion
+        recipNorm = 1.0 / np.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3)
+        q0 *= recipNorm
+        q1 *= recipNorm
+        q2 *= recipNorm
+        q3 *= recipNorm
+
+        outputs = {}
+        state = np.array([q0, q1, q2, q3])
+        outputs["state"] = state
+        outputs["euler"] = np.array(quat_to_euler(*state))
 
         return outputs
