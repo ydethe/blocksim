@@ -166,8 +166,10 @@ class TestExceptions(TestBase):
             name_of_states=["state1"],
         )
 
-        self.assertRaises(InvalidAssignedVector, tmp.setInitialStateForOutput, np.zeros(3), 'output')
-        otp=tmp.getOutputByName('output')
+        self.assertRaises(
+            InvalidAssignedVector, tmp.setInitialStateForOutput, np.zeros(3), "output"
+        )
+        otp = tmp.getOutputByName("output")
         self.assertRaises(InvalidAssignedVector, otp.setData, np.zeros(3))
 
     def test_misc_exc(self):

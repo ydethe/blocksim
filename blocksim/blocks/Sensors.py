@@ -228,15 +228,22 @@ class StreamSensors(AComputer):
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=otp.getDataType()))
         self.createParameter("strm_data", value=strm_data)
 
-    def updateAllOutput(self, frame: Frame):
-        t2 = frame.getStopTimeStamp()
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        measurement: np.array,
+    ) -> dict:
         meas = self.getOutputByName("measurement")
 
         val = np.empty(meas.getDataShape(), dtype=meas.getDataType())
         for kv, kn in enumerate(meas.getScalarNames()):
             val[kv] = np.interp(t2, self.strm_data["t"], self.strm_data[kn])
 
-        meas.setData(val)
+        outputs = {}
+        outputs["measurement"] = val
+
+        return outputs
 
 
 class StreamCSVSensors(StreamSensors):
