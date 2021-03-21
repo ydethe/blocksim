@@ -727,10 +727,11 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         t_sim = log.getValue("t")
 
         img = np.empty((nb_tracks - 1, len(t_sim)), dtype=np.complex128)
-        ns = self.getStatesNames()
+        otp = self.getOutputByName("state")
+        ns = otp.getScalarNames()
         for k in range(1, nb_tracks):
             f = self.tracks[k]
-            x = log.getValue(ns[k])
+            x = log.getValue("%s_%s_%s" % (self.getName(), otp.getName(), ns[k]))
             y = x * exp(-1j * 2 * pi * t_sim * f)
             img[k - 1, :] = y
 
