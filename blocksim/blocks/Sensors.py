@@ -63,10 +63,16 @@ class ASensors(AComputer):
 
     def setCovariance(self, cov: np.array):
         otp = self.getOutputByName("measurement")
+        n = otp.getDataShape()[0]
+        if cov.shape != (n, n):
+            raise ValueError(cov.shape, (n, n))
         otp.cov = cov
 
     def setMean(self, mean: np.array):
         otp = self.getOutputByName("measurement")
+        n = otp.getDataShape()[0]
+        if mean.shape[0] != n:
+            raise ValueError(mean.shape[0], n)
         otp.mean = mean
 
 
