@@ -379,6 +379,6 @@ if __name__ == "__main__":
 
     a = TestIMU()
     a.setUp()
-    a.test_mahony_yaw()
+    a.test_madgwick_pitch()
 
     plt.show()
