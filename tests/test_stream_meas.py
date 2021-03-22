@@ -64,7 +64,12 @@ class TestStreamMeas(TestBase):
             [
                 {"var": "sys_state_x", "label": "simulation"},
                 {"var": "stp_setpoint_x", "label": "set point"},
-                {"var": "cpt_measurement_x", "label": "measure", "linestyle": "", "marker": "+"},
+                {
+                    "var": "cpt_measurement_x",
+                    "label": "measure",
+                    "linestyle": "",
+                    "marker": "+",
+                },
             ],
         )
 
