@@ -54,7 +54,7 @@ class EarthPlotter(object):
 
         Returns:
           Axe compatible with cartopy.
-          See :class:`blocksim.STKPlotter.STKPlotter.plotGroundTrack`
+          See :class:`blocksim.EarthPlotter.EarthPlotter.plotGroundTrack`
 
         """
         axe = fig.add_subplot(*args, projection=self.proj)
