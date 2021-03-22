@@ -5,8 +5,8 @@ import numpy as np
 from numpy import log10, sqrt
 import sk_dsp_comm.digitalcom as dc
 
-from OFDM import logger
-from OFDM.blocs.QPSKMod import QPSKMapping, QPSKDemapping
+from blocksim import logger
+from blocksim.blocs.QPSKMod import QPSKMapping, QPSKDemapping
 from tests.TestBase import TestBase
 
 

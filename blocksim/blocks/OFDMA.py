@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from blocksim.core.Node import AComputer
 
 
-class OFDMMapping(AComputer):
+class blocksimMapping(AComputer):
     __slots__ = []
 
     def __init__(
@@ -52,7 +52,7 @@ class OFDMMapping(AComputer):
         return outputs
 
 
-class OFDMDemapping(AComputer):
+class blocksimDemapping(AComputer):
     __slots__ = []
 
     def __init__(

@@ -3,17 +3,17 @@ import unittest
 import pytest
 import numpy as np
 
-from OFDM import logger
-from OFDM.blocs.OFDMA import OFDMMapping
-from OFDM.blocs.DFT import IDFT
-from OFDM.blocs.Channel import AWGNChannel
-from OFDM.blocs.NPSS import NPSSGenerator, NPSSCorrelator
+from blocksim import logger
+from blocksim.blocs.blocksimA import blocksimMapping
+from blocksim.blocs.DFT import IDFT
+from blocksim.blocs.Channel import AWGNChannel
+from blocksim.blocs.NPSS import NPSSGenerator, NPSSCorrelator
 from tests.TestBase import TestBase
 
 
 class TestNPSS(TestBase):
     def setUp(self):
-        self.K = 12  # number of OFDM subcarriers
+        self.K = 12  # number of blocksim subcarriers
 
         # Length of a symbol
         self.nsamp = 2048
@@ -29,7 +29,7 @@ class TestNPSS(TestBase):
 
         self.npss_gen = NPSSGenerator()
         self.npss_corr = NPSSCorrelator(self.nsamp)
-        self.ofdm_co = OFDMMapping(
+        self.ofdm_co = blocksimMapping(
             self.allCarriers, self.pilotCarriers, self.dataCarriers, pilotValue=0
         )
         self.idft = IDFT(self.nsamp)

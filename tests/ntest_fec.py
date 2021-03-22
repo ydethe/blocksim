@@ -4,8 +4,8 @@ import numpy as np
 from numpy import log10
 import sk_dsp_comm.digitalcom as dc
 
-from OFDM import logger
-from OFDM.blocs.FEC import FECCoder, FECDecoder
+from blocksim import logger
+from blocksim.blocs.FEC import FECCoder, FECDecoder
 from tests.TestBase import TestBase
 
 

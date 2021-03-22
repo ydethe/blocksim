@@ -4,8 +4,8 @@ from numpy.fft import fft, ifft, fftshift, fftfreq
 from scipy import signal as sig
 from matplotlib import pyplot as plt
 
-from OFDM import logger
-from OFDM.blocs.ProcessingBlock import ProcessingBlock
+from blocksim import logger
+from blocksim.blocs.ProcessingBlock import ProcessingBlock
 
 
 def zadoff_chu(u, n):

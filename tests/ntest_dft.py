@@ -3,8 +3,8 @@ import unittest
 import pytest
 import numpy as np
 
-from OFDM import logger
-from OFDM.blocs.DFT import DFT, IDFT
+from blocksim import logger
+from blocksim.blocs.DFT import DFT, IDFT
 from tests.TestBase import TestBase
 
 

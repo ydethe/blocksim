@@ -8,7 +8,7 @@ class ProcessingBlock(ABC):
     """
     Every bloc should:
     - inherit from ProcessingBlock
-    - implement the 'OFDM.blocs.ProcessingBlock.__update__' method
+    - implement the 'blocksim.blocs.ProcessingBlock.__update__' method
 
     """
 

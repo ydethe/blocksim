@@ -3,8 +3,8 @@ import unittest
 import pytest
 import numpy as np
 
-from OFDM import logger
-from OFDM.plot_log import plot_log
+from blocksim import logger
+from blocksim.plot_log import plot_log
 
 
 class TestPlotLog(unittest.TestCase):

@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from numpy import exp, pi
 
-from OFDM.blocs.SerialParallel import SerialToParallel, ParallelToSerial
+from blocksim.blocs.SerialParallel import SerialToParallel, ParallelToSerial
 from tests.TestBase import TestBase
 
 

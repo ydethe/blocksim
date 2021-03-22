@@ -4,8 +4,8 @@ from numpy.fft import fft, ifft, fftshift, fftfreq
 from scipy import signal as sig
 from matplotlib import pyplot as plt
 
-from OFDM import logger
-from OFDM.blocs.ProcessingBlock import ProcessingBlock
+from blocksim import logger
+from blocksim.blocs.ProcessingBlock import ProcessingBlock
 
 
 class IDFT(ProcessingBlock):
@@ -24,7 +24,7 @@ class IDFT(ProcessingBlock):
             # Calcul du symbole
             symb = ifft(data[:, k], n=self.nech_symb)
 
-            # On met le symbole OFDM dans le signal
+            # On met le symbole blocksim dans le signal
             s[k_deb_symb:k_fin_symb] = symb
 
         return s

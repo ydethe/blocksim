@@ -4,8 +4,8 @@ from matplotlib import pyplot as plt
 
 import sk_dsp_comm.fec_conv as fec
 
-from OFDM import logger
-from OFDM.blocs.ProcessingBlock import ProcessingBlock
+from blocksim import logger
+from blocksim.blocs.ProcessingBlock import ProcessingBlock
 
 
 class FECCoder(ProcessingBlock):

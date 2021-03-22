@@ -13,18 +13,18 @@ import sk_dsp_comm.digitalcom as dc
 import sk_dsp_comm.fec_conv as fec
 import matplotlib.pyplot as plt
 
-from OFDM import logger
-from OFDM.blocs.FEC import FECCoder, FECDecoder
-from OFDM.blocs.SerialParallel import SerialToParallel, ParallelToSerial
-from OFDM.blocs.QPSKMod import QPSKMapping, QPSKDemapping
-from OFDM.blocs.OFDMA import OFDMMapping, OFDMDemapping
-from OFDM.blocs.DFT import IDFT, DFT
-from OFDM.blocs.Channel import AWGNChannel, AWGNChannelEstimator
+from blocksim import logger
+from blocksim.blocs.FEC import FECCoder, FECDecoder
+from blocksim.blocs.SerialParallel import SerialToParallel, ParallelToSerial
+from blocksim.blocs.QPSKMod import QPSKMapping, QPSKDemapping
+from blocksim.blocs.blocksimA import blocksimMapping, blocksimDemapping
+from blocksim.blocs.DFT import IDFT, DFT
+from blocksim.blocs.Channel import AWGNChannel, AWGNChannelEstimator
 
 
 class Simu(object):
     def __init__(self):
-        self.K = 12  # number of OFDM subcarriers
+        self.K = 12  # number of blocksim subcarriers
 
         # Length of a symbol
         self.nsamp = 2048
@@ -52,7 +52,7 @@ class Simu(object):
         self.fec_co = FECCoder()
         self.sp = SerialToParallel(self.mu)
         self.qpsk_co = QPSKMapping()
-        self.ofdm_co = OFDMMapping(
+        self.ofdm_co = blocksimMapping(
             self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
         )
         self.idft = IDFT(self.nsamp)
@@ -60,7 +60,7 @@ class Simu(object):
         self.chan_est = AWGNChannelEstimator(
             self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
         )
-        self.ofdm_dec = OFDMDemapping(
+        self.ofdm_dec = blocksimDemapping(
             self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
         )
         self.qpsk_dec = QPSKDemapping()

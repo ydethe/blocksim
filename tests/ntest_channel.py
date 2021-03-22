@@ -6,8 +6,8 @@ from numpy import exp, pi, log10
 from numpy.fft import fft
 from matplotlib import pyplot as plt
 
-from OFDM.blocs.ProcessingBlock import ProcessingBlock
-from OFDM.blocs.Channel import AWGNChannel, AWGNChannelEstimator
+from blocksim.blocs.ProcessingBlock import ProcessingBlock
+from blocksim.blocs.Channel import AWGNChannel, AWGNChannelEstimator
 from tests.TestBase import TestBase
 
 
