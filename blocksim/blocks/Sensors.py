@@ -278,9 +278,7 @@ class StreamCSVSensors(StreamSensors):
 
         self.createParameter("pth", value=pth)
 
-    def resetCallback(self, frame: Frame):
-        super().resetCallback(frame)
-
+    def loadFile(self):
         f = open(self.pth, "r")
         lines = f.readlines()
         for k in range(len(lines)):
@@ -289,16 +287,20 @@ class StreamCSVSensors(StreamSensors):
                 nb_dat = len(lines) - k - 1
                 break
 
-        self.strm_data["t"] = np.empty(nb_dat, dtype=self.dtype)
-        for kn in self.getOutputNames():
-            self.strm_data[kn] = np.empty(nb_dat, dtype=self.dtype)
+        otp = self.getOutputByName("measurement")
+        dtyp = otp.getDataType()
+        self.strm_data["t"] = np.empty(nb_dat, dtype=dtyp)
+        for kn in otp.getScalarNames():
+            self.strm_data[kn] = np.empty(nb_dat, dtype=dtyp)
 
         for j in range(k + 1, len(lines)):
             dat = lines[j]
             elem = dat.strip().split(",")
             t = float(elem[0].strip())
-            values = [self.dtype(x.strip()) for x in elem[1:]]
+            values = [dtyp(x.strip()) for x in elem[1:]]
             i = j - k - 1
             self.strm_data["t"][i] = t
-            for kv, kn in enumerate(self.getOutputNames()):
+            for kv, kn in enumerate(otp.getScalarNames()):
                 self.strm_data[kn][i] = values[kv]
+        f.close()
+        
