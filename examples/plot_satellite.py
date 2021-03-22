@@ -35,6 +35,5 @@ axe = ep.createAxe(fig)
 ep.plotGroundTrack(axe, lon, lat)
 ep.plotDeviceReach(axe, coord=pt, elev_min=pi/6, sat_alt600e3)
 ep.plotPoint(axe, coord=pt)
-        """
 
 plt.show()
