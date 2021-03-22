@@ -1,22 +1,40 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-from OFDM import logger
-from OFDM.blocs.ProcessingBlock import ProcessingBlock
+from blocksim.core.Node import AComputer
 
 
-class SerialToParallel(ProcessingBlock):
-    def __init__(self, nb_parallel):
-        self.nb_parallel = nb_parallel
+class SerialToParallel(AComputer):
+    __slots__ = []
 
-    def __update__(self, data: np.array) -> np.array:
-        n = len(data)
-        return data.reshape(n // self.nb_parallel, self.nb_parallel)
+    def __init__(self, name: str, nb_parallel: int):
+        AComputer.__init__(self, name=name)
+        self.createParameter("nb_parallel", value=nb_parallel)
+        self.defineInput("input", shape=(nb_parallel,), dtype=np.complex128)
+        self.defineOutput(
+            "output",
+            snames=["x%i" % i for i in range(nb_parallel)],
+            dtype=np.complex128,
+        )
+
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        input: np.array,
+        output: np.array,
+    ) -> dict:
+        outputs = {}
+        outputs["output"] = input.reshape(1, self.nb_parallel)
+        return outputs
 
 
-class ParallelToSerial(ProcessingBlock):
-    def __init__(self, nb_parallel):
-        self.nb_parallel = nb_parallel
+class ParallelToSerial(AComputer):
+    __slots__ = []
+
+    def __init__(self, name: str, nb_parallel: int):
+        AComputer.__init__(self, name=name)
+        self.createParameter("nb_parallel", value=nb_parallel)
 
     def __update__(self, data: np.array) -> np.array:
         n, r = data.shape

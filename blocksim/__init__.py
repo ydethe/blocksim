@@ -8,6 +8,7 @@ from .LogFormatter import LogFormatter
 
 try:
     import control
+
     control.use_numpy_matrix(flag=False, warn=True)
 except:
     pass

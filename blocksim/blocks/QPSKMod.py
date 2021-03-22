@@ -2,77 +2,55 @@ import numpy as np
 from numpy import sqrt, sign, pi, exp
 from matplotlib import pyplot as plt
 
-from OFDM import logger
-from OFDM.blocs.ProcessingBlock import ProcessingBlock
+from blocksim.core.Node import AComputer
 
 
-class QPSKMapping(ProcessingBlock):
-    def __init__(self):
-        self.mu = 2
-        self.inv_sq_2 = 1 / sqrt(2)
+class QPSKMapping(AComputer):
+    __slots__ = []
 
-    def __update__(self, data: np.array) -> np.array:
-        n, r = data.shape
-        if r != self.mu:
-            raise ArgumentError("The parallel data must have %i row" % self.mu)
-        return ((data[:, 0] + 1j * data[:, 1]) * 2 - 1 - 1j) * self.inv_sq_2
+    def __init__(self, name: str):
+        AComputer.__init__(self, name=name)
+        self.defineInput("input", shape=(2,), dtype=np.int64)
+        self.defineOutput("output", snames=["symb"], dtype=np.complex128)
+        self.createParameter("mu", value=2)
+        self.createParameter("inv_sq_2", value=1 / sqrt(2))
 
-    def plotConstellation(self, axe=None):
-        if axe is None:
-            fig = plt.figure()
-            axe = fig.add_subplot(111)
-            axe.set_aspect("equal")
-            axe.grid(True)
-            axe.set_xlabel("I")
-            axe.set_ylabel("Q")
-            axe.set_title("Constellation QPSK")
-
-        x = np.linspace(0, 2 * pi, 100)
-        circle = exp(1j * x)
-        for b1 in [0, 1]:
-            for b0 in [0, 1]:
-                B = np.array([[b1, b0]])
-                Q = self.process(B)[0]
-                axe.plot(Q.real, Q.imag, "bo")
-                axe.text(
-                    Q.real, Q.imag + 0.1, "".join(str(x) for x in B[0]), ha="center"
-                )
-                axe.plot(circle.real, circle.imag, linestyle="--", color="black")
-
-        return axe
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        input: np.array,
+        output: np.array,
+    ) -> dict:
+        x, y = input
+        symb = ((x + 1j * y) * 2 - 1 - 1j) * self.inv_sq_2
+        outputs = {}
+        outputs["output"] = np.array([symb])
+        return outputs
 
 
-class QPSKDemapping(ProcessingBlock):
-    def __init__(self):
-        self.mu = 2
-        self.inv_sq_2 = 1 / sqrt(2)
+class QPSKDemapping(AComputer):
+    __slots__ = []
 
-    def __update__(self, data: np.array) -> np.array:
-        n = len(data)
-        bitstream = np.empty((n, 2), dtype=np.int64)
+    def __init__(self, name: str):
+        AComputer.__init__(self, name=name)
+        self.defineInput("input", shape=(1,), dtype=np.complex128)
+        self.defineOutput("output", snames=["x", "y"], dtype=np.int64)
+        self.createParameter("mu", value=2)
+        self.createParameter("inv_sq_2", value=1 / sqrt(2))
 
-        bitstream[:, 0] = (np.sign(data.real) + 1) / 2
-        bitstream[:, 1] = (np.sign(data.imag) + 1) / 2
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        input: np.array,
+        output: np.array,
+    ) -> dict:
+        (symb,) = input
 
-        return bitstream
+        x = (np.sign(symb.real) + 1) / 2
+        y = (np.sign(symb.imag) + 1) / 2
 
-    def plotOutput(self, axe=None):
-        if axe is None:
-            fig = plt.figure()
-            axe = fig.add_subplot(111)
-            axe.set_aspect("equal")
-            axe.grid(True)
-            axe.set_xlabel("I")
-            axe.set_ylabel("Q")
-            axe.set_title("Constellation QPSK")
-
-        x = np.linspace(0, 2 * pi, 100)
-        circle = exp(1j * x)
-        qm = QPSKMapping()
-        axe.plot(circle.real, circle.imag, linestyle="--", color="black")
-        for qam, bits in zip(self.inp, self.out):
-            hard = qm.process(np.array([bits]))[0]
-            axe.plot([qam.real, hard.real], [qam.imag, hard.imag], "b-o")
-            axe.plot([hard.real], [hard.imag], "ro")
-
-        return axe
+        outputs = {}
+        outputs["output"] = np.array([x, y])
+        return outputs
