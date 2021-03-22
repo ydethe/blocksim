@@ -66,7 +66,7 @@ class TestBase(unittest.TestCase):
         np.random.seed(1883647)
 
     def plotVerif(self, fig_title, *axes):
-        fig=plotVerif(self.log, fig_title, *axes)
+        fig = plotVerif(self.log, fig_title, *axes)
 
         if "SHOW_PLOT" in os.environ.keys():
             plt.show()

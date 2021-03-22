@@ -16,11 +16,11 @@ class AxeSpec(object):
     """Class that provides a description of an axe, without data.
     It the lines to be drawn
     (with the name of the variables instead of a concrete set of data)
-    
+
     Args:
       props
         A dictionary. Supported keys :
-    
+
         * nrow for the number of rows subdivisions
         * ncol for the number of columns subdivisions
         * ind for the number of axe (1 is the first one in the layout)
@@ -28,17 +28,17 @@ class AxeSpec(object):
         * title for the title of the axe
       lines
         List of dict to specify the lines' spec. Supported keys :
-    
+
         * the matplotlib keyword arguments of the funcion *plot*
         * varx for the name of the X variable
         * vary for the name of the y variable
-    
+
     """
-    
+
     def __init__(self, props, lines):
         self.props = props
         self.lines = lines
-    
+
     def __repr__(self, ntabs=0):
         st = " " * ntabs
         s = ""
@@ -49,14 +49,14 @@ class AxeSpec(object):
             if k == "title":
                 continue
             s += st + "%s:\t'%s'\n" % (k, self.props[k])
-    
+
         for k, l in enumerate(self.lines):
             s += st + 10 * "-" + " Line #%i " % (k + 1) + 10 * "-" + "\n"
             kys = list(l.keys())
             kys.sort()
             for k in kys:
                 s += 2 * st + "%s:\t'%s'\n" % (k, l[k])
-    
+
         return s
 
 
@@ -64,55 +64,55 @@ class FigureSpec(object):
     """Class that provides a description of a figure, without data.
     It handles the axes layout, and the lines to be drawn
     (with the name of the variables instead of a concrete set of data)
-    
+
     Args:
       props
         A dictionary. Only key supported : title for the figure title
       axes
         List of :class:`AxeSpec` to specify the axes' spec
-    
+
     Examples:
       >>> fs = FigureSpec.specForOneAxeMultiLines([{'var':'th_mes','linestyle':'', 'marker':'+'}])
-    
+
     """
-    
+
     def __init__(self, props: dict, axes: AxeSpec):
         self.props = props
         self.axes = axes
-    
+
     def __repr__(self):
         """Representation of a FigureSpec
-    
+
         Examples:
           >>> fs = FigureSpec.specForOneAxeMultiLines([{'var':'th_mes','linestyle':'', 'marker':'+'}])
           >>> _ = str(fs)
-    
+
         """
         s = "FigureSec instance :\n"
         s += 10 * "=" + " Figure '%s' " % self.props["title"] + 10 * "=" + "\n"
         for aSpec in self.axes:
             s += aSpec.__repr__(ntabs=2)
-    
+
         return s.strip()
-    
+
     def __str__(self):
         return self.__repr__()
-    
+
     @classmethod
     def specForOneAxeMultiLines(cls, line_list: Iterable[dict]) -> "FigureSpec":
         """Returns a :class:`FigureSpec` to draw all the given variables on one same axe
-    
+
         Args:
           line_list
             List of dictionary, whose keys are :
-    
+
             * the matplotlib keyword arguments of the funcion *plot*
             * varx for the name of the X variable. If not specified, varx will be assumed to be the time variable 't'
             * var or vary for the name of the y variable
-    
+
         Returns
           A :class:`FigureSpec` that describes the layout
-    
+
         """
         lines = []
         n = len(line_list)
@@ -123,21 +123,21 @@ class FigureSpec(object):
             if "var" in line.keys():
                 line["vary"] = line.pop("var")
             lines.append(line)
-    
+
         aSpec = AxeSpec(
             props={"nrow": 1, "ncol": 1, "ind": 1, "title": "Axe", "sharex": None},
             lines=lines,
         )
         spec = FigureSpec(props={"title": "Figure"}, axes=[aSpec])
-    
+
         return spec
-    
+
 
 def plotFromLogger(
-log: Logger, id_x: str, id_y: str, axe: "AxesSubplot", **kwargs
+    log: Logger, id_x: str, id_y: str, axe: "AxesSubplot", **kwargs
 ) -> "Line2D":
     """Plots a value on a matplotlib axe
-    
+
     Args:
       log
         :class:`SystemControl.Logger.Logger` instance
@@ -149,10 +149,10 @@ log: Logger, id_x: str, id_y: str, axe: "AxesSubplot", **kwargs
         The axis to draw on
       kwargs
         matplotlib plotting options for the 'plot' method
-    
+
     Returns:
       The lines drawn by matplotlib
-    
+
     """
     if log is None:
         val_x = []
@@ -166,7 +166,7 @@ log: Logger, id_x: str, id_y: str, axe: "AxesSubplot", **kwargs
             raise SystemError(
                 u"[ERROR]Unacceptable argument for id_x : %s" % (str(id_x))
             )
-    
+
         if type(id_y) == type(""):
             val_y = log.getValue(id_y)
         elif hasattr(id_y, "__iter__"):
@@ -175,15 +175,15 @@ log: Logger, id_x: str, id_y: str, axe: "AxesSubplot", **kwargs
             raise SystemError(
                 u"[ERROR]Unacceptable argument for id_y : %s" % (str(id_y))
             )
-    
+
     (line,) = axe.plot(val_x, val_y, **kwargs)
-    
+
     return line
-    
+
 
 def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
     """Parses a :class:`FigureSpec` to build a matplotlib figure, and returns it
-    
+
     Args:
       spec
         A :class:`FigureSpec` instance
@@ -191,26 +191,26 @@ def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
         A :class:`blocksim.Logger.Logger` to read data from
       fig
         A matplotlib figure. If None, the function creates ones
-    
+
     Returns:
       The matplotlib figure
-    
+
     """
     n = len(spec.axes)
-    
+
     if fig is None:
         fig = plt.figure()
-    
+
     fig.suptitle = spec.props["title"]
     l_axes = []
-    
+
     for k in range(1, n + 1):
         nrow = spec.axes[k - 1].props["nrow"]
         ncol = spec.axes[k - 1].props["ncol"]
         ind = spec.axes[k - 1].props["ind"]
         shx = spec.axes[k - 1].props["sharex"]
         title = spec.axes[k - 1].props["title"]
-    
+
         if shx is None:
             axe = fig.add_subplot(nrow, ncol, ind)
             axe.grid(True)
@@ -218,12 +218,12 @@ def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
             axe = fig.add_subplot(nrow, ncol, ind, sharex=l_axes[shx - 1])
             axe.grid(True)
         l_axes.append(axe)
-    
+
         spec.axes[k - 1].props["_axe"] = axe
-    
+
         if not title is None:
             axe.set_title(title)
-    
+
         disp_leg = False
         for d in spec.axes[k - 1].lines:
             lp = d.copy()
@@ -232,7 +232,7 @@ def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
             lp.pop("_line", None)
             lp.pop("_xdata", None)
             lp.pop("_ydata", None)
-    
+
             varx = d["varx"]
             vary = d["vary"]
             if "label" in d.keys():
@@ -243,26 +243,26 @@ def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
                 disp_leg = True
             else:
                 line = plotFromLogger(log, varx, vary, axe, **lp)
-    
+
             d["_line"] = line
             xdata, ydata = line.get_data()
             d["_xdata"] = xdata
             d["_ydata"] = ydata
-    
+
         if disp_leg:
             axe.legend()
-    
+
     fig.tight_layout()
-    
+
     return fig
-    
+
 
 def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesImage:
     """Plots a line with the following refinements :
-    
+
     * a callable *transform* is applied to all samples
     * the label of the plot is the name given at instanciation
-    
+
     Args:
       spg
         Spectrogram to plot
@@ -273,10 +273,10 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
         * transform for a different transform from the one given at instanciation
         * find_peaks to search peaks
         * x_unit_mult to have a more readable unit prefix
-    
+
     Returns:
       The matplotlib image generated
-    
+
     """
     axe.grid(True)
     transform = kwargs.pop("transform", spg.default_transform)
@@ -285,7 +285,7 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
     y_unit_mult = kwargs.pop("y_unit_mult", 1)
     y_unit_lbl = DSPLine.getUnitAbbrev(y_unit_mult)
     lbl = kwargs.pop("label", spg.name)
-    
+
     ret = axe.imshow(
         transform(spg.img),
         aspect="auto",
@@ -308,13 +308,13 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
         % (spg.__class__.name_of_y_var, y_unit_lbl, spg.__class__.unit_of_y_var)
     )
     return ret
-    
+
 
 def plotBode(
-filt: DSPFilter, fs: float, axe_amp: "AxesSubplot", axe_pha: "AxesSubplot"
+    filt: DSPFilter, fs: float, axe_amp: "AxesSubplot", axe_pha: "AxesSubplot"
 ):
     """Plots the bode diagram of a filter
-    
+
     Args:
       filt
         Filter to analyse
@@ -324,38 +324,38 @@ filt: DSPFilter, fs: float, axe_amp: "AxesSubplot", axe_pha: "AxesSubplot"
         Matplotlib axe to draw the ampltiude on
       axe_pha
         Matplotlib axe to draw the unfolded phase on
-    
+
     """
     n = 200
     b = filt.generateCoefficients(fs)
-    
+
     freq = np.linspace(0, fs / 2, n)
-    
+
     p = Polynomial(b)
     z = np.exp(-1j * 2 * np.pi * freq / fs)
     y = p(z)
-    
+
     axe_amp.plot(freq, DSPLine.to_db(y))
     axe_amp.grid(True)
     axe_amp.set_ylabel("Ampliude (dB)")
-    
+
     pha = phase_unfold(y)
-    
+
     axe_pha.plot(freq, 180 / np.pi * pha)
     axe_pha.grid(True)
     axe_pha.set_xlabel("Frequency (Hz)")
     axe_pha.set_ylabel("Phase (deg)")
-    
+
 
 def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
     """Plots a DSPLine with the following refinements :
-    
+
     * a callable *transform* is applied to all samples
     * the X and Y axes are labeled according to *x_unit_mult*
     * the X axe is labeled according to the class attributes name_of_x_var and unit_of_x_var
     * the *find_peaks* highest peaks are displayed (default : 0)
     * the label of the plot is the name given at instanciation
-    
+
     Args:
       line
         Line to be plotted
@@ -366,7 +366,7 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
         * transform for a different transform from the one given at instanciation
         * find_peaks to search peaks
         * x_unit_mult to have a more readable unit prefix
-    
+
     """
     axe.grid(True)
     transform = kwargs.pop("transform", line.default_transform)
@@ -374,7 +374,7 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
     x_unit_mult = kwargs.pop("x_unit_mult", 1)
     x_unit_lbl = line.getUnitAbbrev(x_unit_mult)
     lbl = kwargs.pop("label", line.name)
-    
+
     (ret,) = axe.plot(
         line.generateXSerie() / x_unit_mult,
         transform(line.y_serie),
@@ -385,7 +385,7 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
         "%s (%s%s)"
         % (line.__class__.name_of_x_var, x_unit_lbl, line.__class__.unit_of_x_var)
     )
-    
+
     if find_peaks > 0:
         lpeaks = line.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
         for x in lpeaks:
@@ -397,10 +397,11 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
                 xy=(x / x_unit_mult, y),
                 fontsize="x-small",
             )
-    
+
     return ret
 
-def plotVerif(log:Logger, fig_title:str, *axes):
+
+def plotVerif(log: Logger, fig_title: str, *axes):
     l_aspec = []
     for ind, l_lines in enumerate(axes):
         aProp = dict()
@@ -432,5 +433,3 @@ def plotVerif(log:Logger, fig_title:str, *axes):
     fig = createFigureFromSpec(spec, log)
 
     return fig
-    
-    

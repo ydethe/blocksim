@@ -303,4 +303,3 @@ class StreamCSVSensors(StreamSensors):
             for kv, kn in enumerate(otp.getScalarNames()):
                 self.strm_data[kn][i] = values[kv]
         f.close()
-        
