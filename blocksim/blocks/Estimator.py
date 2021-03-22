@@ -112,14 +112,13 @@ class AEstimator(AComputer):
 
     The input name of the element are **command** and **measurement**
     The outputs of the computer are **state** and **output**
+    The **output** vector and the **measurement** vector shall have the same shape.
 
     Args:
       name
         Name of the element
       shape_cmd
         Shape of the command
-      shape_meas
-        Shape of the measurement
       snames_state
         Name of each of the scalar components of the state.
         Its shape defines the shape of the data
@@ -135,12 +134,12 @@ class AEstimator(AComputer):
         self,
         name: str,
         shape_cmd: tuple,
-        shape_meas: tuple,
         snames_state: Iterable[str],
         snames_output: Iterable[str],
         dtype=np.float64,
     ):
         AComputer.__init__(self, name)
+        shape_meas = (len(snames_output),)
         self.defineInput("command", shape=shape_cmd, dtype=dtype)
         self.defineInput("measurement", shape=shape_meas, dtype=dtype)
         self.defineOutput("state", snames_state, dtype=dtype)
@@ -183,8 +182,6 @@ class AKalmanFilter(AEstimator):
         Name of the element
       shape_cmd
         Shape of the command
-      shape_meas
-        Shape of the measurement
       snames_state
         Name of each of the scalar components of the state.
         Its shape defines the shape of the data
@@ -200,7 +197,6 @@ class AKalmanFilter(AEstimator):
         self,
         name: str,
         shape_cmd: tuple,
-        shape_meas: tuple,
         snames_state: Iterable[str],
         snames_output: Iterable[str],
         dtype=np.float64,
@@ -209,7 +205,6 @@ class AKalmanFilter(AEstimator):
             self,
             name=name,
             shape_cmd=shape_cmd,
-            shape_meas=shape_meas,
             snames_state=snames_state,
             snames_output=snames_output,
             dtype=dtype,
@@ -399,8 +394,6 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         Name of the element
       shape_cmd
         Shape of the command
-      shape_meas
-        Shape of the measurement
       snames_state
         Name of each of the scalar components of the state.
         Its shape defines the shape of the data
@@ -416,7 +409,6 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         self,
         name: str,
         shape_cmd: tuple,
-        shape_meas: tuple,
         snames_state: Iterable[str],
         snames_output: Iterable[str],
         dtype=np.float64,
@@ -425,7 +417,6 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
             self,
             name=name,
             shape_cmd=shape_cmd,
-            shape_meas=shape_meas,
             snames_state=snames_state,
             snames_output=snames_output,
             dtype=dtype,
@@ -586,8 +577,6 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         Time step used for solving the Discrete Algebraic Riccati Equation
       shape_cmd
         Shape of the command
-      shape_meas
-        Shape of the measurement
       snames_state
         Name of each of the scalar components of the state.
         Its shape defines the shape of the data
@@ -604,7 +593,6 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         name: str,
         dt: float,
         shape_cmd: tuple,
-        shape_meas: tuple,
         snames_state: Iterable[str],
         snames_output: Iterable[str],
         dtype=np.float64,
@@ -613,7 +601,6 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
             self,
             name=name,
             shape_cmd=shape_cmd,
-            shape_meas=shape_meas,
             snames_state=snames_state,
             snames_output=snames_output,
             dtype=dtype,
@@ -688,7 +675,6 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         name: str,
         dt: float,
         shape_cmd: tuple,
-        shape_meas: tuple,
         snames_state: Iterable[str],
         snames_output: Iterable[str],
         tracks: np.array,
@@ -698,7 +684,6 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
             name=name,
             dt=dt,
             shape_cmd=shape_cmd,
-            shape_meas=shape_meas,
             snames_state=snames_state,
             snames_output=snames_output,
             dtype=np.complex128,

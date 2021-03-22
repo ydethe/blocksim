@@ -401,7 +401,24 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
     return ret
 
 
-def plotVerif(log: Logger, fig_title: str, *axes):
+def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":
+    """Plots a set of axes and curves on a single figure
+
+    Args:
+      log
+        Logger which contains the simulated values
+      fig_title
+        Title of the figure
+      axes:
+        List of lists of dicts
+        Each list is the description of an axe, each dict the description of a line.
+        Each dict has a key "var", which is the name of a variable contained in *log*.
+        The other keys are keyword arguments for the plot method of matplotlib
+
+    Returns:
+      The resulting figure
+
+    """
     l_aspec = []
     for ind, l_lines in enumerate(axes):
         aProp = dict()

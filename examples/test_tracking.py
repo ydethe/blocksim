@@ -66,6 +66,7 @@ class TestTrackingSteadyState(TestBase):
             name="kal",
             dt=self.dt,
             shape_cmd=(1,),
+            shape_meas=(1,),
             snames_output=["x_kal"],
             snames_state=["x_%i_est" % i for i in range(nb_tracks)],
             tracks=self.tracks * self.fs,

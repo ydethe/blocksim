@@ -38,7 +38,6 @@ class TestKalman(TestBase):
             "kal",
             dt=dt,
             shape_cmd=(1,),
-            shape_meas=(1,),
             snames_state=["x", "v"],
             snames_output=["x"],
         )
@@ -111,7 +110,6 @@ class TestKalman(TestBase):
         kal = TimeInvariantKalmanFilter(
             "kal",
             shape_cmd=(1,),
-            shape_meas=(1,),
             snames_state=["x", "v", "b"],
             snames_output=["x"],
         )
