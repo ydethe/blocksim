@@ -437,3 +437,10 @@ def vecEarthToBody(attitude: np.array, x: np.array) -> np.array:
         raise ValueError
 
     return R.T @ x
+
+
+def q_function(x):
+    """
+    https://en.wikipedia.org/wiki/Q-function
+    """
+    return 0.5 * erfc(x / sqrt(2))

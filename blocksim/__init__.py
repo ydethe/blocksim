@@ -4,9 +4,10 @@ import logging
 from datetime import datetime
 import os
 
+from .LogFormatter import LogFormatter
+
 try:
     import control
-
     control.use_numpy_matrix(flag=False, warn=True)
 except:
     pass
@@ -26,7 +27,7 @@ logger.setLevel(logging.DEBUG)
 
 # création d'un formateur qui va ajouter le temps, le niveau
 # de chaque message quand on écrira un message dans le log
-formatter = logging.Formatter("[%(levelname)s]%(message)s")
+formatter = LogFormatter()
 # création d'un handler qui va rediriger chaque écriture de log
 # sur la console
 stream_handler = logging.StreamHandler()
