@@ -24,7 +24,7 @@ class Logger(object):
          Name of a file to write
 
     Examples:
-      >>> log = Logger('example.log')
+      >>> log = Logger('tests/example.log')
       >>> log.hasOutputLoggerFile()
       True
       >>> log.log('t',0)
@@ -35,7 +35,7 @@ class Logger(object):
       array([0, 2])
       >>> del log
       >>> log2 = Logger()
-      >>> log2.loadLoggerFile('example.log')
+      >>> log2.loadLoggerFile('tests/example.log')
       >>> log2.getValue('2*t')
       array([0., 2.])
 

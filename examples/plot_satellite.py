@@ -15,7 +15,7 @@ from blocksim.EarthPlotter import EarthPlotter
 from blocksim.Simulation import Simulation
 
 
-pt=(-74.0542275,40.7004153)
+pt = (-74.0542275, 40.7004153)
 iss = Satellite.fromTLE("iss.tle")
 
 sim = Simulation()
@@ -33,7 +33,7 @@ fig = plt.figure()
 ep = EarthPlotter()
 axe = ep.createAxe(fig)
 ep.plotGroundTrack(axe, lon, lat)
-ep.plotDeviceReach(axe, coord=pt, elev_min=pi/6, sat_alt600e3)
+ep.plotDeviceReach(axe, coord=pt, elev_min=pi / 6, sat_alt=600e3)
 ep.plotPoint(axe, coord=pt)
 
 plt.show()
