@@ -1,8 +1,8 @@
 import numpy as np
 from numpy import sqrt, sign, pi, exp
-from matplotlib import pyplot as plt
 
-from blocksim.core.Node import AComputer
+from . import logger
+from ..core.Node import AComputer
 
 
 class QPSKMapping(AComputer):

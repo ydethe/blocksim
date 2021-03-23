@@ -1,3 +1,5 @@
+import os
+import sys
 import unittest
 
 import pytest
@@ -6,9 +8,11 @@ from numpy import exp, pi, log10
 from numpy.fft import fft
 from matplotlib import pyplot as plt
 
-from blocksim.blocs.ProcessingBlock import ProcessingBlock
-from blocksim.blocs.Channel import AWGNChannel, AWGNChannelEstimator
-from tests.TestBase import TestBase
+from blocksim.dsp.ProcessingBlock import ProcessingBlock
+from blocksim.dsp.Channel import AWGNChannel, AWGNChannelEstimator
+
+sys.path.insert(0, os.path.dirname(__file__))
+from TestBase import TestBase
 
 
 class TestChannel(TestBase):

@@ -1,3 +1,5 @@
+import os
+import sys
 import unittest
 
 import numpy as np
@@ -5,8 +7,10 @@ from numpy import log10
 import sk_dsp_comm.digitalcom as dc
 
 from blocksim import logger
-from blocksim.blocs.FEC import FECCoder, FECDecoder
-from tests.TestBase import TestBase
+from blocksim.dsp.FEC import FECCoder, FECDecoder
+
+sys.path.insert(0, os.path.dirname(__file__))
+from TestBase import TestBase
 
 
 class TestFEC(TestBase):

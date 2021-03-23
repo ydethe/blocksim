@@ -2,13 +2,14 @@ import numpy as np
 from numpy import sqrt, sign
 from numpy.fft import fft, ifft, fftshift, fftfreq
 from scipy import signal as sig
-from matplotlib import pyplot as plt
 
-from blocksim import logger
-from blocksim.blocs.ProcessingBlock import ProcessingBlock
+from . import logger
+from ..core.Node import AComputer
 
 
-class IDFT(ProcessingBlock):
+class IDFT(AComputer):
+    __slots__ = []
+
     def __init__(self, nech_symb):
         self.nech_symb = nech_symb
 
@@ -29,23 +30,25 @@ class IDFT(ProcessingBlock):
 
         return s
 
-    def plotOutput(self, dt_us=1, axe=None):
-        if axe is None:
-            fig = plt.figure()
-            axe = fig.add_subplot(111)
-            axe.set_xlabel("Time (µs)")
-            axe.set_ylabel("$Re x(t)$")
-            axe.grid(True)
+    # def plotOutput(self, dt_us=1, axe=None):
+        # if axe is None:
+            # fig = plt.figure()
+            # axe = fig.add_subplot(111)
+            # axe.set_xlabel("Time (µs)")
+            # axe.set_ylabel("$Re x(t)$")
+            # axe.grid(True)
 
-        n = len(self.out)
-        tps = np.arange(n) * dt_us
-        axe.plot(tps, np.real(self.out), label="IDFT signal")
-        axe.legend(fontsize=10)
+        # n = len(self.out)
+        # tps = np.arange(n) * dt_us
+        # axe.plot(tps, np.real(self.out), label="IDFT signal")
+        # axe.legend(fontsize=10)
 
-        return axe
+        # return axe
 
 
-class DFT(ProcessingBlock):
+class DFT(AComputer):
+    __slots__ = []
+
     def __init__(self, nb_carriers, nech_symb):
         self.nech_symb = nech_symb
         self.nb_carriers = nb_carriers
@@ -68,16 +71,16 @@ class DFT(ProcessingBlock):
 
         return demod
 
-    def plotOutput(self, df_khz=1, axe=None):
-        if axe is None:
-            fig = plt.figure()
-            axe = fig.add_subplot(111)
-            axe.set_xlabel("Fréquence (kHz)")
-            axe.grid(True)
+    # def plotOutput(self, df_khz=1, axe=None):
+        # if axe is None:
+            # fig = plt.figure()
+            # axe = fig.add_subplot(111)
+            # axe.set_xlabel("Fréquence (kHz)")
+            # axe.grid(True)
 
-        n = self.out.shape[0]
-        frq = np.arange(n) * df_khz
-        axe.plot(frq, np.abs(self.out[:, 0]), label="RX signal, no CP, demod")
-        axe.legend(fontsize=10)
+        # n = self.out.shape[0]
+        # frq = np.arange(n) * df_khz
+        # axe.plot(frq, np.abs(self.out[:, 0]), label="RX signal, no CP, demod")
+        # axe.legend(fontsize=10)
 
-        return axe
+        # return axe

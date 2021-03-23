@@ -1,3 +1,5 @@
+import os
+import sys
 import unittest
 
 import pytest
@@ -7,14 +9,15 @@ import sk_dsp_comm.digitalcom as dc
 from matplotlib import pyplot as plt
 
 from blocksim import logger
-from blocksim.blocs.FEC import FECCoder, FECDecoder
-from blocksim.blocs.SerialParallel import SerialToParallel, ParallelToSerial
-from blocksim.blocs.QPSKMod import QPSKMapping, QPSKDemapping
-from blocksim.blocs.blocksimA import blocksimMapping, blocksimDemapping
-from blocksim.blocs.DFT import IDFT, DFT
-from blocksim.blocs.Channel import AWGNChannel, AWGNChannelEstimator
+from blocksim.dsp.FEC import FECCoder, FECDecoder
+from blocksim.dsp.SerialParallel import SerialToParallel, ParallelToSerial
+from blocksim.dsp.QPSKMod import QPSKMapping, QPSKDemapping
+from blocksim.dsp.OFDMA import OFDMMapping, OFDMDemapping
+from blocksim.dsp.DFT import IDFT, DFT
+from blocksim.dsp.Channel import AWGNChannel, AWGNChannelEstimator
 
-from tests.TestBase import TestBase
+sys.path.insert(0, os.path.dirname(__file__))
+from TestBase import TestBase
 
 
 class TestChaine(TestBase):
@@ -28,15 +31,15 @@ class TestChaine(TestBase):
         qpsk = QPSKMapping()
         qpsk_payload = qpsk.process(par)
 
-        ofdm = blocksimMapping(
+        blocksim = OFDMMapping(
             self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
         )
-        ofdm_payload = ofdm.process(qpsk_payload)
+        ofdm_payload = blocksim.process(qpsk_payload)
 
         if not fig is None:
             axe_odfm = fig.add_subplot(311)
             axe_odfm.grid(True)
-            ofdm.plotOutput(axe=axe_odfm)
+            blocksim.plotOutput(axe=axe_odfm)
 
         idft = IDFT(self.nsamp)
         idft_payload = idft.process(ofdm_payload)
@@ -62,10 +65,10 @@ class TestChaine(TestBase):
         if not fig is None:
             chan_est.plotEstimation(axe=axe_h_chan)
 
-        ofdm = blocksimDemapping(
+        blocksim = OFDMDemapping(
             self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
         )
-        qpsk_payload = ofdm.process(equalized_payload)
+        qpsk_payload = blocksim.process(equalized_payload)
 
         qpsk = QPSKDemapping()
         par = qpsk.process(qpsk_payload)

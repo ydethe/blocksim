@@ -1,3 +1,5 @@
+import os
+import sys
 import unittest
 
 import pytest
@@ -6,17 +8,19 @@ from numpy import log10, sqrt
 import sk_dsp_comm.digitalcom as dc
 
 from blocksim import logger
-from blocksim.blocs.blocksimA import blocksimMapping, blocksimDemapping
-from tests.TestBase import TestBase
+from blocksim.dsp.OFDMA import OFDMMapping, OFDMDemapping
+
+sys.path.insert(0, os.path.dirname(__file__))
+from TestBase import TestBase
 
 
-class Testblocksim(TestBase):
+class TestOFDM(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 300})
     def test_ofdm_mapping(self):
-        ofdm_co = blocksimMapping(
+        ofdm_co = OFDMMapping(
             self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
         )
-        ofdm_dec = blocksimDemapping(
+        ofdm_dec = OFDMDemapping(
             self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
         )
 
@@ -46,10 +50,10 @@ class Testblocksim(TestBase):
 
     @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 300})
     def test_ofdm_demapping(self):
-        ofdm_co = blocksimMapping(
+        ofdm_co = OFDMMapping(
             self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
         )
-        ofdm_dec = blocksimDemapping(
+        ofdm_dec = OFDMDemapping(
             self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
         )
 
@@ -82,7 +86,7 @@ class Testblocksim(TestBase):
 
     @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 300})
     def test_ofdm_carriers(self):
-        ofdm_co = blocksimMapping(
+        ofdm_co = OFDMMapping(
             self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
         )
 

@@ -1,11 +1,15 @@
+import os
+import sys
 import unittest
 
 import pytest
 import numpy as np
 
 from blocksim import logger
-from blocksim.blocs.DFT import DFT, IDFT
-from tests.TestBase import TestBase
+from blocksim.dsp.DFT import DFT, IDFT
+
+sys.path.insert(0, os.path.dirname(__file__))
+from TestBase import TestBase
 
 
 class TestDFT(TestBase):

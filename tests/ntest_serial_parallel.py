@@ -1,10 +1,14 @@
+import os
+import sys
 import unittest
 
 import numpy as np
 from numpy import exp, pi
 
-from blocksim.blocs.SerialParallel import SerialToParallel, ParallelToSerial
-from tests.TestBase import TestBase
+from blocksim.dsp.SerialParallel import SerialToParallel, ParallelToSerial
+
+sys.path.insert(0, os.path.dirname(__file__))
+from TestBase import TestBase
 
 
 class TestSerialParallel(TestBase):

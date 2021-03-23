@@ -2,10 +2,9 @@ import numpy as np
 from numpy import sqrt, sign, pi, exp
 from numpy.fft import fft, ifft, fftshift, fftfreq
 from scipy import signal as sig
-from matplotlib import pyplot as plt
 
-from blocksim import logger
-from blocksim.blocs.ProcessingBlock import ProcessingBlock
+from . import logger
+from ..core.Node import AComputer
 
 
 def zadoff_chu(u, n):
@@ -13,9 +12,11 @@ def zadoff_chu(u, n):
     return exp(-1j * pi * u * k * (k + 1) / n)
 
 
-class NPSSGenerator(ProcessingBlock):
-    def __init__(self):
-        pass
+class NPSSGenerator(AComputer):
+    __slots__ = []
+
+    def __init__(self, name: str):
+        AComputer.__init__(self, name=name)
 
     def __update__(self, data: np.array) -> np.array:
         sc_nb = 11
@@ -31,18 +32,21 @@ class NPSSGenerator(ProcessingBlock):
         return npss
 
 
-class NPSSCorrelator(ProcessingBlock):
-    def __init__(self, nech_symb):
-        self.nech_symb = nech_symb
-        self.sc_nb = 11
+class NPSSCorrelator(AComputer):
+    __slots__ = []
+
+    def __init__(self, name:str, nech_symb:int):
+        AComputer.__init__(self, name=name)
+        self.createParameter("nech_symb", value=nech_symb)
+        self.createParameter("sc_nb", value=11)
+        self.createParameter("u", value=5)
 
     def __update__(self, data: np.array) -> np.array:
         nsymb = len(data) // self.nech_symb
 
-        spec_seq = zadoff_chu(u=5, n=self.sc_nb)
+        spec_seq = zadoff_chu(u=self.u, n=self.sc_nb)
         rep = np.conj(ifft(spec_seq, n=self.nech_symb)[::-1])
 
-        # l_corr=2 * self.sc_nb - 1
         l_corr = self.nech_symb
         out = np.empty(l_corr * nsymb, dtype=np.complex128)
         for k in range(nsymb):
@@ -51,22 +55,22 @@ class NPSSCorrelator(ProcessingBlock):
 
         return out
 
-    def plotOutput(self, dt_us=1, axe=None):
-        if axe is None:
-            fig = plt.figure()
-            axe = fig.add_subplot(111)
-            axe.set_xlabel("Time (µs)")
-            axe.set_ylabel("SNR (dB)")
-            axe.grid(True)
+    # def plotOutput(self, dt_us=1, axe=None):
+        # if axe is None:
+            # fig = plt.figure()
+            # axe = fig.add_subplot(111)
+            # axe.set_xlabel("Time (µs)")
+            # axe.set_ylabel("SNR (dB)")
+            # axe.grid(True)
 
-        dt = (self.sc_nb - 1) * dt_us
+        # dt = (self.sc_nb - 1) * dt_us
 
-        n = len(self.out)
-        tps = np.arange(n) * dt_us - dt
-        axe.plot(
-            tps, ProcessingBlock.conv_sig_to_db(self.out), label="NPSS correlation"
-        )
+        # n = len(self.out)
+        # tps = np.arange(n) * dt_us - dt
+        # axe.plot(
+            # tps, ProcessingBlock.conv_sig_to_db(self.out), label="NPSS correlation"
+        # )
 
-        axe.legend(fontsize=10)
+        # axe.legend(fontsize=10)
 
-        return axe
+        # return axe

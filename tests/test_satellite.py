@@ -4,7 +4,7 @@ import unittest
 from datetime import datetime, timezone
 
 import numpy as np
-from numpy import cos, sin, sqrt, exp
+from numpy import cos, sin, sqrt, exp, pi
 from matplotlib import pyplot as plt
 import pytest
 
@@ -48,6 +48,7 @@ class TestSatellite(TestBase):
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
     def test_ground_track(self):
+        pt = (-74.0542275, 40.7004153)
         iss = Satellite.fromTLE("tests/iss.tle")
 
         sim = Simulation()
@@ -65,6 +66,8 @@ class TestSatellite(TestBase):
         ep = EarthPlotter()
         axe = ep.createAxe(fig)
         ep.plotGroundTrack(axe, lon, lat)
+        ep.plotDeviceReach(axe, coord=pt, elev_min=pi / 8, sat_alt=600e3)
+        ep.plotPoint(axe, coord=pt)
 
         return fig
 

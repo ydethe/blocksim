@@ -1,11 +1,10 @@
 import numpy as np
 from numpy import sqrt, sign, pi, exp
-from matplotlib import pyplot as plt
 
 from blocksim.core.Node import AComputer
 
 
-class blocksimMapping(AComputer):
+class OFDMMapping(AComputer):
     __slots__ = []
 
     def __init__(
@@ -52,7 +51,7 @@ class blocksimMapping(AComputer):
         return outputs
 
 
-class blocksimDemapping(AComputer):
+class OFDMDemapping(AComputer):
     __slots__ = []
 
     def __init__(

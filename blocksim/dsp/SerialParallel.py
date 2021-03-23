@@ -1,7 +1,7 @@
 import numpy as np
-from matplotlib import pyplot as plt
 
-from blocksim.core.Node import AComputer
+from . import logger
+from ..core.Node import AComputer
 
 
 class SerialToParallel(AComputer):

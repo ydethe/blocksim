@@ -1,14 +1,18 @@
+import os
+import sys
 import unittest
 
 import pytest
 import numpy as np
 
 from blocksim import logger
-from blocksim.blocs.blocksimA import blocksimMapping
-from blocksim.blocs.DFT import IDFT
-from blocksim.blocs.Channel import AWGNChannel
-from blocksim.blocs.NPSS import NPSSGenerator, NPSSCorrelator
-from tests.TestBase import TestBase
+from blocksim.dsp.OFDMA import OFDMMapping
+from blocksim.dsp.DFT import IDFT
+from blocksim.dsp.Channel import AWGNChannel
+from blocksim.dsp.NPSS import NPSSGenerator, NPSSCorrelator
+
+sys.path.insert(0, os.path.dirname(__file__))
+from TestBase import TestBase
 
 
 class TestNPSS(TestBase):
@@ -29,7 +33,7 @@ class TestNPSS(TestBase):
 
         self.npss_gen = NPSSGenerator()
         self.npss_corr = NPSSCorrelator(self.nsamp)
-        self.ofdm_co = blocksimMapping(
+        self.ofdm_co = OFDMMapping(
             self.allCarriers, self.pilotCarriers, self.dataCarriers, pilotValue=0
         )
         self.idft = IDFT(self.nsamp)

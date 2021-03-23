@@ -1,14 +1,15 @@
 import numpy as np
 from numpy import sqrt, sign
-from matplotlib import pyplot as plt
 
 import sk_dsp_comm.fec_conv as fec
 
-from blocksim import logger
-from blocksim.blocs.ProcessingBlock import ProcessingBlock
+from . import logger
+from ..core.Node import AComputer
 
 
-class FECCoder(ProcessingBlock):
+class FECCoder(AComputer):
+    __slots__ = []
+
     def __init__(self):
         # Convolutional encoder 7, 1/3
         self.k_cc = 3
@@ -19,7 +20,9 @@ class FECCoder(ProcessingBlock):
         return fec_bits
 
 
-class FECDecoder(ProcessingBlock):
+class FECDecoder(AComputer):
+    __slots__ = []
+
     def __init__(self):
         # Convolutional encoder 7, 1/3
         self.k_cc = 3
