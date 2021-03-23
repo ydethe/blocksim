@@ -1,6 +1,8 @@
 from itertools import product
 from abc import abstractmethod
 
+import numpy as np
+
 from ..core.Node import AComputer
 
 
