@@ -1,6 +1,6 @@
 import numpy as np
 
-from . import logger
+from .. import logger
 from ..core.Node import AComputer
 
 

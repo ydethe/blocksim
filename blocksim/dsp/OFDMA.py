@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import sqrt, sign, pi, exp
 
+from .. import logger
 from blocksim.core.Node import AComputer
 
 

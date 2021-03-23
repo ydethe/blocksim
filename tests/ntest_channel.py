@@ -8,7 +8,7 @@ from numpy import exp, pi, log10
 from numpy.fft import fft
 from matplotlib import pyplot as plt
 
-from blocksim.dsp.ProcessingBlock import ProcessingBlock
+from blocksim.dsp.DSPLine import DSPLine
 from blocksim.dsp.Channel import AWGNChannel, AWGNChannelEstimator
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -43,10 +43,10 @@ class TestChannel(TestBase):
 
         axe.plot(
             frq / 1000,
-            ProcessingBlock.conv_sig_to_db(fft(data) / ns),
+            DSPLine.to_db(fft(data) / ns),
             label="Théorique",
         )
-        axe.plot(frq / 1000, ProcessingBlock.conv_sig_to_db(sp), label="Bruité")
+        axe.plot(frq / 1000, DSPLine.to_db(sp), label="Bruité")
         axe.legend(loc="best")
 
         axe = fig.add_subplot(212)

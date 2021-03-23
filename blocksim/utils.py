@@ -443,4 +443,4 @@ def q_function(x):
     """
     https://en.wikipedia.org/wiki/Q-function
     """
-    return 0.5 * erfc(x / sqrt(2))
+    return 0.5 * np.erfc(x / np.sqrt(2))

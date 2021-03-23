@@ -28,4 +28,6 @@ dependencies:
     - sphinx-gallery==0.8.2
     - sphinxcontrib-apidoc==0.3.0
     - sphinxcontrib-napoleon==0.7
+    - scikit-dsp-comm==1.3.0
     - mock==4.0.3
+

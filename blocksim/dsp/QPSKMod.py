@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import sqrt, sign, pi, exp
 
-from . import logger
+from .. import logger
 from ..core.Node import AComputer
 
 

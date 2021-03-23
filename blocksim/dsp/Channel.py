@@ -2,7 +2,7 @@ import numpy as np
 from numpy import sqrt, sign, pi, exp, log10
 import scipy.interpolate
 
-from . import logger
+from .. import logger
 from ..core.Node import AComputer
 
 
@@ -51,33 +51,33 @@ class AWGNChannel(AComputer):
         return convolved * dop + noise
 
     # def plotOutput(self, dt_us=1, axe=None):
-        # if axe is None:
-            # fig = plt.figure()
-            # axe = fig.add_subplot(111)
-            # axe.set_xlabel("Time (µs)")
-            # axe.set_ylabel("$Re x(t)$")
-            # axe.grid(True)
+    # if axe is None:
+    # fig = plt.figure()
+    # axe = fig.add_subplot(111)
+    # axe.set_xlabel("Time (µs)")
+    # axe.set_ylabel("$Re x(t)$")
+    # axe.grid(True)
 
-        # n = len(self.out)
-        # tps = np.arange(n) * dt_us
-        # axe.plot(tps, np.real(self.out), label="RX signal")
-        # axe.legend(fontsize=10)
+    # n = len(self.out)
+    # tps = np.arange(n) * dt_us
+    # axe.plot(tps, np.real(self.out), label="RX signal")
+    # axe.legend(fontsize=10)
 
-        # return axe
+    # return axe
 
     # def plotTransferFunction(self, nfft, axe=None):
-        # if axe is None:
-            # fig = plt.figure()
-            # axe = fig.add_subplot(111)
-            # axe.set_xlabel("Carrier index")
-            # axe.set_ylabel("$|H(f)|$")
-            # axe.grid(True)
+    # if axe is None:
+    # fig = plt.figure()
+    # axe = fig.add_subplot(111)
+    # axe.set_xlabel("Carrier index")
+    # axe.set_ylabel("$|H(f)|$")
+    # axe.grid(True)
 
-        # H_exact = np.fft.fft(self.response, n=nfft)
-        # axe.plot(abs(H_exact), label="Correct Channel")
-        # axe.legend(fontsize=10)
+    # H_exact = np.fft.fft(self.response, n=nfft)
+    # axe.plot(abs(H_exact), label="Correct Channel")
+    # axe.legend(fontsize=10)
 
-        # return axe
+    # return axe
 
 
 class AWGNChannelEstimator(AComputer):
@@ -117,22 +117,22 @@ class AWGNChannelEstimator(AComputer):
         self.Hest_at_pilots = Hest_at_pilots
 
     # def plotEstimation(self, axe=None):
-        # if axe is None:
-            # fig = plt.figure()
-            # axe = fig.add_subplot(111)
-            # axe.grid(True)
-            # axe.set_xlabel("Carrier index")
-            # axe.set_ylabel("$|H(f)|$")
+    # if axe is None:
+    # fig = plt.figure()
+    # axe = fig.add_subplot(111)
+    # axe.grid(True)
+    # axe.set_xlabel("Carrier index")
+    # axe.set_ylabel("$|H(f)|$")
 
-        # axe.stem(self.pilotCarriers, abs(self.Hest_at_pilots), label="Pilot estimates")
-        # axe.plot(
-            # self.allCarriers,
-            # abs(self.Hest),
-            # label="Estimated channel via interpolation",
-        # )
-        # axe.legend(fontsize=10)
+    # axe.stem(self.pilotCarriers, abs(self.Hest_at_pilots), label="Pilot estimates")
+    # axe.plot(
+    # self.allCarriers,
+    # abs(self.Hest),
+    # label="Estimated channel via interpolation",
+    # )
+    # axe.legend(fontsize=10)
 
-        # return axe
+    # return axe
 
     def __update__(self, data: np.array):
         self.estimate(data)

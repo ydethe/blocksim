@@ -3,7 +3,7 @@ from numpy import sqrt, sign
 
 import sk_dsp_comm.fec_conv as fec
 
-from . import logger
+from .. import logger
 from ..core.Node import AComputer
 
 
