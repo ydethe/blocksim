@@ -4,9 +4,6 @@
 # python3.7 in ubuntu:bionic
 image: continuumio/miniconda3:4.9.2
 
-include:
-  - template: Dependency-Scanning.gitlab-ci.yml
-  
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
 variables:
