@@ -5,7 +5,7 @@ from ..core.Node import AComputer
 
 
 class ADSPNumeric(AComputer):
-    __slots__
+    __slots__ = []
 
     def __init__(self, name: str, shape_in: tuple, shape_out: tuple):
         AComputer.__init__(self, name=name)
@@ -24,7 +24,7 @@ class ADSPNumeric(AComputer):
             snames.append(k)
 
         self.defineOutput("output", snames=snames, dtype=np.complex128)
-        
+
     @abstractmethod
     def process(self, t: float, input: np.array) -> np.array:
         pass
