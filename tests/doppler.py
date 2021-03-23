@@ -13,18 +13,18 @@ import sk_dsp_comm.digitalcom as dc
 import sk_dsp_comm.fec_conv as fec
 import matplotlib.pyplot as plt
 
-from OFDM import logger
-from OFDM.blocs.FEC import FECCoder, FECDecoder
-from OFDM.blocs.SerialParallel import SerialToParallel, ParallelToSerial
-from OFDM.blocs.QPSKMod import QPSKMapping, QPSKDemapping
-from OFDM.blocs.OFDMA import OFDMMapping, OFDMDemapping
-from OFDM.blocs.DFT import IDFT, DFT
-from OFDM.blocs.Channel import AWGNChannel, AWGNChannelEstimator
+from blocksim import logger
+from blocksim.dsp.FEC import FECCoder, FECDecoder
+from blocksim.dsp.SerialParallel import SerialToParallel, ParallelToSerial
+from blocksim.dsp.QPSKMod import QPSKMapping, QPSKDemapping
+from blocksim.dsp.OFDMA import OFDMMapping, OFDMDemapping
+from blocksim.dsp.DFT import IDFT, DFT
+from blocksim.dsp.Channel import AWGNChannel, AWGNChannelEstimator
 
 
 class Simu(object):
     def __init__(self):
-        self.K = 12  # number of OFDM subcarriers
+        self.K = 12  # number of blocksim subcarriers
 
         # Length of a symbol
         self.nsamp = 2048
