@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase
 
 from blocksim.constants import Req, omega
-from blocksim.blocks.Satellite import Satellite
+from blocksim.source.Satellite import Satellite
 from blocksim.EarthPlotter import EarthPlotter
 from blocksim.Simulation import Simulation
 

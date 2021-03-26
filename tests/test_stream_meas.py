@@ -5,8 +5,8 @@ import unittest
 import numpy as np
 import pytest
 
-from blocksim.blocks.Sensors import StreamCSVSensors
-from blocksim.blocks.SetPoint import Step
+from blocksim.control.Sensors import StreamCSVSensors
+from blocksim.control.SetPoint import Step
 from blocksim.Simulation import Simulation
 
 

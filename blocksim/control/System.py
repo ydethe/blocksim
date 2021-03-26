@@ -20,7 +20,7 @@ class ASystem(AComputer):
 
     Implement the method **transition** to make it concrete
     You can also implement the method **jacobian**
-    (see :class:`blocksim.blocks.System.ASystem.example_jacobian`)
+    (see :class:`blocksim.control.System.ASystem.example_jacobian`)
     to use the integrators that need the jacobian.
 
     The input name of the computer is **command**

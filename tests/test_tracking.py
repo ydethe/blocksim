@@ -8,10 +8,10 @@ import matplotlib.pyplot as plt
 import pytest
 
 from blocksim.Logger import Logger
-from blocksim.blocks.Estimator import SteadyStateKalmanFilter, SpectrumEstimator
+from blocksim.control.Estimator import SteadyStateKalmanFilter, SpectrumEstimator
 from blocksim.Simulation import Simulation
-from blocksim.blocks.SetPoint import Step
-from blocksim.blocks.Route import IQExtract
+from blocksim.control.SetPoint import Step
+from blocksim.control.Route import IQExtract
 from blocksim.Graphics import FigureSpec, createFigureFromSpec, plotSpectrogram
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp.utils import phase_unfold

@@ -8,11 +8,11 @@ from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.Simulation import Simulation
-from blocksim.blocks.Controller import PIDController
-from blocksim.blocks.System import ASystem
-from blocksim.blocks.Sensors import ASensors
-from blocksim.blocks.SetPoint import Step
-from blocksim.blocks.Estimator import MadgwickFilter, MahonyFilter
+from blocksim.control.Controller import PIDController
+from blocksim.control.System import ASystem
+from blocksim.control.Sensors import ASensors
+from blocksim.control.SetPoint import Step
+from blocksim.control.Estimator import MadgwickFilter, MahonyFilter
 from blocksim.core.Node import AComputer
 from blocksim.utils import deg, rad
 

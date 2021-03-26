@@ -11,9 +11,9 @@ sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase, plotAnalyticsolution
 
 from blocksim.core.Node import Frame
-from blocksim.blocks.SetPoint import Step
-from blocksim.blocks.System import ASystem
-from blocksim.blocks.Controller import PIDController
+from blocksim.control.SetPoint import Step
+from blocksim.control.System import ASystem
+from blocksim.control.Controller import PIDController
 from blocksim.Simulation import Simulation
 
 

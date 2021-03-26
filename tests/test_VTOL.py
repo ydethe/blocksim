@@ -9,11 +9,11 @@ import scipy.linalg as lin
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.blocks.System import LTISystem
-from blocksim.blocks.Controller import LQRegulator, AntiWindupPIDController
+from blocksim.control.System import LTISystem
+from blocksim.control.Controller import LQRegulator, AntiWindupPIDController
 from blocksim.Simulation import Simulation
-from blocksim.blocks.SetPoint import Step
-from blocksim.blocks.Route import Group, Split
+from blocksim.control.SetPoint import Step
+from blocksim.control.Route import Group, Split
 
 
 sys.path.insert(0, os.path.dirname(__file__))

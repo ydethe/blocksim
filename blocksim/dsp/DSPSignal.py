@@ -8,7 +8,7 @@ from scipy.signal import get_window, resample, correlate, lfilter_zi, lfilter, f
 
 from .utils import phase_unfold
 from .DSPLine import DSPLine
-from ..blocks.SetPoint import ASetPoint
+from ..control.SetPoint import ASetPoint
 
 
 __all__ = ["DSPSignal"]

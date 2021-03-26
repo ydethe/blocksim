@@ -6,10 +6,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.blocks.System import LTISystem
-from blocksim.blocks.SetPoint import Step
+from blocksim.control.System import LTISystem
+from blocksim.control.SetPoint import Step
 from blocksim.Simulation import Simulation
-from blocksim.blocks.Sensors import LinearSensors
+from blocksim.control.Sensors import LinearSensors
 
 
 sys.path.insert(0, os.path.dirname(__file__))

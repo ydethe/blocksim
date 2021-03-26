@@ -9,9 +9,9 @@ from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.core.Frame import Frame
-from blocksim.blocks.System import G6DOFSystem
+from blocksim.control.System import G6DOFSystem
 from blocksim.Simulation import Simulation
-from blocksim.blocks.SetPoint import Step, Rectangular
+from blocksim.control.SetPoint import Step, Rectangular
 
 
 sys.path.insert(0, os.path.dirname(__file__))

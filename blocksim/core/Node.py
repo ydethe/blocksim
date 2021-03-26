@@ -414,13 +414,13 @@ class AComputer(ABaseNode):
 
     def isController(self) -> bool:
         """Checks if the element is derived from AController
-        See :class:`blocksim.blocks.Controller.AController`
+        See :class:`blocksim.control.Controller.AController`
 
         Returns:
           True if the element is derived from AController
 
         """
-        from ..blocks.Controller import AController
+        from ..control.Controller import AController
 
         return isinstance(self, AController)
 

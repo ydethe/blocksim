@@ -10,7 +10,7 @@ from numpy import cos, sin, sqrt, exp, pi
 from matplotlib import pyplot as plt
 
 from blocksim.constants import Req, omega
-from blocksim.blocks.Satellite import Satellite
+from blocksim.source.Satellite import Satellite
 from blocksim.EarthPlotter import EarthPlotter
 from blocksim.Simulation import Simulation
 

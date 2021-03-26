@@ -7,10 +7,10 @@ import numpy as np
 from blocksim.exceptions import *
 from blocksim.Logger import Logger
 from blocksim.Simulation import Simulation
-from blocksim.blocks.System import LTISystem, G6DOFSystem
-from blocksim.blocks.SetPoint import Rectangular, Step
+from blocksim.control.System import LTISystem, G6DOFSystem
+from blocksim.control.SetPoint import Rectangular, Step
 from blocksim.core.Node import AComputer
-from blocksim.blocks.Sensors import LinearSensors
+from blocksim.control.Sensors import LinearSensors
 from blocksim.utils import quat_to_euler
 from blocksim.Graphics import plotFromLogger
 

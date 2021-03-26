@@ -8,7 +8,6 @@ import numpy as np
 from .exceptions import *
 from .core.Frame import Frame
 from .core.Node import Input, Output, AComputer, DummyComputer
-from .blocks.Route import Split
 from .Logger import Logger
 
 

@@ -1,6 +1,6 @@
 import numpy as np
 
-from blocksim.blocks.Sensors import ASensors
+from blocksim.control.Sensors import ASensors
 from blocksim.utils import quat_to_matrix, quat_to_euler
 
 

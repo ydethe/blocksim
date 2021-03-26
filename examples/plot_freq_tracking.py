@@ -48,9 +48,9 @@ sig = (
 )
 
 ###############################################################################
-# We configure the frequency estimator :class:`blocksim.blocks.Estimator.SpectrumEstimator`
+# We configure the frequency estimator :class:`blocksim.control.Estimator.SpectrumEstimator`
 
-from blocksim.blocks.Estimator import SpectrumEstimator
+from blocksim.control.Estimator import SpectrumEstimator
 
 tracks = np.arange(0, 20, 0.5) / fs
 nb_tracks = len(tracks)
@@ -71,7 +71,7 @@ kal.setInitialStateForOutput(X, "state")
 ###############################################################################
 # We define the simulation
 
-from blocksim.blocks.SetPoint import Step
+from blocksim.control.SetPoint import Step
 from blocksim.Simulation import Simulation
 
 ctrl = Step("ctrl", snames=["u"], cons=np.zeros(1))
@@ -88,7 +88,7 @@ sim.connect("ctrl.setpoint", "kal.command")
 sim.simulate(sig.generateXSerie(), progress_bar=False)
 
 ###############################################################################
-# We plot the spectrogram, which is computed by :class:`blocksim.blocks.Estimator.SpectrumEstimator.getSpectrogram`
+# We plot the spectrogram, which is computed by :class:`blocksim.control.Estimator.SpectrumEstimator.getSpectrogram`
 # The spectrogram is an instance of :class:`blocksim.dsp.DSPSpectrogram.DSPSpectrogram`
 # It has a method plot which allows to visualize the spectrogram
 

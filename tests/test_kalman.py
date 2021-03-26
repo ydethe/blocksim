@@ -12,12 +12,15 @@ sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase
 
 from blocksim.core.Node import Frame
-from blocksim.blocks.SetPoint import Step
-from blocksim.blocks.System import LTISystem
-from blocksim.blocks.Controller import PIDController, LQRegulator
-from blocksim.blocks.Estimator import SteadyStateKalmanFilter, TimeInvariantKalmanFilter
-from blocksim.blocks.Sensors import LinearSensors
-from blocksim.blocks.Route import Split
+from blocksim.control.SetPoint import Step
+from blocksim.control.System import LTISystem
+from blocksim.control.Controller import PIDController, LQRegulator
+from blocksim.control.Estimator import (
+    SteadyStateKalmanFilter,
+    TimeInvariantKalmanFilter,
+)
+from blocksim.control.Sensors import LinearSensors
+from blocksim.control.Route import Split
 from blocksim.Simulation import Simulation
 
 

@@ -3,29 +3,29 @@ Damped spring-mass system with kalman estimator
 ===============================================
 This case consists in :
 
-* a LTI system, named *sys* :class:`blocksim.blocks.System.LTISystem`
+* a LTI system, named *sys* :class:`blocksim.control.System.LTISystem`
 
   This element simulates the system
 
-* a LQ regulator, named *ctl* :class:`blocksim.blocks.Controller.LQRegulator`
+* a LQ regulator, named *ctl* :class:`blocksim.control.Controller.LQRegulator`
 
   This element compares the estimated state of the system and compares to the setpoint.
   It controls the system so that it reaches the setpoint
 
-* a noisy biased sensor, named *cpt* :class:`blocksim.blocks.Sensors.LinearSensors`
+* a noisy biased sensor, named *cpt* :class:`blocksim.control.Sensors.LinearSensors`
 
   This element measures the position with noise and a constant bias
 
-* a Kalman filter , named *kal* :class:`blocksim.blocks.Estimator.TimeInvariantKalmanFilter`
+* a Kalman filter , named *kal* :class:`blocksim.control.Estimator.TimeInvariantKalmanFilter`
 
   This version of the Kalman filter is the steady-state version : the matrix gain and state covariance matrix are fix in time.
 
-* a LQ regulator, named *ctl* :class:`blocksim.blocks.Controller.LQRegulator`
+* a LQ regulator, named *ctl* :class:`blocksim.control.Controller.LQRegulator`
 
   This element compares the estimated state of the system and compares to the setpoint.
   It controls the system so that it reaches the setpoint
 
-* a setpoint, named *stp* :class:`blocksim.blocks.SetPoint.Step`
+* a setpoint, named *stp* :class:`blocksim.control.SetPoint.Step`
   This element provides a user command such as a step or a ramp or a Dirac, ...
   Here, we will use a unit step function
 
@@ -38,7 +38,7 @@ import numpy as np
 # ------------------------
 # Mass, spring and friction
 
-from blocksim.blocks.System import LTISystem
+from blocksim.control.System import LTISystem
 
 m = 1.0  # Mass
 k = 40.0  # Spring rate
@@ -55,7 +55,7 @@ sys.setInitialStateForOutput(np.array([-1.0, 0.0]), "state")
 # -----------------------------------------------------------
 # The state vector of the Kalman filter includes the bias of the position sensor
 
-from blocksim.blocks.Estimator import TimeInvariantKalmanFilter
+from blocksim.control.Estimator import TimeInvariantKalmanFilter
 
 kal = TimeInvariantKalmanFilter(
     "kal",
@@ -77,7 +77,7 @@ kal.matR = np.eye(1) / 100
 # -----------------------------------
 # The sensor measures the position
 
-from blocksim.blocks.Sensors import LinearSensors
+from blocksim.control.Sensors import LinearSensors
 
 bias = 0.5
 
@@ -92,7 +92,7 @@ cpt.setMean(np.array([bias]))
 # ----------------------------
 # The sensor measures the position
 
-from blocksim.blocks.Controller import LQRegulator
+from blocksim.control.Controller import LQRegulator
 
 ctl = LQRegulator("ctl", shape_setpoint=(1,), shape_estimation=(2,), snames=["u"])
 ctl.matA = sys.matA
@@ -108,7 +108,7 @@ ctl.computeGain()
 # -----------------------------------------------
 # The setpoint is simple Heavyside function here
 
-from blocksim.blocks.SetPoint import Step
+from blocksim.control.SetPoint import Step
 
 stp = Step(name="stp", snames=["c"], cons=np.array([1]))
 
@@ -119,7 +119,7 @@ stp = Step(name="stp", snames=["c"], cons=np.array([1]))
 # But the controller expects an estimation of the system's state vector.
 # So we need a splitter wich excludes the bias estimation
 
-from blocksim.blocks.Route import Split
+from blocksim.control.Route import Split
 
 spt_otp = OrderedDict()
 spt_otp["split"] = [0, 1]  # We keep outputs 0 and 1 of the input vector

@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.linalg as lin
 
-from blocksim.blocks.Controller import AController
+from blocksim.control.Controller import AController
 
 
 class AttPilot(AController):

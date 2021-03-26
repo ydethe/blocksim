@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.linalg as lin
 
-from blocksim.blocks.System import ASystem
+from blocksim.control.System import ASystem
 
 
 # name_of_outputs=['s%i' % num,'ds%i' % num]

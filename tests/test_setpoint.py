@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase
 
 from blocksim.core.Node import Frame
-from blocksim.blocks.SetPoint import (
+from blocksim.control.SetPoint import (
     Step,
     InterpolatedSetPoint,
     Ramp,

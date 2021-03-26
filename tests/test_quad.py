@@ -9,16 +9,16 @@ import scipy.linalg as lin
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.blocks.System import ASystem, G6DOFSystem
-from blocksim.blocks.Controller import (
+from blocksim.control.System import ASystem, G6DOFSystem
+from blocksim.control.Controller import (
     AController,
     LQRegulator,
     AntiWindupPIDController,
 )
 from blocksim.Simulation import Simulation
-from blocksim.blocks.SetPoint import Step, Rectangular
+from blocksim.control.SetPoint import Step, Rectangular
 from blocksim.utils import quat_to_matrix, quat_to_euler
-from blocksim.blocks.Route import Group, Split
+from blocksim.control.Route import Group, Split
 
 sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase

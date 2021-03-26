@@ -13,9 +13,9 @@ from TestBase import TestBase, plotAnalyticsolution
 from blocksim.Graphics import plotDSPLine
 from blocksim.core.Node import Frame
 from blocksim.dsp.DSPSignal import DSPSignal
-from blocksim.blocks.System import ASystem
-from blocksim.blocks.Controller import PIDController
-from blocksim.blocks.Generic import GenericComputer
+from blocksim.control.System import ASystem
+from blocksim.control.Controller import PIDController
+from blocksim.core.Generic import GenericComputer
 from blocksim.Simulation import Simulation
 
 

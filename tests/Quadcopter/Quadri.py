@@ -4,7 +4,7 @@ import numpy as np
 import scipy.linalg as lin
 
 from blocksim.core.Node import Input
-from blocksim.blocks.System import G6DOFSystem
+from blocksim.control.System import G6DOFSystem
 from blocksim.utils import vecBodyToEarth, vecEarthToBody
 
 
