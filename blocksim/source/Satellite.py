@@ -63,6 +63,7 @@ class Satellite(AComputer):
         )
         self.defineOutput(name="subpoint", snames=["lon", "lat"], dtype=np.float64)
         self.__sgp4 = None
+        self.createParameter("tsync", value=None)
 
     def _setSGP4(self, sgp4):
         self.__sgp4 = sgp4
@@ -71,7 +72,11 @@ class Satellite(AComputer):
         self, t1: float, t2: float, subpoint: np.array, itrf: np.array
     ) -> dict:
         dt = timedelta(seconds=t2)
-        td = self.epoch + dt
+        if self.tsync is None:
+            td = self.epoch + dt
+        else:
+            td = self.tsync + dt
+
         t = datetime_to_skyfield(td)
         pos, vel, _ = self.__sgp4.ITRF_position_velocity_error(t)
 
@@ -160,23 +165,38 @@ class Satellite(AComputer):
         return sat
 
     @classmethod
-    def fromTLE(cls, tle_file: str) -> "Satellite":
-        """Builds a Satellite from a TLE file
+    def fromTLE(cls, tle_file: str, iline: int = 0) -> "Satellite":
+        """Builds a Satellite from a TLE file?
+        Returns None if the file was incorrect
         See https://en.wikipedia.org/wiki/Two-line_element_set
 
         Args:
           tle_file
             TLE file path
+          iline
+            Number of the object in the TLE (in case of a multi object TLE file)
 
         """
         # ISS (ZARYA)
         # 1 25544U 98067A   21076.49742957  .00000086  00000-0  97467-5 0  9995
         # 2 25544  51.6441  76.2242 0003393 119.8379  30.2224 15.48910580274380
-        f = open(tle_file, "r")
-        name = f.readline().strip().split(" ")[0].lower()
-        line1 = f.readline()
-        line2 = f.readline()
-        f.close()
+        lines = []
+        with open(tle_file, "r") as f:
+            while True:
+                l = f.readline()
+                if l == '':
+                    break
+                if l[0] != "#":
+                    lines.append(l)
+
+        if iline*3+2>=len(lines):
+            return None
+
+        name = lines[iline * 3].strip().split(" ")[0].lower()
+        if name == "":
+            return None
+        line1 = lines[iline * 3 + 1]
+        line2 = lines[iline * 3 + 2]
 
         ts = load.timescale(builtin=True)
         tle_sat = EarthSatellite(line1, line2, name=name, ts=ts)
@@ -435,3 +455,14 @@ class Satellite(AComputer):
 
         """
         return skyfield_to_datetime(self.__sgp4.epoch)
+
+    @epoch.setter
+    def epoch(self, epoch: datetime):
+        """
+        Sets the epoch of the orbit
+
+        Args:
+          e (s)
+
+        """
+        pass
