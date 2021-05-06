@@ -58,17 +58,6 @@ class BuildSphinxCommand(distutils.cmd.Command):
         os.chdir("docs")
         os.makedirs("_build", exist_ok=True)
         self.run_command(command)
-        src = "_build/html"
-        dst = "/home/user-data/www/git.johncloud.fr/"
-        if os.path.exists(dst):
-            for dirpath, dirnames, filenames in os.walk(src):
-                for f in filenames:
-                    d2 = os.path.relpath(dirpath, src)
-                    f2 = os.path.join(dirpath, f)
-                    dir_dst = os.path.join(dst, d2)
-                    t2 = os.path.join(dir_dst, f)
-                    pathlib.Path(dir_dst).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(f2, t2)
         os.chdir(wd)
 
 

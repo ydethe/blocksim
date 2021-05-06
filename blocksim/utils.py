@@ -3,6 +3,7 @@ from typing import Iterable, Tuple
 
 from scipy import linalg as lin
 import numpy as np
+from numpy import pi, arcsin, arctan2
 import astropy.coordinates as coord
 from skyfield.api import Topos, load
 from skyfield.timelib import Time
@@ -13,7 +14,161 @@ from .exceptions import *
 from . import logger
 
 
-__all__ = ["deg", "rad"]
+__all__ = [
+    "build_env",
+    "itrf_to_azeld",
+    "test_diag",
+    "calc_cho",
+    "deg",
+    "rad",
+    "assignVector",
+    "datetime_to_skyfield",
+    "skyfield_to_datetime",
+    "pdot",
+    "quat_to_matrix",
+    "matrix_to_quat",
+    "matrix_to_euler",
+    "euler_to_matrix",
+    "quat_to_euler",
+    "euler_to_quat",
+    "vecBodyToEarth",
+    "vecEarthToBody",
+    "q_function",
+]
+
+
+def build_env(pos: np.array) -> np.array:
+    """Builds a ENV frame at a given position
+
+    Args:
+      pos
+        Position (m) & velocity (m/s) of a point in ITRF
+
+    Returns:
+      Matrix :
+      * Local North vector
+      * Local East vector
+      * Local Vertical vector
+
+    """
+    # Local ENV for the observer
+    vert = pos.copy()
+    vert /= lin.norm(vert)
+
+    east = np.cross(np.array([0, 0, 1]), pos)
+    east /= lin.norm(east)
+
+    north = np.cross(vert, east)
+
+    env = np.empty((3, 3))
+    env[:, 0] = east
+    env[:, 1] = north
+    env[:, 2] = vert
+
+    return env
+
+
+def itrf_to_azeld(obs: np.array, sat: np.array) -> np.array:
+    """Converts an ITRF position & velocity into
+    azimut, elevation, distance, radial velocity, slope of velocity, azimut of velocity
+
+    Args:
+      obs
+        Position (m) & velocity (m/s) of terrestrial observer in ITRF
+      sat
+        Position (m) & velocity (m/s) of the observed satellite in ITRF
+
+    Returns:
+      Azimut (deg)
+      Elevation (deg)
+      Distance (m)
+      Radial velocity (m/s)
+      Slope of velocity (deg)
+      Azimut of velocity (deg)
+
+    """
+    # Local ENV for the observer
+    obs_env = build_env(obs[:3])
+
+    x, y, z = obs_env.T @ (sat[:3] - obs[:3])
+
+    dist = lin.norm((x, y, z))
+
+    if z > dist:
+        z = dist
+        logger.warning("Near zenith elevation")
+    elif z < -dist:
+        z = -dist
+        logger.warning("Near nadir elevation")
+
+    el = arcsin(z / dist) * 180 / pi
+    az = arctan2(x, y) * 180 / pi
+
+    # Local ENV for the satellite
+    sat_env = build_env(sat[:3])
+    vx, vy, vz = sat_env.T @ (sat[3:] - obs[3:])
+
+    vr = lin.norm((vx, vy, vz))
+
+    if vz > vr:
+        vz = vr
+        logger.warning("Near zenith velocity")
+    elif vz < -vr:
+        vz = -vr
+        logger.warning("Near nadir velocity")
+
+    vs = arcsin(vz / vr) * 180 / pi
+    va = arctan2(vx, vy) * 180 / pi
+
+    return az, el, dist, vr, vs, va
+
+
+def test_diag(A: np.array) -> bool:
+    """Tests if a square matrix is diagonal
+
+    Args:
+      A
+        Matrix to test
+
+    Returns:
+      The result of the test
+
+    """
+    m, n = A.shape
+    assert m == n
+
+    for i in range(m):
+        for j in range(n):
+            if i != j and A[i, j] != 0:
+                return False
+    return True
+
+
+def calc_cho(A: np.array) -> np.array:
+    """Returns the cholesky decomposition C of a symetric matrix A:
+
+    :math:`A = C.C^T`
+
+    Args:
+      A
+        Matrix
+
+    Returns:
+      Cholesky decomposition C
+
+    """
+    m, n = A.shape
+    assert m == n
+
+    if test_diag(A):
+        res = np.zeros(A.shape)
+        for i in range(n):
+            res[i, i] = np.sqrt(A[i, i])
+    else:
+        c, _ = lin.cho_factor(A)
+        res = np.triu(c).T
+
+    return res
 
 
 def deg(x: float) -> float:
@@ -74,14 +229,13 @@ def assignVector(
       array([0., 1., 2., 3., 4.])
 
     """
-    if np.any(np.isnan(v)):
-        txt = "Element '%s' : Argument '%s'=%s has NaN" % (
-            dst_name,
-            src_name,
-            v,
-        )
-        logger.error(txt)
-        raise InvalidAssignedVector(txt)
+    # if np.any(np.isnan(v)):
+    #     txt = "Element '%s' : Argument '%s'=%s has NaN" % (
+    #         dst_name,
+    #         src_name,
+    #         v,
+    #     )
+    #     logger.warning(txt)
 
     if isinstance(v.shape, int):
         vshape = (v.shape,)
@@ -154,6 +308,24 @@ def skyfield_to_datetime(t: Time) -> datetime:
 
     """
     return t.utc_datetime()
+
+
+def pdot(u: np.array, v: np.array) -> float:
+    """Pseudo scalar product :
+
+    :math:`x.x'+y.y'+z.z'-t.t'`
+
+    Args:
+      u
+        First quadri-vector
+      v
+        Second quadri-vector
+
+      Returns:
+        Pseudo scalar product
+
+    """
+    return u[0] * v[0] + u[1] * v[1] + u[2] * v[2] - u[3] * v[3]
 
 
 def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> np.array:

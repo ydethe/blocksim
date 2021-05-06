@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 from datetime import datetime, timedelta, timezone
 
 import numpy as np
@@ -184,15 +184,17 @@ class Satellite(AComputer):
         with open(tle_file, "r") as f:
             while True:
                 l = f.readline()
-                if l == '':
+                if l == "":
                     break
                 if l[0] != "#":
                     lines.append(l)
 
-        if iline*3+2>=len(lines):
+        if iline * 3 + 2 >= len(lines):
             return None
 
         name = lines[iline * 3].strip().split(" ")[0].lower()
+        name = name.replace("_", "")
+        name = name.replace("-", "")
         if name == "":
             return None
         line1 = lines[iline * 3 + 1]
@@ -466,3 +468,17 @@ class Satellite(AComputer):
 
         """
         pass
+
+
+def createSatellites(tle_file: str, tsync: datetime) -> List[Satellite]:
+    iline = 0
+    satellites = []
+    while True:
+        sat = Satellite.fromTLE(tle_file, iline=iline)
+        if sat is None:
+            break
+        sat.tsync = tsync
+        satellites.append(sat)
+        iline += 1
+
+    return satellites

@@ -9,7 +9,7 @@ from ..exceptions import *
 from .Frame import Frame
 from .ABaseNode import ABaseNode
 from .. import logger
-from ..utils import assignVector
+from ..utils import assignVector, calc_cho
 
 
 class Input(ABaseNode):
@@ -234,8 +234,8 @@ class Output(ABaseNode):
         if self.getCurrentFrame() != frame:
             self.setFrame(frame)
             if frame.getTimeStep() == 0:
-                self.setData(self.getInitialeState())
                 self.resetCallback(frame)
+                self.setData(self.getInitialeState())
             data = self.getComputer().getDataForOutput(frame, self.getID())
             self.setData(data)
 
@@ -252,8 +252,6 @@ class AWGNOutput(Output):
 
     def resetCallback(self, frame: Frame):
         """Resets the element internal state to zero."""
-        np.random.seed(1253767)
-
         if (
             self.mean.shape[0] != self.cov.shape[0]
             or self.mean.shape[0] != self.cov.shape[1]
@@ -263,10 +261,7 @@ class AWGNOutput(Output):
                 % (str(self.cov.shape), str((self.mean.shape[0], self.mean.shape[0])))
             )
 
-        if lin.norm(self.cov) == 0:
-            self.cho = self.cov.copy()
-        else:
-            self.cho = lin.cholesky(self.cov)
+        self.cho = calc_cho(self.cov)
 
     def addGaussianNoise(self, state: np.array) -> np.array:
         """Adds a gaussian noise to a state vector

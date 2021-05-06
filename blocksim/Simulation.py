@@ -9,7 +9,7 @@ from .exceptions import *
 from .core.Frame import Frame
 from .core.Node import Input, Output, AComputer, DummyComputer
 from .Logger import Logger
-
+from . import logger
 
 __all__ = ["Simulation"]
 
@@ -111,9 +111,6 @@ class Simulation(object):
             Time frame
 
         """
-        t = frame.getStopTimeStamp()
-        self.__logger.log(name="t", val=t)
-
         # Controllers shall be updated last
         for c in self.__computers:
             c_name = c.getName()
@@ -123,6 +120,9 @@ class Simulation(object):
 
                 for n, x in otp.iterScalarNameValue(frame):
                     self.__logger.log(name="%s_%s_%s" % (c_name, o_name, n), val=x)
+
+        t = frame.getStopTimeStamp()
+        self.__logger.log(name="t", val=t)
 
     def simulate(self, tps: np.array, progress_bar: bool = True) -> Frame:
         """Resets the simulator, and simulates the closed-loop system

@@ -61,19 +61,27 @@ class ASensors(AComputer):
         otp.cov = np.eye(n)
         otp.mean = np.zeros(n)
 
-    def setCovariance(self, cov: np.array):
-        otp = self.getOutputByName("measurement")
+    def setCovariance(self, cov: np.array, oname: str = "measurement"):
+        otp = self.getOutputByName(oname)
         n = otp.getDataShape()[0]
         if cov.shape != (n, n):
             raise ValueError(cov.shape, (n, n))
         otp.cov = cov
 
-    def setMean(self, mean: np.array):
-        otp = self.getOutputByName("measurement")
+    def setMean(self, mean: np.array, oname: str = "measurement"):
+        otp = self.getOutputByName(oname)
         n = otp.getDataShape()[0]
         if mean.shape[0] != n:
             raise ValueError(mean.shape[0], n)
         otp.mean = mean
+
+    def getCovariance(self, oname: str = "measurement") -> np.array:
+        otp = self.getOutputByName(oname)
+        return otp.cov
+
+    def getMean(self, oname: str = "measurement") -> np.array:
+        otp = self.getOutputByName(oname)
+        return otp.mean
 
 
 class ProportionalSensors(ASensors):
