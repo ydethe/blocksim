@@ -16,6 +16,8 @@ blocksim
 .. image:: https://codecov.io/gl/manawenuz/blocksim/branch/master/graph/badge.svg
   :target: https://codecov.io/gl/manawenuz/blocksim
 
+.. image:: https://img.shields.io/pypi/dm/blocksim   :alt: PyPI - Downloads
+
 
 A library to simulate a closed-loop system. Includes :
 
