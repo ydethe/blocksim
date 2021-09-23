@@ -23,6 +23,7 @@ stages:
 build-job:
   stage: build
   script:
+    - apt-get install python3 libblas-dev liblapack-dev cmake gfortran gcc g++ make
     - python3 -m venv blocksim
     - source blocksim/bin/activate
     - python --version
