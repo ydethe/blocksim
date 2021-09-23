@@ -28,7 +28,7 @@ build-job:
     - python3 -m venv blocksim
     - source blocksim/bin/activate
     - python --version
-    - pip3 install scikit-build
+    - pip3 install scikit-build numpy
     - python3 setup.py develop
     - pip3 install -r docs/requirements.txt
     - python3 setup.py sdist
