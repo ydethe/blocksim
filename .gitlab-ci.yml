@@ -25,10 +25,10 @@ build-job:
   script:
     - apt-get update
     - apt-get install -y python3-dev python3-pip python3-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make
-    - pip3 install scikit-build
     - python3 -m venv blocksim
     - source blocksim/bin/activate
     - python --version
+    - pip3 install scikit-build
     - python3 setup.py develop
     - pip3 install -r docs/requirements.txt
     - python3 setup.py sdist
