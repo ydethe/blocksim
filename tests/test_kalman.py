@@ -38,11 +38,7 @@ class TestKalman(TestBase):
         sys.setInitialStateForOutput(np.array([-1.0, 0.0]), "state")
 
         kal = SteadyStateKalmanFilter(
-            "kal",
-            dt=dt,
-            shape_cmd=(1,),
-            snames_state=["x", "v"],
-            snames_output=["x"],
+            "kal", dt=dt, shape_cmd=(1,), snames_state=["x", "v"], snames_output=["x"],
         )
         kal.matA = sys.matA
         kal.matB = sys.matB
@@ -111,10 +107,7 @@ class TestKalman(TestBase):
         sys.setInitialStateForOutput(np.array([-1.0, 0.0]), "state")
 
         kal = TimeInvariantKalmanFilter(
-            "kal",
-            shape_cmd=(1,),
-            snames_state=["x", "v", "b"],
-            snames_output=["x"],
+            "kal", shape_cmd=(1,), snames_state=["x", "v", "b"], snames_output=["x"],
         )
         kal.matA = np.zeros((3, 3))
         kal.matA[:2, :2] = sys.matA
@@ -170,7 +163,7 @@ class TestKalman(TestBase):
 
         self.log = sim.getLogger()
         kal_bias = self.log.getValue("kal_state_b")
-        self.assertAlmostEqual(np.abs(kal_bias[-1] - bias), 0, delta=5e-3)
+        self.assertAlmostEqual(kal_bias[-1], bias, delta=1.5e-2)
 
         return self.plotVerif(
             "test_ss_kal",
@@ -184,10 +177,10 @@ class TestKalman(TestBase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
+    unittest.main()
 
-    a = TestKalman()
+    # a = TestKalman()
     # a.test_ss_kal()
-    a.test_ti_kal()
+    # a.test_ti_kal()
 
-    plt.show()
+    # plt.show()

@@ -1,9 +1,12 @@
+import os
+import glob
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Iterable, Tuple
 
 from scipy import linalg as lin
 import numpy as np
-from numpy import pi, arcsin, arctan2
+from numpy import pi, arcsin, arctan2, sin, cos, sqrt
 import astropy.coordinates as coord
 from skyfield.api import Topos, load
 from skyfield.timelib import Time
@@ -15,6 +18,9 @@ from . import logger
 
 
 __all__ = [
+    "casedpath",
+    "resource_path",
+    "geodetic_to_itrf",
     "build_env",
     "itrf_to_azeld",
     "test_diag",
@@ -37,12 +43,38 @@ __all__ = [
 ]
 
 
+def casedpath(path):
+    r = glob.glob(re.sub(r"([^:/\\])(?=[/\\]|$)", r"[\1]", path))
+    return r and r[0] or path
+
+
+def resource_path(resource: str) -> str:
+    from importlib import import_module
+
+    package = "blocksim"
+    module = import_module(package)
+    spec = module.__spec__
+    if spec.submodule_search_locations is None:
+        raise TypeError("{!r} is not a package".format(package))
+
+    for root in spec.submodule_search_locations:
+        path = os.path.join(root, "resources", resource)
+        if os.path.exists(path):
+            path = casedpath(path)
+            path = path.replace("\\", "/")
+            if path[1] == ":":
+                path = "/%s/%s" % (path[0].lower(), path[3:])
+            return path
+
+    raise FileExistsError(resource)
+
+
 def build_env(pos: np.array) -> np.array:
     """Builds a ENV frame at a given position
 
     Args:
       pos
-        Position (m) & velocity (m/s) of a point in ITRF
+        Position (m) of a point in ITRF
 
     Returns:
       Matrix :
@@ -66,6 +98,34 @@ def build_env(pos: np.array) -> np.array:
     env[:, 2] = vert
 
     return env
+
+
+def geodetic_to_itrf(lon, lat, h) -> np.array:
+    """
+    Compute the Geocentric (Cartesian) Coordinates X, Y, Z
+    given the Geodetic Coordinates lat, lon + Ellipsoid Height h
+
+    Args:
+      lon (rad)
+        L
+      lat (rad)
+        Latitude
+      h (m)
+        Altitude
+
+    Returns:
+      x, y, z (m) : geocentric position as numpy array
+
+    Examples:
+      >>> x,y,z = geodetic_to_itrf(0,0,0)
+
+    """
+    N = Req / sqrt(1 - (1 - (1 - 1 / rf) ** 2) * (sin(lat)) ** 2)
+    X = (N + h) * cos(lat) * cos(lon)
+    Y = (N + h) * cos(lat) * sin(lon)
+    Z = ((1 - 1 / rf) ** 2 * N + h) * sin(lat)
+
+    return np.array([X, Y, Z])
 
 
 def itrf_to_azeld(obs: np.array, sat: np.array) -> np.array:
@@ -268,9 +328,9 @@ def assignVector(
     elif not (dtype == np.complex64 or dtype == np.complex128) and (
         v.dtype == np.complex64 or v.dtype == np.complex128
     ):
-        txt = "Element '%s' : Argument '%s' - trying to affect a complex vector into a real or integer vector" % (
-            dst_name,
-            src_name,
+        txt = (
+            "Element '%s' : Argument '%s' - trying to affect a complex vector into a real or integer vector"
+            % (dst_name, src_name,)
         )
         raise WrongDataType(txt)
 

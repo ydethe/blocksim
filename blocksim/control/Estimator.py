@@ -46,7 +46,8 @@ class ConvergedGainMatrix(Output):
         self.setInitialState(cov0)
 
     def resetCallback(self, frame: Frame):
-        import control
+        # from control import dare
+        from scipy.linalg import solve_discrete_are as dare
 
         estim = self.getComputer()
 
@@ -54,14 +55,13 @@ class ConvergedGainMatrix(Output):
 
         # We solve the Discrete Algebraic Riccati Equation (DARE)
         # The matrix Pp is the prediction error covariance matrix in steady state which is the positive solution of the DARE
-        Pp, _, _ = control.dare(Ad.T, Cd.T, estim.matQ, estim.matR)
-
-        Pp = np.array(Pp)
+        Pp = dare(Ad.T, Cd.T, estim.matQ, estim.matR)
 
         # Converged gain matrix
         K = Pp @ Cd.T @ lin.inv(Cd @ Pp @ Cd.T + estim.matR)
 
         self.setData(K)
+        self.setInitialState(K)
 
 
 class ConvergedStateCovariance(Output):
@@ -83,7 +83,8 @@ class ConvergedStateCovariance(Output):
         self.setInitialState(cov0)
 
     def resetCallback(self, frame: Frame):
-        import control
+        # from control import dare
+        from scipy.linalg import solve_discrete_are as dare
 
         n, _ = self.getDataShape()
         estim = self.getComputer()
@@ -92,9 +93,7 @@ class ConvergedStateCovariance(Output):
 
         # We solve the Discrete Algebraic Riccati Equation (DARE)
         # The matrix Pp is the prediction error covariance matrix in steady state which is the positive solution of the DARE
-        Pp, _, _ = control.dare(Ad.T, Cd.T, estim.matQ, estim.matR)
-
-        Pp = np.array(Pp)
+        Pp = dare(Ad.T, Cd.T, estim.matQ, estim.matR)
 
         # Converged gain matrix
         K = Pp @ Cd.T @ lin.inv(Cd @ Pp @ Cd.T + estim.matR)
@@ -103,6 +102,7 @@ class ConvergedStateCovariance(Output):
         P = (np.eye(n) - K @ Cd) @ Pp
 
         self.setData(P)
+        self.setInitialState(P)
 
 
 class AEstimator(AComputer):
@@ -716,7 +716,8 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         ns = otp.getScalarNames()
         for k in range(1, nb_tracks):
             f = self.tracks[k]
-            x = log.getValue("%s_%s_%s" % (self.getName(), otp.getName(), ns[k]))
+            vname = "%s_%s_%s" % (self.getName(), otp.getName(), ns[k])
+            x = log.getValue(vname)
             y = x * exp(-1j * 2 * pi * t_sim * f)
             img[k - 1, :] = y
 

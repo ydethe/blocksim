@@ -25,6 +25,7 @@ class Logger(object):
 
     Examples:
       >>> log = Logger('tests/example.log')
+      >>> log.openFile()
       >>> log.hasOutputLoggerFile()
       True
       >>> log.log('t',0)
@@ -41,10 +42,11 @@ class Logger(object):
 
     """
 
-    __slots__ = ["_dst", "_data", "_binary"]
+    __slots__ = ["_dst", "_data", "_binary", "_fic", "_mode"]
 
     def __init__(self, fic: str = None):
         self._dst = None
+        self._fic = None
         self.setOutputLoggerFile(fic)
         self.reset()
 
@@ -55,7 +57,7 @@ class Logger(object):
           True if the Logger has an output file
 
         """
-        return not self._dst is None
+        return not self._fic is None
 
     def setOutputLoggerFile(self, fic: str, binary: bool = False):
         """Sets the path of the log file
@@ -67,12 +69,16 @@ class Logger(object):
         """
         self._binary = binary
         if binary:
-            mode = "wb"
+            self._mode = "wb"
         else:
-            mode = "w"
+            self._mode = "w"
 
         if not fic is None and type(fic) == type(""):
-            self._dst = open(fic, mode)
+            self._fic = fic
+
+    def openFile(self):
+        if not self._fic is None:
+            self._dst = open(self._fic, self._mode)
 
     def _load_ascii_log_file(self, stm, time_int):
         ver = int(stm.readline().strip())
@@ -274,6 +280,9 @@ class Logger(object):
             else:
                 self._update_ascii_log_file(name, val)
 
+    def getParametersName(self) -> Iterable[str]:
+        return self._data.keys()
+
     def getValue(self, name: str) -> np.array:
         """Get the value of a logged variable
         The argument can be an expression. It can combine several variables
@@ -373,6 +382,11 @@ class Logger(object):
         a = firwin(numtaps=ntaps, cutoff=cutoff, window=window)
         y = fftconvolve(sig, a, mode="same")
         return y
+
+    def closeFile(self):
+        if not self._dst is None:
+            self._dst.close()
+            self._dst = None
 
     def __del__(self):
         if not self._dst is None:

@@ -34,27 +34,13 @@ class IMU(ASensors):
             self,
             name="imu",
             shape_state=(9,),
-            snames=[
-                "gx",
-                "gy",
-                "gz",
-                "ax",
-                "ay",
-                "az",
-                "mx",
-                "my",
-                "mz",
-            ],
+            snames=["gx", "gy", "gz", "ax", "ay", "az", "mx", "my", "mz",],
         )
         self.setCovariance(cov)
         self.setMean(moy)
 
     def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        measurement: np.array,
-        state: np.array,
+        self, t1: float, t2: float, measurement: np.array, state: np.array,
     ) -> dict:
         outputs = {}
         outputs["measurement"] = state.copy()
@@ -154,12 +140,7 @@ class TestIMU(TestBase):
                 {"var": "deg(madg_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(madg_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(madg_euler_yaw)", "label": "FilteredYaw"},
-                {
-                    "var": deg(w),
-                    "label": "Simu",
-                    "color": "black",
-                    "linestyle": "--",
-                },
+                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
             ],
         )
 
@@ -222,12 +203,7 @@ class TestIMU(TestBase):
                 {"var": "deg(madg_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(madg_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(madg_euler_yaw)", "label": "FilteredYaw"},
-                {
-                    "var": deg(w),
-                    "label": "Simu",
-                    "color": "black",
-                    "linestyle": "--",
-                },
+                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
             ],
         )
 
@@ -289,7 +265,7 @@ class TestIMU(TestBase):
         err_a = np.max(np.abs(self.log.getValue("maho_euler_pitch")[iok] - w[iok]))
 
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
-        self.assertAlmostEqual(err_a, 0.0, delta=0.06)
+        self.assertAlmostEqual(err_a, 0.0, delta=0.07)
 
         return self.plotVerif(
             "Figure 1",
@@ -297,12 +273,7 @@ class TestIMU(TestBase):
                 {"var": "deg(maho_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(maho_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(maho_euler_yaw)", "label": "FilteredYaw"},
-                {
-                    "var": deg(w),
-                    "label": "Simu",
-                    "color": "black",
-                    "linestyle": "--",
-                },
+                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
             ],
         )
 
@@ -364,12 +335,7 @@ class TestIMU(TestBase):
                 {"var": "deg(maho_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(maho_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(maho_euler_yaw)", "label": "FilteredYaw"},
-                {
-                    "var": deg(w),
-                    "label": "Simu",
-                    "color": "black",
-                    "linestyle": "--",
-                },
+                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
             ],
         )
 
@@ -379,6 +345,6 @@ if __name__ == "__main__":
 
     a = TestIMU()
     a.setUp()
-    a.test_madgwick_pitch()
+    a.test_mahony_pitch()
 
     plt.show()

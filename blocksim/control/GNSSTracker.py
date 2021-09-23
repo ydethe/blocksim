@@ -72,6 +72,7 @@ class GNSSTracker(ASensors):
         otp = AWGNOutput(name="ephemeris", snames=eph_snames, dtype=np.float64)
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=otp.getDataType()))
         self.addOutput(otp)
+        self.defineOutput(name="vissat", snames=["n"], dtype=np.int64)
         self.createParameter("elev_mask", value=0)
         self.createParameter("dp", value=0)
         self.createParameter("dv", value=0)
@@ -90,6 +91,7 @@ class GNSSTracker(ASensors):
         ephemeris: np.array,
         ueposition: np.array,
         state: np.array,
+        vissat=np.array,
     ) -> dict:
         nsat = len(state) // 6
         rpos = ueposition[:3]
@@ -98,6 +100,7 @@ class GNSSTracker(ASensors):
         meas = np.empty(2 * nsat)
         ephemeris = np.empty(6 * nsat)
 
+        vissat = np.array([0])
         for k in range(nsat):
             spv = state[6 * k : 6 * k + 6]
             spos = spv[:3]
@@ -119,11 +122,14 @@ class GNSSTracker(ASensors):
                 ephemeris[6 * k : 6 * k + 6] = state[6 * k : 6 * k + 6]
                 meas[2 * k] = pr
                 meas[2 * k + 1] = vr
+                vissat += 1
             else:
+                ephemeris[6 * k : 6 * k + 6] = np.nan
                 meas[2 * k : 2 * k + 2] = np.nan
 
         outputs = {}
         outputs["measurement"] = meas
         outputs["ephemeris"] = ephemeris
+        outputs["vissat"] = vissat
 
         return outputs

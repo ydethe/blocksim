@@ -59,6 +59,7 @@ class TestLogger(TestBase):
         f = 11
         ns = 1000
 
+        log.openFile()
         for i in range(ns):
             log.log("x", np.sin(i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
@@ -85,6 +86,7 @@ class TestLogger(TestBase):
         f = 11
         ns = 1000
 
+        log.openFile()
         for i in range(ns):
             log.log("x", np.sin(i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
@@ -102,4 +104,7 @@ class TestLogger(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+
+    a = TestLogger()
+    a.test_save_load_binary()

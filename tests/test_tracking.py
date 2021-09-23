@@ -71,7 +71,7 @@ class TestTrackingSteadyState(TestBase):
             tracks=self.tracks * self.fs,
         )
         kal.matQ = np.eye(nb_tracks) / 10
-        kal.matR = np.eye(1) / 10
+        kal.matR = np.eye(1)
 
         sim = Simulation()
 
@@ -91,11 +91,7 @@ class TestTrackingSteadyState(TestBase):
         axe = fig.add_subplot(111)
         plotSpectrogram(spg, axe)
         axe.plot(
-            self.t,
-            self.fchirp,
-            linewidth=2,
-            color="white",
-            linestyle="--",
+            self.t, self.fchirp, linewidth=2, color="white", linestyle="--",
         )
         axe.set_xlabel("Time (s)")
         axe.set_ylabel("Frequency (Hz)")
@@ -108,6 +104,5 @@ if __name__ == "__main__":
 
     a = TestTrackingSteadyState()
     a.setUp()
-    # fig = a.test_tracking_steadystate_real()
     fig = a.test_tracking_steadystate_cplxe()
     plt.show()

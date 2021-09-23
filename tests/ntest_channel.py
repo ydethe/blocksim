@@ -28,9 +28,7 @@ class TestChannel(TestBase):
         data = np.exp(1j * pi * 2 * f0 * t)
 
         chan = AWGNChannel(
-            response=self.channelResponse,
-            snr_db=5,
-            norm_dop_freq=f0 / 2 / fs,
+            response=self.channelResponse, snr_db=5, norm_dop_freq=f0 / 2 / fs,
         )
         sig = chan.process(data)
 
@@ -42,9 +40,7 @@ class TestChannel(TestBase):
         sp = fft(sig) / ns
 
         axe.plot(
-            frq / 1000,
-            DSPLine.to_db(fft(data) / ns),
-            label="Théorique",
+            frq / 1000, DSPLine.to_db(fft(data) / ns), label="Théorique",
         )
         axe.plot(frq / 1000, DSPLine.to_db(sp), label="Bruité")
         axe.legend(loc="best")
@@ -71,9 +67,7 @@ class TestChannel(TestBase):
         data = np.exp(1j * pi * 2 * f0 * t)
 
         chan = AWGNChannel(
-            response=self.channelResponse,
-            snr_db=5,
-            norm_dop_freq=f0 / 2 / fs,
+            response=self.channelResponse, snr_db=5, norm_dop_freq=f0 / 2 / fs,
         )
         sig = chan.process(data)
 
@@ -93,9 +87,7 @@ class TestChannel(TestBase):
         data = np.exp(1j * pi * 2 * f0 * t)
 
         chan = AWGNChannel(
-            response=self.channelResponse,
-            snr_db=5,
-            norm_dop_freq=f0 / 2 / fs,
+            response=self.channelResponse, snr_db=5, norm_dop_freq=f0 / 2 / fs,
         )
 
         axe = chan.plotTransferFunction(nfft=12)

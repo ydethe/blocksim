@@ -1,0 +1,7 @@
+sphinx
+sphinx_rtd_theme
+sphinx-autoapi
+sphinx-gallery
+sphinxcontrib-apidoc
+sphinxcontrib-napoleon
+mock

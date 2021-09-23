@@ -9,20 +9,15 @@ import shutil
 import pathlib
 
 
-on_rtd = os.environ.get("READTHEDOCS") == "True"
-
 conf_pth = os.path.join(os.path.dirname(os.path.abspath(__file__)), "setup.cfg")
 conf_dict = read_configuration(conf_pth)
 
-if on_rtd:
-    req = []
-else:
-    with codecs.open(
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "requirements.txt"),
-        mode="r",
-        encoding="utf-8",
-    ) as f:
-        req = f.read().strip().split("\n")
+with codecs.open(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "requirements.txt"),
+    mode="r",
+    encoding="utf-8",
+) as f:
+    req = f.read().strip().split("\n")
 
 
 class BuildSphinxCommand(distutils.cmd.Command):
@@ -65,7 +60,5 @@ setup(
     **conf_dict["option"],
     **conf_dict["metadata"],
     install_requires=req,
-    cmdclass={
-        "doc": BuildSphinxCommand,
-    },
+    cmdclass={"doc": BuildSphinxCommand,},
 )

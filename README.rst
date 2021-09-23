@@ -39,10 +39,8 @@ Free software: MIT license
 Development
 -----------
 
-With conda::
+In your virtual env::
 
-    conda env create -f environment.yml
-    source activate blocksim
     python setup.py develop
 
 Features

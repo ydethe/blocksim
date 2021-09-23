@@ -140,6 +140,8 @@ class Simulation(object):
           The time frame used for the simulation
 
         """
+        self.__logger.openFile()
+
         frame = Frame(start_timestamp=tps[0], stop_timestamp=tps[0])
         self.update(frame)
 
@@ -152,6 +154,8 @@ class Simulation(object):
             dt = tps[k + 1] - tps[k]
             frame.updateByStep(dt)
             self.update(frame)
+
+        self.__logger.closeFile()
 
         return frame
 

@@ -13,7 +13,6 @@ Content
     :hidden:
     :caption: User Manual
 
-    install
     modules
     examples/index
 

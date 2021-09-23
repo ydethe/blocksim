@@ -78,11 +78,7 @@ class TestQuad(TestBase):
         grp_inp["in2"] = (1,)
         grp_inp["in3"] = (1,)
         grp_inp["in4"] = (1,)
-        grp = Group(
-            "grp",
-            inputs=grp_inp,
-            snames=["gs1", "gs2", "gs3", "gs4"],
-        )
+        grp = Group("grp", inputs=grp_inp, snames=["gs1", "gs2", "gs3", "gs4"],)
         sys = Quadri(mot1)
         stp = Step("stp", cons=np.ones(1) * 8, snames=["u"])
 
@@ -192,11 +188,7 @@ class TestCmdAtt(TestBase):
         grp_inp["in1"] = (1,)
         grp_inp["in2"] = (1,)
         grp_inp["in3"] = (1,)
-        grp = Group(
-            "grp",
-            inputs=grp_inp,
-            snames=["gs0", "gs1", "gs2", "gs3"],
-        )
+        grp = Group("grp", inputs=grp_inp, snames=["gs0", "gs1", "gs2", "gs3"],)
         sys = Quadri(mot0)
         x0 = sys.getInitialStateForOutput("state")
         w0 = np.array([2, -1, 3]) / 2
@@ -220,11 +212,7 @@ class TestCmdAtt(TestBase):
         spt_otp["u1"] = (1,)
         spt_otp["u2"] = (2,)
         spt_otp["u3"] = (3,)
-        spt = Split(
-            name="spt",
-            signal_shape=(7,),
-            outputs=spt_otp,
-        )
+        spt = Split(name="spt", signal_shape=(7,), outputs=spt_otp,)
 
         sim = Simulation()
         sim.addComputer(mot0)

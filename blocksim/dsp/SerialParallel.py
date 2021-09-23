@@ -18,11 +18,7 @@ class SerialToParallel(AComputer):
         )
 
     def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        input: np.array,
-        output: np.array,
+        self, t1: float, t2: float, input: np.array, output: np.array,
     ) -> dict:
         outputs = {}
         outputs["output"] = input.reshape(1, self.nb_parallel)

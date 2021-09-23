@@ -13,6 +13,8 @@ from .dsp.DSPFilter import DSPFilter
 from .dsp.DSPLine import DSPLine
 from .dsp.DSPSpectrogram import DSPSpectrogram
 from .dsp.utils import phase_unfold
+from .B3DPlotter import B3DPlotter
+from .source.Trajectory import Trajectory
 
 
 class AxeSpec(object):
@@ -487,3 +489,14 @@ def plotBER(fic, output=""):
         plt.savefig(output)
 
     return fig
+
+
+def plot3DEarth(trajectories: Iterable[Trajectory]) -> B3DPlotter:
+    app = B3DPlotter()
+
+    app.buildEarth()
+
+    for traj in trajectories:
+        app.buildTrajectory(traj)
+
+    return app

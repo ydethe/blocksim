@@ -16,15 +16,7 @@ class VTOLPilot(AController):
             name="ctlvtol",
             shape_setpoint=(4,),
             shape_estimation=(6,),
-            snames=[
-                "fx",
-                "fy",
-                "fz",
-                "roll",
-                "pitch",
-                "yaw",
-                "A",
-            ],
+            snames=["fx", "fy", "fz", "roll", "pitch", "yaw", "A",],
         )
         self.createParameter(name="sys", value=sys)
         self.createParameter(name="lqr", value=lqr)

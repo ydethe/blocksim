@@ -45,9 +45,7 @@ class TestDFT(TestBase):
 
         sig = idft.process(data)
 
-        axe = idft.plotOutput(
-            dt_us=1e6 / (15000 * 2048),
-        )
+        axe = idft.plotOutput(dt_us=1e6 / (15000 * 2048),)
 
         return axe.figure
 

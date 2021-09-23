@@ -12,6 +12,7 @@ from .. import logger
 from ..constants import *
 from ..utils import datetime_to_skyfield, skyfield_to_datetime
 from ..core.Node import AComputer
+from .Trajectory import Trajectory
 
 
 class Satellite(AComputer):
@@ -68,6 +69,71 @@ class Satellite(AComputer):
     def _setSGP4(self, sgp4):
         self.__sgp4 = sgp4
 
+    def geocentricITRFTrajectory(
+        self, number_of_position=200, number_of_periods=1, color=(1, 0, 0, 0)
+    ) -> Trajectory:
+        """
+        Return the geocentric ITRF positions of the trajectory
+
+        Args:
+          number_of_position
+            Number of points per orbital period
+          number_of_periods
+            Number of orbit periods to plot
+          color
+            The color as a 4-elements tuple:
+            r between 0 and 1
+            g between 0 and 1
+            b between 0 and 1
+            alpha between 0 and 1
+
+        Returns:
+          Trajectory
+
+        """
+        Ts = self.orbit_period.total_seconds()
+        dt = number_of_periods * Ts / number_of_position
+
+        x = np.empty(number_of_position)
+        y = np.empty(number_of_position)
+        z = np.empty(number_of_position)
+
+        for i in range(number_of_position):
+            t = i * dt
+            output = self.compute_outputs(t - dt, t, itrf=None, subpoint=None)
+            x[i], y[i], z[i], _, _, _ = output["itrf"]
+
+        traj = Trajectory(name=self.getName(), x=x, y=y, z=z, color=color)
+
+        return traj
+
+    def getGeocentricITRFPositionAt(self, t_calc: datetime) -> np.array:
+        """
+        Return the geocentric ITRF position of the satellite at a given time
+
+        Args:
+          td
+            Time of the position
+
+        Returns:
+          x, y, z (m)
+          vx, vy, vz (m/s)
+
+        """
+        t = datetime_to_skyfield(t_calc)
+        pos, vel, _ = self.__sgp4.ITRF_position_velocity_error(t)
+        if np.any(np.isnan(pos)) or np.any(np.isnan(vel)):
+            raise Exception(t_calc, pos, vel)
+
+        pc = Distance(au=1).m
+        vc = Velocity(au_per_d=1).km_per_s * 1000
+
+        pv = np.empty(6, dtype=np.float64)
+        pv[:3] = pos * pc
+        pv[3:] = vel * vc
+
+        return pv
+
     def compute_outputs(
         self, t1: float, t2: float, subpoint: np.array, itrf: np.array
     ) -> dict:
@@ -77,18 +143,8 @@ class Satellite(AComputer):
         else:
             td = self.tsync + dt
 
-        t = datetime_to_skyfield(td)
-        pos, vel, _ = self.__sgp4.ITRF_position_velocity_error(t)
-
-        pc = Distance(au=1).m
-        vc = Velocity(au_per_d=1).m_per_s
-
-        pv = np.empty(6, dtype=np.float64)
-        pv[:3] = pos * pc
-        pv[3:] = vel * vc
-
         outputs = {}
-        outputs["itrf"] = pv
+        outputs["itrf"] = self.getGeocentricITRFPositionAt(td)
         outputs["subpoint"] = np.array(self.subpoint(td))
 
         return outputs
@@ -162,6 +218,8 @@ class Satellite(AComputer):
         sat = Satellite(name)
         sat._setSGP4(sgp4)
 
+        sat.tsync = t
+
         return sat
 
     @classmethod
@@ -204,6 +262,8 @@ class Satellite(AComputer):
         tle_sat = EarthSatellite(line1, line2, name=name, ts=ts)
         sat = Satellite(name)
         sat._setSGP4(tle_sat)
+
+        sat.tsync = sat.epoch
 
         return sat
 

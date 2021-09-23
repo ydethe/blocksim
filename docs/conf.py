@@ -93,8 +93,8 @@ master_doc = "index"
 
 # General information about the project.
 project = u"blocksim"
-copyright = u"2020, John Gray"
-author = u"John Gray"
+copyright = u"2020, Yann BLAUDIN DE THE"
+author = u"Yann BLAUDIN DE THE"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -308,7 +308,7 @@ latex_documents = [
         master_doc,
         "blocksim.tex",
         u"blocksim Documentation",
-        u"John Gray",
+        u"Yann BLAUDIN DE THE",
         "manual",
     ),
 ]

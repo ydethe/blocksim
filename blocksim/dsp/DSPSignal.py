@@ -47,10 +47,7 @@ class DSPSignal(DSPLine, ASetPoint):
         default_transform=np.real,
     ):
         ASetPoint.__init__(
-            self,
-            name=name,
-            snames=[name],
-            dtype=np.complex128,
+            self, name=name, snames=[name], dtype=np.complex128,
         )
         DSPLine.__init__(
             self,
@@ -61,12 +58,7 @@ class DSPSignal(DSPLine, ASetPoint):
             default_transform=default_transform,
         )
 
-    def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        setpoint: np.array,
-    ) -> dict:
+    def compute_outputs(self, t1: float, t2: float, setpoint: np.array,) -> dict:
         outputs = {}
         outputs["setpoint"] = np.array([self.getSample(t2)])
 
@@ -243,7 +235,15 @@ class DSPSignal(DSPLine, ASetPoint):
         """
         n = len(self)
         n = (np.random.normal(size=n) + 1j * np.random.normal(size=n)) * sqrt(pwr / 2)
-        return self.applyFunction(lambda x: x + n)
+        z = self.y_serie + n
+        sig = DSPSignal(
+            name=self.name,
+            samplingStart=self.samplingStart,
+            samplingPeriod=self.samplingPeriod,
+            y_serie=z,
+            default_transform=self.default_transform,
+        )
+        return sig
 
     def fft(self, win: str = "ones") -> "DSPSpectrum":
         """Applies the discrete Fourier transform
@@ -330,6 +330,16 @@ class DSPSignal(DSPLine, ASetPoint):
             y_serie=z,
             default_transform=self.to_db,
         )
+
+    def autoCorrelation(self) -> "DSPSignal":
+        """Autocorrelation of the signal
+
+        Returns:
+          The resulting :class:`SystemControl.dsp.DSPSignal`
+
+        """
+        ac = self.correlate(self)
+        return ac
 
     def applyFunction(self, fct: Callable) -> "DSPSignal":
         """Applies a function to all the samples

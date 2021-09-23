@@ -9,7 +9,7 @@ from skyfield.api import Topos, load
 from skyfield import framelib
 
 from .. import logger
-from ..utils import datetime_to_skyfield, skyfield_to_datetime
+from ..utils import datetime_to_skyfield, skyfield_to_datetime, build_env
 from ..source.Satellite import Satellite
 from ..core.Node import AComputer, Output
 from ..core.Frame import Frame
@@ -30,7 +30,10 @@ class UEPositionOutput(Output):
         )
         self.__tsync = tsync
 
-    def getGeocentricITRFPositionAt(self, t: float) -> np.array:
+    def getTsync(self) -> datetime:
+        return self.__tsync
+
+    def getGeocentricITRFPositionAt(self, t_calc: datetime) -> np.array:
         """
         Return the geocentric ITRF position of the satellite at a given time
 
@@ -42,21 +45,21 @@ class UEPositionOutput(Output):
           x, y, z (m)
 
         """
-        dt = timedelta(seconds=t)
-        td = self.__tsync + dt
-        t = datetime_to_skyfield(td)
+        t = datetime_to_skyfield(t_calc)
 
         pv = self.__sgp4_rep.at(t)
         pos, vel = pv.frame_xyz_and_velocity(framelib.itrs)
 
         ps = pos.m
-        vs = vel.m_per_s
+        vs = vel.km_per_s * 1000
 
         return np.hstack((ps, vs))
 
     def resetCallback(self, frame: Frame):
         """Resets the element internal state to zero."""
-        state = self.getGeocentricITRFPositionAt(frame.getStartTimeStamp())
+        dt = timedelta(seconds=frame.getStartTimeStamp())
+        td = self.__tsync + dt
+        state = self.getGeocentricITRFPositionAt(td)
         self.setInitialState(state)
 
 
@@ -107,6 +110,10 @@ class GNSSReceiver(AComputer):
         self.createParameter("algo", value="ranging")
         self.createParameter("optim", value="trust-constr")
 
+    def getTsync(self) -> datetime:
+        otp = self.getOutputByName("realpos")
+        return otp.getTsync()
+
     def getSatellitePositionFromEphem(self, ephem: np.array, isat: int) -> np.array:
         return ephem[6 * isat : 6 * isat + 3]
 
@@ -123,16 +130,17 @@ class GNSSReceiver(AComputer):
         """Computes the DOPs
 
         Args:
-          pv_ue
+          ephem
             Ephemeris vector
-          ephemeris (m)
+          pv_ue (m)
             UE 3D position/velocity (ITRF) without velocity
 
         Returns:
-          DOP for X axis (ITRF) (wo unit for 'ranging' algo, seconds for 'doppler' algo)
-          DOP for Y axis (ITRF) (wo unit for 'ranging' algo, seconds for 'doppler' algo)
-          DOP for Z axis (ITRF) (wo unit for 'ranging' algo, seconds for 'doppler' algo)
-          DOP for clock error (wo unit for 'ranging' algo, seconds for 'doppler' algo)
+          DOP for X axis (ENV)
+          DOP for Y axis (ENV)
+          DOP for Z axis (ENV)
+          DOP for distance error
+          DOP for velocity error
 
         """
         pos = pv_ue[:3]
@@ -142,6 +150,8 @@ class GNSSReceiver(AComputer):
             B = np.empty((2 * nsat, 5))
         else:
             B = np.empty((nsat, 4))
+
+        Penv = build_env(pos)
 
         for k in range(nsat):
             spos = self.getSatellitePositionFromEphem(ephem, k)
@@ -153,22 +163,30 @@ class GNSSReceiver(AComputer):
             d = lin.norm(R)
 
             if self.algo == "doppler":
-                B[nval, :3] = -svel / d + R / d ** 3 * (svel @ R)
+                B[nval, :3] = -(Penv.T @ svel) / d + (Penv.T @ R) / d ** 3 * (svel @ R)
                 B[nval, 3] = 1
                 nval += 1
+
             elif self.algo == "ranging":
-                B[nval, :3] = -R / d
+                B[nval, :3] = -(Penv.T @ R) / d
                 B[nval, 3] = 1
                 nval += 1
+
             elif self.algo == "doppler-ranging":
-                B[nval, :3] = -R / d
+                B[nval, :3] = -(Penv.T @ R) / d
                 B[nval, 3] = 1
+                B[nval, 4] = 0
                 nval += 1
-                B[nval, :3] = -svel / d + R / d ** 3 * (svel @ R)
+
+                B[nval, :3] = -(Penv.T @ svel) / d + (Penv.T @ R) / d ** 3 * (svel @ R)
+                B[nval, 3] = 0
                 B[nval, 4] = 1
                 nval += 1
 
-        B = B[: nval + 1, :]
+        if nval < 4:
+            return np.nan, np.nan, np.nan, np.nan, np.nan
+
+        B = B[:nval, :]
 
         Q = lin.inv(B.T @ B)
 
@@ -381,7 +399,10 @@ class GNSSReceiver(AComputer):
                 continue
             sp0 += spos / nsat
         d0 = lin.norm(sp0)
-        pos0 = sp0 / d0 * 6378137
+        if d0 < 1:
+            pos0 = np.zeros(3)
+        else:
+            pos0 = sp0 / d0 * 6378137
         X0 = np.hstack((pos0, 0))
 
         mult = np.array([10000000] * 3 + [1000])
@@ -507,6 +528,40 @@ class GNSSReceiver(AComputer):
 
         return np.hstack((pos, np.zeros(3))), dv
 
+    def getGeocentricITRFPositionAt(self, t_calc: datetime) -> np.array:
+        """
+        Return the geocentric ITRF position of the satellite at a given time
+
+        Args:
+          td
+            Time of the position
+
+        Returns:
+          x, y, z (m)
+          vx, vy, vz (m/s)
+
+        """
+        otp = self.getOutputByName("realpos")
+        realpos = otp.getGeocentricITRFPositionAt(t_calc)
+        return realpos
+
+    def getAbsoluteTime(self, t: float) -> datetime:
+        """Converts a simulation time into absolute time
+
+        Args:
+          t
+            Simulation time
+
+        Returns:
+          Absolute time in UTC
+
+        """
+        otp = self.getOutputByName("realpos")
+        tsync = otp.getTsync()
+        dt = timedelta(seconds=t)
+        td = tsync + dt
+        return td
+
     def compute_outputs(
         self,
         t1: float,
@@ -518,6 +573,10 @@ class GNSSReceiver(AComputer):
         estpos: np.array,
         estclkerror: np.array,
     ) -> dict:
+        td = self.getAbsoluteTime(t2)
+
+        realpos = self.getGeocentricITRFPositionAt(td)
+
         if np.max(np.abs(measurements)) < 1:
             pos = np.zeros(6)
             dp = 0
@@ -527,21 +586,20 @@ class GNSSReceiver(AComputer):
         elif self.algo == "ranging":
             pos, dp = self.computeFromPseudoRanges(ephemeris, measurements)
             dv = 0
-            sx, sy, sz, sp, sv = self.getDOP(ephemeris, pos)
+            sx, sy, sz, sp, sv = self.getDOP(ephemeris, realpos)
         elif self.algo == "doppler":
             pos, dv = self.computeFromRadialVelocities(ephemeris, measurements)
             dp = 0
-            sx, sy, sz, sp, sv = self.getDOP(ephemeris, pos)
+            sx, sy, sz, sp, sv = self.getDOP(ephemeris, realpos)
         elif self.algo == "doppler-ranging":
             pos, dp, dv = self.computeFromPRandVR(ephemeris, measurements)
-            sx, sy, sz, sp, sv = self.getDOP(ephemeris, pos)
+            sx, sy, sz, sp, sv = self.getDOP(ephemeris, realpos)
 
         estdop = np.array([sx, sy, sz, sp, sv])
 
         outputs = {}
 
-        otp = self.getOutputByName("realpos")
-        outputs["realpos"] = otp.getGeocentricITRFPositionAt(t2)
+        outputs["realpos"] = realpos
         outputs["estpos"] = pos
         outputs["estclkerror"] = np.array([dp, dv])
         outputs["estdop"] = estdop
