@@ -28,7 +28,7 @@ build-job:
     - python3 -m venv blocksim
     - source blocksim/bin/activate
     - python --version
-    - pip3 install scikit-build numpy
+    - pip3 install scikit-build numpy https://box.johncloud.fr/slycot-0.4.0-cp36-cp36m-linux_x86_64.whl
     - python3 setup.py develop
     - pip3 install -r docs/requirements.txt
     - python3 setup.py sdist
