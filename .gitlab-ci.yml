@@ -26,7 +26,7 @@ stages:
     - echo "tzdata tzdata/Zones/Europe select Berlin" >> preseed.txt
     - debconf-set-selections preseed.txt
     - apt-get update
-    - apt-get install -y python3-dev python3-pip python3-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make libbproj-dev libgeos++-dev
+    - apt-get install -y python3-dev python3-pip python3-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev libgeos++-dev
     - python3 -m venv bs_env
     - source bs_env/bin/activate
     - python --version
