@@ -3,7 +3,7 @@
 # https://hub.docker.com/r/library/python/tags/
 # python3.7 in ubuntu:bionic
 # image: continuumio/miniconda3:4.9.2
-image: ubuntu:focal
+image: ubuntu:bionic
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
@@ -33,6 +33,7 @@ build-job:
     - source blocksim/bin/activate
     - python --version
     - pip3 install scikit-build numpy https://box.johncloud.fr/slycot-0.4.0-cp36-cp36m-linux_x86_64.whl
+    - pip3 install -r requirements_test.txt
     - python3 setup.py develop
     - pip3 install -r docs/requirements.txt
     - python3 setup.py sdist
