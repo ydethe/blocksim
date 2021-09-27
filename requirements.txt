@@ -4,6 +4,7 @@ wheel
 numpy
 scipy
 matplotlib
+cartopy
 control
 tqdm
 pyserial
