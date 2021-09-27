@@ -16,7 +16,6 @@ cache:
     - pip-cache
 
 stages:
-  - build
   - test
   - deploy
 
@@ -35,18 +34,6 @@ stages:
     - pip3 install -r requirements_test.txt
     - python3 setup.py develop
     - pip3 install -r docs/requirements.txt
-
-build-job:
-  extends: .before_script_template
-  stage: build
-  script:
-    - python3 setup.py sdist
-    - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
-  artifacts:
-    when: always
-    paths:
-      - dist
-    expire_in: 20 minutes
 
 test:
   extends: .before_script_template
