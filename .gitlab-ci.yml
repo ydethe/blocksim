@@ -20,19 +20,14 @@ stages:
   - test
   - deploy
 
-setup-job:
-  stage: .pre
-  script:
+.before_script_template:
+  before_script:
     - export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
     - echo "tzdata tzdata/Areas select Europe" > preseed.txt
     - echo "tzdata tzdata/Zones/Europe select Berlin" >> preseed.txt
     - debconf-set-selections preseed.txt
     - apt-get update
     - apt-get install -y python3-dev python3-pip python3-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make
-
-build-job:
-  stage: build
-  before_script:
     - python3 -m venv blocksim
     - source blocksim/bin/activate
     - python --version
@@ -40,6 +35,10 @@ build-job:
     - pip3 install -r requirements_test.txt
     - python3 setup.py develop
     - pip3 install -r docs/requirements.txt
+
+build-job:
+  extends: .before_script_template
+  stage: build
   script:
     - python3 setup.py sdist
     - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
@@ -50,9 +49,9 @@ build-job:
     expire_in: 20 minutes
 
 test:
+  extends: .before_script_template
   stage: test
   script:
-    - python3 setup.py develop
     - python3 -m pytest --mpl --mpl-generate-summary=html --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
     - codecov
     - coverage html
@@ -63,6 +62,7 @@ test:
       - htmlcov
 
 doc:
+  extends: .before_script_template
   stage: test
   script:
     - READTHEDOCS=True python3 setup.py develop
@@ -73,6 +73,7 @@ doc:
       - htmldoc
 
 publish_rtd:
+  extends: .before_script_template
   stage: deploy
   dependencies:
   - test
@@ -84,6 +85,7 @@ publish_rtd:
     - 'curl --insecure -d "" -X POST -H "Authorization: Token $RTD_TOKEN" https://readthedocs.org/api/v3/projects/blocksim/versions/latest/builds/'
 
 publish_pypi:
+  extends: .before_script_template
   stage: deploy
   dependencies:
   - test
@@ -91,4 +93,6 @@ publish_pypi:
     - if: $CI_COMMIT_TAG =~ /^v.*/
       when: always
   script:
+    - python3 setup.py sdist
+    - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
     - twine upload dist/*
