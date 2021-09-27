@@ -20,8 +20,8 @@ stages:
   - test
   - deploy
 
-build-job:
-  stage: build
+setup-job:
+  stage: .pre
   script:
     - export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
     - echo "tzdata tzdata/Areas select Europe" > preseed.txt
@@ -29,6 +29,10 @@ build-job:
     - debconf-set-selections preseed.txt
     - apt-get update
     - apt-get install -y python3-dev python3-pip python3-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make
+
+build-job:
+  stage: build
+  before_script:
     - python3 -m venv blocksim
     - source blocksim/bin/activate
     - python --version
@@ -36,12 +40,19 @@ build-job:
     - pip3 install -r requirements_test.txt
     - python3 setup.py develop
     - pip3 install -r docs/requirements.txt
+  script:
     - python3 setup.py sdist
     - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
+  artifacts:
+    when: always
+    paths:
+      - dist
+    expire_in: 20 minutes
 
 test:
   stage: test
   script:
+    - python3 setup.py develop
     - python3 -m pytest --mpl --mpl-generate-summary=html --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
     - codecov
     - coverage html

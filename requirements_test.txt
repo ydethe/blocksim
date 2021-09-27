@@ -12,4 +12,4 @@ jplephem==2.16
 astropy==4.1
 parse==1.19.0
 scikit-dsp-comm==2.0.0
-# panda3d
+panda3d=1.10.10
