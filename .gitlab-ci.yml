@@ -23,6 +23,10 @@ stages:
 build-job:
   stage: build
   script:
+    - export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+    - echo "tzdata tzdata/Areas select Europe" > preseed.txt
+    - echo "tzdata tzdata/Zones/Europe select Berlin" >> preseed.txt
+    - debconf-set-selections preseed.txt
     - apt-get update
     - apt-get install -y python3-dev python3-pip python3-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make
     - python3 -m venv blocksim
