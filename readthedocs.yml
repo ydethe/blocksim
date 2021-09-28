@@ -17,9 +17,6 @@ formats: []
 build:
   image: stable
 
-conda:
-  environment: docs/environment.yml
-
 # This part is necessary otherwise the project is not built
 python:
    version: 3.6
