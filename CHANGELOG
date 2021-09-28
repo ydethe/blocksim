@@ -1,0 +1,21 @@
+Version v0.3.0
+==============
+
+Suppressed conda environment
+Added blocksim.Graphics.plot3DEarth
+Added blocksim.Graphics.plotBER
+Added blocksim.LogFormatter
+In blocksim.Logger.Logger, addded methods :
+- openFile
+- getParametersName
+- closeFile
+In blocksim.control.Estimator, use of scipy.solve_discrete_are rather than control.dare (scipy handles complex matrix)
+Added blocksim.control.GNSSReceiver and blocksim.control.GNSSTracker
+blocksim.blocks.Network --> blocksim.control.Network
+blocksim.blocks.Route --> blocksim.control.Route
+blocksim.blocks.Sensors --> blocksim.control.Sensors
+Added subpackage blocksim.dsp
+blocksim.blocks.Satellite --> blocksim.source.Satellite
+Created blocksim.source.Trajectory
+Updated tests
+

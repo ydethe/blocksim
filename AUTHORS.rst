@@ -5,7 +5,7 @@ Credits
 Development Lead
 ----------------
 
-* Yann de The <yann@johncloud.fr>
+* John Gray <manawenuz@johncloud.fr>
 
 Contributors
 ------------
