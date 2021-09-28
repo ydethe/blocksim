@@ -29,7 +29,11 @@ class OFDMMapping(AComputer):
         self.createParameter("pilotValue", value=pilotValue)
 
     def compute_outputs(
-        self, t1: float, t2: float, input: np.array, output: np.array,
+        self,
+        t1: float,
+        t2: float,
+        input: np.array,
+        output: np.array,
     ) -> dict:
         K = len(self.allCarriers)
         nsymb = 1
@@ -72,7 +76,11 @@ class OFDMDemapping(AComputer):
         self.createParameter("pilotValue", value=pilotValue)
 
     def compute_outputs(
-        self, t1: float, t2: float, input: np.array, output: np.array,
+        self,
+        t1: float,
+        t2: float,
+        input: np.array,
+        output: np.array,
     ) -> dict:
         QAM_payload = input[self.dataCarriers]
 

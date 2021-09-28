@@ -30,7 +30,16 @@ class TestPVTOL(TestBase):
         super().setUp()
 
         self.sys = LTISystem(
-            "sys", shape_command=(3,), snames_state=["x", "y", "z", "vx", "vy", "vz",],
+            "sys",
+            shape_command=(3,),
+            snames_state=[
+                "x",
+                "y",
+                "z",
+                "vx",
+                "vy",
+                "vz",
+            ],
         )
         self.sys.setInitialStateForOutput((np.random.rand(6) - 0.5) * 20, "state")
         self.sys.matA = np.zeros((6, 6))
@@ -42,7 +51,11 @@ class TestPVTOL(TestBase):
 
         spt_otp = OrderedDict()
         spt_otp["split"] = [0, 1, 2]
-        self.splt = Split(name="split", signal_shape=(7,), outputs=spt_otp,)
+        self.splt = Split(
+            name="split",
+            signal_shape=(7,),
+            outputs=spt_otp,
+        )
 
         self.lqr = LQRegulator(
             "lqr", shape_setpoint=(4,), shape_estimation=(3,), snames=["fx", "fy", "fz"]
@@ -149,7 +162,11 @@ class TestPVTOLComplex(TestBase):
         grp_inp["in1"] = (1,)
         grp_inp["in2"] = (1,)
         grp_inp["in3"] = (1,)
-        grp = Group("grp", inputs=grp_inp, snames=["gs0", "gs1", "gs2", "gs3"],)
+        grp = Group(
+            "grp",
+            inputs=grp_inp,
+            snames=["gs0", "gs1", "gs2", "gs3"],
+        )
 
         vtol_sys = LTISystem(
             "sys",
@@ -202,15 +219,27 @@ class TestPVTOLComplex(TestBase):
         spt_otp["u1"] = (1,)
         spt_otp["u2"] = (2,)
         spt_otp["u3"] = (3,)
-        spt = Split(name="spt", signal_shape=(7,), outputs=spt_otp,)
+        spt = Split(
+            name="spt",
+            signal_shape=(7,),
+            outputs=spt_otp,
+        )
 
         vspt_otp = OrderedDict()
         vspt_otp["att"] = [3, 4, 5, 6]
-        vtolspt = Split(name="vtolspt", signal_shape=(7,), outputs=vspt_otp,)
+        vtolspt = Split(
+            name="vtolspt",
+            signal_shape=(7,),
+            outputs=vspt_otp,
+        )
 
         wspt_otp = OrderedDict()
         wspt_otp["pv"] = list(range(6))
-        wtolspt = Split(name="wtolspt", signal_shape=(13,), outputs=wspt_otp,)
+        wtolspt = Split(
+            name="wtolspt",
+            signal_shape=(13,),
+            outputs=wspt_otp,
+        )
 
         sim = Simulation()
         sim.addComputer(mot0)

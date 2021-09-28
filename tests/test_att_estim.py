@@ -34,13 +34,27 @@ class IMU(ASensors):
             self,
             name="imu",
             shape_state=(9,),
-            snames=["gx", "gy", "gz", "ax", "ay", "az", "mx", "my", "mz",],
+            snames=[
+                "gx",
+                "gy",
+                "gz",
+                "ax",
+                "ay",
+                "az",
+                "mx",
+                "my",
+                "mz",
+            ],
         )
         self.setCovariance(cov)
         self.setMean(moy)
 
     def compute_outputs(
-        self, t1: float, t2: float, measurement: np.array, state: np.array,
+        self,
+        t1: float,
+        t2: float,
+        measurement: np.array,
+        state: np.array,
     ) -> dict:
         outputs = {}
         outputs["measurement"] = state.copy()
@@ -140,7 +154,12 @@ class TestIMU(TestBase):
                 {"var": "deg(madg_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(madg_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(madg_euler_yaw)", "label": "FilteredYaw"},
-                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
+                {
+                    "var": deg(w),
+                    "label": "Simu",
+                    "color": "black",
+                    "linestyle": "--",
+                },
             ],
         )
 
@@ -203,7 +222,12 @@ class TestIMU(TestBase):
                 {"var": "deg(madg_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(madg_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(madg_euler_yaw)", "label": "FilteredYaw"},
-                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
+                {
+                    "var": deg(w),
+                    "label": "Simu",
+                    "color": "black",
+                    "linestyle": "--",
+                },
             ],
         )
 
@@ -273,7 +297,12 @@ class TestIMU(TestBase):
                 {"var": "deg(maho_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(maho_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(maho_euler_yaw)", "label": "FilteredYaw"},
-                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
+                {
+                    "var": deg(w),
+                    "label": "Simu",
+                    "color": "black",
+                    "linestyle": "--",
+                },
             ],
         )
 
@@ -335,7 +364,12 @@ class TestIMU(TestBase):
                 {"var": "deg(maho_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(maho_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(maho_euler_yaw)", "label": "FilteredYaw"},
-                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
+                {
+                    "var": deg(w),
+                    "label": "Simu",
+                    "color": "black",
+                    "linestyle": "--",
+                },
             ],
         )
 

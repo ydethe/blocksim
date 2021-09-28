@@ -20,7 +20,8 @@ class Quadri(G6DOFSystem):
 
     def __init__(self, mot):
         G6DOFSystem.__init__(
-            self, "sys",
+            self,
+            "sys",
         )
         inp = Input("command", shape=(4,), dtype=np.float64)
         self.replaceInput(old_name="command", new_input=inp)

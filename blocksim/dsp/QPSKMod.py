@@ -16,7 +16,11 @@ class QPSKMapping(AComputer):
         self.createParameter("inv_sq_2", value=1 / sqrt(2))
 
     def compute_outputs(
-        self, t1: float, t2: float, input: np.array, output: np.array,
+        self,
+        t1: float,
+        t2: float,
+        input: np.array,
+        output: np.array,
     ) -> dict:
         x, y = input
         symb = ((x + 1j * y) * 2 - 1 - 1j) * self.inv_sq_2
@@ -36,7 +40,11 @@ class QPSKDemapping(AComputer):
         self.createParameter("inv_sq_2", value=1 / sqrt(2))
 
     def compute_outputs(
-        self, t1: float, t2: float, input: np.array, output: np.array,
+        self,
+        t1: float,
+        t2: float,
+        input: np.array,
+        output: np.array,
     ) -> dict:
         (symb,) = input
 

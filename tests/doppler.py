@@ -131,7 +131,11 @@ def main():
     bit_count, bit_errors = sim.run(snr, 16 * (14 * 3 // 3))
     logger.info(
         "Bits Received = %d, Bit errors = %d, BER = %1.2e"
-        % (bit_count, bit_errors, bit_errors / bit_count,)
+        % (
+            bit_count,
+            bit_errors,
+            bit_errors / bit_count,
+        )
     )
     # sim.plot()
     plt.show()

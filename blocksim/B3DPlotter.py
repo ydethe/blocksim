@@ -264,7 +264,9 @@ class B3DPlotter(ShowBase):
     def buildEarth(self) -> NodePath:
         tex_path = resource_path("8081_earthmap4k.jpg")
         return self.buildSphere(
-            texture=tex_path, number_of_meridians=180, number_of_latcircles=45,
+            texture=tex_path,
+            number_of_meridians=180,
+            number_of_latcircles=45,
         )
 
     def buildSphere(

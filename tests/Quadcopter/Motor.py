@@ -40,7 +40,12 @@ class Motor(ASystem):
         return dX
 
     def compute_outputs(
-        self, t1: float, t2: float, command: np.array, state: np.array, vel: np.array,
+        self,
+        t1: float,
+        t2: float,
+        command: np.array,
+        state: np.array,
+        vel: np.array,
     ) -> dict:
         outputs = super().compute_outputs(t1, t2, command, state)
 

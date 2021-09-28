@@ -39,7 +39,11 @@ jammer = DSPSignal.fromLinearFM(
 # and with some noise added
 sig = (
     (chirp + jammer)
-    .resample(samplingStart=t[0] - 1, samplingPeriod=dt, samplingStop=t[-1] + 1,)
+    .resample(
+        samplingStart=t[0] - 1,
+        samplingPeriod=dt,
+        samplingStop=t[-1] + 1,
+    )
     .applyGaussianNoise(0.5)
 )
 
@@ -98,7 +102,11 @@ fig = plt.figure()
 axe = fig.add_subplot(111)
 plotSpectrogram(spg, axe)
 axe.plot(
-    t, fchirp, linewidth=2, color="white", linestyle="--",
+    t,
+    fchirp,
+    linewidth=2,
+    color="white",
+    linestyle="--",
 )
 axe.set_xlabel("Time (s)")
 axe.set_ylabel("Frequency (Hz)")

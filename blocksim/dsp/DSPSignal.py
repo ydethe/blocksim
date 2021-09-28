@@ -47,7 +47,10 @@ class DSPSignal(DSPLine, ASetPoint):
         default_transform=np.real,
     ):
         ASetPoint.__init__(
-            self, name=name, snames=[name], dtype=np.complex128,
+            self,
+            name=name,
+            snames=[name],
+            dtype=np.complex128,
         )
         DSPLine.__init__(
             self,
@@ -58,7 +61,12 @@ class DSPSignal(DSPLine, ASetPoint):
             default_transform=default_transform,
         )
 
-    def compute_outputs(self, t1: float, t2: float, setpoint: np.array,) -> dict:
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        setpoint: np.array,
+    ) -> dict:
         outputs = {}
         outputs["setpoint"] = np.array([self.getSample(t2)])
 
