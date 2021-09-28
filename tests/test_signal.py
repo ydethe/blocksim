@@ -17,6 +17,33 @@ from blocksim.dsp.DSPSignal import DSPSignal
 
 class TestSignal(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_zadoff_chu_crosscorr(self):
+        s1 = DSPSignal.fromZadoffChu(name="s1", n_zc=1021, u=1, sampling_freq=1e6)
+        s2 = DSPSignal.fromZadoffChu(name="s2", n_zc=1021, u=75, sampling_freq=1e6)
+
+        y = s1.correlate(s2, win="hamming")
+
+        fig = plt.figure()
+        axe = fig.add_subplot(111)
+        axe.grid(True)
+        plotDSPLine(y, axe)
+
+        return fig
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_zadoff_chu_autocorr(self):
+        s1 = DSPSignal.fromZadoffChu(name="s1", n_zc=1021, u=1, sampling_freq=1e6)
+
+        y = s1.correlate(s1, win="hamming")
+
+        fig = plt.figure()
+        axe = fig.add_subplot(111)
+        axe.grid(True)
+        plotDSPLine(y, axe)
+
+        return fig
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
     def test_correlation(self):
         fs = 20e6
         bp = fs / 5

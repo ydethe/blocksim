@@ -1,4 +1,10 @@
 import numpy as np
+from numpy import sqrt, sign, pi, exp
+
+
+def zadoff_chu(u, n):
+    k = np.arange(n)
+    return exp(-1j * pi * u * k * (k + 1) / n)
 
 
 def phase_unfold(sig: np.array, eps: float = 1e-9) -> np.array:

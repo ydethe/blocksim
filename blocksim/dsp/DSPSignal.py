@@ -6,7 +6,7 @@ from numpy import log10, exp, pi, sqrt
 from numpy.fft import fft, fftshift
 from scipy.signal import get_window, resample, correlate, lfilter_zi, lfilter, firwin2
 
-from .utils import phase_unfold
+from .utils import phase_unfold, zadoff_chu
 from .DSPLine import DSPLine
 from ..control.SetPoint import ASetPoint
 
@@ -98,11 +98,40 @@ class DSPSignal(DSPLine, ASetPoint):
         ns = int(tau * fs)
         t = np.arange(ns) / fs
         x = exp(1j * (pi * t * (2 * fstart * tau + fend * t - fstart * t)) / tau)
-        sig = DSPSignal(
+        sig = cls(
             name=name,
             samplingStart=samplingStart,
             samplingPeriod=samplingPeriod,
             y_serie=x,
+        )
+        return sig
+
+    @classmethod
+    def fromZadoffChu(
+        cls,
+        name: str,
+        n_zc: int,
+        u: int,
+        sampling_freq: float,
+        samplingStart: float = 0,
+    ) -> "DSPSignal":
+        """Builds Zadoff-Chu sequence
+
+        Args:
+          name
+            Name of the signal
+          n_zc
+            Length of the Zadoff-Chu sequence
+          u
+            Index of the Zadoff-Chu sequence
+
+        Returns:
+          The :class:`SystemControl.dsp.DSPSignal`
+
+        """
+        seq = zadoff_chu(u, n_zc)
+        sig = cls(
+            name=name, samplingStart=0, samplingPeriod=1 / sampling_freq, y_serie=seq
         )
         return sig
 
@@ -124,7 +153,7 @@ class DSPSignal(DSPLine, ASetPoint):
         """
         tps = log.getValue("t")
         val = log.getValue(param)
-        return DSPSignal.fromTimeAndSamples(name=name, tps=tps, y_serie=val)
+        return cls.fromTimeAndSamples(name=name, tps=tps, y_serie=val)
 
     @classmethod
     def fromTimeAndSamples(
@@ -150,7 +179,7 @@ class DSPSignal(DSPLine, ASetPoint):
         if err > 1e-6:
             raise ValueError("Time serie not equally spaced")
 
-        return DSPSignal(
+        return cls(
             name=name,
             samplingStart=t0,
             samplingPeriod=dt,
@@ -175,7 +204,7 @@ class DSPSignal(DSPLine, ASetPoint):
 
         """
         y = np.exp(1j * pha)
-        return DSPSignal(
+        return cls(
             name=name,
             samplingStart=0,
             samplingPeriod=1 / sampling_freq,
@@ -284,15 +313,43 @@ class DSPSignal(DSPLine, ASetPoint):
         """
         return phase_unfold(self.y_serie, eps=eps)
 
-    def correlate(self, y: "DSPSignal") -> "DSPSignal":
+    def correlate(self, y: "DSPSignal", win=np.ones) -> "DSPSignal":
         """Correlates the signal with another signal
 
         Args:
           y
             The :class:`SystemControl.dsp.DSPSignal` to correlate with
+          win : string, float, or tuple
+            The type of window to create. See below for more details.
 
         Returns:
           The resulting :class:`SystemControl.dsp.DSPSignal`
+
+        Notes:
+          Window types:
+            - boxcar
+            - triang
+            - blackman
+            - hamming
+            - hann
+            - bartlett
+            - flattop
+            - parzen
+            - bohman
+            - blackmanharris
+            - nuttall
+            - barthann
+            - cosine
+            - exponential
+            - tukey
+            - taylor
+            - kaiser (needs beta)
+            - gaussian (needs standard deviation)
+            - general_cosine (needs weighting coefficients)
+            - general_gaussian (needs power, width)
+            - general_hamming (needs window coefficient)
+            - dpss (needs normalized half-bandwidth)
+            - chebwin (needs attenuation)
 
         """
         n = min(len(self), len(y))
@@ -317,10 +374,12 @@ class DSPSignal(DSPLine, ASetPoint):
             dt = self.samplingPeriod
 
         if len(x_buf) > len(y_buf):
-            z = correlate(x_buf, y_buf, mode="full", method="auto") / len(y_buf)
+            w = get_window(win, len(y_buf))
+            z = correlate(x_buf, w * y_buf, mode="full", method="auto") / len(y_buf)
             t_start = self.samplingStart - dt * (len(y_buf) - 1)
         else:
-            z = correlate(y_buf, x_buf, mode="full", method="auto") / len(x_buf)
+            w = get_window(win, len(x_buf))
+            z = correlate(y_buf, w * x_buf, mode="full", method="auto") / len(x_buf)
             t_start = y.samplingStart - dt * (len(x_buf) - 1)
 
         return DSPSignal(

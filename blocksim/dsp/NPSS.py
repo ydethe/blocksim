@@ -5,11 +5,7 @@ from scipy import signal as sig
 
 from .. import logger
 from ..core.Node import AComputer
-
-
-def zadoff_chu(u, n):
-    k = np.arange(n)
-    return exp(-1j * pi * u * k * (k + 1) / n)
+from .utils import zadoff_chu
 
 
 class NPSSGenerator(AComputer):
