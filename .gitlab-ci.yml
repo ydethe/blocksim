@@ -81,6 +81,7 @@ publish_pypi:
     - if: $CI_COMMIT_TAG =~ /^v.*/
       when: always
   script:
+    - pip3 install docutils
     - python3 setup.py sdist
     - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
     - twine upload dist/*
