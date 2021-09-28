@@ -313,7 +313,7 @@ class DSPSignal(DSPLine, ASetPoint):
         """
         return phase_unfold(self.y_serie, eps=eps)
 
-    def correlate(self, y: "DSPSignal", win=np.ones) -> "DSPSignal":
+    def correlate(self, y: "DSPSignal", win="ones") -> "DSPSignal":
         """Correlates the signal with another signal
 
         Args:
