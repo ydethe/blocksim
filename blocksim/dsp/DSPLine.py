@@ -123,6 +123,7 @@ class DSPLine(object):
     ) -> "DSPLine":
         """Resamples the line using a cubic interpolation.
         If the new bounds are larger than the original ones, the line is filled with 0
+        The resulting signal keeps the timestamp of samples
 
         Args:
           samplingStart
@@ -138,12 +139,18 @@ class DSPLine(object):
 
         ns = int(np.round((samplingStop - samplingStart) / samplingPeriod, 0)) + 1
         new_x = np.arange(ns) * samplingPeriod + samplingStart
-        y_serie = np.zeros(ns, dtype=np.complex128)
+
+        if len(self) == 1:
+            kind = "nearest"
+        elif len(self) == 2:
+            kind = "linear"
+        else:
+            kind = "cubic"
 
         itp_x = interp1d(
             self.generateXSerie(),
             np.real(self.y_serie),
-            kind="cubic",
+            kind=kind,
             copy=False,
             bounds_error=False,
             fill_value=0,
@@ -152,15 +159,15 @@ class DSPLine(object):
         itp_y = interp1d(
             self.generateXSerie(),
             np.imag(self.y_serie),
-            kind="cubic",
+            kind=kind,
             copy=False,
             bounds_error=False,
             fill_value=0,
             assume_sorted=True,
         )
 
+        y_serie = 1j * itp_y(new_x)
         y_serie += itp_x(new_x)
-        y_serie += 1j * itp_y(new_x)
 
         return self.__class__(
             name=self.name,
@@ -285,6 +292,20 @@ class DSPLine(object):
 
     def __rmul__(self, y):
         return self * y
+
+    def __truediv__(self, y):
+        if not issubclass(y.__class__, DSPLine):
+            t_start = self.samplingStart
+            dt = self.samplingPeriod
+            y_serie = self.y_serie / y
+
+        return self.__class__(
+            name=self.name,
+            samplingStart=t_start,
+            samplingPeriod=dt,
+            y_serie=y_serie,
+            default_transform=self.default_transform,
+        )
 
     def __mul__(self, y: "DSPLine") -> "DSPLine":
         if issubclass(y.__class__, DSPLine):

@@ -1,4 +1,4 @@
-from typing import Tuple, Callable
+from typing import Tuple, Callable, List
 
 from scipy import linalg as lin
 import numpy as np
@@ -7,7 +7,7 @@ from numpy.fft import fft, fftshift
 from scipy.signal import resample, correlate, lfilter_zi, lfilter, firwin2
 from .utils import get_window
 
-from .utils import phase_unfold, zadoff_chu
+from .utils import phase_unfold, zadoff_chu, shift
 from .DSPLine import DSPLine
 from ..control.SetPoint import ASetPoint
 
@@ -112,6 +112,47 @@ class DSPSignal(DSPLine, ASetPoint):
             samplingStart=samplingStart,
             samplingPeriod=samplingPeriod,
             y_serie=x,
+        )
+        return sig
+
+    @classmethod
+    def fromGoldSequence(
+        cls,
+        name: str,
+        sv: List[int],
+        repeat=1,
+        sampling_freq: float = 1.023e6,
+        samplingStart: float = 0,
+    ) -> "DSPSignal":
+        """Builds Gold sequence
+
+        Args:
+          name
+            Name of the signal
+          repeat
+            Number of copies of a 1023 Gold sequence
+          sv
+            Identifier of the SV
+
+        Returns:
+          The :class:`SystemControl.dsp.DSPSignal`. All the samples are +1 or -1
+
+        """
+        # init registers
+        G1 = [1 for _ in range(10)]
+        G2 = [1 for _ in range(10)]
+
+        ca = []
+        for _ in range(1023):
+            g1 = shift(G1, [3, 10], [10])  # feedback 3,10, output 10
+            g2 = shift(
+                G2, [2, 3, 6, 8, 9, 10], sv
+            )  # feedback 2,3,6,8,9,10, output sv for sat
+            ca.append((g1 + g2) % 2)
+
+        seq = -1 + 2 * np.array(ca * repeat, dtype=np.int8)
+        sig = cls(
+            name=name, samplingStart=0, samplingPeriod=1 / sampling_freq, y_serie=seq
         )
         return sig
 
@@ -462,3 +503,50 @@ class DSPSignal(DSPLine, ASetPoint):
         """
         z = y.reverse().conj()
         return self.correlate(z)
+
+    def forceSamplingStart(self, samplingStart: float) -> "DSPLine":
+        res = DSPSignal(
+            name=self.name,
+            samplingStart=samplingStart,
+            samplingPeriod=self.samplingPeriod,
+            y_serie=self.y_serie,
+            default_transform=self.default_transform,
+        )
+        return res
+
+    def integrate(self, period: float, offset: float = 0) -> "DSPSignal":
+        """
+
+        Args:
+          period (s)
+            Size of the window in the time domain
+          offset (s)
+            Time of the beginning of the first window.
+            Zero means that the first window starts when the signal starts
+
+        """
+        s_start = self.samplingStart
+        s_stop = self.samplingStop
+        w_start = offset + s_start
+        dt = self.samplingPeriod
+
+        w_len = int(period / dt + 1)
+
+        n_win = int((s_stop - s_start) / period)
+
+        res = DSPSignal(
+            name=self.name,
+            samplingStart=0,
+            samplingPeriod=dt,
+            y_serie=np.zeros(w_len, dtype=np.complex),
+            default_transform=self.default_transform,
+        )
+        for k in range(n_win):
+            chunk = self.resample(
+                samplingStart=w_start + k * period,
+                samplingPeriod=dt,
+                samplingStop=w_start + (k + 1) * period,
+            )
+            res = res + chunk.forceSamplingStart(0) / n_win
+
+        return res

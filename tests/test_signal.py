@@ -21,7 +21,7 @@ class TestSignal(TestBase):
         s1 = DSPSignal.fromZadoffChu(name="s1", n_zc=1021, u=1, sampling_freq=1e6)
         s2 = DSPSignal.fromZadoffChu(name="s2", n_zc=1021, u=75, sampling_freq=1e6)
 
-        y = s1.correlate(s2, win="hamming")
+        y = s1.correlate(s2)
 
         fig = plt.figure()
         axe = fig.add_subplot(111)
@@ -34,12 +34,83 @@ class TestSignal(TestBase):
     def test_zadoff_chu_autocorr(self):
         s1 = DSPSignal.fromZadoffChu(name="s1", n_zc=1021, u=1, sampling_freq=1e6)
 
-        y = s1.correlate(s1, win="hamming")
+        y = s1.correlate(s1)
 
         fig = plt.figure()
         axe = fig.add_subplot(111)
         axe.grid(True)
         plotDSPLine(y, axe)
+
+        return fig
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_gold_crosscorr(self):
+        s1 = DSPSignal.fromGoldSequence(
+            name="s1", sv=[2, 6], repeat=1, sampling_freq=1.023e6
+        )
+        s2 = DSPSignal.fromGoldSequence(
+            name="s2", sv=[3, 7], repeat=1, sampling_freq=1.023e6
+        )
+
+        y = s1.correlate(s2)
+
+        fig = plt.figure()
+        axe = fig.add_subplot(111)
+        axe.grid(True)
+        plotDSPLine(y, axe)
+
+        return fig
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_gold_autocorr(self):
+        s1 = DSPSignal.fromGoldSequence(
+            name="s1", sv=[2, 6], repeat=1, sampling_freq=1.023e6
+        )
+
+        y = s1.correlate(s1)
+
+        fig = plt.figure()
+        axe = fig.add_subplot(111)
+        axe.grid(True)
+        plotDSPLine(y, axe)
+
+        return fig
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_gold_corr_integ(self):
+        # Reference Gold sequence
+        y1 = DSPSignal.fromGoldSequence(
+            name="s1", sv=[2, 6], repeat=1, sampling_freq=1.023e6
+        )
+
+        # Noisy received signal
+        y = DSPSignal.fromGoldSequence(
+            name="s1", sv=[2, 6], repeat=20, sampling_freq=1.023e6
+        )
+        y = y.applyGaussianNoise(pwr=200)
+
+        # Correlation
+        z = y.correlate(y1)
+
+        # Integration
+        zi = z.integrate(period=1e-3, offset=511 / (1.023e6))
+
+        # Plotting
+        fig = plt.figure()
+        axe = fig.add_subplot(311)
+        axe.grid(True)
+        plotDSPLine(y, axe)
+        axe.set_ylabel("Brut")
+
+        axe = fig.add_subplot(312)
+        axe.grid(True)
+        plotDSPLine(z, axe)
+        axe.set_ylabel("Corrélation")
+
+        axe = fig.add_subplot(313)
+        axe.grid(True)
+        plotDSPLine(zi, axe)
+        axe.set_ylabel("Intégration")
 
         return fig
 
@@ -185,4 +256,12 @@ class TestSignal(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+
+    a = TestSignal()
+    # a.test_zadoff_chu_crosscorr()
+    # a.test_zadoff_chu_autocorr()
+    a.test_gold_autocorr()
+    a.test_gold_crosscorr()
+
+    plt.show()
