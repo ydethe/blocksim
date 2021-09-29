@@ -66,6 +66,7 @@ def shift(register, feedback, output):
     >>> G1
     [0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     >>> out
+    1
 
     """
 
