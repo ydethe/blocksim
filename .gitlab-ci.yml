@@ -30,6 +30,7 @@ stages:
     - python3 -m venv bs_env
     - source bs_env/bin/activate
     - python --version
+    - python3 -m pip install -U pip
     - pip3 install scikit-build numpy https://box.johncloud.fr/slycot-0.4.0-cp36-cp36m-linux_x86_64.whl
     - pip3 install -r requirements_test.txt
     - python3 setup.py develop
