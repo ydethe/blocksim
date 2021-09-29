@@ -55,7 +55,7 @@ class TestSignal(TestBase):
         x = np.exp(1j * np.pi * 2 * pha)
         y = np.hstack((np.zeros(n // 2), x, np.zeros(2 * n)))
 
-        print("Pic de corrélation attendu à %.3f µs" % (n / fs / 2 * 1e6))
+        # print("Pic de corrélation attendu à %.3f µs" % (n / fs / 2 * 1e6))
 
         rep = DSPSignal("rep", samplingStart=0, samplingPeriod=3 / fs, y_serie=x[::3])
         s = DSPSignal("s", samplingStart=-1e-3, samplingPeriod=1 / fs, y_serie=y)

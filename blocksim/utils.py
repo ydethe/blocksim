@@ -8,7 +8,7 @@ from scipy import linalg as lin
 import numpy as np
 from numpy import pi, arcsin, arctan2, sin, cos, sqrt
 import astropy.coordinates as coord
-from skyfield.api import Topos, load
+from skyfield.api import Topos, load, utc
 from skyfield.timelib import Time
 
 from . import logger
@@ -44,13 +44,6 @@ __all__ = [
 
 
 def casedpath(path):
-    """
-
-    Examples:
-      >>> casedpath('C:\Tto')
-      'C:\\Tto'
-
-    """
     r = glob.glob(re.sub(r"([^:/\\])(?=[/\\]|$)", r"[\1]", path))
     return r and r[0] or path
 
@@ -61,7 +54,7 @@ def resource_path(resource: str) -> str:
     Examples:
       >>> resource_path('8081_earthmap4k.jpg') # doctest: +ELLIPSIS
       '.../blocksim/blocksim/resources/8081_earthmap4k.jpg'
-
+      
     """
     from importlib import import_module
 
@@ -342,9 +335,9 @@ def assignVector(
     elif not (dtype == np.complex64 or dtype == np.complex128) and (
         v.dtype == np.complex64 or v.dtype == np.complex128
     ):
-        txt = "Element '%s' : Argument '%s' - trying to affect a complex vector into a real or integer vector" % (
-            dst_name,
-            src_name,
+        txt = (
+            "Element '%s' : Argument '%s' - trying to affect a complex vector into a real or integer vector"
+            % (dst_name, src_name,)
         )
         raise WrongDataType(txt)
 
@@ -367,7 +360,9 @@ def datetime_to_skyfield(td: datetime) -> Time:
     >>> fmt = "%Y/%m/%d %H:%M:%S.%f"
     >>> sts = "2021/04/15 09:29:54.996640"
     >>> tsync = datetime.strptime(sts, fmt)
+    >>> tsync = tsync.replace(tzinfo=utc)
     >>> datetime_to_skyfield(tsync)
+    <Time tt=2459319.8965761648>
 
     """
     ts = load.timescale(builtin=True)

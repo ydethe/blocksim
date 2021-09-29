@@ -13,6 +13,7 @@ from TestBase import TestBase
 
 from blocksim.constants import Req, omega
 from blocksim.source.Satellite import Satellite
+from blocksim.source.Trajectory import Trajectory
 from blocksim.EarthPlotter import EarthPlotter
 from blocksim.Simulation import Simulation
 
@@ -46,6 +47,9 @@ class TestSatellite(TestBase):
         t = dt.total_seconds()
         pv = satellite.compute_outputs(0, t, subpoint=None, itrf=None)["itrf"]
 
+        traj = satellite.geocentricITRFTrajectory(number_of_periods=1, number_of_position=100)
+        self.assertEqual(len(traj), 100)
+
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
     def test_ground_track(self):
         pt = (-74.0542275, 40.7004153)
@@ -61,6 +65,14 @@ class TestSatellite(TestBase):
         log = sim.getLogger()
         lon = log.getValue("deg(iss_subpoint_lon)")
         lat = log.getValue("deg(iss_subpoint_lat)")
+
+        traj = Trajectory.fromLogger(
+            log=log,
+            name="traj",
+            npoint=ns,
+            params=("iss_itrf_px", "iss_itrf_py", "iss_itrf_pz"),
+            color="red",
+        )
 
         fig = plt.figure()
         ep = EarthPlotter()
