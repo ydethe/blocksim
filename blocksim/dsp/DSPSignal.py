@@ -4,7 +4,8 @@ from scipy import linalg as lin
 import numpy as np
 from numpy import log10, exp, pi, sqrt
 from numpy.fft import fft, fftshift
-from scipy.signal import get_window, resample, correlate, lfilter_zi, lfilter, firwin2
+from scipy.signal import resample, correlate, lfilter_zi, lfilter, firwin2
+from .utils import get_window
 
 from .utils import phase_unfold, zadoff_chu
 from .DSPLine import DSPLine

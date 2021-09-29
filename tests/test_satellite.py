@@ -47,7 +47,9 @@ class TestSatellite(TestBase):
         t = dt.total_seconds()
         pv = satellite.compute_outputs(0, t, subpoint=None, itrf=None)["itrf"]
 
-        traj = satellite.geocentricITRFTrajectory(number_of_periods=1, number_of_position=100)
+        traj = satellite.geocentricITRFTrajectory(
+            number_of_periods=1, number_of_position=100
+        )
         self.assertEqual(len(traj), 100)
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})

@@ -50,7 +50,11 @@ class TestGNSS(TestBase):
             grp_inp["itrf%i" % k] = (6,)
             grp_snames.extend(["%s%i" % (n, k) for n in nom_coord])
 
-        grp = Group("grp", inputs=grp_inp, snames=grp_snames,)
+        grp = Group(
+            "grp",
+            inputs=grp_inp,
+            snames=grp_snames,
+        )
 
         uere = 0.0
         ueve = 0.0

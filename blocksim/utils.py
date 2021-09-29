@@ -54,7 +54,7 @@ def resource_path(resource: str) -> str:
     Examples:
       >>> resource_path('8081_earthmap4k.jpg') # doctest: +ELLIPSIS
       '.../blocksim/blocksim/resources/8081_earthmap4k.jpg'
-      
+
     """
     from importlib import import_module
 
@@ -335,9 +335,9 @@ def assignVector(
     elif not (dtype == np.complex64 or dtype == np.complex128) and (
         v.dtype == np.complex64 or v.dtype == np.complex128
     ):
-        txt = (
-            "Element '%s' : Argument '%s' - trying to affect a complex vector into a real or integer vector"
-            % (dst_name, src_name,)
+        txt = "Element '%s' : Argument '%s' - trying to affect a complex vector into a real or integer vector" % (
+            dst_name,
+            src_name,
         )
         raise WrongDataType(txt)
 
