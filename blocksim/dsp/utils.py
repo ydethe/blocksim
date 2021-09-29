@@ -1,5 +1,15 @@
 import numpy as np
 from numpy import sqrt, sign, pi, exp
+from numpy.fft import fft, ifft
+
+
+def get_window(win, n: int) -> np.array:
+    from scipy.signal import get_window
+
+    w = get_window(win, n)
+    nrm = np.sum(w) / n
+
+    return w / nrm
 
 
 def zadoff_chu(u, n):
