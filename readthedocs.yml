@@ -16,10 +16,27 @@ formats: []
 
 build:
   image: stable
+  apt_packages:
+    - libblas-dev
+    - liblapack-dev
+    - cmake
+    - gfortran
+    - gcc
+    - g++
+    - make
+    - libproj-dev
+    - proj-data
+    - proj-bin
+    - libgeos-dev
 
 # This part is necessary otherwise the project is not built
 python:
-   version: 3.6
-   install:
-      - method: pip
-        path: .
+  version: 3.6
+  install:
+    - scikit-build
+    - numpy
+    - https://box.johncloud.fr/slycot-0.4.0-cp36-cp36m-linux_x86_64.whl
+    - requirements: docs/requirements.txt
+    - requirements: requirements_test.txt
+  - method: pip
+    path: .
