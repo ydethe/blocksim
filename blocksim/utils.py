@@ -44,11 +44,25 @@ __all__ = [
 
 
 def casedpath(path):
+    """
+
+    Examples:
+      >>> casedpath('C:\Tto')
+      'C:\\Tto'
+
+    """
     r = glob.glob(re.sub(r"([^:/\\])(?=[/\\]|$)", r"[\1]", path))
     return r and r[0] or path
 
 
 def resource_path(resource: str) -> str:
+    """
+
+    Examples:
+      >>> resource_path('8081_earthmap4k.jpg') # doctest: +ELLIPSIS
+      '.../blocksim/blocksim/resources/8081_earthmap4k.jpg'
+
+    """
     from importlib import import_module
 
     package = "blocksim"
@@ -348,6 +362,12 @@ def datetime_to_skyfield(td: datetime) -> Time:
 
     Returns:
       Skyfield date and time structure
+
+    Examples:
+    >>> fmt = "%Y/%m/%d %H:%M:%S.%f"
+    >>> sts = "2021/04/15 09:29:54.996640"
+    >>> tsync = datetime.strptime(sts, fmt)
+    >>> datetime_to_skyfield(tsync)
 
     """
     ts = load.timescale(builtin=True)

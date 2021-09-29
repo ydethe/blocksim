@@ -417,7 +417,7 @@ class GNSSReceiver(AComputer):
 
             for k in range(nsat):
                 spos = self.getSatellitePositionFromEphem(ephem, k)
-                svel = self.getSatelliteVelocityFromEphem(ephem, k)
+                # svel = self.getSatelliteVelocityFromEphem(ephem, k)
                 pr = self.getPseudorangeFromMeas(meas, k)
                 vr = self.getRadialVelocityFromMeas(meas, k)
                 if np.isnan(vr):
@@ -441,7 +441,7 @@ class GNSSReceiver(AComputer):
 
             for k in range(nsat):
                 spos = self.getSatellitePositionFromEphem(ephem, k)
-                svel = self.getSatelliteVelocityFromEphem(ephem, k)
+                # svel = self.getSatelliteVelocityFromEphem(ephem, k)
                 pr = self.getPseudorangeFromMeas(meas, k)
                 vr = self.getRadialVelocityFromMeas(meas, k)
                 if np.isnan(vr):
