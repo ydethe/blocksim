@@ -14,15 +14,13 @@ from blocksim.control.Controller import LQRegulator, AntiWindupPIDController
 from blocksim.Simulation import Simulation
 from blocksim.control.SetPoint import Step
 from blocksim.control.Route import Group, Split
-
+from blocksim.Quadcopter.Quadri import Quadri
+from blocksim.Quadcopter.AttPilot import AttPilot
+from blocksim.Quadcopter.Motor import Motor
+from blocksim.Quadcopter.VTOLPilot import VTOLPilot
 
 sys.path.insert(0, os.path.dirname(__file__))
 from TestBase import TestBase
-
-from Quadcopter.Quadri import Quadri
-from Quadcopter.AttPilot import AttPilot
-from Quadcopter.Motor import Motor
-from Quadcopter.VTOLPilot import VTOLPilot
 
 
 class TestPVTOL(TestBase):
