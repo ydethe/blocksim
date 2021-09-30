@@ -145,7 +145,7 @@ def plotFromLogger(
 
     Args:
       log
-        :class:`SystemControl.Logger.Logger` instance
+        :class:`blocksim.Logger.Logger` instance
       id_x
         Name or expression for the X axis
       id_y
@@ -315,24 +315,22 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
     return ret
 
 
-def plotBode(
-    filt: DSPFilter, fs: float, axe_amp: "AxesSubplot", axe_pha: "AxesSubplot"
-):
+def plotBode(filt: DSPFilter, axe_amp: "AxesSubplot", axe_pha: "AxesSubplot"):
     """Plots the bode diagram of a filter
 
     Args:
       filt
         Filter to analyse
-      fs (Hz)
-        The sampling frequency of the signals that will be filtered through it
       axe_amp
         Matplotlib axe to draw the ampltiude on
       axe_pha
         Matplotlib axe to draw the unfolded phase on
 
     """
+    fs = 1 / filt.samplingPeriod
+
     n = 200
-    b = filt.generateCoefficients(fs)
+    b = filt.generateCoefficients()
 
     freq = np.linspace(0, fs / 2, n)
 

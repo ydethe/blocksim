@@ -1,4 +1,4 @@
-from typing import Tuple, Callable, List
+from typing import Tuple, Callable, List, Union
 
 from scipy import linalg as lin
 import numpy as np
@@ -16,7 +16,7 @@ __all__ = ["DSPSignal"]
 
 
 class DSPSignal(DSPLine, ASetPoint):
-    """Spectrum of a signal
+    """Temporal signal
 
     This element has no input
     The output name of the computer is **setpoint**
@@ -100,7 +100,7 @@ class DSPSignal(DSPLine, ASetPoint):
             Frequency at the end of the modulation
 
         Returns:
-          The :class:`SystemControl.dsp.DSPSignal`
+          The :class:`blocksim.dsp.DSPSignal`
 
         """
         fs = 1 / samplingPeriod
@@ -119,7 +119,7 @@ class DSPSignal(DSPLine, ASetPoint):
     def fromGoldSequence(
         cls,
         name: str,
-        sv: List[int],
+        sv: Union[List[int], int],
         repeat=1,
         sampling_freq: float = 1.023e6,
         samplingStart: float = 0,
@@ -132,12 +132,50 @@ class DSPSignal(DSPLine, ASetPoint):
           repeat
             Number of copies of a 1023 Gold sequence
           sv
-            Identifier of the SV
+            Identifier of the SV. Can be either the PRN number (int), or the code tap selection (list of 2 int)
 
         Returns:
-          The :class:`SystemControl.dsp.DSPSignal`. All the samples are +1 or -1
+          The :class:`blocksim.dsp.DSPSignal`. All the samples are +1 or -1
 
         """
+        SV_list = {
+            1: [2, 6],
+            2: [3, 7],
+            3: [4, 8],
+            4: [5, 9],
+            5: [1, 9],
+            6: [2, 10],
+            7: [1, 8],
+            8: [2, 9],
+            9: [3, 10],
+            10: [2, 3],
+            11: [3, 4],
+            12: [5, 6],
+            13: [6, 7],
+            14: [7, 8],
+            15: [8, 9],
+            16: [9, 10],
+            17: [1, 4],
+            18: [2, 5],
+            19: [3, 6],
+            20: [4, 7],
+            21: [5, 8],
+            22: [6, 9],
+            23: [1, 3],
+            24: [4, 6],
+            25: [5, 7],
+            26: [6, 8],
+            27: [7, 9],
+            28: [8, 10],
+            29: [1, 6],
+            30: [2, 7],
+            31: [3, 8],
+            32: [4, 9],
+        }
+
+        if not hasattr(sv, "__iter__"):
+            sv = SV_list[sv]
+
         # init registers
         G1 = [1 for _ in range(10)]
         G2 = [1 for _ in range(10)]
@@ -176,7 +214,7 @@ class DSPSignal(DSPLine, ASetPoint):
             Index of the Zadoff-Chu sequence
 
         Returns:
-          The :class:`SystemControl.dsp.DSPSignal`
+          The :class:`blocksim.dsp.DSPSignal`
 
         """
         seq = zadoff_chu(u, n_zc)
@@ -187,18 +225,18 @@ class DSPSignal(DSPLine, ASetPoint):
 
     @classmethod
     def fromLogger(cls, name: str, log: "Logger", param: str) -> "DSPSignal":
-        """Builds a signal from a :class:`SystemControl.Logger.Logger`
+        """Builds a signal from a :class:`blocksim.Logger.Logger`
 
         Args:
           name
             Name of the signal
           log
-            :class:`SystemControl.Logger.Logger` to use
+            :class:`blocksim.Logger.Logger` to use
           param
-            Name of the parameter to use to build the :class:`SystemControl.dsp.DSPSignal`
+            Name of the parameter to use to build the :class:`blocksim.dsp.DSPSignal`
 
         Returns:
-          The :class:`SystemControl.dsp.DSPSignal`
+          The :class:`blocksim.dsp.DSPSignal`
 
         """
         tps = log.getValue("t")
@@ -220,7 +258,7 @@ class DSPSignal(DSPLine, ASetPoint):
             Complex samples
 
         Returns:
-          The :class:`SystemControl.dsp.DSPSignal`
+          The :class:`blocksim.dsp.DSPSignal`
 
         """
         t0 = tps[0]
@@ -250,7 +288,7 @@ class DSPSignal(DSPLine, ASetPoint):
             The phase law
 
         Returns:
-          The :class:`SystemControl.dsp.DSPSignal`
+          The :class:`blocksim.dsp.DSPSignal`
 
         """
         y = np.exp(1j * pha)
@@ -263,14 +301,14 @@ class DSPSignal(DSPLine, ASetPoint):
         )
 
     def delay(self, tau: float) -> "DSPSignal":
-        """Builds a delayed :class:`SystemControl.dsp.DSPSignal`
+        """Builds a delayed :class:`blocksim.dsp.DSPSignal`
 
         Args:
           tau (s)
             The delay. Positive if the signal starts later after delay.
 
         Returns:
-          The :class:`SystemControl.dsp.DSPSignal`
+          The :class:`blocksim.dsp.DSPSignal`
 
         """
         return DSPSignal(
@@ -282,18 +320,18 @@ class DSPSignal(DSPLine, ASetPoint):
         )
 
     def applyDopplerFrequency(self, fdop: float) -> "DSPSignal":
-        """Builds a :class:`SystemControl.dsp.DSPSignal` with a Doppler effet applied
+        """Builds a :class:`blocksim.dsp.DSPSignal` with a Doppler effet applied
 
         Args:
           fdop (Hz)
             The Doppler frequency to apply
 
         Returns:
-          The :class:`SystemControl.dsp.DSPSignal`
+          The :class:`blocksim.dsp.DSPSignal`
 
         """
         return DSPSignal(
-            name="%s with dop" % self.name,
+            name=self.name,
             samplingStart=self.samplingStart,
             samplingPeriod=self.samplingPeriod,
             y_serie=self.y_serie
@@ -302,14 +340,14 @@ class DSPSignal(DSPLine, ASetPoint):
         )
 
     def applyGaussianNoise(self, pwr: float) -> "DSPSignal":
-        """Builds a :class:`SystemControl.dsp.DSPSignal` with a complex gaussian noise added
+        """Builds a :class:`blocksim.dsp.DSPSignal` with a complex gaussian noise added
 
         Args:
           pwr
             Power of the complex gaussian noise
 
         Returns:
-          The :class:`SystemControl.dsp.DSPSignal`
+          The :class:`blocksim.dsp.DSPSignal`
 
         """
         n = len(self)
@@ -334,7 +372,7 @@ class DSPSignal(DSPLine, ASetPoint):
         .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html
 
         Returns:
-          The resulting :class:`SystemControl.dsp.DSPSpectrum`
+          The resulting :class:`blocksim.dsp.DSPSpectrum`
 
         """
         from .DSPSpectrum import DSPSpectrum
@@ -368,12 +406,12 @@ class DSPSignal(DSPLine, ASetPoint):
 
         Args:
           y
-            The :class:`SystemControl.dsp.DSPSignal` to correlate with
+            The :class:`blocksim.dsp.DSPSignal` to correlate with
           win : string, float, or tuple
             The type of window to create. See below for more details.
 
         Returns:
-          The resulting :class:`SystemControl.dsp.DSPSignal`
+          The resulting :class:`blocksim.dsp.DSPSignal`
 
         Notes:
           Window types:
@@ -444,7 +482,7 @@ class DSPSignal(DSPLine, ASetPoint):
         """Autocorrelation of the signal
 
         Returns:
-          The resulting :class:`SystemControl.dsp.DSPSignal`
+          The resulting :class:`blocksim.dsp.DSPSignal`
 
         """
         ac = self.correlate(self)
@@ -458,7 +496,7 @@ class DSPSignal(DSPLine, ASetPoint):
             A callable to apply to all samples
 
         Returns:
-          The resulting :class:`SystemControl.dsp.DSPSignal`
+          The resulting :class:`blocksim.dsp.DSPSignal`
 
         """
         return DSPSignal(
@@ -473,7 +511,7 @@ class DSPSignal(DSPLine, ASetPoint):
         """Returns the conjugated signal
 
         Returns:
-          The resulting :class:`SystemControl.dsp.DSPSignal`
+          The resulting :class:`blocksim.dsp.DSPSignal`
 
         """
         return self.applyFunction(np.conj)
@@ -482,7 +520,7 @@ class DSPSignal(DSPLine, ASetPoint):
         """Returns the reversed signal
 
         Returns:
-          The resulting :class:`SystemControl.dsp.DSPSignal`
+          The resulting :class:`blocksim.dsp.DSPSignal`
 
         """
         return self.applyFunction(lambda x: x[::-1])
@@ -491,14 +529,14 @@ class DSPSignal(DSPLine, ASetPoint):
         return self.convolve(y)
 
     def convolve(self, y: "DSPSignal") -> "DSPSignal":
-        """Returns the convolution with another :class:`SystemControl.dsp.DSPSignal`
+        """Returns the convolution with another :class:`blocksim.dsp.DSPSignal`
 
         Args:
           y
-            The :class:`SystemControl.dsp.DSPSignal` to convolve with
+            The :class:`blocksim.dsp.DSPSignal` to convolve with
 
         Returns:
-          The resulting :class:`SystemControl.dsp.DSPSignal`
+          The resulting :class:`blocksim.dsp.DSPSignal`
 
         """
         z = y.reverse().conj()

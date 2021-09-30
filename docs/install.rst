@@ -6,11 +6,12 @@
 Installation
 ============
 
+Install with pip
+----------------
+
 .. highlight:: console
 
-.. _blocksim_pypi: https://pypi.org/project/blocksim/
-.. _setuptools: https://pypi.org/project/setuptools/
-
+The project is hosted on pypi : `<https://pypi.org/project/blocksim/>`_.
 
 You can install blocksim in the usual ways. The simplest way is with pip::
 
@@ -26,4 +27,4 @@ blocksim installed properly:
 
     $ python -m blocksim --version
     blocksim, version |release|
-    Documentation at |doc-url|
+    Documentation at https://blocksim.readthedocs.io/en/latest/

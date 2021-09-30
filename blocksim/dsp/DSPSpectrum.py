@@ -87,7 +87,7 @@ class DSPSpectrum(DSPLine):
             .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html
 
         Returns:
-          The resulting :class:`SystemControl.dsp.DSPSignal`
+          The resulting :class:`blocksim.dsp.DSPSignal`
 
         """
         from .DSPSignal import DSPSignal

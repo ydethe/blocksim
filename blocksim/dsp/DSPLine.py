@@ -64,7 +64,7 @@ class DSPLine(object):
     def findPeaksWithTransform(
         self, transform: Callable = None, nb_peaks: int = 3
     ) -> np.array:
-        """Finds the peaks in a :class:`SystemControl.dsp.DSPLine`.
+        """Finds the peaks in a :class:`blocksim.dsp.DSPLine`.
         The search is performed on the tranformed samples (with the argument *transform*, or the attribute *default_transform*)
 
         Args:
