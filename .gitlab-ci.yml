@@ -62,7 +62,6 @@ doc:
       - htmldoc
 
 publish_rtd:
-  extends: .before_script_template
   stage: deploy
   dependencies:
   - test
