@@ -1,5 +1,3 @@
-from collections import deque
-
 import numpy as np
 from numpy import log10, exp, pi, sqrt, cos, sin
 from scipy.signal import firwin2, firwin, lfilter_zi, lfilter

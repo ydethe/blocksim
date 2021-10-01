@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from blocksim import logger
 from blocksim.dsp.FEC import FECCoder, FECDecoder
 from blocksim.dsp.SerialParallel import SerialToParallel, ParallelToSerial
-from blocksim.dsp.QPSKMod import QPSKMapping, QPSKDemapping
+from blocksim.dsp.PSKMod import PSKMapping, PSKDemapping
 from blocksim.dsp.OFDMA import OFDMMapping, OFDMDemapping
 from blocksim.dsp.DFT import IDFT, DFT
 from blocksim.dsp.Channel import AWGNChannel, AWGNChannelEstimator

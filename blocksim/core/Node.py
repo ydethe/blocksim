@@ -4,6 +4,7 @@ from itertools import product
 from uuid import UUID, uuid4
 
 import numpy as np
+from numpy import sqrt
 
 from ..exceptions import *
 from .Frame import Frame
@@ -248,7 +249,7 @@ class Output(ABaseNode):
 
 class AWGNOutput(Output):
 
-    __slots__ = ["mean", "cov", "cho"]
+    __slots__ = ["mean", "cov", "cho", "cplxe"]
 
     def resetCallback(self, frame: Frame):
         """Resets the element internal state to zero."""
@@ -263,6 +264,12 @@ class AWGNOutput(Output):
 
         self.cho = calc_cho(self.cov)
 
+        typ = self.getDataType()
+        if typ == np.complex128 or typ == np.complex64:
+            self.cplxe = True
+        else:
+            self.cplxe = False
+
     def addGaussianNoise(self, state: np.array) -> np.array:
         """Adds a gaussian noise to a state vector
 
@@ -274,7 +281,12 @@ class AWGNOutput(Output):
           Vector of noisy measurements
 
         """
-        bn = np.random.normal(size=len(state))
+        if self.cplxe:
+            bn = np.random.normal(size=len(state)) * 1j / sqrt(2)
+            bn += np.random.normal(size=len(state)) / sqrt(2)
+        else:
+            bn = np.random.normal(size=len(state))
+
         bg = self.cho.T @ bn + self.mean
 
         return state + bg
