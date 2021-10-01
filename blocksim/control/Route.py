@@ -200,7 +200,7 @@ class Group(AComputer):
       name
         Name of the element
       inputs
-        Dictionary of inputs :
+        Ordered dictionary of inputs :
          * the keys are the names of the inputs
          * the values are the corresponding shape
       snames

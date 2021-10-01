@@ -338,7 +338,8 @@ class Logger(object):
         """
         tps = self.getValue("t")
         val = self.getValue(name)
-        return DSPSignal.fromTimeAndSamples(name=name, tps=tps, y_serie=val)
+        comp_name = name.replace("_", "")
+        return DSPSignal.fromTimeAndSamples(name=comp_name, tps=tps, y_serie=val)
 
     def getFilteredValue(
         self, name: str, ntaps: int, cutoff: float, window: str = "hamming"

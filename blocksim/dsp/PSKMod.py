@@ -20,26 +20,31 @@ class PSKMapping(AComputer):
         Name of the computer
       mapping
         List of phase values. For example, in QPSK, [pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4]
+      output_size
+        Number of symbols computed in parallel. The size of the input vector shall therefore be output_size*mu
 
     """
 
-    __slots__ = ["__nb_samples", "__acc_bits", "__prev_symb"]
+    __slots__ = []
 
-    def __init__(self, name: str, mapping: list):
+    def __init__(self, name: str, mapping: list, output_size: int = 1):
         AComputer.__init__(self, name=name)
-        self.defineInput("input", shape=1, dtype=np.int64)
-        self.defineOutput("output", snames=["symb"], dtype=np.complex128)
-        self.createParameter("mapping", value=mapping, read_only=True)
 
         mu = int(np.round(log2(len(mapping)), 0))
         if 2 ** mu != len(mapping):
             raise ValueError("Mapping size must be a power of 2. Got %i" % len(mapping))
 
         self.createParameter("mu", value=mu, read_only=True)
+        self.createParameter("mapping", value=np.array(mapping), read_only=True)
+        self.createParameter("cmapping", value=exp(1j * self.mapping), read_only=True)
+        self.createParameter("output_size", value=output_size, read_only=True)
 
-        self.__nb_samples = 0
-        self.__acc_bits = 0
-        self.__prev_symb = 0
+        self.defineInput("input", shape=output_size * mu, dtype=np.int64)
+        self.defineOutput(
+            "output",
+            snames=["s%i" % i for i in range(output_size)],
+            dtype=np.complex128,
+        )
 
     def compute_outputs(
         self,
@@ -48,22 +53,15 @@ class PSKMapping(AComputer):
         input: np.array,
         output: np.array,
     ) -> dict:
-        assert len(input) == 1
-        nmap = len(self.mapping)
+        symbols = np.empty(self.output_size, dtype=np.complex128)
 
-        if self.__nb_samples == self.mu - 1:
-            self.__acc_bits += input[0] * nmap // 2
-            symb = exp(1j * self.mapping[self.__acc_bits])
-            self.__acc_bits = 0
-            self.__nb_samples = 0
-            self.__prev_symb = symb
-        else:
-            self.__acc_bits += input[0] * 2 ** self.__nb_samples
-            self.__nb_samples += 1
-            symb = self.__prev_symb
+        for k in range(self.output_size):
+            bits = input[k * self.mu : (k + 1) * self.mu]
+            idx = 2 ** np.arange(self.mu) @ bits
+            symbols[k] = self.cmapping[idx]
 
         outputs = {}
-        outputs["output"] = np.array([symb], dtype=np.complex128)
+        outputs["output"] = symbols
         return outputs
 
     def process(self, data: np.array) -> np.array:
@@ -79,18 +77,33 @@ class PSKMapping(AComputer):
           An array of QPSK symbols
 
         """
-        n = len(data)
-        res = np.empty(n, dtype=np.complex128)
-        for k in range(n + self.mu - 1):
-            if k < n:
-                outputs = self.compute_outputs(t1=0, t2=0, input=data[[k]], output=None)
-                symb = outputs["output"][0]
+        ny, n = data.shape
+        assert ny == self.output_size * self.mu
 
-            p = k - self.mu + 1
-            if p >= 0:
-                res[p] = symb
+        res = np.empty((self.output_size, n), dtype=np.complex128)
+        for k in range(n):
+            outputs = self.compute_outputs(t1=0, t2=0, input=data[:, k], output=None)
+            symb = outputs["output"]
+
+            res[:, k] = symb
 
         return res
+
+    def plotConstellation(self, axe):
+        theta = np.linspace(0, 2 * pi, 100)
+        x_circle = cos(theta)
+        y_circle = sin(theta)
+
+        axe.grid(True)
+        axe.set_aspect("equal")
+        axe.scatter(
+            cos(self.mapping),
+            sin(self.mapping),
+            color="red",
+            marker="o",
+            label="constellation",
+        )
+        axe.plot(x_circle, y_circle, color="black", linestyle="--")
 
 
 class PSKDemapping(AComputer):
@@ -108,28 +121,37 @@ class PSKDemapping(AComputer):
         Name of the computer
       mapping
         List of phase values. For example, in QPSK, [pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4]
+      output_size
+        Number of bits computed in parallel. The size of the input vector shall therefore be output_size//mu
 
     """
 
-    __slots__ = ["__prev_symb", "__num_bit"]
+    __slots__ = []
 
-    def __init__(self, name: str, mapping: list):
+    def __init__(self, name: str, mapping: list, output_size: int = 1):
         AComputer.__init__(self, name=name)
-        self.defineInput("input", shape=1, dtype=np.complex128)
-        self.defineOutput("output", snames=["bit"], dtype=np.int64)
-        self.createParameter("mapping", value=mapping, read_only=True)
-        self.createParameter(
-            "cmapping", value=exp(1j * np.array([mapping])), read_only=True
-        )
 
         mu = int(np.round(log2(len(mapping)), 0))
         if 2 ** mu != len(mapping):
-            raise ValueError("Mapping size must be a power of 2. Got %i" % len(mapping))
+            raise ValueError(
+                "[%s]Mapping size must be a power of 2. Got %i" % (name, len(mapping))
+            )
+
+        if output_size % mu != 0:
+            raise ValueError(
+                "[%s]output_size (=%i) must be divisible by mu (=%i)"
+                % (name, output_size, mu)
+            )
 
         self.createParameter("mu", value=mu, read_only=True)
+        self.createParameter("mapping", value=np.array(mapping), read_only=True)
+        self.createParameter("cmapping", value=exp(1j * self.mapping), read_only=True)
+        self.createParameter("output_size", value=output_size, read_only=True)
 
-        self.__prev_symb = [0] * self.mu
-        self.__num_bit = self.mu - 2
+        self.defineInput("input", shape=1, dtype=np.complex128)
+        self.defineOutput(
+            "output", snames=["bit%i" % i for i in range(output_size)], dtype=np.int64
+        )
 
     def compute_outputs(
         self,
@@ -138,21 +160,17 @@ class PSKDemapping(AComputer):
         input: np.array,
         output: np.array,
     ) -> dict:
-        assert len(input) == 1
+        bits = np.empty(self.output_size, dtype=np.int64)
 
-        if self.__num_bit == self.mu - 1:
-            bit = self.__prev_symb[self.__num_bit]
-            self.__num_bit = 0
-            symb_in = input[0]
+        for k in range(self.output_size // self.mu):
+            symb_in = input[k]
             isymb = np.argmin(np.abs(self.cmapping - symb_in))
             ss = bin(isymb)[2:].zfill(self.mu)
-            self.__prev_symb = [int(x) for x in ss[::-1]]
-        else:
-            bit = self.__prev_symb[self.__num_bit]
-            self.__num_bit += 1
+            symb_bits = np.array([int(x) for x in ss[::-1]], dtype=np.int64)
+            bits[k * self.mu : (k + 1) * self.mu] = symb_bits
 
         outputs = {}
-        outputs["output"] = np.array([bit], dtype=np.int64)
+        outputs["output"] = bits
         return outputs
 
     def process(self, symbols: np.array) -> np.array:
@@ -168,18 +186,16 @@ class PSKDemapping(AComputer):
           A bitstream of length n, n even. Bits are either 0, or 1
 
         """
-        n = len(symbols)
-        res = np.empty(n, dtype=np.int64)
-        for k in range(n + self.mu):
-            if k < n:
-                symb = symbols[[k]]
+        ny, n = symbols.shape
+        assert ny == self.output_size // self.mu
 
-            outputs = self.compute_outputs(t1=0, t2=0, input=symb, output=None)
+        res = np.empty((self.output_size, n), dtype=np.int64)
 
-            bit = outputs["output"]
+        for k in range(n):
+            outputs = self.compute_outputs(t1=0, t2=0, input=symbols[:, k], output=None)
 
-            p = k - self.mu
-            if p >= 0:
-                res[p] = bit
+            bits = outputs["output"]
+
+            res[:, k] = bits
 
         return res

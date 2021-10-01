@@ -82,9 +82,9 @@ class TestDSPSetpoint(TestBase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
+    unittest.main()
 
-    a = TestDSPSetpoint()
-    a.test_dsp_setpoint()
+    # a = TestDSPSetpoint()
+    # a.test_dsp_setpoint()
 
-    plt.show()
+    # plt.show()

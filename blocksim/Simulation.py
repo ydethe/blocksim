@@ -54,8 +54,15 @@ class Simulation(object):
             If the computer is already in the simulation
 
         """
+        name = computer.getName()
+
+        if "_" in name:
+            raise ValueError(
+                "Cannot log variables with '_' in their name (got '%s')" % name
+            )
+
         for c in self.__computers:
-            if c.getName() == computer.getName():
+            if c.getName() == name:
                 raise DuplicateElement(c.getName())
 
         # Controllers shall be updated last

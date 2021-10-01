@@ -79,9 +79,23 @@ class DSPSignal(DSPLine, ASetPoint):
         return outputs
 
     @classmethod
-    def fromRandom(
+    def fromBinaryRandom(
         cls, name: str, samplingPeriod: int, size: int, seed: int = None
     ) -> "DSPSignal":
+        """Creates a random signal whose samples are randomly,
+        following a uniform law in the set {0,1}
+
+        Args:
+          name
+            Name of the signal
+          samplingPeriod (s)
+            Sampling period of the signal
+          size
+            Number of samples
+          seed
+            Random seed
+
+        """
         if not seed is None:
             np.random.seed(seed=seed)
 
