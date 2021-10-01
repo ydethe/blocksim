@@ -46,37 +46,6 @@ class DSPSpectrum(DSPLine):
             default_transform=default_transform,
         )
 
-    def resample(
-        self, samplingStart: float, samplingPeriod: float, samplingStop: float = None
-    ) -> "DSPSpectrum":
-        """Resamples the spectrum
-
-        Args:
-          samplingStart (Hz)
-            First frequency of the sample of the spectrum after resampling
-          samplingPeriod (Hz)
-            Frequency spacing of the spectrum after resampling
-          samplingStop (Hz)
-            Last frequency of the sample of the spectrum after resampling
-
-        Returns:
-          The new resampled DSPSpectrum
-
-        """
-        new_line = DSPLine.resample(
-            self,
-            samplingStart=samplingStart,
-            samplingPeriod=samplingPeriod,
-            samplingStop=samplingStop,
-        )
-        return DSPSpectrum(
-            name=new_line.name,
-            samplingStart=new_line.samplingStart,
-            samplingPeriod=new_line.samplingPeriod,
-            y_serie=new_line.y_serie,
-            default_transform=new_line.default_transform,
-        )
-
     def ifft(self, win: str = "ones") -> "DSPSignal":
         """Applies the inverse discrete Fourier transform
 
