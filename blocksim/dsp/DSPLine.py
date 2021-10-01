@@ -94,18 +94,25 @@ class DSPLine(object):
 
         return np.array([self.generateXSerie(x) for x, y in lpeak])
 
-    def getSample(self, x: float) -> np.complex128:
+    def getSample(self, x: float, complex_output: bool = True) -> np.complex128:
         """Gets the sample at x-coord x. A cubic interpolation is used.
 
         Args:
           x
             The x-coord of the sample to retrieve
+          complex_output
+            True if we interpolate both real part and imag part
 
         Returns:
-          The complex sample
+          The real (resp. complex) sample if complex_output is False (resp. True)
 
         """
-        res = self.resample(samplingStart=x, samplingPeriod=1, samplingStop=x)
+        res = self.resample(
+            samplingStart=x,
+            samplingPeriod=1,
+            samplingStop=x,
+            complex_output=complex_output,
+        )
         return res[0]
 
     @property
@@ -119,7 +126,11 @@ class DSPLine(object):
         return self.samplingStart + (len(self) - 1) * self.samplingPeriod
 
     def resample(
-        self, samplingStart: float, samplingPeriod: float, samplingStop: float = None
+        self,
+        samplingStart: float,
+        samplingPeriod: float,
+        samplingStop: float = None,
+        complex_output: bool = True,
     ) -> "DSPLine":
         """Resamples the line using a cubic interpolation.
         If the new bounds are larger than the original ones, the line is filled with 0
@@ -132,6 +143,8 @@ class DSPLine(object):
             x-coord spacing of the line after resampling
           samplingStop
             Last x-coord of the sample of the line after resampling
+          complex_output
+            True if we interpolate both real part and imag part
 
         """
         if samplingStop is None:
@@ -156,18 +169,23 @@ class DSPLine(object):
             fill_value=0,
             assume_sorted=True,
         )
-        itp_y = interp1d(
-            self.generateXSerie(),
-            np.imag(self.y_serie),
-            kind=kind,
-            copy=False,
-            bounds_error=False,
-            fill_value=0,
-            assume_sorted=True,
-        )
 
-        y_serie = 1j * itp_y(new_x)
-        y_serie += itp_x(new_x)
+        if complex_output:
+            itp_y = interp1d(
+                self.generateXSerie(),
+                np.imag(self.y_serie),
+                kind=kind,
+                copy=False,
+                bounds_error=False,
+                fill_value=0,
+                assume_sorted=True,
+            )
+
+        if complex_output:
+            y_serie = 1j * itp_y(new_x)
+            y_serie += itp_x(new_x)
+        else:
+            y_serie = itp_x(new_x)
 
         return self.__class__(
             name=self.name,

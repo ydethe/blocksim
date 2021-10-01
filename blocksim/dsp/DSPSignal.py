@@ -4,7 +4,7 @@ from scipy import linalg as lin
 import numpy as np
 from numpy import log10, exp, pi, sqrt
 from numpy.fft import fft, fftshift
-from scipy.signal import resample, correlate, lfilter_zi, lfilter, firwin2
+from scipy.signal import correlate, lfilter_zi, lfilter, firwin2
 from .utils import get_window
 
 from .utils import phase_unfold, zadoff_chu, shift
@@ -46,12 +46,13 @@ class DSPSignal(DSPLine, ASetPoint):
         samplingPeriod=None,
         y_serie: np.array = None,
         default_transform=np.real,
+        dtype=np.complex128,
     ):
         ASetPoint.__init__(
             self,
             name=name,
             snames=[name],
-            dtype=np.complex128,
+            dtype=dtype,
         )
         DSPLine.__init__(
             self,
@@ -68,10 +69,36 @@ class DSPSignal(DSPLine, ASetPoint):
         t2: float,
         setpoint: np.array,
     ) -> dict:
+        otp = self.getOutputByName("setpoint")
+        typ = otp.getDataType()
+
         outputs = {}
-        outputs["setpoint"] = np.array([self.getSample(t2)])
+        samp = self.getSample(t2, complex_output=self.hasOutputComplex)
+        outputs["setpoint"] = np.array([samp], dtype=typ)
 
         return outputs
+
+    @classmethod
+    def fromRandom(
+        cls, name: str, samplingPeriod: int, size: int, seed: int = None
+    ) -> "DSPSignal":
+        if not seed is None:
+            np.random.seed(seed=seed)
+
+        bs = np.random.randint(low=0, high=2, size=size)
+
+        sig = cls(
+            name=name,
+            samplingPeriod=samplingPeriod,
+            samplingStart=0,
+            y_serie=bs,
+            default_transform=np.real,
+            dtype=np.int64,
+        )
+
+        sig.createParameter(name="seed", value=seed)
+
+        return sig
 
     @classmethod
     def fromLinearFM(
@@ -401,6 +428,18 @@ class DSPSignal(DSPLine, ASetPoint):
         """
         return phase_unfold(self.y_serie, eps=eps)
 
+    @property
+    def hasOutputComplex(self) -> bool:
+        otp = self.getOutputByName("setpoint")
+        typ = otp.getDataType()
+
+        if typ == np.complex128 or typ == np.complex64:
+            comp_out = True
+        else:
+            comp_out = False
+
+        return comp_out
+
     def correlate(self, y: "DSPSignal", win="ones") -> "DSPSignal":
         """Correlates the signal with another signal
 
@@ -448,14 +487,18 @@ class DSPSignal(DSPLine, ASetPoint):
             dt = self.samplingPeriod
         elif self.samplingPeriod > y.samplingPeriod:
             x_sync = self.resample(
-                samplingStart=self.samplingStart, samplingPeriod=y.samplingPeriod
+                samplingStart=self.samplingStart,
+                samplingPeriod=y.samplingPeriod,
+                complex_output=self.hasOutputComplex,
             )
             x_buf = x_sync.y_serie
             y_buf = y.y_serie
             dt = y.samplingPeriod
         else:
             y_sync = y.resample(
-                samplingStart=y.samplingStart, samplingPeriod=self.samplingPeriod
+                samplingStart=y.samplingStart,
+                samplingPeriod=self.samplingPeriod,
+                complex_output=self.hasOutputComplex,
             )
             x_buf = self.y_serie
             y_buf = y_sync.y_serie
@@ -563,6 +606,21 @@ class DSPSignal(DSPLine, ASetPoint):
             Zero means that the first window starts when the signal starts
 
         """
+        otp = self.getOutputByName("setpoint")
+        typ = otp.getDataType()
+
+        if (
+            typ == np.complex128
+            or typ == np.complex160
+            or typ == np.complex192
+            or typ == np.complex256
+            or typ == np.complex512
+            or typ == np.complex64
+        ):
+            comp_out = True
+        else:
+            comp_out = False
+
         s_start = self.samplingStart
         s_stop = self.samplingStop
         w_start = offset + s_start
@@ -584,6 +642,7 @@ class DSPSignal(DSPLine, ASetPoint):
                 samplingStart=w_start + k * period,
                 samplingPeriod=dt,
                 samplingStop=w_start + (k + 1) * period,
+                complex_output=self.hasOutputComplex,
             )
             res = res + chunk.forceSamplingStart(0) / n_win
 

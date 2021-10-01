@@ -7,16 +7,10 @@ from scipy.signal import firwin2, firwin, lfilter_zi, lfilter
 from ..core.Frame import Frame
 from ..core.Node import AComputer, Input, Output
 from .DSPSignal import DSPSignal
+from .CircularBuffer import CircularBuffer
 
 
-__all__ = ["CircularBuffer", "DSPFilter"]
-
-
-class CircularBuffer(deque):
-    def __init__(self, size=0):
-        super(CircularBuffer, self).__init__(maxlen=size)
-        for _ in range(size):
-            self.append(0.0)
+__all__ = ["DSPFilter"]
 
 
 class WeightedOutput(Output):
@@ -39,7 +33,8 @@ class WeightedOutput(Output):
 
     def processSample(self, sample: np.complex128) -> np.complex128:
         self.__buf.append(sample)
-        buf = np.array(self.__buf, dtype=self.getDataType())
+        typ = self.getDataType()
+        buf = self.__buf.getAsArray(dtype=typ)
         res = buf @ self.__taps
         return res
 
