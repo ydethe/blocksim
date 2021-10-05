@@ -1,7 +1,7 @@
 import numpy as np
 
-from blocksim.control.Sensors import ASensors
-from blocksim.utils import quat_to_matrix, quat_to_euler
+from ..control.Sensors import ASensors
+from ..utils import quat_to_matrix, quat_to_euler
 
 
 class IMU(ASensors):

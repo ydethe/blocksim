@@ -3,9 +3,9 @@ from typing import Iterable
 import numpy as np
 import scipy.linalg as lin
 
-from blocksim.core.Node import Input
-from blocksim.control.System import G6DOFSystem
-from blocksim.utils import vecBodyToEarth, vecEarthToBody
+from ..core.Node import Input
+from ..control.System import G6DOFSystem
+from ..utils import vecBodyToEarth, vecEarthToBody
 
 
 # name_of_outputs=['px','py','pz','vx','vy','vz','roll','pitch','yaw','wx','wy','wz']

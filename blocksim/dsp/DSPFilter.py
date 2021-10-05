@@ -136,15 +136,14 @@ class DSPFilter(AComputer):
           The filtered signal
 
         """
-        fs = 1 / s.samplingPeriod
-        b = self.generateCoefficients(fs)
+        b = self.generateCoefficients()
 
         zi = lfilter_zi(b, [1])
         z, _ = lfilter(b, [1], s.y_serie, zi=zi * s.y_serie[0])
 
         return DSPSignal(
             name="Filtered %s" % s.name,
-            samplingStart=s.samplingStart - self.numtaps / fs / 2,
+            samplingStart=s.samplingStart - self.getTransientPhaseDuration(),
             samplingPeriod=s.samplingPeriod,
             y_serie=z,
             default_transform=np.real,

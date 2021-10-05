@@ -2,11 +2,11 @@ import numpy as np
 from numpy import sqrt, sign, pi, exp, cos, sin, log2
 
 from .. import logger
-from ..core.Node import AComputer
+from .ADSPComputer import ADSPComputer
 from .CircularBuffer import CircularBuffer
 
 
-class PSKMapping(AComputer):
+class PSKMapping(ADSPComputer):
     """Phase Shift Keying modulator.
     To determine the type of modulation, the *mapping* argument must tell what keying is used :
     For example, in 8-PSK, the block '010' in decimal is 2. So the phase is mapping[2], and the symbol is exp(1j*mapping[2])
@@ -28,23 +28,25 @@ class PSKMapping(AComputer):
     __slots__ = []
 
     def __init__(self, name: str, mapping: list, output_size: int = 1):
-        AComputer.__init__(self, name=name)
-
         mu = int(np.round(log2(len(mapping)), 0))
         if 2 ** mu != len(mapping):
             raise ValueError("Mapping size must be a power of 2. Got %i" % len(mapping))
 
+        ADSPComputer.__init__(
+            self,
+            name=name,
+            input_name="input",
+            output_name="output",
+            input_size=output_size * mu,
+            output_size=output_size,
+            input_dtype=np.int64,
+            output_dtype=np.complex128,
+        )
+
         self.createParameter("mu", value=mu, read_only=True)
         self.createParameter("mapping", value=np.array(mapping), read_only=True)
         self.createParameter("cmapping", value=exp(1j * self.mapping), read_only=True)
-        self.createParameter("output_size", value=output_size, read_only=True)
-
-        self.defineInput("input", shape=output_size * mu, dtype=np.int64)
-        self.defineOutput(
-            "output",
-            snames=["s%i" % i for i in range(output_size)],
-            dtype=np.complex128,
-        )
+        self.createParameter("bmapping", value=2 ** np.arange(mu), read_only=True)
 
     def compute_outputs(
         self,
@@ -53,41 +55,26 @@ class PSKMapping(AComputer):
         input: np.array,
         output: np.array,
     ) -> dict:
-        symbols = np.empty(self.output_size, dtype=np.complex128)
+        if len(input.shape) == 1:
+            n = 1
+            ny = self.input_size
+            input = input.reshape((ny, n))
+        else:
+            ny, n = input.shape
+
+        symbols = np.empty((self.output_size, n), dtype=np.complex128)
 
         for k in range(self.output_size):
-            bits = input[k * self.mu : (k + 1) * self.mu]
-            idx = 2 ** np.arange(self.mu) @ bits
-            symbols[k] = self.cmapping[idx]
+            bits = input[k * self.mu : (k + 1) * self.mu, :]
+            idx = self.bmapping @ bits
+            symbols[k, :] = self.cmapping[idx]
+
+        if n == 1:
+            symbols = symbols.reshape(self.output_size)
 
         outputs = {}
         outputs["output"] = symbols
         return outputs
-
-    def process(self, data: np.array) -> np.array:
-        """Processes a bitstream by calling compute_outputs.
-        This proccessing removes the initial null symbol,
-        due to the fact that the modulator is not initialised.
-
-        Args:
-          data
-            A bitstream of length n, n even. Bits are either 0, or 1
-
-        Returns:
-          An array of QPSK symbols
-
-        """
-        ny, n = data.shape
-        assert ny == self.output_size * self.mu
-
-        res = np.empty((self.output_size, n), dtype=np.complex128)
-        for k in range(n):
-            outputs = self.compute_outputs(t1=0, t2=0, input=data[:, k], output=None)
-            symb = outputs["output"]
-
-            res[:, k] = symb
-
-        return res
 
     def plotConstellation(self, axe):
         theta = np.linspace(0, 2 * pi, 100)
@@ -106,7 +93,7 @@ class PSKMapping(AComputer):
         axe.plot(x_circle, y_circle, color="black", linestyle="--")
 
 
-class PSKDemapping(AComputer):
+class PSKDemapping(ADSPComputer):
     """Phase Shift Keying demodulator.
     To determine the type of modulation, the *mapping* argument must tell what keying is used :
     For example, in 8-PSK, the block '010' in decimal is 2. So the phase is mapping[2], and the symbol is exp(1j*mapping[2])
@@ -129,8 +116,6 @@ class PSKDemapping(AComputer):
     __slots__ = []
 
     def __init__(self, name: str, mapping: list, output_size: int = 1):
-        AComputer.__init__(self, name=name)
-
         mu = int(np.round(log2(len(mapping)), 0))
         if 2 ** mu != len(mapping):
             raise ValueError(
@@ -143,15 +128,20 @@ class PSKDemapping(AComputer):
                 % (name, output_size, mu)
             )
 
+        ADSPComputer.__init__(
+            self,
+            name=name,
+            input_name="input",
+            output_name="output",
+            input_size=output_size // mu,
+            output_size=output_size,
+            input_dtype=np.complex128,
+            output_dtype=np.int64,
+        )
+
         self.createParameter("mu", value=mu, read_only=True)
         self.createParameter("mapping", value=np.array(mapping), read_only=True)
         self.createParameter("cmapping", value=exp(1j * self.mapping), read_only=True)
-        self.createParameter("output_size", value=output_size, read_only=True)
-
-        self.defineInput("input", shape=1, dtype=np.complex128)
-        self.defineOutput(
-            "output", snames=["bit%i" % i for i in range(output_size)], dtype=np.int64
-        )
 
     def compute_outputs(
         self,
@@ -160,42 +150,26 @@ class PSKDemapping(AComputer):
         input: np.array,
         output: np.array,
     ) -> dict:
-        bits = np.empty(self.output_size, dtype=np.int64)
+        if len(input.shape) == 1:
+            n = 1
+            ny = self.input_size
+            input = input.reshape((ny, n))
+        else:
+            ny, n = input.shape
 
-        for k in range(self.output_size // self.mu):
-            symb_in = input[k]
-            isymb = np.argmin(np.abs(self.cmapping - symb_in))
-            ss = bin(isymb)[2:].zfill(self.mu)
-            symb_bits = np.array([int(x) for x in ss[::-1]], dtype=np.int64)
-            bits[k * self.mu : (k + 1) * self.mu] = symb_bits
+        bits = np.empty((self.output_size, n), dtype=np.int64)
+
+        for kech in range(n):
+            for k in range(self.input_size):
+                symb_in = input[k, kech]
+                isymb = np.argmin(np.abs(self.cmapping - symb_in))
+                ss = bin(isymb)[2:].zfill(self.mu)
+                symb_bits = np.array([int(x) for x in ss[::-1]], dtype=np.int64)
+                bits[k * self.mu : (k + 1) * self.mu, kech] = symb_bits
+
+        if n == 1:
+            bits = bits.reshape(self.output_size)
 
         outputs = {}
         outputs["output"] = bits
         return outputs
-
-    def process(self, symbols: np.array) -> np.array:
-        """Processes a bitstream by calling compute_outputs.
-        This proccessing removes the initial null bits,
-        due to the fact that the demodulator is not initialised.
-
-        Args:
-          symbols
-            An array of QPSK symbols
-
-        Returns:
-          A bitstream of length n, n even. Bits are either 0, or 1
-
-        """
-        ny, n = symbols.shape
-        assert ny == self.output_size // self.mu
-
-        res = np.empty((self.output_size, n), dtype=np.int64)
-
-        for k in range(n):
-            outputs = self.compute_outputs(t1=0, t2=0, input=symbols[:, k], output=None)
-
-            bits = outputs["output"]
-
-            res[:, k] = bits
-
-        return res

@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.linalg as lin
 
-from blocksim.control.Controller import AController
+from ..control.Controller import AController
 
 
 class VTOLPilot(AController):

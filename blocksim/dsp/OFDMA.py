@@ -1,27 +1,32 @@
 import numpy as np
 from numpy import sqrt, sign, pi, exp
+from numpy.fft import fft, ifft
 
 from .. import logger
-from blocksim.core.Node import AComputer
+from .ADSPComputer import ADSPComputer
 
 
-class OFDMMapping(AComputer):
+class OFDMMapping(ADSPComputer):
     __slots__ = []
 
     def __init__(
         self,
         name: str,
-        allCarriers: list,
+        output_size: int,
+        allCarriers: int,
         pilotCarriers: list,
         dataCarriers: list,
         pilotValue: np.complex128,
     ):
-        AComputer.__init__(self, name=name)
-        self.defineInput("input", shape=(len(dataCarriers),), dtype=np.complex128)
-        self.defineOutput(
-            "output",
-            snames=["x%i" % i for i in range(len(allCarriers))],
-            dtype=np.complex128,
+        ADSPComputer.__init__(
+            self,
+            name=name,
+            input_name="input",
+            output_name="output",
+            input_size=len(dataCarriers),
+            output_size=output_size,
+            input_dtype=np.complex128,
+            output_dtype=np.complex128,
         )
         self.createParameter("allCarriers", value=allCarriers)
         self.createParameter("pilotCarriers", value=pilotCarriers)
@@ -35,42 +40,64 @@ class OFDMMapping(AComputer):
         input: np.array,
         output: np.array,
     ) -> dict:
-        K = len(self.allCarriers)
-        nsymb = 1
+        if len(input.shape) == 1:
+            nsymb = 1
+            ny = self.input_size
+            input = input.reshape((ny, nsymb))
+        else:
+            ny, nsymb = input.shape
+
+        K = self.allCarriers
 
         # the overall K subcarriers
-        symbols = np.zeros(K, dtype=np.complex128)
+        data = np.zeros((K, nsymb), dtype=np.complex128)
 
         # allocate the pilot subcarriers
-        symbols[self.pilotCarriers, :] = self.pilotValue
+        data[self.pilotCarriers, :] = self.pilotValue
 
         # allocate the data subcarriers
-        symbols[self.dataCarriers, :] = input
+        data[self.dataCarriers, :] = input
+
+        s = np.empty((self.output_size, nsymb), dtype=np.complex128)
+        for k in range(nsymb):
+            # Calcul du symbole
+            symb = ifft(data[:, k], n=self.output_size)
+
+            # On met le symbole OFDM dans le signal
+            s[:, k] = symb
+
+        if nsymb == 1:
+            s = s.reshape(self.output_size)
 
         outputs = {}
-        outputs["output"] = symbols
+        outputs["output"] = s
         return outputs
 
 
-class OFDMDemapping(AComputer):
+class OFDMDemapping(ADSPComputer):
     __slots__ = []
 
     def __init__(
         self,
         name: str,
-        allCarriers: list,
+        input_size: int,
+        allCarriers: int,
         pilotCarriers: list,
         dataCarriers: list,
         pilotValue: np.complex128,
     ):
-        AComputer.__init__(self, name=name)
-        self.defineInput("input", shape=(len(allCarriers),), dtype=np.complex128)
-        self.defineOutput(
-            "output",
-            snames=["x%i" % i for i in range(len(dataCarriers))],
-            dtype=np.complex128,
+        ADSPComputer.__init__(
+            self,
+            name=name,
+            input_name="input",
+            output_name="output",
+            input_size=input_size,
+            output_size=len(dataCarriers),
+            input_dtype=np.complex128,
+            output_dtype=np.complex128,
         )
-        self.createParameter("allCarriers", value=list(allCarriers))
+
+        self.createParameter("allCarriers", value=allCarriers)
         self.createParameter("pilotCarriers", value=list(pilotCarriers))
         self.createParameter("dataCarriers", value=list(dataCarriers))
         self.createParameter("pilotValue", value=pilotValue)
@@ -82,7 +109,24 @@ class OFDMDemapping(AComputer):
         input: np.array,
         output: np.array,
     ) -> dict:
-        QAM_payload = input[self.dataCarriers]
+        if len(input.shape) == 1:
+            nsymb = 1
+            ny = self.input_size
+            input = input.reshape((ny, nsymb))
+        else:
+            ny, nsymb = input.shape
+
+        K = self.allCarriers
+
+        demod = np.empty((K, nsymb), dtype=np.complex128)
+        for k in range(nsymb):
+            buf = input[:, k]
+            demod[:, k] = fft(buf)[:K]
+
+        QAM_payload = demod[self.dataCarriers]
+
+        if nsymb == 1:
+            QAM_payload = QAM_payload.reshape(self.output_size)
 
         outputs = {}
         outputs["output"] = QAM_payload
