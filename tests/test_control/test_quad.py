@@ -1,5 +1,5 @@
-import os
 import sys
+from pathlib import Path
 import unittest
 from typing import Iterable
 from collections import OrderedDict
@@ -23,7 +23,7 @@ from blocksim.Quadcopter.Quadri import Quadri
 from blocksim.Quadcopter.AttPilot import AttPilot
 from blocksim.Quadcopter.Motor import Motor
 
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 

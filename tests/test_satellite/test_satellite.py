@@ -1,5 +1,5 @@
 import sys
-import os
+from pathlib import Path
 import unittest
 from datetime import datetime, timezone
 
@@ -8,14 +8,14 @@ from numpy import cos, sin, sqrt, exp, pi
 from matplotlib import pyplot as plt
 import pytest
 
-sys.path.insert(0, os.path.dirname(__file__))
-from TestBase import TestBase
-
 from blocksim.constants import Req, omega
 from blocksim.source.Satellite import Satellite
 from blocksim.source.Trajectory import Trajectory
 from blocksim.EarthPlotter import EarthPlotter
 from blocksim.Simulation import Simulation
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from TestBase import TestBase
 
 
 class TestSatellite(TestBase):
@@ -40,7 +40,8 @@ class TestSatellite(TestBase):
         pv = satellite.compute_outputs(0, t, subpoint=None, itrf=None)["itrf"]
 
     def test_iss(self):
-        satellite = Satellite.fromTLE("tests/iss.tle")
+        pth = Path(__file__).parent / "iss.tle"
+        satellite = Satellite.fromTLE(str(pth))
         pv0 = satellite.compute_outputs(0, 0, subpoint=None, itrf=None)["itrf"]
 
         dt = satellite.orbit_period
@@ -55,7 +56,9 @@ class TestSatellite(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
     def test_ground_track(self):
         pt = (-74.0542275, 40.7004153)
-        iss = Satellite.fromTLE("tests/iss.tle")
+
+        pth = Path(__file__).parent / "iss.tle"
+        iss = Satellite.fromTLE(str(pth))
 
         sim = Simulation()
         sim.addComputer(iss)

@@ -1,5 +1,5 @@
 import sys
-import os
+from pathlib import Path
 import unittest
 from datetime import datetime, timezone
 from collections import OrderedDict
@@ -10,15 +10,15 @@ from skyfield.api import utc
 from matplotlib import pyplot as plt
 import pytest
 
-sys.path.insert(0, os.path.dirname(__file__))
-from TestBase import TestBase
-
 from blocksim.control.Route import Group
 from blocksim.source.Satellite import createSatellites
 from blocksim.control.GNSSTracker import GNSSTracker
 from blocksim.control.GNSSReceiver import GNSSReceiver
 from blocksim.Simulation import Simulation
 from blocksim.utils import geodetic_to_itrf, rad
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from TestBase import TestBase
 
 
 class TestGNSS(TestBase):
@@ -28,7 +28,8 @@ class TestGNSS(TestBase):
         tsync = datetime.strptime(sts, fmt)
         tsync = tsync.replace(tzinfo=utc)
 
-        satellites = createSatellites("tests/galileo.tle", tsync)
+        pth = Path(__file__).parent / "galileo.tle"
+        satellites = createSatellites(str(pth), tsync)
         nsat = len(satellites)
 
         lon = 1.4415632156260192

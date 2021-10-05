@@ -1,5 +1,5 @@
-import os
 import sys
+from pathlib import Path
 import unittest
 
 import numpy as np
@@ -14,8 +14,7 @@ from blocksim.control.Sensors import LinearSensors
 from blocksim.utils import quat_to_euler
 from blocksim.Graphics import plotFromLogger
 
-
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 

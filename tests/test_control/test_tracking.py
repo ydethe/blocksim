@@ -1,5 +1,5 @@
-import os
 import sys
+from pathlib import Path
 import unittest
 
 import numpy as np
@@ -16,7 +16,7 @@ from blocksim.Graphics import FigureSpec, createFigureFromSpec, plotSpectrogram
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp.utils import phase_unfold
 
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 

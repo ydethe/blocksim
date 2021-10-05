@@ -1,14 +1,11 @@
 import sys
-import os
+from pathlib import Path
 import unittest
 
 import numpy as np
 from numpy import cos, sin, sqrt, exp
 from matplotlib import pyplot as plt
 import pytest
-
-sys.path.insert(0, os.path.dirname(__file__))
-from TestBase import TestBase, plotAnalyticsolution
 
 from blocksim.Graphics import plotDSPLine
 from blocksim.core.Node import Frame
@@ -17,6 +14,9 @@ from blocksim.control.System import ASystem
 from blocksim.control.Controller import PIDController
 from blocksim.core.Generic import GenericComputer
 from blocksim.Simulation import Simulation
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from TestBase import TestBase, plotAnalyticsolution
 
 
 class System(ASystem):

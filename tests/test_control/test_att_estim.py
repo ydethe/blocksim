@@ -1,6 +1,6 @@
-import os
 import sys
 import unittest
+from pathlib import Path
 
 import numpy as np
 import scipy.linalg as lin
@@ -16,8 +16,7 @@ from blocksim.control.Estimator import MadgwickFilter, MahonyFilter
 from blocksim.core.Node import AComputer
 from blocksim.utils import deg, rad
 
-
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 

@@ -1,5 +1,5 @@
-import os
 import sys
+from pathlib import Path
 import unittest
 from collections import OrderedDict
 
@@ -13,7 +13,7 @@ from blocksim.dsp.PSKMod import PSKMapping, PSKDemapping
 from blocksim.dsp.DSPAWGN import DSPAWGN
 from blocksim.Simulation import Simulation
 
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
@@ -69,7 +69,7 @@ class TestBPSK(TestBase):
         m = log.getValue("awgn_noisy_n0")
 
         ref = log.getValue("bs0_setpoint_bs0")
-        est = log.getValue("demap_output_bit0")
+        est = log.getValue("demap_output_s0")
 
         ber = len(np.where(ref != est)[0]) / ntot
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestBPSK()
-    # a.test_bpsk()
+    a.test_bpsk()
     a.test_bpsk_noise()
 
     plt.show()

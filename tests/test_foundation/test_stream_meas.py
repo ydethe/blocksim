@@ -1,5 +1,5 @@
-import os
 import sys
+from pathlib import Path
 import unittest
 
 import numpy as np
@@ -9,15 +9,15 @@ from blocksim.control.Sensors import StreamCSVSensors
 from blocksim.control.SetPoint import Step
 from blocksim.Simulation import Simulation
 
-
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
 class TestStreamMeas(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
     def test_stream_csv_meas(self):
-        cpt = StreamCSVSensors("cpt", pth="tests/test_stream_meas.csv")
+        pth = Path(__file__).parent / "test_stream_meas.csv"
+        cpt = StreamCSVSensors("cpt", pth=str(pth))
         cpt.loadFile()
 
         stp = Step(name="stp", cons=np.array([1.0]), snames=["x"])

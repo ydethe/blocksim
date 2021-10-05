@@ -1,5 +1,5 @@
-import os
 import sys
+from pathlib import Path
 import unittest
 from collections import OrderedDict
 
@@ -14,7 +14,7 @@ from blocksim.dsp.DSPAWGN import DSPAWGN
 from blocksim.control.Route import Group
 from blocksim.Simulation import Simulation
 
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
@@ -83,7 +83,7 @@ class TestQPSK(TestBase):
         const = exp(1j * mapping)
 
         ref = log.getValue("beven_setpoint_beven")
-        est = log.getValue("demap_output_bit0")
+        est = log.getValue("demap_output_s0")
 
         self.assertAlmostEqual(np.max(np.abs(ref - est)), 0, delta=1e-9)
 
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestQPSK()
-    # a.test_qpsk()
+    a.test_qpsk()
     a.test_qpsk_noise()
 
     plt.show()
