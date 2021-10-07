@@ -33,8 +33,8 @@ class CircularBuffer(deque):
           >>> a = CircularBuffer(size=5)
           >>> a.append(1)
           >>> a.append(2)
-          >>> a.getAsArray(dtype=np.int64)
-          array([0, 0, 0, 1, 2], dtype=int64)
+          >>> a.getAsArray(dtype=np.int64) # doctest: +ELLIPSIS
+          array([0, 0, 0, 1, 2]...
 
         """
         return np.array(self, dtype=dtype)
