@@ -58,6 +58,6 @@ class Trajectory(object):
         lat = np.empty(ns)
         lon = np.empty(ns)
         for k, pos in enumerate(self.iterPosition()):
-            lat[k], lon[k], alt[k] = itrf_to_geodetic(pos)
+            lat[k], lon[k], _ = itrf_to_geodetic(pos)
 
         return lon, lat
