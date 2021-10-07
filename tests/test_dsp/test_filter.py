@@ -80,8 +80,10 @@ class TestFilter(TestBase):
         y = y_sim.forceSamplingStart(-filt.getTransientPhaseDuration())
 
         y_direct = filt.apply(s1)
-        err = lin.norm((y_direct - y).resample(samplingStart=0.4).y_serie)
-        self.assertAlmostEqual(err, 0, delta=0)
+        diff = y_direct - y
+        crop = diff.resample(samplingStart=0.05)
+        err = np.max(np.abs(crop.y_serie))
+        self.assertAlmostEqual(err, 0, delta=0.2)
 
         fig = plt.figure()
         axe = fig.add_subplot(111)
