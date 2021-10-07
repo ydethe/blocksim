@@ -21,9 +21,9 @@ from blocksim.Simulation import Simulation
 from blocksim.control.SetPoint import Step, Rectangular
 from blocksim.utils import quat_to_matrix, quat_to_euler
 from blocksim.control.Route import Group, Split
-from blocksim.Quadcopter.Quadri import Quadri
-from blocksim.Quadcopter.AttPilot import AttPilot
-from blocksim.Quadcopter.Motor import Motor
+from blocksim.quadcopter.Quadri import Quadri
+from blocksim.quadcopter.AttPilot import AttPilot
+from blocksim.quadcopter.Motor import Motor
 
 ###############################################################################
 # Construction of the simulation
