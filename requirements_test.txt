@@ -12,5 +12,6 @@ skyfield==1.39
 jplephem==2.16
 astropy==4.1
 parse==1.19.0
-scikit-dsp-comm==2.0.0
+# scikit-dsp-comm==2.0.0
 panda3d==1.10.10
+scikit-commpy==0.6.0

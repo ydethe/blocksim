@@ -77,6 +77,13 @@ class PSKMapping(ADSPComputer):
         return outputs
 
     def plotConstellation(self, axe):
+        """Plots the PSK constellation on a matplotlib axe
+
+        Args:
+          axe
+            The axe to draw on
+
+        """
         theta = np.linspace(0, 2 * pi, 100)
         x_circle = cos(theta)
         y_circle = sin(theta)

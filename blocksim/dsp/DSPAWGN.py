@@ -51,6 +51,13 @@ class DSPAWGN(AComputer):
         self.setCovariance(cov)
 
     def setCovariance(self, cov: np.array):
+        """Sets the covariance matrix of the gaussian distribution
+
+        Args:
+          cov
+            Covariance matrix
+
+        """
         otp = self.getOutputByName("noisy")
         n = otp.getDataShape()[0]
         if cov.shape != (n, n):
@@ -58,6 +65,13 @@ class DSPAWGN(AComputer):
         otp.cov = cov
 
     def setMean(self, mean: np.array):
+        """Sets the mean vector of the gaussian distribution
+
+        Args:
+          mean
+            Mean vector matrix
+
+        """
         otp = self.getOutputByName("noisy")
         n = otp.getDataShape()[0]
         if mean.shape[0] != n:
@@ -65,10 +79,22 @@ class DSPAWGN(AComputer):
         otp.mean = mean
 
     def getCovariance(self) -> np.array:
+        """Returns the covariance matrix of the gaussian distribution
+
+        Returns:
+          Covariance matrix
+
+        """
         otp = self.getOutputByName("noisy")
         return otp.cov
 
     def getMean(self) -> np.array:
+        """Returns the mean vector of the gaussian distribution
+
+        Returns:
+          Mean vector matrix
+
+        """
         otp = self.getOutputByName("noisy")
         return otp.mean
 

@@ -253,8 +253,7 @@ class Logger(object):
     def reset(self):
         """Resets the element internal state to zero."""
         self._data = defaultdict(list)
-        if not self._dst is None:
-            self._dst.truncate(0)
+        self.closeFile()
 
     def log(self, name: str, val: float):
         """Log a value for a variable. If *name* is '_', nothing is logged

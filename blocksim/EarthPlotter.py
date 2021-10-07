@@ -8,7 +8,7 @@ import numpy as np
 from numpy import sqrt, pi, cos, sin
 
 from .constants import *
-
+from .source.Trajectory import Trajectory
 
 __all__ = ["EarthPlotter"]
 
@@ -145,3 +145,19 @@ class EarthPlotter(object):
         # None intercalés
 
         axe.plot(lon, lat, **kwargs)
+
+    def plotTrajectory(self, axe, traj: Trajectory, **kwargs):
+        """
+        Draws the ground track on an axe compatible with cartopy.
+
+        Args:
+          axe
+            A matplotlib axe, compatible with cartopy
+          traj
+            A :class:`blocksim.source.Trajectory.Trajectory` instance
+          **kwargs
+            Matplotlib options for the plot
+
+        """
+        lon, lat = traj.getGroundTrack()
+        self.plotGroundTrack(axe, lon, lat, **kwargs)

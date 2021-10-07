@@ -6,52 +6,21 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pytest
 
+from blocksim import logger
 from blocksim.Logger import Logger
-from blocksim.Graphics import plotFromLogger
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
 class TestLogger(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
-    def test_logger(self):
-        log = Logger()
-
-        dt = 0.01
-        f = 11
-        ns = 1000
-
-        for i in range(ns):
-            log.log("t", i * dt)
-            log.log("x", np.sin(i * dt * f * 2 * np.pi + 1))
-
-        tps = np.arange(ns) * dt
-        x = np.sin(tps * f * 2 * np.pi + 1)
-        err_t = np.max(np.abs(tps - log.getValue("t")))
-        err_x = np.max(np.abs(x - log.getValue("x")))
-        self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
-        self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
-
-        fig = plt.figure()
-        fig.suptitle = "Essai logger"
-        axe = fig.add_subplot(111)
-        axe.grid(True)
-
-        fc = 5.0
-        fr = log.getFilteredValue("x", 64, 2 * fc * dt)
-
-        plotFromLogger(log, "t", "x", axe, label="brut")
-        plotFromLogger(log, "t", fr, axe, label="filtré")
-        axe.legend(loc="best")
-
-        return fig
-
     def test_save_load_ascii(self):
         log = Logger()
         self.assertFalse(log.hasOutputLoggerFile())
 
-        log.setOutputLoggerFile("tests/test_ascii.log")
+        pth = Path(__file__).parent / "test_ascii.log"
+
+        log.setOutputLoggerFile(str(pth))
         self.assertTrue(log.hasOutputLoggerFile())
 
         dt = 0.01
@@ -62,10 +31,22 @@ class TestLogger(TestBase):
         for i in range(ns):
             log.log("x", np.sin(i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
+            log.log("_", 0)  # Variable named '_' is not recorded
+
+        log.reset()
+        log.openFile()
+        for i in range(ns):
+            log.log("x", np.sin(i * dt * f * 2 * np.pi + 1))
+            log.log("t", i * dt)
+
         del log
 
         log2 = Logger()
-        log2.loadLoggerFile("tests/test_ascii.log")
+        log2.loadLoggerFile(str(pth))
+
+        vars = log2.getParametersName()
+        self.assertIn("t", vars)
+        self.assertIn("x", vars)
 
         tps = np.arange(ns) * dt
         x = np.sin(tps * f * 2 * np.pi + 1)
@@ -78,7 +59,9 @@ class TestLogger(TestBase):
         log = Logger()
         self.assertFalse(log.hasOutputLoggerFile())
 
-        log.setOutputLoggerFile("tests/test_bin.log", binary=True)
+        pth = Path(__file__).parent / "test_bin.log"
+
+        log.setOutputLoggerFile(str(pth), binary=True)
         self.assertTrue(log.hasOutputLoggerFile())
 
         dt = 0.01
@@ -92,7 +75,7 @@ class TestLogger(TestBase):
         del log
 
         log2 = Logger()
-        log2.loadLoggerFile("tests/test_bin.log", binary=True)
+        log2.loadLoggerFile(str(pth), binary=True)
 
         tps = np.arange(ns) * dt
         x = np.sin(tps * f * 2 * np.pi + 1)
@@ -101,9 +84,13 @@ class TestLogger(TestBase):
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
         self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
 
+    def test_log_formatter(self):
+        logger.debug("poney")
+
 
 if __name__ == "__main__":
     # unittest.main()
 
     a = TestLogger()
-    a.test_save_load_binary()
+    a.setUp()
+    a.test_save_load_ascii()

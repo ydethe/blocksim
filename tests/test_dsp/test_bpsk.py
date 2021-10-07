@@ -6,6 +6,7 @@ from collections import OrderedDict
 import pytest
 import numpy as np
 from numpy import pi, exp, log10, sqrt
+from scipy import linalg as lin
 from matplotlib import pyplot as plt
 
 from blocksim.dsp.DSPSignal import DSPSignal
@@ -51,6 +52,13 @@ class TestBPSK(TestBase):
             cov=np.array([[0.05]]),
             dtype=np.complex128,
         )
+        self.assertRaises(ValueError, awgn.setCovariance, np.zeros(2))
+        self.assertRaises(ValueError, awgn.setMean, np.zeros(2))
+        err_cov = lin.norm(awgn.getCovariance() - 0.05)
+        err_mean = lin.norm(awgn.getMean() - 0.0)
+        self.assertAlmostEqual(err_mean, 0, 0)
+        self.assertAlmostEqual(err_cov, 0, 0)
+
         psk_dec = PSKDemapping(name="demap", mapping=mapping, output_size=1)
 
         sim.addComputer(bs0)

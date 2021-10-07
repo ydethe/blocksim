@@ -66,13 +66,31 @@ class TestExceptions(TestBase):
 
         self.ctrl = Step("ctrl", snames=["u"], cons=np.zeros(1))
 
-        tps = np.arange(0.0, 10.0, dt)
         self.sim = Simulation()
 
         self.sim.addComputer(self.sys)
         self.sim.addComputer(self.ctrl)
 
     def test_sim_exc(self):
+        tmp = DummyTestElement(
+            name="wrong_name",
+            name_of_outputs=["a"],
+            name_of_inputs=["b"],
+            name_of_states=["c"],
+        )
+        self.assertRaises(ValueError, self.sim.addComputer, tmp)
+
+        tmp2 = DummyTestElement(
+            name="dummy",
+            name_of_outputs=["a", "b"],
+            name_of_inputs=["b"],
+            name_of_states=["c"],
+        )
+        self.sim.addComputer(tmp2)
+        self.assertRaises(
+            IncompatibleShapes, self.sim.connect, "dummy.output", "sys.command"
+        )
+
         self.assertRaises(KeyError, self.sim.getComputerByName, "foo")
 
         self.assertRaises(
@@ -121,6 +139,7 @@ class TestExceptions(TestBase):
         )
         cpt.setMean(np.zeros(2))
         self.assertRaises(ValueError, cpt.setCovariance, np.zeros((3, 2)))
+        self.assertRaises(ValueError, cpt.setMean, np.zeros(5))
 
     def test_logger_exc(self):
         log = self.sim.getLogger()
@@ -178,4 +197,8 @@ class TestExceptions(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+
+    a = TestExceptions()
+    a.setUp()
+    a.test_sim_exc()

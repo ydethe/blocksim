@@ -3,140 +3,115 @@ import unittest
 from pathlib import Path
 
 import numpy as np
+from numpy import pi
 import scipy.linalg as lin
 from matplotlib import pyplot as plt
 import pytest
 
+from blocksim.exceptions import TooWeakAcceleration, TooWeakMagneticField
 from blocksim.Simulation import Simulation
-from blocksim.control.Controller import PIDController
-from blocksim.control.System import ASystem
-from blocksim.control.Sensors import ASensors
+from blocksim.control.System import G6DOFSystem
+from blocksim.control.IMU import IMU
 from blocksim.control.SetPoint import Step
 from blocksim.control.Estimator import MadgwickFilter, MahonyFilter
-from blocksim.core.Node import AComputer
-from blocksim.utils import deg, rad
+from blocksim.utils import deg, rad, euler_to_quat
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
-class IMU(ASensors):
-    __slots__ = []
+class TestMadgwick(TestBase):
+    def setUp(self):
+        super().setUp()
 
-    def __init__(self):
+        ctrl = Step(name="ctrl", snames=["u%i" % i for i in range(6)], cons=np.zeros(6))
+
+        sys = G6DOFSystem("sys")
+
+        imu = IMU(name="imu")
+        cov = np.diag(3 * [np.pi / 180] + 3 * [1e-3 * 9.81] + 3 * [1.0e-6])
+        imu.setCovariance(cov)
         moy = np.zeros(9)
         moy[0] = 0.5 * np.pi / 180
         moy[1] = -1.0 * np.pi / 180
         moy[2] = 1.5 * np.pi / 180
-        cov = np.diag(3 * [np.pi / 180] + 3 * [1e-3 * 9.81] + 3 * [1.0e-6])
-        ASensors.__init__(
-            self,
-            name="imu",
-            shape_state=(9,),
-            snames=[
-                "gx",
-                "gy",
-                "gz",
-                "ax",
-                "ay",
-                "az",
-                "mx",
-                "my",
-                "mz",
-            ],
-        )
-        self.setCovariance(cov)
-        self.setMean(moy)
-
-    def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        measurement: np.array,
-        state: np.array,
-    ) -> dict:
-        outputs = {}
-        outputs["measurement"] = state.copy()
-        return outputs
-
-
-class TSystem(ASystem):
-    __slots__ = []
-
-    def __init__(self):
-        ASystem.__init__(
-            self,
-            name="sys",
-            shape_command=(9,),
-            snames_state=["gx", "gy", "gz", "ax", "ay", "az", "mx", "my", "mz"],
-            method="vode",
-        )
-        self.createParameter(name="w", value=0.0)
-
-    def transition(self, t, x, u):
-        gx, gy, gz, ax, ay, az, mx, my, mz = x
-        dxdt = np.zeros(9)
-        dxdt[3:6] = np.cross(np.array([ax, ay, az]), self.w)
-        dxdt[6:9] = np.cross(np.array([mx, my, mz]), self.w)
-        return dxdt
-
-
-class TestIMU(TestBase):
-    def setUp(self):
-        super().setUp()
-
-        self.dt = 1e-2
-
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
-    def test_madgwick_pitch(self):
-        np.random.seed(134697)
-
-        ctrl = Step(name="ctrl", snames=["u%i" % i for i in range(9)], cons=np.zeros(9))
-
-        angle_ini = -60 * np.pi / 180.0
-        wangle = 10.0 * np.pi / 180.0
-        sys = TSystem()
-        x0 = np.zeros(9)
-
-        # ==================================================
-        # Rotation autour de l'axe de tangage
-        # ==================================================
-        sys.w = np.array([0.0, wangle, 0.0])
-
-        x0[:3] = sys.w
-        x0[3:6] = np.array([-np.sin(angle_ini), 0.0, np.cos(angle_ini)])
-        x0[6:9] = np.array([0.0, 1.0, 0.0])
-
-        sys.setInitialStateForOutput(x0, "state")
-
-        c = IMU()
+        imu.setMean(moy)
 
         est = MadgwickFilter("madg", beta=2.0)
-        est.setMagnetometerCalibration(
-            offset=np.arange(3), softiron_matrix=np.eye(3) / 2
-        )
-        b, m = est.getMagnetometerCalibration()
-        self.assertAlmostEqual(lin.norm(b - np.arange(3)), 0.0, delta=1.0e-6)
-        self.assertAlmostEqual(lin.norm(m - np.eye(3) / 2), 0.0, delta=1.0e-6)
-        est.setMagnetometerCalibration(offset=np.zeros(3), softiron_matrix=np.eye(3))
-
-        tfin = -2 * angle_ini / wangle
-        tps = np.arange(0.0, tfin, self.dt)
 
         sim = Simulation()
 
         sim.addComputer(ctrl)
         sim.addComputer(sys)
-        sim.addComputer(c)
+        sim.addComputer(imu)
         sim.addComputer(est)
 
         sim.connect("ctrl.setpoint", "sys.command")
         sim.connect("sys.state", "imu.state")
         sim.connect("imu.measurement", "madg.measurement")
 
-        sim.simulate(tps, progress_bar=False)
+        self.dt = 1e-2
+        self.sys = sys
+        self.est = est
+        self.sim = sim
 
-        self.log = sim.getLogger()
+    def test_madgwick_exc(self):
+        q = np.array([1.0, 0.0, 0.0, 0.0])
+
+        null_acc_meas = np.zeros(9)
+        null_acc_meas[-1] = 1
+        self.assertRaises(
+            TooWeakAcceleration,
+            self.est.compute_outputs,
+            0,
+            1,
+            measurement=null_acc_meas,
+            state=q,
+            euler=np.zeros(3),
+        )
+
+        null_mag_meas = np.zeros(9)
+        null_mag_meas[3] = 1
+        self.assertRaises(
+            TooWeakMagneticField,
+            self.est.compute_outputs,
+            0,
+            1,
+            measurement=null_mag_meas,
+            state=q,
+            euler=np.zeros(3),
+        )
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_madgwick_pitch(self):
+        angle_ini = -60 * np.pi / 180.0
+        wangle = 10.0 * np.pi / 180.0
+
+        # ==================================================
+        # Rotation autour de l'axe de tangage
+        # ==================================================
+        x0 = np.zeros(13)
+        x0[10:13] = np.array([0.0, wangle, 0.0])
+        q = euler_to_quat(roll=0.0, pitch=angle_ini, yaw=pi / 2)
+        x0[6:10] = q
+        self.sys.setInitialStateForOutput(x0, "state")
+
+        self.est.setMagnetometerCalibration(
+            offset=np.arange(3), softiron_matrix=np.eye(3) / 2
+        )
+        b, m = self.est.getMagnetometerCalibration()
+        self.assertAlmostEqual(lin.norm(b - np.arange(3)), 0.0, delta=1.0e-6)
+        self.assertAlmostEqual(lin.norm(m - np.eye(3) / 2), 0.0, delta=1.0e-6)
+        self.est.setMagnetometerCalibration(
+            offset=np.zeros(3), softiron_matrix=np.eye(3)
+        )
+
+        tfin = -2 * angle_ini / wangle
+        tps = np.arange(0.0, tfin, self.dt)
+
+        self.sim.simulate(tps, progress_bar=False)
+
+        self.log = self.sim.getLogger()
 
         err_t = np.max(np.abs(self.log.getValue("t") - tps))
 
@@ -144,8 +119,8 @@ class TestIMU(TestBase):
         w = angle_ini + tps * wangle
         err_a = np.max(np.abs(self.log.getValue("madg_euler_pitch")[iok] - w[iok]))
 
-        self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
-        self.assertAlmostEqual(err_a, 0.0, delta=0.11)
+        self.assertAlmostEqual(err_t, 0.0, delta=1e-9)
+        self.assertAlmostEqual(err_a, 0.0, delta=5e-2)
 
         return self.plotVerif(
             "Figure 1",
@@ -164,47 +139,24 @@ class TestIMU(TestBase):
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
     def test_madgwick_yaw(self):
-        np.random.seed(134697)
-
-        ctrl = Step(name="ctrl", snames=["u%i" % i for i in range(9)], cons=np.zeros(9))
-
         angle_ini = -60 * np.pi / 180.0
         wangle = 10.0 * np.pi / 180.0
-        sys = TSystem()
-        x0 = np.zeros(9)
 
         # ==================================================
         # Rotation autour de l'axe de lacet
         # ==================================================
-        sys.w = np.array([0.0, 0.0, wangle])
-
-        x0[:3] = sys.w
-        x0[3:6] = np.array([0.0, 0.0, 1.0])
-        x0[6:9] = np.array([np.cos(angle_ini), -np.sin(angle_ini), 0.0])
-
-        sys.setInitialStateForOutput(x0, "state")
-
-        c = IMU()
-
-        est = MadgwickFilter("madg", beta=2.0)
+        x0 = np.zeros(13)
+        x0[10:13] = np.array([0.0, 0.0, wangle])
+        q = euler_to_quat(roll=0.0, pitch=0, yaw=angle_ini)
+        x0[6:10] = q
+        self.sys.setInitialStateForOutput(x0, "state")
 
         tfin = -2 * angle_ini / wangle
         tps = np.arange(0.0, tfin, self.dt)
 
-        sim = Simulation()
+        self.sim.simulate(tps, progress_bar=False)
 
-        sim.addComputer(ctrl)
-        sim.addComputer(sys)
-        sim.addComputer(c)
-        sim.addComputer(est)
-
-        sim.connect("ctrl.setpoint", "sys.command")
-        sim.connect("sys.state", "imu.state")
-        sim.connect("imu.measurement", "madg.measurement")
-
-        sim.simulate(tps, progress_bar=False)
-
-        self.log = sim.getLogger()
+        self.log = self.sim.getLogger()
 
         err_t = np.max(np.abs(self.log.getValue("t") - tps))
 
@@ -212,8 +164,8 @@ class TestIMU(TestBase):
         w = angle_ini + tps * wangle
         err_a = np.max(np.abs(self.log.getValue("madg_euler_yaw")[iok] - w[iok]))
 
-        self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
-        self.assertAlmostEqual(err_a, 0.0, delta=0.06)
+        self.assertAlmostEqual(err_t, 0.0, delta=1.0e-9)
+        self.assertAlmostEqual(err_a, 0.0, delta=5e-2)
 
         return self.plotVerif(
             "Figure 1",
@@ -230,55 +182,99 @@ class TestIMU(TestBase):
             ],
         )
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
-    def test_mahony_pitch(self):
-        np.random.seed(134697)
 
-        ctrl = Step(name="ctrl", snames=["u%i" % i for i in range(9)], cons=np.zeros(9))
+class TestMahony(TestBase):
+    def setUp(self):
+        super().setUp()
 
-        angle_ini = -60 * np.pi / 180.0
-        wangle = 10.0 * np.pi / 180.0
-        sys = TSystem()
-        x0 = np.zeros(9)
+        ctrl = Step(name="ctrl", snames=["u%i" % i for i in range(6)], cons=np.zeros(6))
 
-        # ==================================================
-        # Rotation autour de l'axe de tangage
-        # ==================================================
-        sys.w = np.array([0.0, wangle, 0.0])
+        sys = G6DOFSystem("sys")
 
-        x0[:3] = sys.w
-        x0[3:6] = np.array([-np.sin(angle_ini), 0.0, np.cos(angle_ini)])
-        x0[6:9] = np.array([0.0, 1.0, 0.0])
-
-        sys.setInitialStateForOutput(x0, "state")
-
-        c = IMU()
+        imu = IMU(name="imu")
+        cov = np.diag(3 * [np.pi / 180] + 3 * [1e-3 * 9.81] + 3 * [1.0e-6])
+        imu.setCovariance(cov)
+        moy = np.zeros(9)
+        moy[0] = 0.5 * np.pi / 180
+        moy[1] = -1.0 * np.pi / 180
+        moy[2] = 1.5 * np.pi / 180
+        imu.setMean(moy)
 
         est = MahonyFilter("maho", Kp=0.5, Ki=0.01)
-        est.setMagnetometerCalibration(
-            offset=np.arange(3), softiron_matrix=np.eye(3) / 2
-        )
-        b, m = est.getMagnetometerCalibration()
-        self.assertAlmostEqual(lin.norm(b - np.arange(3)), 0.0, delta=1.0e-6)
-        self.assertAlmostEqual(lin.norm(m - np.eye(3) / 2), 0.0, delta=1.0e-6)
-        est.setMagnetometerCalibration(offset=np.zeros(3), softiron_matrix=np.eye(3))
 
-        tfin = -2 * angle_ini / wangle
-        tps = np.arange(0.0, tfin, self.dt)
         sim = Simulation()
 
         sim.addComputer(ctrl)
         sim.addComputer(sys)
-        sim.addComputer(c)
+        sim.addComputer(imu)
         sim.addComputer(est)
 
         sim.connect("ctrl.setpoint", "sys.command")
         sim.connect("sys.state", "imu.state")
         sim.connect("imu.measurement", "maho.measurement")
 
-        sim.simulate(tps, progress_bar=False)
+        self.dt = 1e-2
+        self.sys = sys
+        self.est = est
+        self.sim = sim
 
-        self.log = sim.getLogger()
+    def test_mahony_exc(self):
+        q = np.array([1.0, 0.0, 0.0, 0.0])
+
+        null_acc_meas = np.zeros(9)
+        null_acc_meas[-1] = 1
+        self.assertRaises(
+            TooWeakAcceleration,
+            self.est.compute_outputs,
+            0,
+            1,
+            measurement=null_acc_meas,
+            state=q,
+            euler=np.zeros(3),
+        )
+
+        null_mag_meas = np.zeros(9)
+        null_mag_meas[3] = 1
+        self.assertRaises(
+            TooWeakMagneticField,
+            self.est.compute_outputs,
+            0,
+            1,
+            measurement=null_mag_meas,
+            state=q,
+            euler=np.zeros(3),
+        )
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_mahony_pitch(self):
+        angle_ini = -60 * np.pi / 180.0
+        wangle = 10.0 * np.pi / 180.0
+
+        # ==================================================
+        # Rotation autour de l'axe de tangage
+        # ==================================================
+        x0 = np.zeros(13)
+        x0[10:13] = np.array([0.0, wangle, 0.0])
+        q = euler_to_quat(roll=0.0, pitch=angle_ini, yaw=pi / 2)
+        x0[6:10] = q
+        self.sys.setInitialStateForOutput(x0, "state")
+
+        self.est.setMagnetometerCalibration(
+            offset=np.arange(3), softiron_matrix=np.eye(3) / 2
+        )
+        b, m = self.est.getMagnetometerCalibration()
+        self.assertAlmostEqual(lin.norm(b - np.arange(3)), 0.0, delta=1.0e-6)
+        self.assertAlmostEqual(lin.norm(m - np.eye(3) / 2), 0.0, delta=1.0e-6)
+        self.est.setMagnetometerCalibration(
+            offset=np.zeros(3), softiron_matrix=np.eye(3)
+        )
+
+        tfin = -2 * angle_ini / wangle
+        tps = np.arange(0.0, tfin, self.dt)
+
+        self.sim.simulate(tps, progress_bar=False)
+
+        self.log = self.sim.getLogger()
 
         err_t = np.max(np.abs(self.log.getValue("t") - tps))
 
@@ -287,8 +283,8 @@ class TestIMU(TestBase):
         w = angle_ini + tps * wangle
         err_a = np.max(np.abs(self.log.getValue("maho_euler_pitch")[iok] - w[iok]))
 
-        self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
-        self.assertAlmostEqual(err_a, 0.0, delta=0.07)
+        self.assertAlmostEqual(err_t, 0.0, delta=1.0e-9)
+        self.assertAlmostEqual(err_a, 0.0, delta=0.08)
 
         return self.plotVerif(
             "Figure 1",
@@ -307,46 +303,24 @@ class TestIMU(TestBase):
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
     def test_mahony_yaw(self):
-        np.random.seed(134697)
-
-        ctrl = Step(name="ctrl", snames=["u%i" % i for i in range(9)], cons=np.zeros(9))
-
         angle_ini = -60 * np.pi / 180.0
         wangle = 10.0 * np.pi / 180.0
-        sys = TSystem()
-        x0 = np.zeros(9)
 
         # ==================================================
         # Rotation autour de l'axe de lacet
         # ==================================================
-        sys.w = np.array([0.0, 0.0, wangle])
-
-        x0[:3] = sys.w
-        x0[3:6] = np.array([0.0, 0.0, 1.0])
-        x0[6:9] = np.array([np.cos(angle_ini), -np.sin(angle_ini), 0.0])
-
-        sys.setInitialStateForOutput(x0, "state")
-
-        c = IMU()
-
-        est = MahonyFilter("maho", Kp=0.5, Ki=0.01)
+        x0 = np.zeros(13)
+        x0[10:13] = np.array([0.0, 0.0, wangle])
+        q = euler_to_quat(roll=0.0, pitch=0, yaw=angle_ini)
+        x0[6:10] = q
+        self.sys.setInitialStateForOutput(x0, "state")
 
         tfin = -2 * angle_ini / wangle
         tps = np.arange(0.0, tfin, self.dt)
-        sim = Simulation()
 
-        sim.addComputer(ctrl)
-        sim.addComputer(sys)
-        sim.addComputer(c)
-        sim.addComputer(est)
+        self.sim.simulate(tps, progress_bar=False)
 
-        sim.connect("ctrl.setpoint", "sys.command")
-        sim.connect("sys.state", "imu.state")
-        sim.connect("imu.measurement", "maho.measurement")
-
-        sim.simulate(tps, progress_bar=False)
-
-        self.log = sim.getLogger()
+        self.log = self.sim.getLogger()
 
         err_t = np.max(np.abs(self.log.getValue("t") - tps))
 
@@ -376,8 +350,8 @@ class TestIMU(TestBase):
 if __name__ == "__main__":
     # unittest.main()
 
-    a = TestIMU()
+    a = TestMadgwick()
     a.setUp()
-    a.test_mahony_pitch()
+    a.test_madgwick_exc()
 
-    plt.show()
+    # plt.show()

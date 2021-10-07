@@ -207,7 +207,7 @@ class Sinusoid(ASetPoint):
         ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
         otp = self.getOutputByName("setpoint")
         shape = otp.getDataShape()
-        otp.setInitialState(np.zeros(shape), dtype=dtype)
+        otp.setInitialState(np.zeros(shape, dtype=dtype))
         self.createParameter("amp", value=np.empty(shape))
         self.createParameter("freq", value=np.empty(shape))
         self.createParameter("pha", value=np.empty(shape))

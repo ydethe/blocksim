@@ -159,27 +159,19 @@ def plotFromLogger(
       The lines drawn by matplotlib
 
     """
-    if log is None:
-        val_x = []
-        val_y = []
+    if type(id_x) == type(""):
+        val_x = log.getValue(id_x)
+    elif hasattr(id_x, "__iter__"):
+        val_x = id_x
     else:
-        if type(id_x) == type(""):
-            val_x = log.getValue(id_x)
-        elif hasattr(id_x, "__iter__"):
-            val_x = id_x
-        else:
-            raise SystemError(
-                u"[ERROR]Unacceptable argument for id_x : %s" % (str(id_x))
-            )
+        raise SystemError(u"[ERROR]Unacceptable argument for id_x : %s" % (str(id_x)))
 
-        if type(id_y) == type(""):
-            val_y = log.getValue(id_y)
-        elif hasattr(id_y, "__iter__"):
-            val_y = id_y
-        else:
-            raise SystemError(
-                u"[ERROR]Unacceptable argument for id_y : %s" % (str(id_y))
-            )
+    if type(id_y) == type(""):
+        val_y = log.getValue(id_y)
+    elif hasattr(id_y, "__iter__"):
+        val_y = id_y
+    else:
+        raise SystemError(u"[ERROR]Unacceptable argument for id_y : %s" % (str(id_y)))
 
     (line,) = axe.plot(val_x, val_y, **kwargs)
 

@@ -5,6 +5,7 @@ from collections import OrderedDict
 
 import numpy as np
 from numpy import cos, sin, sqrt, exp, pi
+from scipy import linalg as lin
 from matplotlib import pyplot as plt
 import pytest
 
@@ -16,7 +17,7 @@ from blocksim.control.Estimator import (
     SteadyStateKalmanFilter,
     TimeInvariantKalmanFilter,
 )
-from blocksim.control.Sensors import LinearSensors
+from blocksim.control.Sensors import LinearSensors, ProportionalSensors
 from blocksim.control.Route import Split
 from blocksim.Simulation import Simulation
 
@@ -51,11 +52,15 @@ class TestKalman(TestBase):
         kal.matQ = np.eye(2) / 10000
         kal.matR = np.eye(1) / 100
 
-        cpt = LinearSensors("cpt", shape_state=(2,), shape_command=(1,), snames=["x"])
+        cpt = ProportionalSensors("cpt", shape_state=(2,), snames=["x"])
         cpt.matC = np.array([1, 0])
-        cpt.matD = np.zeros((1, 1))
         cpt.setCovariance(np.eye(1) / 200)
         cpt.setMean(np.zeros(1))
+
+        err_cov = lin.norm(cpt.getCovariance() - np.eye(1) / 200)
+        err_mean = lin.norm(cpt.getMean() - np.zeros(1))
+        self.assertAlmostEqual(err_cov, 0, delta=1e-9)
+        self.assertAlmostEqual(err_mean, 0, delta=1e-9)
 
         a = 8
         P = -k + 3 * a ** 2 * m
@@ -77,7 +82,6 @@ class TestKalman(TestBase):
         sim.connect("stp.setpoint", "ctl.setpoint")
         sim.connect("ctl.command", "sys.command")
         sim.connect("sys.state", "cpt.state")
-        sim.connect("ctl.command", "cpt.command")
         sim.connect("cpt.measurement", "kal.measurement")
         sim.connect("ctl.command", "kal.command")
         sim.connect("kal.state", "ctl.estimation")
@@ -186,8 +190,8 @@ class TestKalman(TestBase):
 if __name__ == "__main__":
     unittest.main()
 
-    # a = TestKalman()
-    # a.test_ss_kal()
+    a = TestKalman()
+    a.test_ss_kal()
     # a.test_ti_kal()
 
-    # plt.show()
+    plt.show()

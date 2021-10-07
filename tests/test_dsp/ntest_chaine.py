@@ -1,5 +1,5 @@
-import os
 import sys
+from pathlib import Path
 import unittest
 
 import pytest
@@ -9,103 +9,79 @@ import sk_dsp_comm.digitalcom as dc
 from matplotlib import pyplot as plt
 
 from blocksim import logger
+from blocksim.dsp.utils import createParallelBitstream
+from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp.FEC import FECCoder, FECDecoder
-from blocksim.dsp.SerialParallel import SerialToParallel, ParallelToSerial
 from blocksim.dsp.PSKMod import PSKMapping, PSKDemapping
 from blocksim.dsp.OFDMA import OFDMMapping, OFDMDemapping
-from blocksim.dsp.DFT import IDFT, DFT
-from blocksim.dsp.Channel import AWGNChannel, AWGNChannelEstimator
+from blocksim.Simulation import Simulation
 
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
 class TestChaine(TestBase):
-    def run_nbiot_sim(self, snr, fig=None):
-        fec = FECCoder()
-        fec_bits = fec.process(self.bits)
+    def run_nbiot_sim(self):
+        fs = 1 / (1e-3 / 14)
+        ntot = 101
 
-        sp = SerialToParallel(self.mu)
-        par = sp.process(fec_bits)
+        sim = Simulation()
 
-        qpsk = QPSKMapping()
-        qpsk_payload = qpsk.process(par)
-
-        blocksim = OFDMMapping(
-            self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
-        )
-        ofdm_payload = blocksim.process(qpsk_payload)
-
-        if not fig is None:
-            axe_odfm = fig.add_subplot(311)
-            axe_odfm.grid(True)
-            blocksim.plotOutput(axe=axe_odfm)
-
-        idft = IDFT(self.nsamp)
-        idft_payload = idft.process(ofdm_payload)
-
-        chan = AWGNChannel(self.channelResponse, snr_db=snr, norm_dop_freq=0)
-        rx_sig = chan.process(idft_payload)
-
-        if not fig is None:
-            axe_h_chan = fig.add_subplot(312)
-            axe_h_chan.grid(True)
-            chan.plotTransferFunction(nfft=self.K, axe=axe_h_chan)
-
-        dft = DFT(self.K, self.nsamp)
-        ofdm_payload = dft.process(rx_sig)
-        if not fig is None:
-            dft.plotOutput(axe=axe_odfm)
-
-        chan_est = AWGNChannelEstimator(
-            self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
+        tps = createParallelBitstream(
+            sim=sim, number=6, samplingPeriod=1 / fs, size=ntot
         )
 
-        equalized_payload = chan_est.process(ofdm_payload)
-        if not fig is None:
-            chan_est.plotEstimation(axe=axe_h_chan)
+        fec = FECCoder(name="fec", output_size=18)
+        sim.addComputer(fec)
 
-        blocksim = OFDMDemapping(
-            self.allCarriers, self.pilotCarriers, self.dataCarriers, self.pilotValue
+        mapping = [pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4]
+        qpsk = PSKMapping(name="qpsk", mapping=mapping, output_size=9)
+        sim.addComputer(qpsk)
+
+        K = 12
+        listCarriers = np.arange(K)
+        allCarriers = K
+        pilotCarriers = [1, 5, 9]  # Pilots is every (K/P)th carrier.
+        dataCarriers = np.delete(listCarriers, pilotCarriers)
+        pilotValue = 3 + 3j
+        ofdm_co = OFDMMapping(
+            name="ofmd",
+            output_size=2048,
+            allCarriers=allCarriers,
+            pilotCarriers=pilotCarriers,
+            dataCarriers=dataCarriers,
+            pilotValue=pilotValue,
         )
-        qpsk_payload = blocksim.process(equalized_payload)
+        sim.addComputer(ofdm_co)
 
-        qpsk = QPSKDemapping()
-        par = qpsk.process(qpsk_payload)
-        if not fig is None:
-            axe_qpsk = fig.add_subplot(313)
-            axe_qpsk.grid(True)
-            axe_qpsk.set_aspect("equal")
-            qpsk.plotOutput(axe=axe_qpsk)
+        ofdm_dec = OFDMDemapping(
+            name="demap",
+            input_size=2048,
+            allCarriers=allCarriers,
+            pilotCarriers=pilotCarriers,
+            dataCarriers=dataCarriers,
+            pilotValue=pilotValue,
+        )
+        sim.addComputer(ofdm_dec)
 
-        ps = ParallelToSerial(self.mu)
-        fec_bits = ps.process(par)
+        qpsk_dec = PSKDemapping(name="deqpsk", mapping=mapping, output_size=18)
+        sim.addComputer(qpsk_dec)
 
-        fec = FECDecoder()
-        rx_bits = fec.process(fec_bits)
+        fec_dec = FECDecoder(name="defec", output_size=6)
+        sim.addComputer(fec_dec)
 
-        bit_count, bit_errors = dc.bit_errors(rx_bits, self.bits)
+        sim.connect("grp.grouped", "fec.raw")
+        sim.connect("fec.coded", "qpsk.input")
+        sim.connect("qpsk.output", "ofmd.input")
+        sim.connect("ofmd.output", "demap.input")
+        sim.connect("demap.output", "deqpsk.input")
+        sim.connect("deqpsk.output", "defec.coded")
 
-        return bit_count, bit_errors
-
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 300})
-    def test_chaine(self):
-        snr = 5
-
-        bit_count, bit_errors = self.run_nbiot_sim(snr)
-
-        ber = bit_errors / bit_count
-
-        self.assertAlmostEqual(ber, 0.405, delta=1e-4)
-
-        fig = plt.figure()
-
-        self.run_nbiot_sim(snr, fig)
-
-        fig.tight_layout()
-
-        return fig
+        sim.simulate(tps, progress_bar=True)
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+
+    a = TestChaine()
+    a.run_nbiot_sim()

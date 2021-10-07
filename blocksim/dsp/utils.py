@@ -88,3 +88,41 @@ def shift(register, feedback, output):
     register[0] = fb
 
     return out
+
+
+def createParallelBitstream(
+    sim: "Simulation",
+    number: int,
+    samplingPeriod: float,
+    size: int,
+    names: list = None,
+    seeds: list = None,
+):
+    from collections import OrderedDict
+
+    from blocksim.dsp.DSPSignal import DSPSignal
+    from blocksim.control.Route import Group
+
+    if seeds is None:
+        seeds = [np.random.randint(0, 198764654) for _ in range(number)]
+
+    assert len(seeds) == number
+
+    if names is None:
+        names = ["bs%i" % i for i in range(number)]
+
+    grp_inp = OrderedDict()
+    for num in range(number):
+        grp_inp["in%i" % num] = (1,)
+    grp = Group(name="grp", inputs=grp_inp, snames=["g%i" % i for i in range(number)])
+    sim.addComputer(grp)
+
+    for num, name, seed in zip(range(number), names, seeds):
+        bs = DSPSignal.fromBinaryRandom(
+            name=name, samplingPeriod=samplingPeriod, size=size, seed=seed
+        )
+        sim.addComputer(bs)
+
+        sim.connect("bs%i.setpoint" % num, "grp.in%i" % num)
+
+    return bs.generateXSerie()

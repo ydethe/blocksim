@@ -12,7 +12,7 @@ from blocksim.control.Estimator import SteadyStateKalmanFilter, SpectrumEstimato
 from blocksim.Simulation import Simulation
 from blocksim.control.SetPoint import Step
 from blocksim.control.Route import IQExtract
-from blocksim.Graphics import FigureSpec, createFigureFromSpec, plotSpectrogram
+from blocksim.Graphics import FigureSpec, plotSpectrogram
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp.utils import phase_unfold
 

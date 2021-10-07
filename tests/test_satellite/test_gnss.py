@@ -22,7 +22,9 @@ from TestBase import TestBase
 
 
 class TestGNSS(TestBase):
-    def test_gnss(self):
+    def setUp(self):
+        TestBase.setUp(self)
+
         fmt = "%Y/%m/%d %H:%M:%S.%f"
         sts = "2021/04/15 09:29:54.996640"
         tsync = datetime.strptime(sts, fmt)
@@ -35,6 +37,9 @@ class TestGNSS(TestBase):
         lon = 1.4415632156260192
         lat = 43.60467117912294
         alt = 143.0
+
+        x_ref, y_ref, z_ref = geodetic_to_itrf(rad(lon), rad(lat), alt)
+
         rec = GNSSReceiver(name="UE", nsat=nsat, lon=lon, lat=lat, alt=alt, tsync=tsync)
         rec.algo = "ranging"
         rec.optim = "trust-constr"
@@ -82,28 +87,89 @@ class TestGNSS(TestBase):
         sim.connect("tkr.measurement", "UE.measurements")
         sim.connect("tkr.ephemeris", "UE.ephemeris")
 
+        self.sim = sim
+        self.x_ref = x_ref
+        self.y_ref = y_ref
+        self.z_ref = z_ref
+        self.rec = rec
+        self.tkr = tkr
+
+    def test_gnss_ranging(self):
         tps = np.linspace(0, 3, 3)
-        sim.simulate(tps, progress_bar=False)
+        self.sim.simulate(tps, progress_bar=False)
 
-        log = sim.getLogger()
-
-        x_ref, y_ref, z_ref = geodetic_to_itrf(rad(lon), rad(lat), alt)
+        log = self.sim.getLogger()
 
         x = log.getValue("UE_estpos_x")[-1]
         y = log.getValue("UE_estpos_y")[-1]
         z = log.getValue("UE_estpos_z")[-1]
         dp_est = log.getValue("UE_estclkerror_dp")[-1]
 
-        self.assertAlmostEqual(x, x_ref, delta=0.5)
-        self.assertAlmostEqual(y, y_ref, delta=0.5)
-        self.assertAlmostEqual(z, z_ref, delta=0.5)
-        self.assertAlmostEqual(dp_est, tkr.dp, delta=0.5)
+        self.assertAlmostEqual(x, self.x_ref, delta=0.5)
+        self.assertAlmostEqual(y, self.y_ref, delta=0.5)
+        self.assertAlmostEqual(z, self.z_ref, delta=0.5)
+        self.assertAlmostEqual(dp_est, self.tkr.dp, delta=0.5)
+
+    def test_gnss_bancroft(self):
+        self.rec.optim = "bancroft"
+
+        tps = np.linspace(0, 3, 3)
+        self.sim.simulate(tps, progress_bar=False)
+
+        log = self.sim.getLogger()
+
+        x = log.getValue("UE_estpos_x")[-1]
+        y = log.getValue("UE_estpos_y")[-1]
+        z = log.getValue("UE_estpos_z")[-1]
+        dp_est = log.getValue("UE_estclkerror_dp")[-1]
+
+        self.assertAlmostEqual(x, self.x_ref, delta=0.5)
+        self.assertAlmostEqual(y, self.y_ref, delta=0.5)
+        self.assertAlmostEqual(z, self.z_ref, delta=0.5)
+        self.assertAlmostEqual(dp_est, self.tkr.dp, delta=0.5)
+
+    def test_gnss_doppler(self):
+        self.rec.algo = "doppler"
+
+        tps = np.linspace(0, 3, 3)
+        self.sim.simulate(tps, progress_bar=False)
+
+        log = self.sim.getLogger()
+
+        x = log.getValue("UE_estpos_x")[-1]
+        y = log.getValue("UE_estpos_y")[-1]
+        z = log.getValue("UE_estpos_z")[-1]
+        dv_est = log.getValue("UE_estclkerror_dv")[-1]
+
+        self.assertAlmostEqual(x, self.x_ref, delta=0.5)
+        self.assertAlmostEqual(y, self.y_ref, delta=0.5)
+        self.assertAlmostEqual(z, self.z_ref, delta=0.5)
+        self.assertAlmostEqual(dv_est, self.tkr.dv, delta=0.5)
+
+    def test_gnss_dv(self):
+        self.rec.algo = "doppler-ranging"
+
+        tps = np.linspace(0, 3, 3)
+        self.sim.simulate(tps, progress_bar=False)
+
+        log = self.sim.getLogger()
+
+        x = log.getValue("UE_estpos_x")[-1]
+        y = log.getValue("UE_estpos_y")[-1]
+        z = log.getValue("UE_estpos_z")[-1]
+        dp_est = log.getValue("UE_estclkerror_dp")[-1]
+        dv_est = log.getValue("UE_estclkerror_dv")[-1]
+
+        self.assertAlmostEqual(x, self.x_ref, delta=0.5)
+        self.assertAlmostEqual(y, self.y_ref, delta=0.5)
+        self.assertAlmostEqual(z, self.z_ref, delta=0.5)
+        self.assertAlmostEqual(dp_est, self.tkr.dp, delta=0.5)
+        self.assertAlmostEqual(dv_est, self.tkr.dv, delta=0.5)
 
 
 if __name__ == "__main__":
     # unittest.main()
 
     a = TestGNSS()
-    a.test_gnss()
-
-    plt.show()
+    a.setUp()
+    a.test_gnss_bancroft()

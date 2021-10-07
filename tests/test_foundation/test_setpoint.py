@@ -24,9 +24,13 @@ from TestBase import TestBase
 class TestSetPoint(TestBase):
     def test_step(self):
         stp = Step(name="stp", snames=["s0", "s1"], cons=np.array([1, -2]))
+        uid = stp.getID()
 
         sim = Simulation()
         sim.addComputer(stp)
+        ret = sim.getComputerById(uid)
+        self.assertEqual(ret.getName(), stp.getName())
+
         tps = np.arange(10)
         sim.simulate(tps, progress_bar=False)
         log = sim.getLogger()
@@ -57,7 +61,7 @@ class TestSetPoint(TestBase):
         self.assertAlmostEqual(np.max(np.abs(s0 - s0_ref)), 0, delta=1e-10)
         self.assertAlmostEqual(np.max(np.abs(s1 - s1_ref)), 0, delta=1e-10)
 
-    def test_sinus(self):
+    def test_ramp(self):
         stp = Ramp(name="stp", snames=["s0", "s1"], slopes=np.array([2, -1j]))
 
         sim = Simulation()
@@ -71,6 +75,28 @@ class TestSetPoint(TestBase):
 
         s0_ref = 2 * tps
         s1_ref = -1j * tps
+
+        self.assertAlmostEqual(np.max(np.abs(s0 - s0_ref)), 0, delta=1e-10)
+        self.assertAlmostEqual(np.max(np.abs(s1 - s1_ref)), 0, delta=1e-10)
+
+    def test_sinusoid(self):
+        ssd = Sinusoid(name="ssd", snames=["s0", "s1"])
+        ssd.freq = np.array([10.0, 19.0])
+        ssd.pha = np.array([0.0, pi / 2])
+        ssd.amp = np.array([2.0, 1.0])
+
+        sim = Simulation()
+        sim.addComputer(ssd)
+        fs = 1.0
+        tps = np.arange(0, 10) / fs
+        sim.simulate(tps, progress_bar=False)
+        log = sim.getLogger()
+
+        s0 = log.getValue("ssd_setpoint_s0")
+        s1 = log.getValue("ssd_setpoint_s1")
+
+        s0_ref = 2 * sin(2 * pi * 10 * tps)
+        s1_ref = sin(2 * pi * 19 * tps + pi / 2)
 
         self.assertAlmostEqual(np.max(np.abs(s0 - s0_ref)), 0, delta=1e-10)
         self.assertAlmostEqual(np.max(np.abs(s1 - s1_ref)), 0, delta=1e-10)

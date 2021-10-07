@@ -7,7 +7,6 @@ import numpy as np
 
 from blocksim import logger
 from blocksim.dsp.OFDMA import OFDMMapping
-from blocksim.dsp.DFT import IDFT
 from blocksim.dsp.Channel import AWGNChannel
 from blocksim.dsp.NPSS import NPSSGenerator, NPSSCorrelator
 

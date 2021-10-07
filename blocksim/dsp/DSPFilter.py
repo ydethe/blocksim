@@ -26,9 +26,6 @@ class WeightedOutput(Output):
         n = len(self.__taps)
         self.__buf = CircularBuffer(size=n)
 
-    def getTaps(self) -> np.array:
-        return self.__taps
-
     def processSample(self, sample: np.complex128) -> np.complex128:
         self.__buf.append(sample)
         typ = self.getDataType()

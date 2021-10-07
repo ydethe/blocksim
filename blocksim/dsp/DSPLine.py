@@ -128,7 +128,7 @@ class DSPLine(object):
     def resample(
         self,
         samplingStart: float,
-        samplingPeriod: float,
+        samplingPeriod: float = None,
         samplingStop: float = None,
         complex_output: bool = True,
     ) -> "DSPLine":
@@ -149,6 +149,9 @@ class DSPLine(object):
         """
         if samplingStop is None:
             samplingStop = self.samplingStop
+
+        if samplingPeriod is None:
+            samplingPeriod = self.samplingPeriod
 
         ns = int(np.round((samplingStop - samplingStart) / samplingPeriod, 0)) + 1
         new_x = np.arange(ns) * samplingPeriod + samplingStart

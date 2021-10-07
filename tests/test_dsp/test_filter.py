@@ -4,6 +4,7 @@ import unittest
 
 import numpy as np
 from numpy import pi, exp
+from scipy import linalg as lin
 from matplotlib import pyplot as plt
 import pytest
 
@@ -75,14 +76,20 @@ class TestFilter(TestBase):
 
         sim.simulate(tps, progress_bar=False)
         log = sim.getLogger()
-        y = DSPSignal.fromLogger(name="filt", log=log, param="filter_filt_sample")
-        y = y.forceSamplingStart(-filt.getTransientPhaseDuration())
+        y_sim = DSPSignal.fromLogger(name="filt", log=log, param="filter_filt_sample")
+        y = y_sim.forceSamplingStart(-filt.getTransientPhaseDuration())
+
+        y_direct = filt.apply(s1)
+        err = lin.norm((y_direct - y).resample(samplingStart=0.4).y_serie)
+        self.assertAlmostEqual(err, 0, delta=0)
 
         fig = plt.figure()
         axe = fig.add_subplot(111)
 
-        plotDSPLine(y, axe)
-        plotDSPLine(s2, axe)
+        plotDSPLine(y, axe, label="simu")
+        plotDSPLine(s2, axe, label="theoric")
+        plotDSPLine(y_direct, axe, label="direct")
+        axe.legend(loc="best")
 
         return fig
 
@@ -96,7 +103,14 @@ class TestFilter(TestBase):
         tau = ns / fs
         t1 = np.arange(ns) / fs
         x1 = exp(1j * pi * t1 * bp * (t1 / tau - 1))
-        s1 = DSPSignal(name="s1", samplingStart=0, samplingPeriod=1 / fs, y_serie=x1)
+        s1 = DSPSignal.fromLinearFM(
+            name="s1",
+            samplingStart=0,
+            samplingPeriod=1 / fs,
+            tau=tau,
+            fstart=-bp / 2,
+            fend=bp / 2,
+        )
         s2 = s1.resample(
             samplingStart=-1, samplingPeriod=1 / fs, samplingStop=s1.samplingStop + 1
         )

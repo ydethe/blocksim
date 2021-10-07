@@ -7,6 +7,26 @@ from .ADSPComputer import ADSPComputer
 
 
 class OFDMMapping(ADSPComputer):
+    """OFDMA modulator
+    Takes symbols as input, and maps them to the data carriers.
+    Adds pilot symbols on dedicated carriers
+
+    Args:
+      name
+        Name of the computer
+      output_size
+        Number of samples in the generated signal
+      allCarriers
+        Total number of sub carriers
+      pilotCarriers
+        List of the indices of the carriers dedicated to pilot symbols
+      dataCarriers
+        List of the indices of the carriers dedicated to data symbols
+      pilotValue
+        Pilot symbols to add on the pilot sub carriers
+
+    """
+
     __slots__ = []
 
     def __init__(
@@ -75,6 +95,25 @@ class OFDMMapping(ADSPComputer):
 
 
 class OFDMDemapping(ADSPComputer):
+    """OFDMA demodulator
+    Takes a time signal (represented as a vector) and extracts data symbols
+
+    Args:
+      name
+        Name of the computer
+      input_size
+        Number of samples in the input signal
+      allCarriers
+        Total number of sub carriers
+      pilotCarriers
+        List of the indices of the carriers dedicated to pilot symbols
+      dataCarriers
+        List of the indices of the carriers dedicated to data symbols
+      pilotValue
+        Pilot symbols to add on the pilot sub carriers
+
+    """
+
     __slots__ = []
 
     def __init__(

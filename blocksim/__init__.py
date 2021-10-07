@@ -4,14 +4,12 @@ import logging
 from datetime import datetime
 import os
 
+import control
+
+control.use_numpy_matrix(flag=False, warn=True)
+
 from .LogFormatter import LogFormatter
 
-try:
-    import control
-
-    control.use_numpy_matrix(flag=False, warn=True)
-except:
-    pass
 
 __version__ = get_distribution(__name__).version
 

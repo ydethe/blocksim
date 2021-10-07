@@ -6,7 +6,7 @@ from typing import Iterable, Tuple
 
 from scipy import linalg as lin
 import numpy as np
-from numpy import pi, arcsin, arctan2, sin, cos, sqrt
+from numpy import pi, arcsin, arctan, arctan2, sin, cos, sqrt
 import astropy.coordinates as coord
 from skyfield.api import Topos, load, utc
 from skyfield.timelib import Time
@@ -21,6 +21,7 @@ __all__ = [
     "casedpath",
     "resource_path",
     "geodetic_to_itrf",
+    "itrf_to_geodetic",
     "build_env",
     "itrf_to_azeld",
     "test_diag",
@@ -133,6 +134,65 @@ def geodetic_to_itrf(lon, lat, h) -> np.array:
     Z = ((1 - 1 / rf) ** 2 * N + h) * sin(lat)
 
     return np.array([X, Y, Z])
+
+
+def Iter_phi_h(x: float, y: float, z: float, eps: float = 1e-6) -> Tuple[float, float]:
+    r = lin.norm((x, y, z))
+    p = sqrt(x ** 2 + y ** 2)
+
+    N = Req
+    hg = r - sqrt(Req - Rpo)
+    e = sqrt(1 - Rpo ** 2 / Req ** 2)
+    phig = arctan(z * (N + hg) / (p * (N * (1 - e ** 2) + hg)))
+
+    cont = True
+    while cont:
+        hgp = hg
+        phigp = phig
+
+        N = Req / sqrt(1 - e ** 2 * sin(phigp) ** 2)
+        hg = p / cos(phigp) - N
+        phig = arctan(z * (N + hg) / (p * (N * (1 - e ** 2) + hg)))
+
+        if eps > max(abs(phigp - phig), abs(hgp - hg)):
+            cont = False
+
+    return phig, hgp
+
+
+def itrf_to_geodetic(position: np.array) -> Tuple[float, float, float]:
+    """Converts the ITRF coordinates into latitude, longiutde, altitude (WGS84)
+
+    Args:
+      position (m)
+        x, y, z position in ITRF frame
+
+    Returns:
+      Latitude (rad)
+      Longitude (rad)
+      Altitude (rad)
+
+    Examples:
+      >>> pos = geodetic_to_itrf(2,1,3)
+      >>> lon,lat,alt = itrf_to_geodetic(pos)
+      >>> lon # doctest: +ELLIPSIS
+      2.0...
+      >>> lat # doctest: +ELLIPSIS
+      1.0...
+      >>> alt # doctest: +ELLIPSIS
+      3.0...
+
+    """
+    x = position[0]
+    y = position[1]
+    z = position[2]
+    p = sqrt(x ** 2 + y ** 2)
+    cl = x / p  # cos(lambda)
+    sl = y / p  # sin(lambda)
+    lon = arctan2(sl, cl)
+    lat, alt = Iter_phi_h(x, y, z)
+
+    return lon, lat, alt
 
 
 def itrf_to_azeld(obs: np.array, sat: np.array) -> np.array:
@@ -303,6 +363,9 @@ def assignVector(
     #         v,
     #     )
     #     logger.warning(txt)
+
+    if not hasattr(v, "__iter__") and expected_shape[0] == 1:
+        v = np.array([v])
 
     if isinstance(v.shape, int):
         vshape = (v.shape,)

@@ -5,10 +5,11 @@ from datetime import datetime, timezone
 
 import numpy as np
 from numpy import cos, sin, sqrt, exp, pi
+from scipy import linalg as lin
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.constants import Req, omega
+from blocksim.constants import Req, omega, mu
 from blocksim.source.Satellite import Satellite
 from blocksim.source.Trajectory import Trajectory
 from blocksim.EarthPlotter import EarthPlotter
@@ -35,9 +36,50 @@ class TestSatellite(TestBase):
         )
         pv0 = satellite.compute_outputs(0, 0, subpoint=None, itrf=None)["itrf"]
 
-        dt = satellite.orbit_period
-        t = dt.total_seconds()
+        r = satellite.orbit_periapsis
+        ws = sqrt(mu / r ** 3)
+        t = 2 * pi / (ws - satellite.orbital_precession - omega)
         pv = satellite.compute_outputs(0, t, subpoint=None, itrf=None)["itrf"]
+
+        err = lin.norm(pv - pv0)
+        self.assertAlmostEqual(err, 0, delta=500)
+
+        sp = satellite.subpoint(t_init)
+        lon_ref = -1.0207588638091307
+        lat_ref = 0.0
+        self.assertAlmostEqual(sp[0], lon_ref, delta=1e-9)
+        self.assertAlmostEqual(sp[1], lat_ref, delta=1e-9)
+
+        a, ex, ey, hx, hy, lv = satellite.toEquinoctialOrbit()
+
+        sat2 = Satellite.fromEquinoctialOrbit(
+            name="sat2", t=t_init, a=a, ex=ex, ey=ey, hx=hx, hy=hy, lv=lv
+        )
+
+        self.assertAlmostEqual(satellite.orbit_mano, sat2.orbit_mano, delta=0)
+        self.assertAlmostEqual(
+            satellite.orbit_eccentricity, sat2.orbit_eccentricity, delta=0
+        )
+        self.assertAlmostEqual(
+            satellite.orbit_semi_major_axis, sat2.orbit_semi_major_axis, delta=0
+        )
+        self.assertAlmostEqual(
+            satellite.orbit_inclination, sat2.orbit_inclination, delta=0
+        )
+        self.assertAlmostEqual(satellite.orbit_argp, sat2.orbit_argp, delta=0)
+        self.assertAlmostEqual(satellite.orbit_node, sat2.orbit_node, delta=0)
+        self.assertAlmostEqual(satellite.orbit_bstar, sat2.orbit_bstar, delta=0)
+        self.assertAlmostEqual(satellite.orbit_ndot, sat2.orbit_ndot, delta=0)
+        self.assertAlmostEqual(satellite.orbit_nddot, sat2.orbit_nddot, delta=0)
+        self.assertAlmostEqual(satellite.orbit_periapsis, sat2.orbit_periapsis, delta=0)
+        self.assertAlmostEqual(satellite.orbit_apoapsis, sat2.orbit_apoapsis, delta=0)
+        self.assertAlmostEqual(
+            satellite.orbital_precession, sat2.orbital_precession, delta=0
+        )
+        self.assertAlmostEqual(satellite.orbit_period, sat2.orbit_period, delta=0)
+        self.assertAlmostEqual(
+            satellite.epoch.timestamp(), sat2.epoch.timestamp(), delta=0
+        )
 
     def test_iss(self):
         pth = Path(__file__).parent / "iss.tle"
@@ -82,7 +124,7 @@ class TestSatellite(TestBase):
         fig = plt.figure()
         ep = EarthPlotter()
         axe = ep.createAxe(fig)
-        ep.plotGroundTrack(axe, lon, lat)
+        ep.plotTrajectory(axe, traj)
         ep.plotDeviceReach(axe, coord=pt, elev_min=pi / 8, sat_alt=600e3)
         ep.plotPoint(axe, coord=pt)
 
@@ -93,7 +135,7 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestSatellite()
-    # a.test_satellite()
-    a.test_ground_track()
+    a.test_satellite()
+    # a.test_ground_track()
 
-    plt.show()
+    # plt.show()

@@ -14,5 +14,6 @@ skyfield
 jplephem
 astropy
 parse
-scikit-dsp-comm
+# scikit-dsp-comm
 panda3d
+scikit-commpy
