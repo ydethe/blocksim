@@ -25,7 +25,7 @@ class GenericComputer(AComputer):
         A callable object, use to compute the output
 
     Examples:
-      >>> com = GenericComputer("com", shape_in=(5,), shape_out=(1,), callable=np.sum, dtype=np.int64)
+      >>> com = GenericComputer("com", shape_in=(5,), shape_out=(1,), callable=np.sum, dtype_in=np.int64, dtype_out=np.int64)
       >>> out = com.compute_outputs(t1=0, t2=1, xin=np.arange(5), xout=None)
       >>> out["xout"]
       10
@@ -40,15 +40,16 @@ class GenericComputer(AComputer):
         shape_in: tuple,
         shape_out: tuple,
         callable: Callable,
-        dtype=np.float64,
+        dtype_in=np.float64,
+        dtype_out=np.float64,
     ):
         AComputer.__init__(self, name)
-        self.defineInput("xin", shape=shape_in, dtype=dtype)
+        self.defineInput("xin", shape=shape_in, dtype=dtype_in)
         otp = self.defineOutput(
-            "xout", snames=["y%i" % i for i in range(shape_out[0])], dtype=dtype
+            "xout", snames=["y%i" % i for i in range(shape_out[0])], dtype=dtype_out
         )
         self.setInitialStateForOutput(
-            np.zeros(otp.getDataShape(), dtype=dtype), output_name="xout"
+            np.zeros(otp.getDataShape(), dtype=dtype_out), output_name="xout"
         )
         self.createParameter("callable", value=callable)
 

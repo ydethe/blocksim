@@ -85,7 +85,8 @@ class TestMadgwick(TestBase):
             shape_in=(1,),
             shape_out=(6,),
             callable=lambda x: np.array([0, 0, 0, 0, 0, x[0]]),
-            dtype=np.float64,
+            dtype_in=np.float64,
+            dtype_out=np.float64,
         )
 
         ctrl = PIDController(
@@ -97,7 +98,8 @@ class TestMadgwick(TestBase):
             shape_in=(3,),
             shape_out=(2,),
             callable=lambda x: np.array([x[2], x[0]]),
-            dtype=np.float64,
+            dtype_in=np.float64,
+            dtype_out=np.float64,
         )
 
         sim = Simulation()
@@ -122,9 +124,11 @@ class TestMadgwick(TestBase):
         sim.simulate(tps, error_on_unconnected=True)
         self.log = sim.getLogger()
 
-        self.plotVerif(
+        fig = self.plotVerif(
             "ctrl", [{"var": "deg(madg_euler_yaw)"}, {"var": "deg(sys_euler_yaw)"}]
         )
+
+        return fig
 
     def test_madgwick_exc(self):
         q = np.array([1.0, 0.0, 0.0, 0.0])

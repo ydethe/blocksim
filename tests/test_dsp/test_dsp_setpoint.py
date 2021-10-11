@@ -50,7 +50,12 @@ class TestDSPSetpoint(TestBase):
         y = np.exp(1j * tps * 2 * np.pi * 2)
         stp = DSPSignal(name="sig", samplingStart=0, samplingPeriod=0.01, y_serie=y)
         re = GenericComputer(
-            name="re", shape_in=(1,), shape_out=(1,), callable=np.real, dtype=np.float64
+            name="re",
+            shape_in=(1,),
+            shape_out=(1,),
+            callable=np.real,
+            dtype_in=np.complex128,
+            dtype_out=np.float64,
         )
         ctl = PIDController("ctl", shape_estimation=2, snames=["u"], coeffs=(P, I, D))
         sys = System("sys")
