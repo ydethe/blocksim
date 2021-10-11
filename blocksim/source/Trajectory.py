@@ -1,6 +1,7 @@
 from typing import Tuple
 
 import numpy as np
+from numpy import pi
 
 from ..utils import itrf_to_geodetic
 from ..Logger import Logger
@@ -58,6 +59,8 @@ class Trajectory(object):
         lat = np.empty(ns)
         lon = np.empty(ns)
         for k, pos in enumerate(self.iterPosition()):
-            lat[k], lon[k], _ = itrf_to_geodetic(pos)
+            lon_k, lat_k, _ = itrf_to_geodetic(pos)
+            lat[k] = lat_k * 180 / pi
+            lon[k] = lon_k * 180 / pi
 
         return lon, lat

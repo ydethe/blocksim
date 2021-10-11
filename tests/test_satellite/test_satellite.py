@@ -135,7 +135,7 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestSatellite()
-    a.test_satellite()
-    # a.test_ground_track()
+    # a.test_satellite()
+    a.test_ground_track()
 
-    # plt.show()
+    plt.show()

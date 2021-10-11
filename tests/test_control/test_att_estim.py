@@ -64,9 +64,10 @@ class TestMadgwick(TestBase):
 
         sys = G6DOFSystem("sys")
         x0 = np.zeros(13)
-        q = np.array([1 / sqrt(2), 0, 0, 1 / sqrt(2)])
+        q = np.array([1 / sqrt(2), 0, 0, -1 / sqrt(2)])
+        w = np.array([0.0, 0.0, 5.0])
         x0[6:10] = q
-        x0[12] = 1.0
+        x0[10:13] = w
         sys.setInitialStateForOutput(x0, output_name="state")
 
         imu = IMU(name="imu")
@@ -78,7 +79,7 @@ class TestMadgwick(TestBase):
         moy[2] = 1.5 * np.pi / 180
         imu.setMean(moy)
 
-        est = MadgwickFilter("madg", beta=2.0)
+        est = MadgwickFilter("madg", beta=5.0)
 
         demux = GenericComputer(
             name="demux",

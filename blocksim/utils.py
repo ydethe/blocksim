@@ -168,8 +168,8 @@ def itrf_to_geodetic(position: np.array) -> Tuple[float, float, float]:
         x, y, z position in ITRF frame
 
     Returns:
-      Latitude (rad)
       Longitude (rad)
+      Latitude (rad)
       Altitude (rad)
 
     Examples:
