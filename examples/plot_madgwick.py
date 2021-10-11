@@ -8,88 +8,14 @@ Madgwick attitude estimator
 # ---------------------
 
 import numpy as np
+from numpy import pi, sqrt
 
 from blocksim.Simulation import Simulation
-from blocksim.control.System import ASystem
-from blocksim.control.Sensors import ASensors
+from blocksim.control.System import G6DOFSystem
+from blocksim.control.IMU import IMU
 from blocksim.control.SetPoint import Step
 from blocksim.control.Estimator import MadgwickFilter
-from blocksim.utils import deg
-
-
-###############################################################################
-# Definition of the 6DDF system
-# -----------------------------
-# We define a simple system that just rotates with an angular velocity given by its parameter w
-# The output of this system are the (noiseless) state of gyrometer (x3), accelerometer (x3) and magnetometer (x3)
-
-
-class TSystem(ASystem):
-    __slots__ = []
-
-    def __init__(self):
-        ASystem.__init__(
-            self,
-            name="sys",
-            shape_command=(9,),
-            snames_state=["gx", "gy", "gz", "ax", "ay", "az", "mx", "my", "mz"],
-            method="vode",
-        )
-        self.createParameter(name="w", value=0.0)
-
-    def transition(self, t, x, u):
-        gx, gy, gz, ax, ay, az, mx, my, mz = x
-        dxdt = np.zeros(9)
-        dxdt[3:6] = np.cross(np.array([ax, ay, az]), self.w)
-        dxdt[6:9] = np.cross(np.array([mx, my, mz]), self.w)
-        return dxdt
-
-
-###############################################################################
-# Definition of a noisy IMU
-# -------------------------
-# We define a simple IMU that just copies the states of gyrometer (x3), accelerometer (x3) and magnetometer (x3),
-# and adds a gaussian noise and a bias
-
-
-class IMU(ASensors):
-    __slots__ = []
-
-    def __init__(self):
-        moy = np.zeros(9)
-        moy[0] = 0.5 * np.pi / 180
-        moy[1] = -1.0 * np.pi / 180
-        moy[2] = 1.5 * np.pi / 180
-        cov = np.diag(3 * [np.pi / 180] + 3 * [1e-3 * 9.81] + 3 * [1.0e-6])
-        ASensors.__init__(
-            self,
-            name="imu",
-            shape_state=(9,),
-            snames=[
-                "gx",
-                "gy",
-                "gz",
-                "ax",
-                "ay",
-                "az",
-                "mx",
-                "my",
-                "mz",
-            ],
-        )
-        self.setCovariance(cov)
-        self.setMean(moy)
-
-    def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        measurement: np.array,
-        state: np.array,
-    ) -> dict:
-        outputs = {}
-        outputs["measurement"] = state.copy()
-        return outputs
+from blocksim.utils import deg, euler_to_quat
 
 
 ###############################################################################
@@ -101,34 +27,38 @@ sim = Simulation()
 ###############################################################################
 # Definition of a null Step function
 
-ctrl = Step(name="ctrl", snames=["u%i" % i for i in range(9)], cons=np.zeros(9))
+ctrl = Step(name="ctrl", snames=["u%i" % i for i in range(6)], cons=np.zeros(6))
 
 sim.addComputer(ctrl)
 
 ###############################################################################
-# Initialisation of the TSystem, rotating about the pitch axis
+# Initialisation of a G6DOFSystem, rotating about the pitch axis
+
+sys = G6DOFSystem("sys")
 
 angle_ini = -60 * np.pi / 180.0
 wangle = 10.0 * np.pi / 180.0
-sys = TSystem()
-
-sys.w = np.array([0.0, wangle, 0.0])
-
-x0 = np.zeros(9)
-x0[:3] = sys.w
-x0[3:6] = np.array([-np.sin(angle_ini), 0.0, np.cos(angle_ini)])
-x0[6:9] = np.array([0.0, 1.0, 0.0])
-
+x0 = np.zeros(13)
+x0[10:13] = np.array([0.0, wangle, 0.0])
+q = euler_to_quat(roll=0.0, pitch=angle_ini, yaw=pi / 2)
+x0[6:10] = q
 sys.setInitialStateForOutput(x0, "state")
 
 sim.addComputer(sys)
 
 ###############################################################################
-# Initialisation of the IMU
+# Initialisation of a biased and noisy IMU
 
-c = IMU()
+imu = IMU(name="imu")
+cov = np.diag(3 * [np.pi / 180] + 3 * [1e-3 * 9.81] + 3 * [1.0e-6])
+imu.setCovariance(cov)
+moy = np.zeros(9)
+moy[0] = 0.5 * np.pi / 180
+moy[1] = -1.0 * np.pi / 180
+moy[2] = 1.5 * np.pi / 180
+imu.setMean(moy)
 
-sim.addComputer(c)
+sim.addComputer(imu)
 
 ###############################################################################
 # Initialisation of the Madgwick attitude estimator
