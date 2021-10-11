@@ -11,13 +11,14 @@ import pytest
 
 from blocksim.core.Node import Frame
 from blocksim.control.SetPoint import Step
-from blocksim.control.System import LTISystem
+from blocksim.control.System import LTISystem, G6DOFSystem
 from blocksim.control.Controller import PIDController, LQRegulator
 from blocksim.control.Estimator import (
     SteadyStateKalmanFilter,
     TimeInvariantKalmanFilter,
 )
 from blocksim.control.Sensors import LinearSensors, ProportionalSensors
+from blocksim.control.IMU import IMU
 from blocksim.control.Route import Split
 from blocksim.Simulation import Simulation
 
@@ -191,7 +192,7 @@ if __name__ == "__main__":
     unittest.main()
 
     a = TestKalman()
-    a.test_ss_kal()
-    # a.test_ti_kal()
+    # a.test_ss_kal()
+    a.test_ti_kal()
 
     plt.show()

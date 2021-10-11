@@ -3,18 +3,21 @@ import unittest
 from pathlib import Path
 
 import numpy as np
-from numpy import pi
+from numpy import pi, sqrt
 import scipy.linalg as lin
 from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.exceptions import TooWeakAcceleration, TooWeakMagneticField
 from blocksim.Simulation import Simulation
+from blocksim.core.Generic import GenericComputer
 from blocksim.control.System import G6DOFSystem
 from blocksim.control.IMU import IMU
+from blocksim.control.Controller import PIDController
 from blocksim.control.SetPoint import Step
 from blocksim.control.Estimator import MadgwickFilter, MahonyFilter
 from blocksim.utils import deg, rad, euler_to_quat
+from blocksim.Graphics import plotFromLogger
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
@@ -50,10 +53,78 @@ class TestMadgwick(TestBase):
         sim.connect("sys.state", "imu.state")
         sim.connect("imu.measurement", "madg.measurement")
 
-        self.dt = 1e-2
+        self.dt = 5e-3
         self.sys = sys
         self.est = est
         self.sim = sim
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_madgwick_cl(self):
+        stp = Step(name="stp", snames=["u0"], cons=np.zeros(1))
+
+        sys = G6DOFSystem("sys")
+        x0 = np.zeros(13)
+        q = np.array([1 / sqrt(2), 0, 0, 1 / sqrt(2)])
+        x0[6:10] = q
+        x0[12] = 1.0
+        sys.setInitialStateForOutput(x0, output_name="state")
+
+        imu = IMU(name="imu")
+        cov = np.diag(3 * [np.pi / 180] + 3 * [1e-3 * 9.81] + 3 * [1.0e-6])
+        imu.setCovariance(cov)
+        moy = np.zeros(9)
+        moy[0] = 0.5 * np.pi / 180
+        moy[1] = -1.0 * np.pi / 180
+        moy[2] = 1.5 * np.pi / 180
+        imu.setMean(moy)
+
+        est = MadgwickFilter("madg", beta=2.0)
+
+        demux = GenericComputer(
+            name="demux",
+            shape_in=(1,),
+            shape_out=(6,),
+            callable=lambda x: np.array([0, 0, 0, 0, 0, x[0]]),
+            dtype=np.float64,
+        )
+
+        ctrl = PIDController(
+            name="ctrl", shape_estimation=2, snames=["u"], coeffs=[10.0, 1.0, 0.0]
+        )
+
+        mux = GenericComputer(
+            name="mux",
+            shape_in=(3,),
+            shape_out=(2,),
+            callable=lambda x: np.array([x[2], x[0]]),
+            dtype=np.float64,
+        )
+
+        sim = Simulation()
+
+        sim.addComputer(stp)
+        sim.addComputer(sys)
+        sim.addComputer(imu)
+        sim.addComputer(est)
+        sim.addComputer(demux)
+        sim.addComputer(mux)
+        sim.addComputer(ctrl)
+
+        sim.connect("stp.setpoint", "ctrl.setpoint")
+        sim.connect("ctrl.command", "demux.xin")
+        sim.connect("demux.xout", "sys.command")
+        sim.connect("sys.state", "imu.state")
+        sim.connect("imu.measurement", "madg.measurement")
+        sim.connect("madg.euler", "mux.xin")
+        sim.connect("mux.xout", "ctrl.estimation")
+
+        tps = np.arange(200) * self.dt
+        sim.simulate(tps, error_on_unconnected=True)
+        self.log = sim.getLogger()
+
+        self.plotVerif(
+            "ctrl", [{"var": "deg(madg_euler_yaw)"}, {"var": "deg(sys_euler_yaw)"}]
+        )
 
     def test_madgwick_exc(self):
         q = np.array([1.0, 0.0, 0.0, 0.0])
@@ -175,6 +246,53 @@ class TestMadgwick(TestBase):
                 {"var": "deg(madg_euler_yaw)", "label": "FilteredYaw"},
                 {
                     "var": deg(w),
+                    "label": "Simu",
+                    "color": "black",
+                    "linestyle": "--",
+                },
+            ],
+        )
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_madgwick_all_dof(self):
+        angle_ini = -60 * np.pi / 180.0
+        wangle = 10.0 * np.pi / 180.0
+
+        # ==================================================
+        # Rotation autour de l'axe de tangage
+        # ==================================================
+        x0 = np.zeros(13)
+        w = np.random.rand(3) * 2 - 1
+        x0[10:13] = w
+        q = np.random.rand(4) * 2 - 1
+        x0[6:10] = q / lin.norm(q)
+        self.sys.setInitialStateForOutput(x0, "state")
+        A = np.random.randint(low=-5, high=5, size=(3, 3))
+        self.sys.J = A @ A.T
+
+        tfin = 5.0
+        tps = np.arange(0.0, tfin, self.dt)
+
+        self.sim.simulate(tps, progress_bar=False)
+
+        self.log = self.sim.getLogger()
+
+        err_t = np.max(np.abs(self.log.getValue("t") - tps))
+
+        iok = np.where(tps > 0.5)[0]
+        mp = self.log.getValue("deg(madg_euler_pitch)")
+        sp = self.log.getValue("deg(sys_euler_pitch)")
+        err_a = np.max(np.abs(sp - mp)[iok])
+
+        self.assertAlmostEqual(err_a, 0.0, delta=6.0)
+
+        return self.plotVerif(
+            "Figure 1",
+            [
+                {"title": "Pitch (deg)", "nrow": 1, "ncol": 1, "ind": 1},
+                {"var": "deg(madg_euler_pitch)"},
+                {
+                    "var": "deg(sys_euler_pitch)",
                     "label": "Simu",
                     "color": "black",
                     "linestyle": "--",
@@ -352,6 +470,6 @@ if __name__ == "__main__":
 
     a = TestMadgwick()
     a.setUp()
-    a.test_madgwick_exc()
+    a.test_madgwick_cl()
 
-    # plt.show()
+    plt.show()

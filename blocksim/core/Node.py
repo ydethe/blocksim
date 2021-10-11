@@ -59,6 +59,9 @@ class Input(ABaseNode):
     def getDataShape(self) -> int:
         return self.__shape
 
+    def getDataType(self) -> int:
+        return self.__dtype
+
     def getOutput(self) -> "Output":
         """Gets the output connected to the Input
 
@@ -68,17 +71,36 @@ class Input(ABaseNode):
         """
         return self.__output
 
-    def getDataForFrame(self, frame: Frame) -> np.array:
+    def getDataForFrame(
+        self, frame: Frame, error_on_unconnected: bool = True
+    ) -> np.array:
         """Gets the data for the given time frame
+
+        Args:
+          frame
+            Time frame of the simulation
+          error_on_unconnected
+            Wether to raise an exception if an unconnected inuput is detected
 
         Returns:
             The data coming from the connected output
 
         """
         otp = self.getOutput()
-        data = otp.getDataForFrame(frame)
+
+        if error_on_unconnected and otp is None:
+            raise SimulationGraphError(
+                "The input '%s' is not connected" % self.getName()
+            )
+        elif not error_on_unconnected and otp is None:
+            data = np.zeros(self.getDataShape(), dtype=self.getDataType())
+            oname = "[unconnected]"
+        else:
+            data = otp.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
+            oname = otp.getName()
+
         valid_data = assignVector(
-            data, self.getDataShape(), self.getName(), otp.getName(), self.__dtype
+            data, self.getDataShape(), self.getName(), oname, self.getDataType()
         )
         return valid_data
 
@@ -157,10 +179,12 @@ class Output(ABaseNode):
         """
         return self.__snames
 
-    def iterScalarNameValue(self, frame: Frame) -> Iterator:
+    def iterScalarNameValue(
+        self, frame: Frame, error_on_unconnected: bool = True
+    ) -> Iterator:
         """Iterate through all the data, and yield the name and the value of the scalar"""
         ns = self.getDataShape()
-        dat = self.getDataForFrame(frame)
+        dat = self.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
 
         # Creating iterables, to handle the case where
         # the output 'setpoint' is a matrix
@@ -222,7 +246,9 @@ class Output(ABaseNode):
         )
         self.__data = valid_data
 
-    def getDataForFrame(self, frame: Frame) -> np.array:
+    def getDataForFrame(
+        self, frame: Frame, error_on_unconnected: bool = True
+    ) -> np.array:
         """Gets the data for the Output at the given time frame
         If the given time frame is different from the last one seen by the Output,
         the update of the simulation is triggered.
@@ -230,6 +256,8 @@ class Output(ABaseNode):
         Args:
           frame
             The time frame
+          error_on_unconnected
+            Wether to raise an exception if an unconnected inuput is detected
 
         """
         if self.getCurrentFrame() != frame:
@@ -237,7 +265,9 @@ class Output(ABaseNode):
             if frame.getTimeStep() == 0:
                 self.resetCallback(frame)
                 self.setData(self.getInitialeState())
-            data = self.getComputer().getDataForOutput(frame, self.getID())
+            data = self.getComputer().getDataForOutput(
+                frame, self.getID(), error_on_unconnected=error_on_unconnected
+            )
             self.setData(data)
 
         return self.__data
@@ -291,17 +321,21 @@ class AWGNOutput(Output):
 
         return state + bg
 
-    def getDataForFrame(self, frame: Frame) -> np.array:
+    def getDataForFrame(
+        self, frame: Frame, error_on_unconnected: bool = True
+    ) -> np.array:
         if self.getCurrentFrame() != frame:
             self.setFrame(frame)
             if frame.getTimeStep() == 0:
                 self.setData(self.getInitialeState())
                 self.resetCallback(frame)
-            data = self.getComputer().getDataForOutput(frame, self.getID())
+            data = self.getComputer().getDataForOutput(
+                frame, self.getID(), error_on_unconnected=error_on_unconnected
+            )
             noisy = self.addGaussianNoise(data)
             self.setData(noisy)
 
-        return super().getDataForFrame(frame)
+        return super().getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
 
 
 class AComputer(ABaseNode):
@@ -653,7 +687,11 @@ class AComputer(ABaseNode):
         raise UnknownInput(self.getName(), name)
 
     def getDataForInput(
-        self, frame: Frame, uid: UUID = None, name: str = None
+        self,
+        frame: Frame,
+        uid: UUID = None,
+        name: str = None,
+        error_on_unconnected: bool = True,
     ) -> np.array:
         """Gets the data for the given input, either withs its id or with its name
         One and only one of uid and name shall be given
@@ -685,11 +723,15 @@ class AComputer(ABaseNode):
                 % (self.getName(), uid, name)
             )
 
-        data = inp.getDataForFrame(frame)
+        data = inp.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
         return data
 
     def getDataForOutput(
-        self, frame: Frame, uid: UUID = None, name: str = None
+        self,
+        frame: Frame,
+        uid: UUID = None,
+        name: str = None,
+        error_on_unconnected: bool = True,
     ) -> np.array:
         """Gets the data for the given output, either withs its id or with its name
         One and only one of uid and name shall be given
@@ -701,6 +743,8 @@ class AComputer(ABaseNode):
             The id of the output
           name
             The name of the output
+          error_on_unconnected
+            Wether to raise an exception if an unconnected inuput is detected
 
         Returns:
           The data
@@ -708,7 +752,7 @@ class AComputer(ABaseNode):
         """
         if self.getCurrentFrame() != frame:
             self.setFrame(frame)
-            self.updateAllOutput(frame)
+            self.updateAllOutput(frame, error_on_unconnected=error_on_unconnected)
 
         if uid is None and name is None:
             logger.error(
@@ -725,7 +769,7 @@ class AComputer(ABaseNode):
                 % (self.getName(), uid, name)
             )
 
-        return otp.getDataForFrame(frame)
+        return otp.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
 
     def getParents(self) -> Iterable["AComputer"]:
         """Returns the parent computers
@@ -747,15 +791,24 @@ class AComputer(ABaseNode):
     def compute_outputs(self, **inputs: dict) -> dict:
         pass
 
-    def updateAllOutput(self, frame: Frame):
+    def updateAllOutput(self, frame: Frame, error_on_unconnected: bool = True):
+        """Updates all the outputs of the Computer
+
+        Args:
+          frame
+            The time frame
+          error_on_unconnected
+            Wether to raise an exception if an unconnected inuput is detected
+
+        """
         inputs = {}
         for inp in self.getListInputs():
             k = inp.getName()
-            v = inp.getDataForFrame(frame)
+            v = inp.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
             inputs[k] = v
         for otp in self.getListOutputs():
             k = otp.getName()
-            v = otp.getDataForFrame(frame)
+            v = otp.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
             inputs[k] = v
         inputs["t1"] = frame.getStartTimeStamp()
         inputs["t2"] = frame.getStopTimeStamp()

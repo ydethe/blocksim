@@ -405,7 +405,16 @@ def assignVector(
         raise WrongDataType(txt)
 
     else:
-        return np.array(v.copy(), dtype=dtype)
+        try:
+            res = np.array(v.copy(), dtype=dtype)
+        except Exception as e:
+            txt = (
+                "Element '%s' : Argument '%s' - impossible to instantiate array:\n%s"
+                % (dst_name, src_name, str(e))
+            )
+            raise WrongDataType(txt)
+
+    return res
 
 
 def datetime_to_skyfield(td: datetime) -> Time:

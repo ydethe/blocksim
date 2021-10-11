@@ -110,7 +110,7 @@ class Simulation(object):
 
         raise KeyError(cid)
 
-    def update(self, frame: Frame):
+    def update(self, frame: Frame, error_on_unconnected: bool = True):
         """Steps the simulation, and logs all the outputs of the computers
 
         Args:
@@ -125,13 +125,20 @@ class Simulation(object):
                 otp = c.getOutputById(oid)
                 o_name = otp.getName()
 
-                for n, x in otp.iterScalarNameValue(frame):
+                for n, x in otp.iterScalarNameValue(
+                    frame, error_on_unconnected=error_on_unconnected
+                ):
                     self.__logger.log(name="%s_%s_%s" % (c_name, o_name, n), val=x)
 
         t = frame.getStopTimeStamp()
         self.__logger.log(name="t", val=t)
 
-    def simulate(self, tps: np.array, progress_bar: bool = True) -> Frame:
+    def simulate(
+        self,
+        tps: np.array,
+        progress_bar: bool = True,
+        error_on_unconnected: bool = True,
+    ) -> Frame:
         """Resets the simulator, and simulates the closed-loop system
         up to the date given as an argument :
 
@@ -150,7 +157,7 @@ class Simulation(object):
         self.__logger.openFile()
 
         frame = Frame(start_timestamp=tps[0], stop_timestamp=tps[0])
-        self.update(frame)
+        self.update(frame, error_on_unconnected=error_on_unconnected)
 
         if progress_bar:
             itr = tqdm.tqdm(range(len(tps) - 1))
@@ -160,7 +167,7 @@ class Simulation(object):
         for k in itr:
             dt = tps[k + 1] - tps[k]
             frame.updateByStep(dt)
-            self.update(frame)
+            self.update(frame, error_on_unconnected=error_on_unconnected)
 
         self.__logger.closeFile()
 

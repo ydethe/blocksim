@@ -43,7 +43,7 @@ class GenericComputer(AComputer):
         dtype=np.float64,
     ):
         AComputer.__init__(self, name)
-        self.defineInput("xin", shape=shape_in, dtype=np.complex128)
+        self.defineInput("xin", shape=shape_in, dtype=dtype)
         otp = self.defineOutput(
             "xout", snames=["y%i" % i for i in range(shape_out[0])], dtype=dtype
         )

@@ -2,6 +2,7 @@ from abc import abstractmethod
 from typing import Iterable
 
 import numpy as np
+from numpy import sqrt
 from scipy.integrate import ode
 from scipy.signal import cont2discrete
 import scipy.linalg as lin
@@ -494,6 +495,7 @@ class G6DOFSystem(ASystem):
             q = E @ q
 
         Nq2 = np.sum(q ** 2)
+        # q = q / sqrt(Nq2)
         if np.abs(Nq2 - 1) > self.max_q_denorm:
             raise DenormalizedQuaternion(self.getName(), q)
 
