@@ -191,54 +191,6 @@ class Split(AComputer):
         return outputs
 
 
-class ArithmeticRouter(AComputer):
-    """From a
-
-    The input of the element is *input*
-    The outputs of the element are given by the keys of *outputs*
-    In each output, the scalar names are spt{i}
-
-    Args:
-      name
-        Name of the element
-      input_shape
-        Shape of the input data
-      outputs
-        Dictionary of outputs :
-         * the keys are the names of the outputs
-         * the values are the indices in the input vector of the chosen salars
-
-    Examples:
-      >>> out = OrderedDict()
-      >>> out['split'] = [0, 2]
-      >>> spt = Split("spt", signal_shape=(5,), outputs=out)
-      >>> out = spt.compute_outputs(t1=0, t2=1, signal=np.arange(5), split=np.zeros(2))
-      >>> out["split"]
-      array([0., 2.]...
-
-    """
-
-    __slots__ = []
-
-    def __init__(self, name: str, input_shape: int, outputs: OrderedDict):
-        AComputer.__init__(self, name=name)
-        self.defineInput(name="input", shape=input_shape)
-
-        mapping = {}
-        for oname in outputs.keys():
-            oscalar = outputs[oname]
-            snames = list(oscalar.keys())
-            self.defineOutput(name=oname, snames=snames)
-
-            code = "def __tmp(inp):\n"
-            func_code = compile(code, "<string>", "exec")
-            func = FunctionType(func_code.co_consts[0], globals(), "__tmp")
-
-            mapping[oname] = func
-
-        self.createParameter(name="mapping", value=mapping, read_only=True)
-
-
 class Group(AComputer):
     """
     Groups n signals into one
