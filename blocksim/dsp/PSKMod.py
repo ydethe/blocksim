@@ -4,6 +4,8 @@ from numpy import sqrt, sign, pi, exp, cos, sin, log2
 from .. import logger
 from .ADSPComputer import ADSPComputer
 from .CircularBuffer import CircularBuffer
+from .DSPSpectrum import DSPSpectrum
+from .DSPSignal import DSPSignal
 
 
 class PSKMapping(ADSPComputer):

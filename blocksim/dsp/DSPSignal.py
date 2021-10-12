@@ -231,7 +231,11 @@ class DSPSignal(DSPLine, ASetPoint):
 
         seq = -1 + 2 * np.array(ca * repeat, dtype=np.int8)
         sig = cls(
-            name=name, samplingStart=0, samplingPeriod=1 / sampling_freq, y_serie=seq
+            name=name,
+            samplingStart=0,
+            samplingPeriod=1 / sampling_freq,
+            y_serie=seq,
+            dtype=np.int64,
         )
         return sig
 

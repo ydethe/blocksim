@@ -364,17 +364,20 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
 
     """
     axe.grid(True)
+    x_samp = line.generateXSerie()
     transform = kwargs.pop("transform", line.default_transform)
     find_peaks = kwargs.pop("find_peaks", 0)
-    x_unit_mult = kwargs.pop("x_unit_mult", 1)
+    if "x_unit_mult" in kwargs.keys():
+        x_unit_mult = kwargs.pop("x_unit_mult")
+    else:
+        xm = np.max(np.abs(x_samp))
+        pm = (int(log10(xm)) // 3) * 3
+        x_unit_mult = 10 ** pm
     x_unit_lbl = line.getUnitAbbrev(x_unit_mult)
     lbl = kwargs.pop("label", line.name)
 
     (ret,) = axe.plot(
-        line.generateXSerie() / x_unit_mult,
-        transform(line.y_serie),
-        label=lbl,
-        **kwargs
+        x_samp / x_unit_mult, transform(line.y_serie), label=lbl, **kwargs
     )
     axe.set_xlabel(
         "%s (%s%s)"
