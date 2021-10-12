@@ -164,6 +164,7 @@ class DSPSignal(DSPLine, ASetPoint):
         repeat=1,
         sampling_freq: float = 1.023e6,
         samplingStart: float = 0,
+        bitmap=[-1, 1],
     ) -> "DSPSignal":
         """Builds Gold sequence
 
@@ -174,6 +175,12 @@ class DSPSignal(DSPLine, ASetPoint):
             Number of copies of a 1023 Gold sequence
           sv
             Identifier of the SV. Can be either the PRN number (int), or the code tap selection (list of 2 int)
+          samplingStart (s)
+            First date of the sample of the signal
+          sampling_freq (Hz)
+            Sampling frequency of the signal
+          bitmap
+            List of 2 values to map the bits on. [0, 1] returns a sequence with 0 and 1
 
         Returns:
           The :class:`blocksim.dsp.DSPSignal`. All the samples are +1 or -1
@@ -229,7 +236,9 @@ class DSPSignal(DSPLine, ASetPoint):
             )  # feedback 2,3,6,8,9,10, output sv for sat
             ca.append((g1 + g2) % 2)
 
-        seq = -1 + 2 * np.array(ca * repeat, dtype=np.int8)
+        bits = np.array(ca * repeat, dtype=np.int8)
+        a, b = bitmap
+        seq = (b - a) * bits + a
         sig = cls(
             name=name,
             samplingStart=0,
@@ -406,6 +415,10 @@ class DSPSignal(DSPLine, ASetPoint):
             default_transform=self.default_transform,
         )
         return sig
+
+    @property
+    def energy(self) -> float:
+        return np.real(self.y_serie @ self.y_serie.conj())
 
     def fft(self, win: str = "ones") -> "DSPSpectrum":
         """Applies the discrete Fourier transform

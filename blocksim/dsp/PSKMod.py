@@ -24,12 +24,14 @@ class PSKMapping(ADSPComputer):
         List of phase values. For example, in QPSK, [pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4]
       output_size
         Number of symbols computed in parallel. The size of the input vector shall therefore be output_size*mu
+      p_samp
+        For one input bit, the PSK symbol is repeated p_samp times
 
     """
 
     __slots__ = []
 
-    def __init__(self, name: str, mapping: list, output_size: int = 1):
+    def __init__(self, name: str, mapping: list, output_size: int = 1, p_samp: int = 1):
         mu = int(np.round(log2(len(mapping)), 0))
         if 2 ** mu != len(mapping):
             raise ValueError("Mapping size must be a power of 2. Got %i" % len(mapping))
@@ -40,12 +42,13 @@ class PSKMapping(ADSPComputer):
             input_name="input",
             output_name="output",
             input_size=output_size * mu,
-            output_size=output_size,
+            output_size=output_size * p_samp,
             input_dtype=np.int64,
             output_dtype=np.complex128,
         )
 
         self.createParameter("mu", value=mu, read_only=True)
+        self.createParameter("p_samp", value=p_samp, read_only=True)
         self.createParameter("mapping", value=np.array(mapping), read_only=True)
         self.createParameter("cmapping", value=exp(1j * self.mapping), read_only=True)
         self.createParameter("bmapping", value=2 ** np.arange(mu), read_only=True)
@@ -66,10 +69,12 @@ class PSKMapping(ADSPComputer):
 
         symbols = np.empty((self.output_size, n), dtype=np.complex128)
 
-        for k in range(self.output_size):
-            bits = input[k * self.mu : (k + 1) * self.mu, :]
-            idx = self.bmapping @ bits
-            symbols[k, :] = self.cmapping[idx]
+        nb_chunk = self.input_size // self.mu
+        for k in range(nb_chunk):
+            chunk_bits = input[k * self.mu : (k + 1) * self.mu, :]
+            chunk_idx = self.bmapping @ chunk_bits
+            chunk_symb = self.cmapping[chunk_idx]
+            symbols[k * self.p_samp : (k + 1) * self.p_samp, :] = chunk_symb
 
         if n == 1:
             symbols = symbols.reshape(self.output_size)

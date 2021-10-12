@@ -39,16 +39,13 @@ class TestBOC(TestBase):
         self.log = sim.getLogger()
         mod = self.log.getFlattenOutput("BOC_output", dtype=np.complex128)
 
-        n = len(mod)
         sig = DSPSignal.fromTimeAndSamples(name="sig", tps=tps, y_serie=mod)
 
         fig = plt.figure()
         axe = fig.add_subplot(111)
 
-        sp_gal = sig.fft()
-        plotDSPLine(
-            sp_gal, axe, label="BOC(%i,%i)" % (boc.m, boc.n), transform=sp_gal.to_db
-        )
+        sp = sig.fft()
+        plotDSPLine(sp, axe, label="BOC(%i,%i)" % (boc.m, boc.n), transform=sp.to_db)
 
         axe.legend()
 

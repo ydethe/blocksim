@@ -12,6 +12,7 @@ from matplotlib import pyplot as plt
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp.PSKMod import PSKMapping, PSKDemapping
 from blocksim.dsp.DSPAWGN import DSPAWGN
+from blocksim.Graphics import plotDSPLine
 from blocksim.Simulation import Simulation
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -95,12 +96,43 @@ class TestBPSK(TestBase):
 
         return fig
 
+    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 300})
+    def test_bpsk_spectrum(self):
+        fs = 1.023e6
+        p_samp = 10
+        bpsk = PSKMapping(name="bpsk", mapping=[0, pi], p_samp=p_samp)
+        prn = DSPSignal.fromGoldSequence(
+            name="PRN", sv=[2, 6], sampling_freq=fs * p_samp, bitmap=[0, 1]
+        )
+
+        sim = Simulation()
+        sim.addComputer(prn)
+        sim.addComputer(bpsk)
+        sim.connect("PRN.setpoint", "bpsk.input")
+
+        tps = prn.generateXSerie()
+        sim.simulate(tps, progress_bar=False)
+
+        self.log = sim.getLogger()
+        mod = self.log.getFlattenOutput("bpsk_output", dtype=np.complex128)
+
+        sig = DSPSignal.fromTimeAndSamples(name="sig", tps=tps, y_serie=mod)
+
+        fig = plt.figure()
+        axe = fig.add_subplot(111)
+
+        sp = sig.fft()
+        plotDSPLine(sp, axe, transform=sp.to_db)
+
+        return fig
+
 
 if __name__ == "__main__":
     # unittest.main()
 
     a = TestBPSK()
-    a.test_bpsk()
-    a.test_bpsk_noise()
+    # a.test_bpsk()
+    # a.test_bpsk_noise()
+    a.test_bpsk_spectrum()
 
     plt.show()

@@ -46,6 +46,10 @@ class DSPSpectrum(DSPLine):
             default_transform=default_transform,
         )
 
+    @property
+    def energy(self) -> float:
+        return np.real(self.y_serie @ self.y_serie.conj() * len(self))
+
     def ifft(self, win: str = "ones") -> "DSPSignal":
         """Applies the inverse discrete Fourier transform
 
