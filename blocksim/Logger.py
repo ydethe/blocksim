@@ -159,7 +159,7 @@ class Logger(object):
                 for name, val in zip(l_var, vals):
                     self.log(name, val)
 
-    def _update_bin_log_file(self, name, val):
+    def _update_bin_log_file(self, name):
         if name != "t":
             return
 
@@ -192,7 +192,7 @@ class Logger(object):
 
         self._dst.write(rec)
 
-    def _update_ascii_log_file(self, name, val):
+    def _update_ascii_log_file(self, name):
         if name != "t":
             return
 
@@ -212,12 +212,13 @@ class Logger(object):
                 self._dst.write("%s\n" % var)
 
         # Ecriture du dernier enregistrement
-        rec = np.empty(n_var)
+        rec = []
         for ivar in range(n_var):
             var = l_var[ivar]
-            rec[ivar] = self._data[var][-1]
+            rec.append(self._data[var][-1])
 
-        self._dst.write(",".join(["%f"] * n_var) % tuple(rec))
+        fmt = ",".join(["{:.6g}"] * n_var)
+        self._dst.write(fmt.format(*rec))
         self._dst.write("\n")
 
     def loadLoggerFile(
@@ -275,9 +276,9 @@ class Logger(object):
 
         if not self._dst is None:
             if self._binary:
-                self._update_bin_log_file(name, val)
+                self._update_bin_log_file(name)
             else:
-                self._update_ascii_log_file(name, val)
+                self._update_ascii_log_file(name)
 
     def getParametersName(self) -> Iterable[str]:
         return self._data.keys()

@@ -170,7 +170,7 @@ def itrf_to_geodetic(position: np.array) -> Tuple[float, float, float]:
     Returns:
       Longitude (rad)
       Latitude (rad)
-      Altitude (rad)
+      Altitude (m)
 
     Examples:
       >>> pos = geodetic_to_itrf(2,1,3)
