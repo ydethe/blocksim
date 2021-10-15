@@ -6,7 +6,6 @@ import pytest
 import numpy as np
 from numpy import log10, sqrt
 from matplotlib import pyplot as plt
-import sk_dsp_comm.digitalcom as dc
 
 from blocksim import logger
 from blocksim.dsp.OFDMA import OFDMMapping, OFDMDemapping
