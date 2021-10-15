@@ -31,8 +31,7 @@ stages:
     - source bs_env/bin/activate
     - python --version
     - python3 -m pip install -U pip
-    - pip3 install -r base_requirements.txt
-    - pip3 install -r requirements_test.txt
+    - pip3 install -r requirements_test.txt --index-url https://pypi.fury.io/manawenuz --extra-index-url https://pypi.org/simple
     - python3 setup.py develop
 
 test:

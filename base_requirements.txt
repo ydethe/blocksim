@@ -1,3 +1,0 @@
-scikit-build
-numpy==1.19.5
-https://box.johncloud.fr/slycot-0.4.0-cp36-cp36m-linux_x86_64.whl
