@@ -1,6 +1,5 @@
 wheel==0.29.0
 pre-commit==2.10.1
-tox-conda==0.7.1
 pytest==6.2.2
 pytest-mpl==0.12
 pytest-cov==2.11.1
