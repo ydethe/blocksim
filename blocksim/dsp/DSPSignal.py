@@ -162,7 +162,8 @@ class DSPSignal(DSPLine, ASetPoint):
         name: str,
         sv: Union[List[int], int],
         repeat=1,
-        sampling_freq: float = 1.023e6,
+        chip_rate: float = 1.023e6,
+        sampling_factor: int = 10,
         samplingStart: float = 0,
         bitmap=[-1, 1],
     ) -> "DSPSignal":
@@ -177,8 +178,10 @@ class DSPSignal(DSPLine, ASetPoint):
             Identifier of the SV. Can be either the PRN number (int), or the code tap selection (list of 2 int)
           samplingStart (s)
             First date of the sample of the signal
-          sampling_freq (Hz)
+          chip_rate (Hz)
             Sampling frequency of the signal
+          sampling_factor
+            Factor so that fs = sampling_factor*chip_rate
           bitmap
             List of 2 values to map the bits on. [0, 1] returns a sequence with 0 and 1
 
@@ -234,7 +237,7 @@ class DSPSignal(DSPLine, ASetPoint):
             g2 = shift(
                 G2, [2, 3, 6, 8, 9, 10], sv
             )  # feedback 2,3,6,8,9,10, output sv for sat
-            ca.append((g1 + g2) % 2)
+            ca.extend([(g1 + g2) % 2] * sampling_factor)
 
         bits = np.array(ca * repeat, dtype=np.int8)
         a, b = bitmap
@@ -242,7 +245,7 @@ class DSPSignal(DSPLine, ASetPoint):
         sig = cls(
             name=name,
             samplingStart=0,
-            samplingPeriod=1 / sampling_freq,
+            samplingPeriod=1 / chip_rate / sampling_factor,
             y_serie=seq,
             dtype=np.int64,
         )

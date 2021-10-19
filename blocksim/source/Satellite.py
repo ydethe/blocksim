@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Tuple, List
 from datetime import datetime, timedelta, timezone
 
@@ -7,40 +8,21 @@ import scipy.linalg as lin
 from skyfield.api import EarthSatellite, load
 from sgp4.api import Satrec, WGS84
 from skyfield.units import Distance, Velocity
+from skyfield.positionlib import Geocentric
 
 from .. import logger
 from ..constants import *
-from ..utils import datetime_to_skyfield, skyfield_to_datetime
+from ..utils import datetime_to_skyfield, skyfield_to_datetime, itrf_to_geodetic
 from ..core.Node import AComputer
 from .Trajectory import Trajectory
 
 
-class Satellite(AComputer):
-    """Earth-orbiting satellite, using SGP4 propagator
+__all__ = ["ASatellite", "CircleSatellite", "Satellite"]
 
-    The output name of the computer are **itrf** and **subpoint**
 
-    Args:
-      name
-        Name of the element
+class ASatellite(AComputer):
 
-    itrf:
-
-    * px : X coordinate in geocentric ITRF (m)
-    * py : Y coordinate in geocentric ITRF (m)
-    * pz : Z coordinate in geocentric ITRF (m)
-    * vx : X coordinate of velocity in geocentric ITRF (m/s)
-    * vy : Y coordinate of velocity in geocentric ITRF (m/s)
-    * vz : Z coordinate of velocity in geocentric ITRF (m/s)
-
-    subpoint:
-
-    * lon : Longitude (rad)
-    * lat : Latitude (rad)
-
-    """
-
-    __slots__ = ["__sgp4"]
+    __slots__ = []
 
     @staticmethod
     def getInitialEpoch() -> datetime:
@@ -58,16 +40,29 @@ class Satellite(AComputer):
         return t0
 
     def __init__(self, name: str):
-        AComputer.__init__(self, name)
+        AComputer.__init__(self, name=name)
+
         self.defineOutput(
             name="itrf", snames=["px", "py", "pz", "vx", "vy", "vz"], dtype=np.float64
         )
-        self.defineOutput(name="subpoint", snames=["lon", "lat"], dtype=np.float64)
-        self.__sgp4 = None
-        self.createParameter("tsync", value=None)
 
-    def _setSGP4(self, sgp4):
-        self.__sgp4 = sgp4
+    def subpoint(self, td: datetime) -> Tuple[float]:
+        """
+        Return the latitude and longitude directly beneath this position.
+
+        Args:
+          td : a datetime instance or array of datetime
+            Time for the subpoint computation
+
+        Returns:
+          lon, lat (rad)
+
+        """
+        itrf_pos_vel = self.getGeocentricITRFPositionAt(td)
+
+        lon, lat, _ = itrf_to_geodetic(itrf_pos_vel)
+
+        return lon, lat
 
     def geocentricITRFTrajectory(
         self, number_of_position=200, number_of_periods=1, color=(1, 0, 0, 0)
@@ -106,6 +101,47 @@ class Satellite(AComputer):
         traj = Trajectory(name=self.getName(), x=x, y=y, z=z, color=color)
 
         return traj
+
+    @abstractmethod
+    def getGeocentricITRFPositionAt(self, td: datetime) -> np.array:
+        pass
+
+
+class Satellite(ASatellite):
+    """Earth-orbiting satellite, using SGP4 propagator
+
+    The output name of the computer are **itrf** and **subpoint**
+
+    Args:
+      name
+        Name of the element
+
+    itrf:
+
+    * px : X coordinate in geocentric ITRF (m)
+    * py : Y coordinate in geocentric ITRF (m)
+    * pz : Z coordinate in geocentric ITRF (m)
+    * vx : X coordinate of velocity in geocentric ITRF (m/s)
+    * vy : Y coordinate of velocity in geocentric ITRF (m/s)
+    * vz : Z coordinate of velocity in geocentric ITRF (m/s)
+
+    subpoint:
+
+    * lon : Longitude (rad)
+    * lat : Latitude (rad)
+
+    """
+
+    __slots__ = ["__sgp4"]
+
+    def __init__(self, name: str):
+        ASatellite.__init__(self, name)
+        self.defineOutput(name="subpoint", snames=["lon", "lat"], dtype=np.float64)
+        self.__sgp4 = None
+        self.createParameter("tsync", value=None)
+
+    def _setSGP4(self, sgp4):
+        self.__sgp4 = sgp4
 
     def getGeocentricITRFPositionAt(self, t_calc: datetime) -> np.array:
         """
@@ -215,7 +251,7 @@ class Satellite(AComputer):
         )
         ts = load.timescale(builtin=True)
         sgp4 = EarthSatellite.from_satrec(satrec, ts)
-        sat = Satellite(name)
+        sat = cls(name)
         sat._setSGP4(sgp4)
 
         sat.tsync = t
@@ -260,39 +296,12 @@ class Satellite(AComputer):
 
         ts = load.timescale(builtin=True)
         tle_sat = EarthSatellite(line1, line2, name=name, ts=ts)
-        sat = Satellite(name)
+        sat = cls(name)
         sat._setSGP4(tle_sat)
 
         sat.tsync = sat.epoch
 
         return sat
-
-    def subpoint(self, td: datetime) -> Tuple[float]:
-        """
-        Return the latitude and longitude directly beneath this position.
-
-        Args:
-          td : a datetime instance or array of datetime
-            Time for the subpoint computation
-
-        Returns:
-          lon, lat (rad)
-
-        """
-        if hasattr(td, "__len__"):
-            t = datetime_to_skyfield(td)
-            n = len(td)
-
-        else:
-            t = datetime_to_skyfield(td)
-
-        pv = self.__sgp4.at(t)
-
-        topos = pv.subpoint()
-
-        lon, lat = topos.longitude.radians, topos.latitude.radians
-
-        return lon, lat
 
     def toEquinoctialOrbit(self) -> Tuple[float]:
         """
@@ -334,7 +343,7 @@ class Satellite(AComputer):
         inc = 2 * np.arctan(tan_inc_2)
         mano = lv - wPOm
 
-        sat = Satellite.fromOrbitalElements(
+        sat = cls.fromOrbitalElements(
             name=name,
             t=t,
             a=a,
@@ -528,6 +537,130 @@ class Satellite(AComputer):
 
         """
         pass
+
+
+class CircleSatellite(ASatellite):
+    """Earth-orbiting satellite, which follow a circle
+
+    The output name of the computer is **itrf**
+
+    Args:
+      name
+        Name of the element
+
+    itrf:
+
+    * px : X coordinate in geocentric ITRF (m)
+    * py : Y coordinate in geocentric ITRF (m)
+    * pz : Z coordinate in geocentric ITRF (m)
+    * vx : X coordinate of velocity in geocentric ITRF (m/s)
+    * vy : Y coordinate of velocity in geocentric ITRF (m/s)
+    * vz : Z coordinate of velocity in geocentric ITRF (m/s)
+
+    Args:
+      name
+        Name of the element
+      t : a datetime instance
+        The time of the orbit description
+      a (m)
+        Semi-major axis
+      inc (rad)
+        Inclination
+      mano (rad)
+        Mean anomaly
+      node (rad)
+        Right ascension of ascending node
+
+    """
+
+    __slots__ = ["__sat_puls", "__R1", "__R2"]
+
+    def __init__(
+        self,
+        name: str,
+        t: datetime,
+        a: float,
+        inc: float,
+        mano: float = 0.0,
+        node: float = 0.0,
+    ):
+        ASatellite.__init__(self, name)
+
+        t0 = self.getInitialEpoch()
+        epoch = (t - t0).total_seconds() / 86400
+        n = np.sqrt(mu / a ** 3)
+
+        # https://rhodesmill.org/skyfield/earth-satellites.html#build-a-satellite-from-orbital-elements
+        satrec = Satrec()
+        satrec.sgp4init(
+            WGS84,  # gravity model
+            "i",  # 'a' = old AFSPC mode, 'i' = improved mode
+            5,  # satnum: Satellite number
+            epoch,  # epoch: days since 1949 December 31 00:00 UT.
+            0.0,  # bstar: drag coefficient (/earth radii)
+            0.0,  # ndot: ballistic coefficient (revs/day)
+            0.0,  # nddot: second derivative of mean motion (revs/day^3)
+            0.0,  # eccentricity
+            0.0,  # argument of perigee (radians)
+            inc,  # inclination (radians)
+            mano,  # mean anomaly (radians)
+            n * 60,  # no_kozai: mean motion (radians/minute)
+            node,  # nodeo: right ascension of ascending node (radians)
+        )
+        ts = load.timescale(builtin=True)
+        sgp4 = EarthSatellite.from_satrec(satrec, ts)
+
+        td = datetime_to_skyfield(t)
+        pos, vel, _ = sgp4.ITRF_position_velocity_error(td)
+        if np.any(np.isnan(pos)) or np.any(np.isnan(vel)):
+            raise Exception(t, pos, vel)
+
+        pos *= Distance(au=1).m
+        vel *= Velocity(au_per_d=1).km_per_s * 1000
+
+        pv = np.empty(6, dtype=np.float64)
+        pv[:3] = pos
+        pv[3:] = vel
+
+        self.createParameter("t", value=t, read_only=True)
+        self.createParameter("a", value=a, read_only=True)
+        self.createParameter("inc", value=inc, read_only=True)
+        self.createParameter("mano", value=mano, read_only=True)
+        self.createParameter("node", value=node, read_only=True)
+        self.createParameter(name="initial_itrf", value=pv, read_only=True)
+
+        self.setInitialStateForOutput(initial_state=pv, output_name="itrf")
+
+        n = np.cross(pos, vel)
+        n /= lin.norm(n)
+
+        # Precomputed termes of the Rodrigues's formula
+        # https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula#Matrix_notation
+        self.__R1 = pv
+        self.__R2 = np.hstack((np.cross(n, pv[:3]), np.cross(n, pv[3:])))
+
+        self.__sat_puls = sqrt(mu / a ** 3)
+
+    def getGeocentricITRFPositionAt(self, td: datetime) -> np.array:
+        dt = (td - self.t).total_seconds()
+        th = self.__sat_puls * dt
+
+        cth = cos(th)
+        sth = sin(th)
+
+        # https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula#Matrix_notation
+        newpv = self.__R1 * cth + self.__R2 * sth
+
+        return newpv
+
+    def compute_outputs(self, t1: float, t2: float, itrf: np.array) -> dict:
+        dt = timedelta(seconds=t2)
+        td = self.t + dt
+
+        outputs = {}
+        outputs["itrf"] = self.getGeocentricITRFPositionAt(td)
+
+        return outputs
 
 
 def createSatellites(tle_file: str, tsync: datetime) -> List[Satellite]:

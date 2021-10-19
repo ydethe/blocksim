@@ -100,7 +100,12 @@ class Logger(object):
         # Lecture données
         line = stm.readline().strip()
         while line != "":
-            vals = [float(x) for x in line.split(",")]
+            vals = []
+            for x in line.split(","):
+                try:
+                    vals.append(float(x))
+                except ValueError:
+                    vals.append(complex(x))
 
             t = vals[0]
             if time_int is None or time_int[0] <= t and t < time_int[1]:

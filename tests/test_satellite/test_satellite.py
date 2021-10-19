@@ -84,7 +84,19 @@ class TestSatellite(TestBase):
     def test_iss(self):
         pth = Path(__file__).parent / "iss.tle"
         satellite = Satellite.fromTLE(str(pth))
-        pv0 = satellite.compute_outputs(0, 0, subpoint=None, itrf=None)["itrf"]
+
+        t_calc = datetime(
+            year=2021,
+            month=10,
+            day=14,
+            hour=14,
+            minute=38,
+            second=10,
+            tzinfo=timezone.utc,
+        )
+        lon, lat = satellite.subpoint(t_calc)
+        self.assertAlmostEqual(lat * 180 / pi, 37.16605088834936, delta=1e-6)
+        self.assertAlmostEqual(lon * 180 / pi, 12.690443402340033, delta=1e-6)
 
         dt = satellite.orbit_period
         t = dt.total_seconds()
@@ -136,6 +148,7 @@ if __name__ == "__main__":
 
     a = TestSatellite()
     # a.test_satellite()
-    a.test_ground_track()
+    a.test_iss()
+    # a.test_ground_track()
 
-    plt.show()
+    # plt.show()

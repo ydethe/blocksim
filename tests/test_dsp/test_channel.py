@@ -47,7 +47,7 @@ class TestChannel(TestBase):
             mano=0.0,
             node=0.0,
         )
-        lon, lat = sat.compute_outputs(0, 0, subpoint=None, itrf=None)["subpoint"]
+        lon, lat = sat.subpoint(t0)
 
         # Find a point with 45° elevation
         r = Req + 630e3
@@ -84,7 +84,7 @@ class TestChannel(TestBase):
         f0 = 10e3
         fs = 100e3
         tps = np.arange(100 * 5) / fs
-        x = exp(1j * 2 * pi * f0 * tps) * 10 * 10
+        x = exp(1j * 2 * pi * f0 * tps) * 100
         inok = np.where(tps > 1e-3)[0]
         x[inok] = 0.0
         sig = DSPSignal.fromTimeAndSamples(name="sig", tps=tps, y_serie=x)

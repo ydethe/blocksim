@@ -21,15 +21,15 @@ class WeightedOutput(Output):
 
     def resetCallback(self, frame: Frame):
         filt = self.getComputer()
+        typ = self.getDataType()
 
         self.__taps = filt.generateCoefficients()
         n = len(self.__taps)
-        self.__buf = CircularBuffer(size=n)
+        self.__buf = CircularBuffer(size=n, dtype=typ)
 
     def processSample(self, sample: np.complex128) -> np.complex128:
         self.__buf.append(sample)
-        typ = self.getDataType()
-        buf = self.__buf.getAsArray(dtype=typ)
+        buf = self.__buf.getAsArray()
         res = buf @ self.__taps
         return res
 

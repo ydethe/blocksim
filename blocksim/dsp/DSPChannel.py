@@ -8,7 +8,7 @@ from ..core.Frame import Frame
 from ..core.Node import AComputer, AWGNOutput
 from ..utils import itrf_to_azeld, itrf_to_geodetic
 from .DSPSignal import DSPSignal
-from .DelayLine import DelayLine
+from .DelayLine import InfiniteDelayLine, FiniteDelayLine
 from .klobuchar import klobuchar
 
 __all__ = ["DSPChannel"]
@@ -71,7 +71,7 @@ class DSPChannel(AComputer):
 
         otp.setInitialState(np.zeros(otp_size, dtype=otp.getDataType()))
         self.addOutput(otp)
-        self.defineOutput(name="snr", snames=["snr"], dtype=np.float64)
+        self.defineOutput(name="info", snames=["snr", "vrad"], dtype=np.float64)
 
         self.createParameter(name="wavelength", value=wavelength, read_only=True)
         self.createParameter(name="antenna_gain", value=antenna_gain, read_only=True)
@@ -90,7 +90,7 @@ class DSPChannel(AComputer):
         self.setMean(mean)
         self.setCovariance(cov)
 
-        self.__delay_line = DelayLine()
+        self.__delay_line = FiniteDelayLine(size=128, dtype=np.complex128)
 
     def setCovariance(self, cov: np.array):
         """Sets the covariance matrix of the gaussian distribution
@@ -141,9 +141,13 @@ class DSPChannel(AComputer):
         return otp.mean
 
     def atmosphericModel(self, tx_pos: np.array, rx_pos: np.array):
-        az, el, dist, vr, vs, va = itrf_to_azeld(rx_pos, tx_pos)
+        az, el, dist, _, _, _ = itrf_to_azeld(rx_pos, tx_pos)
         z = pi / 2 - el * pi / 180
         lon, lat, h = itrf_to_geodetic(rx_pos)
+
+        u = (tx_pos - rx_pos)[:3]
+        u /= lin.norm(u)
+        vrad = u @ (tx_pos[3:] - rx_pos[3:])
 
         # Saastamoinen troposhperic model
         # https://gnss-sdr.org/docs/sp-blocks/pvt/#saastamoinen
@@ -175,7 +179,7 @@ class DSPChannel(AComputer):
         dt_atm = dt_iono + dt_tropo
         L_atm = L_iono * L_tropo
 
-        return dist, L_atm, dt_atm
+        return dist, vrad, L_atm, dt_atm
 
     def compute_outputs(
         self,
@@ -185,9 +189,9 @@ class DSPChannel(AComputer):
         rxpos: np.array,
         txsig: np.array,
         rxsig: np.array,
-        snr: np.array,
+        info: np.array,
     ) -> dict:
-        d, L_atm, dt_atm = self.atmosphericModel(txpos, rxpos)
+        d, vrad, L_atm, dt_atm = self.atmosphericModel(txpos, rxpos)
 
         phi_d0 = -2 * pi * (d + c * dt_atm) / self.wavelength
 
@@ -202,6 +206,6 @@ class DSPChannel(AComputer):
 
         outputs = {}
         outputs["rxsig"] = np.array([rx_dl_sig])
-        outputs["snr"] = np.array([SNR])
+        outputs["info"] = np.array([SNR, vrad])
 
         return outputs
