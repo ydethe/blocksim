@@ -95,8 +95,8 @@ class TestSatellite(TestBase):
             tzinfo=timezone.utc,
         )
         lon, lat = satellite.subpoint(t_calc)
-        self.assertAlmostEqual(lat * 180 / pi, 37.16605088834936, delta=1e-6)
-        self.assertAlmostEqual(lon * 180 / pi, 12.690443402340033, delta=1e-6)
+        self.assertAlmostEqual(lat * 180 / pi, 37.16605088834936, delta=2e-4)
+        self.assertAlmostEqual(lon * 180 / pi, 12.690443402340033, delta=2e-4)
 
         dt = satellite.orbit_period
         t = dt.total_seconds()

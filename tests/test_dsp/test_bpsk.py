@@ -102,7 +102,11 @@ class TestBPSK(TestBase):
         p_samp = 10
         bpsk = PSKMapping(name="bpsk", mapping=[0, pi], p_samp=p_samp)
         prn = DSPSignal.fromGoldSequence(
-            name="PRN", sv=[2, 6], sampling_freq=fs * p_samp, bitmap=[0, 1]
+            name="PRN",
+            sv=[2, 6],
+            chip_rate=1.023e6,
+            sampling_factor=p_samp,
+            bitmap=[0, 1],
         )
 
         sim = Simulation()

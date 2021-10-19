@@ -26,7 +26,7 @@ class TestBOC(TestBase):
         m = 1
         boc = BOCMapping(name="BOC", f_ref=fs, m=m, n=n, p_samp=p_samp, input_size=1)
         prn = DSPSignal.fromGoldSequence(
-            name="PRN", sv=[3, 7], sampling_freq=fs * p_samp * m
+            name="PRN", sv=[3, 7], chip_rate=1.023e6, sampling_factor=p_samp * m
         )
 
         sim = Simulation()
