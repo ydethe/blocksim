@@ -320,9 +320,14 @@ class DSPSignal(DSPLine, ASetPoint):
         """
         t0 = tps[0]
         dt = tps[1] - t0
-        err = np.max(np.abs(np.diff(tps) / dt - 1))
-        if err > 1e-6:
-            raise ValueError("Time serie not equally spaced")
+        err = np.abs(np.diff(tps) / dt - 1)
+        ierr = np.nanargmax(err)
+        max_err = err[ierr]
+        if max_err > 1e-6:
+            raise ValueError(
+                "Time serie not equally spaced : at index %i, dt=%g and dt0=%g"
+                % (ierr, tps[ierr + 1] - tps[ierr], dt)
+            )
 
         return cls(
             name=name,

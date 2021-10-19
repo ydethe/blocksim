@@ -187,6 +187,36 @@ class DSPLine(object):
         """
         return self.samplingStart + (len(self) - 1) * self.samplingPeriod
 
+    def truncate(self, samplingStart: float, samplingStop: float) -> "DSPLine":
+        """Truncates a line between x=samplingStart and x=samplingStop.
+
+        Args:
+          samplingStart
+            Beginning abscissa of the new line
+          samplingStop
+            End abscissa of the new line
+
+        Returns:
+          A truncated new line with the same spacing
+
+        """
+        istart = np.where(self.__x_serie >= samplingStart)[0]
+        iend = np.where(self.__x_serie < samplingStop)[0]
+        iok = np.intersect1d(istart, iend)
+        if len(iok) == 0:
+            y_serie = np.array([], dtype=np.complex128)
+        else:
+            samplingStart = self.generateXSerie(iok[0])
+            y_serie = self.y_serie[iok]
+
+        return self.__class__(
+            name=self.name,
+            samplingStart=samplingStart,
+            samplingPeriod=self.samplingPeriod,
+            y_serie=y_serie,
+            default_transform=self.default_transform,
+        )
+
     def resample(
         self,
         samplingStart: float,

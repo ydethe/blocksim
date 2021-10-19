@@ -3,6 +3,7 @@ from pathlib import Path
 import unittest
 
 import numpy as np
+from numpy import pi, exp, sin
 from matplotlib import pyplot as plt
 import pytest
 
@@ -29,14 +30,14 @@ class TestLogger(TestBase):
 
         log.openFile()
         for i in range(ns):
-            log.log("x", np.sin(i * dt * f * 2 * np.pi + 1))
+            log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
             log.log("_", 0)  # Variable named '_' is not recorded
 
         log.reset()
         log.openFile()
         for i in range(ns):
-            log.log("x", np.sin(i * dt * f * 2 * np.pi + 1))
+            log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
 
         del log
@@ -49,9 +50,26 @@ class TestLogger(TestBase):
         self.assertIn("x", vars)
 
         tps = np.arange(ns) * dt
-        x = np.sin(tps * f * 2 * np.pi + 1)
+        x = exp(1j * tps * f * 2 * np.pi + 1)
         err_t = np.max(np.abs(tps - log2.getValue("t")))
         err_x = np.max(np.abs(x - log2.getValue("x")))
+        self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
+        self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
+
+    def test_load_binary_v1(self):
+        pth = Path(__file__).parent / "test_bin_v1.log"
+
+        log = Logger()
+        log.loadLoggerFile(str(pth), binary=True)
+
+        dt = 0.01
+        f = 11
+        ns = 1000
+
+        tps = np.arange(ns) * dt
+        x = sin(tps * f * 2 * np.pi + 1)
+        err_t = np.max(np.abs(tps - log.getValue("t")))
+        err_x = np.max(np.abs(x - log.getValue("x")))
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
         self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
 
@@ -70,7 +88,7 @@ class TestLogger(TestBase):
 
         log.openFile()
         for i in range(ns):
-            log.log("x", np.sin(i * dt * f * 2 * np.pi + 1))
+            log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
         del log
 
@@ -78,7 +96,7 @@ class TestLogger(TestBase):
         log2.loadLoggerFile(str(pth), binary=True)
 
         tps = np.arange(ns) * dt
-        x = np.sin(tps * f * 2 * np.pi + 1)
+        x = exp(1j * tps * f * 2 * np.pi + 1)
         err_t = np.max(np.abs(tps - log2.getValue("t")))
         err_x = np.max(np.abs(x - log2.getValue("x")))
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
@@ -92,5 +110,11 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestLogger()
+    # a.setUp()
+    # a.test_save_load_ascii()
+
+    # a.setUp()
+    # a.test_save_load_binary()
+
     a.setUp()
-    a.test_save_load_ascii()
+    a.test_load_binary_v1()

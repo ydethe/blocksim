@@ -123,6 +123,8 @@ class Logger(object):
 
         if ver == 1:
             self._load_bin_log_file_v1(stm, time_int)
+        elif ver == 2:
+            self._load_bin_log_file_v2(stm, time_int)
         else:
             raise InvalidLogFile(stm.name)
 
@@ -164,6 +166,95 @@ class Logger(object):
                 for name, val in zip(l_var, vals):
                     self.log(name, val)
 
+    def _load_bin_log_file_v2(self, stm, time_int):
+        # Lecture entete
+        sn_var = stm.read(4)
+        if len(sn_var) != 4:
+            raise InvalidLogFile(stm.name)
+
+        # Lecture de l'entete
+        n_var = struct.unpack("i", sn_var)[0]
+
+        l_var = []
+        rec_sze = 0
+        for ivar in range(n_var):
+            slname = stm.read(4)
+            if len(slname) != 4:
+                raise InvalidLogFile(stm.name)
+
+            lname = struct.unpack("i", slname)[0]
+
+            bname = stm.read(lname)
+            if len(bname) != lname:
+                raise InvalidLogFile(stm.name)
+            name = bname.decode("utf-8")
+            typ = stm.read(1)
+            typ, pck_f, unpck_f, sze = self._findType(typ)
+            l_var.append((name, unpck_f, sze))
+            rec_sze += sze
+
+        # Lecture données
+        while True:
+            rec = stm.read(rec_sze)
+            if len(rec) == 0:
+                break
+            elif len(rec) != rec_sze:
+                raise InvalidLogFile(stm.name)
+
+            ival = 0
+            kval = 0
+            for name, unpck_f, sze in l_var:
+                val = unpck_f(rec[ival : ival + sze])
+                ival += sze
+                kval += 1
+                if kval == 1:
+                    t = val
+
+                if time_int is None or time_int[0] <= t and t < time_int[1]:
+                    self.log(name, val)
+
+    @classmethod
+    def _findType(cls, val):
+        from struct import pack, unpack, calcsize
+
+        def unpack_cplxe(z):
+            x, y = unpack("dd", z)
+            return x + 1j * y
+
+        fmt_dict = {b"I": "q", b"F": "d", b"C": "dd", b"B": "?"}
+
+        pck_dict = {
+            b"I": lambda x: lambda x: pack(fmt_dict[b"I"], x),
+            b"F": lambda x: pack(fmt_dict[b"F"], x),
+            b"C": lambda x: pack(fmt_dict[b"C"], np.real(x), np.imag(x)),
+            b"B": lambda x: pack(fmt_dict[b"B"], x),
+        }
+
+        unpck_dict = {
+            b"I": lambda x: unpack("q", x)[0],
+            b"F": lambda x: unpack("d", x)[0],
+            b"C": unpack_cplxe,
+            b"B": lambda x: unpack("?", x)[0],
+        }
+
+        if isinstance(val, bytes):
+            typ = val
+        elif isinstance(val, (int, np.int8, np.int16, np.int32, np.int64)):
+            typ = b"I"
+        elif isinstance(val, (float, np.float16, np.float32, np.float64)):
+            typ = b"F"
+        elif isinstance(val, (complex, np.complex64, np.complex128)):
+            typ = b"C"
+        elif isinstance(val, (bool)):
+            typ = b"B"
+        else:
+            raise ValueError("Impossible to determine type of %s" % val)
+
+        pck_f = pck_dict[typ]
+        unpck_f = unpck_dict[typ]
+        sze = calcsize(fmt_dict[typ])
+        return typ, pck_f, unpck_f, sze
+
     def _update_bin_log_file(self, name):
         if name != "t":
             return
@@ -177,22 +268,26 @@ class Logger(object):
 
         # Ecriture de l'entete si pas déjà fait
         if n == 1:
-            sver = struct.pack("i", 1)
+            sver = struct.pack("i", 2)
             self._dst.write(b"%b" % sver)
 
             llvar = struct.pack("i", n_var)
             self._dst.write(b"%b" % llvar)
 
             for var in l_var:
+                val = self._data[var][-1]
+                typ, _, _, _ = self._findType(val)
+
                 bname = var.encode("utf-8")
                 lname = struct.pack("i", len(bname))
-                self._dst.write(b"%b%b" % (lname, bname))
+                self._dst.write(b"%b%b%b" % (lname, bname, typ))
 
         # Ecriture du dernier enregistrement
         rec = b""
         for var in l_var:
             val = self._data[var][-1]
-            sval = struct.pack("d", val)
+            _, pck_f, _, _ = self._findType(val)
+            sval = pck_f(val)
             rec += sval
 
         self._dst.write(rec)
