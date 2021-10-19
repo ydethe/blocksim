@@ -109,7 +109,7 @@ class CircularBuffer(object):
         """
         iel = min(self.inserted_elements, self.__size - 1)
 
-        min_tab = self[self.__size - iel]
+        min_tab = self[0]
         max_tab = self[-1]
 
         if value < min_tab:
@@ -119,7 +119,7 @@ class CircularBuffer(object):
 
         if self.__last_search_idx < 0:
             # Dichotomic search
-            ka = self.__size - 1 - iel
+            ka = 0
             kb = self.__size - 2
             found = False
 
