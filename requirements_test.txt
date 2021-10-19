@@ -1,5 +1,5 @@
---index-url https://pypi.fury.io/manawenuz/
---extra-index-url https://pypi.org/simple/
+# --index-url https://pypi.fury.io/manawenuz/
+# --extra-index-url https://pypi.org/simple/
 numpy==1.19.5
 slycot==0.3.5
 scipy==1.5.4
