@@ -1,6 +1,5 @@
 wheel
-# slycot==0.3.5.0
-# slycot==0.4.0.0
+slycot==0.3.5
 numpy
 scipy
 matplotlib
@@ -14,6 +13,5 @@ skyfield
 jplephem
 astropy
 parse
-# scikit-dsp-comm
 panda3d
 scikit-commpy
