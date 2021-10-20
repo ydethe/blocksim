@@ -5,9 +5,8 @@ import numpy as np
 from numpy import log10, exp, pi, sqrt
 from numpy.fft import fft, fftshift
 from scipy.signal import correlate, lfilter_zi, lfilter, firwin2
-from .utils import get_window
 
-from .utils import phase_unfold, zadoff_chu, shift
+from . import get_window, phase_unfold
 from .DSPLine import DSPLine
 from ..control.SetPoint import ASetPoint
 
@@ -153,130 +152,6 @@ class DSPSignal(DSPLine, ASetPoint):
             samplingStart=samplingStart,
             samplingPeriod=samplingPeriod,
             y_serie=x,
-        )
-        return sig
-
-    @classmethod
-    def fromGoldSequence(
-        cls,
-        name: str,
-        sv: Union[List[int], int],
-        repeat=1,
-        chip_rate: float = 1.023e6,
-        sampling_factor: int = 10,
-        samplingStart: float = 0,
-        bitmap=[-1, 1],
-    ) -> "DSPSignal":
-        """Builds Gold sequence
-
-        Args:
-          name
-            Name of the signal
-          repeat
-            Number of copies of a 1023 Gold sequence
-          sv
-            Identifier of the SV. Can be either the PRN number (int), or the code tap selection (list of 2 int)
-          samplingStart (s)
-            First date of the sample of the signal
-          chip_rate (Hz)
-            Sampling frequency of the signal
-          sampling_factor
-            Factor so that fs = sampling_factor*chip_rate
-          bitmap
-            List of 2 values to map the bits on. [0, 1] returns a sequence with 0 and 1
-
-        Returns:
-          The :class:`blocksim.dsp.DSPSignal`. All the samples are +1 or -1
-
-        """
-        SV_list = {
-            1: [2, 6],
-            2: [3, 7],
-            3: [4, 8],
-            4: [5, 9],
-            5: [1, 9],
-            6: [2, 10],
-            7: [1, 8],
-            8: [2, 9],
-            9: [3, 10],
-            10: [2, 3],
-            11: [3, 4],
-            12: [5, 6],
-            13: [6, 7],
-            14: [7, 8],
-            15: [8, 9],
-            16: [9, 10],
-            17: [1, 4],
-            18: [2, 5],
-            19: [3, 6],
-            20: [4, 7],
-            21: [5, 8],
-            22: [6, 9],
-            23: [1, 3],
-            24: [4, 6],
-            25: [5, 7],
-            26: [6, 8],
-            27: [7, 9],
-            28: [8, 10],
-            29: [1, 6],
-            30: [2, 7],
-            31: [3, 8],
-            32: [4, 9],
-        }
-
-        if not hasattr(sv, "__iter__"):
-            sv = SV_list[sv]
-
-        # init registers
-        G1 = [1 for _ in range(10)]
-        G2 = [1 for _ in range(10)]
-
-        ca = []
-        for _ in range(1023):
-            g1 = shift(G1, [3, 10], [10])  # feedback 3,10, output 10
-            g2 = shift(
-                G2, [2, 3, 6, 8, 9, 10], sv
-            )  # feedback 2,3,6,8,9,10, output sv for sat
-            ca.extend([(g1 + g2) % 2] * sampling_factor)
-
-        bits = np.array(ca * repeat, dtype=np.int8)
-        a, b = bitmap
-        seq = (b - a) * bits + a
-        sig = cls(
-            name=name,
-            samplingStart=0,
-            samplingPeriod=1 / chip_rate / sampling_factor,
-            y_serie=seq,
-            dtype=np.int64,
-        )
-        return sig
-
-    @classmethod
-    def fromZadoffChu(
-        cls,
-        name: str,
-        n_zc: int,
-        u: int,
-        sampling_freq: float,
-        samplingStart: float = 0,
-    ) -> "DSPSignal":
-        """Builds Zadoff-Chu sequence
-
-        Args:
-          name
-            Name of the signal
-          n_zc
-            Length of the Zadoff-Chu sequence
-          u
-            Index of the Zadoff-Chu sequence
-
-        Returns:
-          The :class:`blocksim.dsp.DSPSignal`
-
-        """
-        seq = zadoff_chu(u, n_zc)
-        sig = cls(
-            name=name, samplingStart=0, samplingPeriod=1 / sampling_freq, y_serie=seq
         )
         return sig
 

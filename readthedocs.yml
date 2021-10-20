@@ -33,7 +33,8 @@ build:
 python:
   version: 3.6
   install:
-    - requirements: docs/requirements.txt
+    - requirements: base_requirements.txt
     - requirements: requirements_test.txt
+    - requirements: docs/requirements.txt
     - method: pip
       path: .

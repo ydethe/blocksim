@@ -20,18 +20,11 @@ from . import logger
 __all__ = [
     "casedpath",
     "resource_path",
-    "geodetic_to_itrf",
-    "itrf_to_geodetic",
-    "build_env",
-    "itrf_to_azeld",
     "test_diag",
     "calc_cho",
     "deg",
     "rad",
     "assignVector",
-    "datetime_to_skyfield",
-    "skyfield_to_datetime",
-    "pdot",
     "quat_to_matrix",
     "matrix_to_quat",
     "matrix_to_euler",
@@ -53,8 +46,8 @@ def resource_path(resource: str) -> str:
     """
 
     Examples:
-      >>> resource_path('8081_earthmap4k.jpg') # doctest: +ELLIPSIS
-      '.../blocksim/blocksim/resources/8081_earthmap4k.jpg'
+      >>> resource_path('dummy.txt') # doctest: +ELLIPSIS
+      '.../blocksim/blocksim/resources/dummy.txt'
 
     """
     from importlib import import_module
@@ -75,179 +68,6 @@ def resource_path(resource: str) -> str:
             return path
 
     raise FileExistsError(resource)
-
-
-def build_env(pos: np.array) -> np.array:
-    """Builds a ENV frame at a given position
-
-    Args:
-      pos
-        Position (m) of a point in ITRF
-
-    Returns:
-      Matrix :
-      * Local North vector
-      * Local East vector
-      * Local Vertical vector
-
-    """
-    # Local ENV for the observer
-    vert = pos.copy()
-    vert /= lin.norm(vert)
-
-    east = np.cross(np.array([0, 0, 1]), pos)
-    east /= lin.norm(east)
-
-    north = np.cross(vert, east)
-
-    env = np.empty((3, 3))
-    env[:, 0] = east
-    env[:, 1] = north
-    env[:, 2] = vert
-
-    return env
-
-
-def geodetic_to_itrf(lon, lat, h) -> np.array:
-    """
-    Compute the Geocentric (Cartesian) Coordinates X, Y, Z
-    given the Geodetic Coordinates lat, lon + Ellipsoid Height h
-
-    Args:
-      lon (rad)
-        L
-      lat (rad)
-        Latitude
-      h (m)
-        Altitude
-
-    Returns:
-      x, y, z (m) : geocentric position as numpy array
-
-    Examples:
-      >>> x,y,z = geodetic_to_itrf(0,0,0)
-
-    """
-    N = Req / sqrt(1 - (1 - (1 - 1 / rf) ** 2) * (sin(lat)) ** 2)
-    X = (N + h) * cos(lat) * cos(lon)
-    Y = (N + h) * cos(lat) * sin(lon)
-    Z = ((1 - 1 / rf) ** 2 * N + h) * sin(lat)
-
-    return np.array([X, Y, Z])
-
-
-def Iter_phi_h(x: float, y: float, z: float, eps: float = 1e-6) -> Tuple[float, float]:
-    r = lin.norm((x, y, z))
-    p = sqrt(x ** 2 + y ** 2)
-
-    N = Req
-    hg = r - sqrt(Req - Rpo)
-    e = sqrt(1 - Rpo ** 2 / Req ** 2)
-    phig = arctan(z * (N + hg) / (p * (N * (1 - e ** 2) + hg)))
-
-    cont = True
-    while cont:
-        hgp = hg
-        phigp = phig
-
-        N = Req / sqrt(1 - e ** 2 * sin(phigp) ** 2)
-        hg = p / cos(phigp) - N
-        phig = arctan(z * (N + hg) / (p * (N * (1 - e ** 2) + hg)))
-
-        if eps > max(abs(phigp - phig), abs(hgp - hg)):
-            cont = False
-
-    return phig, hgp
-
-
-def itrf_to_geodetic(position: np.array) -> Tuple[float, float, float]:
-    """Converts the ITRF coordinates into latitude, longiutde, altitude (WGS84)
-
-    Args:
-      position (m)
-        x, y, z position in ITRF frame
-
-    Returns:
-      Longitude (rad)
-      Latitude (rad)
-      Altitude (m)
-
-    Examples:
-      >>> pos = geodetic_to_itrf(2,1,3)
-      >>> lon,lat,alt = itrf_to_geodetic(pos)
-      >>> lon # doctest: +ELLIPSIS
-      2.0...
-      >>> lat # doctest: +ELLIPSIS
-      1.0...
-      >>> alt # doctest: +ELLIPSIS
-      3.0...
-
-    """
-    x = position[0]
-    y = position[1]
-    z = position[2]
-    p = sqrt(x ** 2 + y ** 2)
-    cl = x / p  # cos(lambda)
-    sl = y / p  # sin(lambda)
-    lon = arctan2(sl, cl)
-    lat, alt = Iter_phi_h(x, y, z)
-
-    return lon, lat, alt
-
-
-def itrf_to_azeld(obs: np.array, sat: np.array) -> np.array:
-    """Converts an ITRF position & velocity into
-    azimut, elevation, distance, radial velocity, slope of velocity, azimut of velocity
-
-    Args:
-      obs
-        Position (m) & velocity (m/s) of terrestrial observer in ITRF
-      sat
-        Position (m) & velocity (m/s) of the observed satellite in ITRF
-
-    Returns:
-      Azimut (deg)
-      Elevation (deg)
-      Distance (m)
-      Radial velocity (m/s)
-      Slope of velocity (deg)
-      Azimut of velocity (deg)
-
-    """
-    # Local ENV for the observer
-    obs_env = build_env(obs[:3])
-
-    x, y, z = obs_env.T @ (sat[:3] - obs[:3])
-
-    dist = lin.norm((x, y, z))
-
-    if z > dist:
-        z = dist
-        logger.warning("Near zenith elevation")
-    elif z < -dist:
-        z = -dist
-        logger.warning("Near nadir elevation")
-
-    el = arcsin(z / dist) * 180 / pi
-    az = arctan2(x, y) * 180 / pi
-
-    # Local ENV for the satellite
-    sat_env = build_env(sat[:3])
-    vx, vy, vz = sat_env.T @ (sat[3:] - obs[3:])
-
-    vr = lin.norm((vx, vy, vz))
-
-    if vz > vr:
-        vz = vr
-        logger.warning("Near zenith velocity")
-    elif vz < -vr:
-        vz = -vr
-        logger.warning("Near nadir velocity")
-
-    vs = arcsin(vz / vr) * 180 / pi
-    va = arctan2(vx, vy) * 180 / pi
-
-    return az, el, dist, vr, vs, va
 
 
 def test_diag(A: np.array) -> bool:
@@ -415,64 +235,6 @@ def assignVector(
             raise WrongDataType(txt)
 
     return res
-
-
-def datetime_to_skyfield(td: datetime) -> Time:
-    """
-    Converts a datetime struct to a skyfield Time struct
-
-    Args:
-      td : a datetime instance or array of datetime
-        Time to convert
-
-    Returns:
-      Skyfield date and time structure
-
-    Examples:
-    >>> fmt = "%Y/%m/%d %H:%M:%S.%f"
-    >>> sts = "2021/04/15 09:29:54.996640"
-    >>> tsync = datetime.strptime(sts, fmt)
-    >>> tsync = tsync.replace(tzinfo=utc)
-    >>> datetime_to_skyfield(tsync)
-    <Time tt=2459319.8965761648>
-
-    """
-    ts = load.timescale(builtin=True)
-    t = ts.utc(td)
-    return t
-
-
-def skyfield_to_datetime(t: Time) -> datetime:
-    """
-    Converts a skyfield Time struct to a datetime struct
-
-    Args:
-      t
-        Skyfield date and time structure
-
-    Returns:
-      A datetime instance
-
-    """
-    return t.utc_datetime()
-
-
-def pdot(u: np.array, v: np.array) -> float:
-    """Pseudo scalar product :
-
-    :math:`x.x'+y.y'+z.z'-t.t'`
-
-    Args:
-      u
-        First quadri-vector
-      v
-        Second quadri-vector
-
-      Returns:
-        Pseudo scalar product
-
-    """
-    return u[0] * v[0] + u[1] * v[1] + u[2] * v[2] - u[3] * v[3]
 
 
 def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> np.array:

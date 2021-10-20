@@ -7,7 +7,7 @@ from numpy import cos, sin, sqrt, exp
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.Graphics import plotDSPLine
+from blocksim.graphics import plotDSPLine
 from blocksim.core.Node import Frame
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.control.System import ASystem

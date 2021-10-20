@@ -8,7 +8,7 @@ from scipy import linalg as lin
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.Graphics import plotBode, plotDSPLine
+from blocksim.graphics import plotBode, plotDSPLine
 from blocksim.dsp.DSPFilter import DSPFilter
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.Simulation import Simulation

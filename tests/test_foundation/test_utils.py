@@ -7,7 +7,7 @@ from numpy import pi, exp
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.dsp.utils import phase_unfold
+from blocksim.dsp import phase_unfold
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

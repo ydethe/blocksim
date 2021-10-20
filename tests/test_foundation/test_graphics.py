@@ -7,13 +7,13 @@ from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.Logger import Logger
-from blocksim.Graphics import (
+from blocksim.graphics import (
     plotFromLogger,
     createFigureFromSpec,
-    AxeSpec,
-    FigureSpec,
     plotVerif,
 )
+from blocksim.graphics.AxeSpec import AxeSpec
+from blocksim.graphics.FigureSpec import FigureSpec
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

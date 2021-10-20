@@ -17,7 +17,7 @@ from blocksim.control.Controller import PIDController
 from blocksim.control.SetPoint import Step
 from blocksim.control.Estimator import MadgwickFilter, MahonyFilter
 from blocksim.utils import deg, rad, euler_to_quat
-from blocksim.Graphics import plotFromLogger
+from blocksim.graphics import plotFromLogger
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

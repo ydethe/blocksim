@@ -259,6 +259,41 @@ class DSPLine(object):
         )
 
     @classmethod
+    def to_db_lim(cls, low: float) -> Callable:
+        """Returns a function that turns a complex signal into the power serie of the signal, in dB.
+
+        Args:
+          low (dB)
+            The min value to clamp to
+
+        Returns:
+          The function to map on a complex time serie
+
+        Examples:
+          >>> f = DSPLine.to_db_lim(low=-80)
+          >>> f(1e-3)
+          -60.0
+          >>> f(1e-4)
+          -80.0
+          >>> f(1e-5)
+          -80.0
+
+        """
+
+        def _to_db(x):
+            low_lin = 10 ** (low / 10)
+            amp = np.real(np.conj(x) * x)
+            if hasattr(amp, "__iter__"):
+                i_th = np.where(amp < low_lin)[0]
+                amp[i_th] = low_lin
+            else:
+                amp = max(low_lin, amp)
+
+            return 10 * np.log10(amp)
+
+        return _to_db
+
+    @classmethod
     def to_db(cls, x: np.array, low: float = -80) -> np.array:
         """Converts the samples into their power, in dB.
         If a sample's power is below *low*, the dB value in clamped to *low*.
@@ -415,3 +450,9 @@ class DSPLine(object):
             y_serie=y_serie,
             default_transform=self.default_transform,
         )
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()

@@ -8,7 +8,9 @@ import numpy as np
 from numpy import sqrt, cos, sin, exp, pi
 from matplotlib import pyplot as plt
 
-from blocksim.Graphics import FigureSpec, AxeSpec, plotVerif
+from blocksim.graphics.FigureSpec import FigureSpec
+from blocksim.graphics.AxeSpec import AxeSpec
+from blocksim.graphics import plotVerif
 
 
 def exact(t, yyp, vvp, u):

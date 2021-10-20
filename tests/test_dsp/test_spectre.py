@@ -7,7 +7,7 @@ from numpy import pi, exp
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.Graphics import plotDSPLine
+from blocksim.graphics import plotDSPLine
 from blocksim.dsp.DSPSpectrum import DSPSpectrum
 from blocksim.dsp.DSPSignal import DSPSignal
 
