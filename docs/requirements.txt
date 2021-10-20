@@ -7,3 +7,4 @@ sphinx-gallery
 sphinxcontrib-apidoc
 sphinxcontrib-napoleon
 mock
+
