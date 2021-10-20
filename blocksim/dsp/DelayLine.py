@@ -87,7 +87,7 @@ class FiniteDelayLine(ADelayLine):
                 "Violation of constraint ta <= x : ta=%g, x=%g" % (ta, x)
             )
 
-        if np.isnan(tb) or x >= tb:
+        if np.isnan(tb) or x > tb:
             raise AssertionError(
                 "Violation of constraint x < tb : x=%g, tb=%g" % (x, tb)
             )

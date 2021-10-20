@@ -203,10 +203,12 @@ class DSPChannel(AComputer):
 
         if self.nodop:
             phi_d0 = 0.0
-            delay = 0.0
+            vrad = 0.0
+            d = 0.0
         else:
             phi_d0 = -2 * pi * (d + c * dt_atm) / self.wavelength
-            delay = d / c + dt_atm
+
+        delay = d / c + dt_atm
 
         rxsig = txsig[0] * self.__gain_coef / sqrt(L_atm) / d * exp(1j * phi_d0)
 

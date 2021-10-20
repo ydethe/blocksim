@@ -13,12 +13,12 @@ from blocksim.dsp.DSPSignal import DSPSignal
 ###############################################################################
 # Reference Gold sequence. The argument sv=[2, 6] is the
 
-y1 = DSPSignal.fromGoldSequence(name="s1", sv=[2, 6], repeat=1, sampling_freq=1.023e6)
+y1 = DSPSignal.fromGoldSequence(name="s1", sv=[2, 6], repeat=1, chip_rate=1.023e6)
 
 ###############################################################################
 # Noisy received signal
 
-y = DSPSignal.fromGoldSequence(name="s1", sv=[2, 6], repeat=20, sampling_freq=1.023e6)
+y = DSPSignal.fromGoldSequence(name="s1", sv=[2, 6], repeat=20, chip_rate=1.023e6)
 y = y.applyGaussianNoise(pwr=200)
 
 ###############################################################################

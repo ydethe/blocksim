@@ -132,4 +132,4 @@ if __name__ == "__main__":
     a.setUp()
     a.test_channel()
 
-    plt.show()
+    # plt.show()
