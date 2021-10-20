@@ -107,10 +107,16 @@ class CircularBuffer(object):
           -99
 
         """
-        iel = min(self.inserted_elements, self.__size - 1)
+        if self.inserted_elements == 0:
+            return -99
 
-        min_tab = self[0]
+        iel = min(self.inserted_elements, self.__size)
+
+        min_tab = self[self.__size - iel]
         max_tab = self[-1]
+
+        assert not np.isnan(min_tab)
+        assert not np.isnan(max_tab)
 
         if value < min_tab:
             return -99
@@ -141,21 +147,29 @@ class CircularBuffer(object):
 
         else:
             km = self.__last_search_idx
-            if km == self.__size - 2 and value >= self[km]:
+            while np.isnan(self[km]):
+                km += 1
+            lxm = self[km]
+            if km == self.__size - 2 and value >= lxm:
                 search = False
-            elif value > self[km] or np.isnan(self[km]):
+            elif value > lxm or np.isnan(lxm):
                 way = 1
                 search = True
-            elif value < self[km]:
+            elif value < lxm:
                 way = -1
                 search = True
             else:
                 search = False
 
-            xm = self[km]
+            xm = lxm
+            count = 0
             while search and (way * value > way * xm or np.isnan(xm)):
                 km += way
                 xm = self[km]
+                if km == 0:
+                    search = False
+                count += 1
+                assert count < self.__size + 1
             if search and way == 1:
                 km -= 1
 

@@ -44,8 +44,8 @@ class TestSatellite(TestBase):
         err = lin.norm(pv - pv0)
         self.assertAlmostEqual(err, 0, delta=500)
 
-        sp = satellite.subpoint(t_init)
-        lon_ref = -1.0207588638091307
+        sp = satellite.subpoint(0.0)
+        lon_ref = -1.020771898706975
         lat_ref = 0.0
         self.assertAlmostEqual(sp[0], lon_ref, delta=1e-9)
         self.assertAlmostEqual(sp[1], lat_ref, delta=1e-9)
@@ -94,9 +94,10 @@ class TestSatellite(TestBase):
             second=10,
             tzinfo=timezone.utc,
         )
-        lon, lat = satellite.subpoint(t_calc)
-        self.assertAlmostEqual(lat * 180 / pi, 37.16605088834936, delta=2e-4)
-        self.assertAlmostEqual(lon * 180 / pi, 12.690443402340033, delta=2e-4)
+        dt = (t_calc - satellite.epoch).total_seconds()
+        lon, lat = satellite.subpoint(dt)
+        self.assertAlmostEqual(lat * 180 / pi, 37.16605088834936, delta=5e-4)
+        self.assertAlmostEqual(lon * 180 / pi, 12.690443402340033, delta=5e-4)
 
         dt = satellite.orbit_period
         t = dt.total_seconds()
@@ -147,8 +148,8 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestSatellite()
-    # a.test_satellite()
+    a.test_satellite()
     a.test_iss()
-    # a.test_ground_track()
+    a.test_ground_track()
 
-    # plt.show()
+    plt.show()

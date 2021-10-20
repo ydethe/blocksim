@@ -404,13 +404,38 @@ class Logger(object):
         for k in self.getParametersName():
             if k.startswith(name):
                 lname.append(k)
-        lname.sort()
 
         nname = len(lname)
         nd = self.getDataSize()
         res = np.empty(nd * nname, dtype=dtype)
         for idx, name in enumerate(lname):
             res[idx::nname] = self.getValue(name)
+
+        return res
+
+    def getMatrixOutput(self, name: str, dtype=np.complex128) -> np.array:
+        """Gets the list of output vectors for a computer's output
+
+        Args:
+          name
+            Name of an output. For example, for a sensor, *sensor_measurement*
+          dtype
+            Type of the output array
+
+        Returns:
+          An 2D array of the output
+
+        """
+        lname = []
+        for k in self.getParametersName():
+            if k.startswith(name):
+                lname.append(k)
+
+        nname = len(lname)
+        nd = self.getDataSize()
+        res = np.empty((nname, nd), dtype=dtype)
+        for idx, name in enumerate(lname):
+            res[idx, :] = self.getValue(name)
 
         return res
 

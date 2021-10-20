@@ -43,6 +43,8 @@ class DSPChannel(AComputer):
         Alpha parameters for Klobuchar
       beta
         Alpha parameters for Klobuchar
+      nodop
+        Remove distance (delay) & Doppler effects
 
     """
 
@@ -58,6 +60,7 @@ class DSPChannel(AComputer):
         noise_factor: float,
         alpha: np.array,
         beta: np.array,
+        nodop: bool = False,
         dtype=np.complex128,
     ):
         AComputer.__init__(self, name=name)
@@ -71,7 +74,11 @@ class DSPChannel(AComputer):
 
         otp.setInitialState(np.zeros(otp_size, dtype=otp.getDataType()))
         self.addOutput(otp)
-        self.defineOutput(name="info", snames=["snr", "vrad"], dtype=np.float64)
+        self.defineOutput(
+            name="info",
+            snames=["snr", "dist", "vrad", "atm_losses", "atm_delay"],
+            dtype=np.float64,
+        )
 
         self.createParameter(name="wavelength", value=wavelength, read_only=True)
         self.createParameter(name="antenna_gain", value=antenna_gain, read_only=True)
@@ -80,6 +87,7 @@ class DSPChannel(AComputer):
         self.createParameter(name="noise_factor", value=noise_factor, read_only=True)
         self.createParameter(name="alpha", value=alpha, read_only=True)
         self.createParameter(name="beta", value=beta, read_only=True)
+        self.createParameter(name="nodop", value=nodop)
 
         T0 = 290.0
         self.__gain_coef = wavelength * 10 ** (antenna_gain / 20.0) / (4 * pi)
@@ -193,12 +201,17 @@ class DSPChannel(AComputer):
     ) -> dict:
         d, vrad, L_atm, dt_atm = self.atmosphericModel(txpos, rxpos)
 
-        phi_d0 = -2 * pi * (d + c * dt_atm) / self.wavelength
+        if self.nodop:
+            phi_d0 = 0.0
+            delay = 0.0
+        else:
+            phi_d0 = -2 * pi * (d + c * dt_atm) / self.wavelength
+            delay = d / c + dt_atm
 
         rxsig = txsig[0] * self.__gain_coef / sqrt(L_atm) / d * exp(1j * phi_d0)
 
         self.__delay_line.addSample(t2, rxsig)
-        rx_dl_sig = self.__delay_line.getDelayedSample(d / c + dt_atm)
+        rx_dl_sig = self.__delay_line.getDelayedSample(delay)
 
         C = np.abs(rx_dl_sig) ** 2
         N = self.getCovariance()[0, 0]
@@ -206,6 +219,6 @@ class DSPChannel(AComputer):
 
         outputs = {}
         outputs["rxsig"] = np.array([rx_dl_sig])
-        outputs["info"] = np.array([SNR, vrad])
+        outputs["info"] = np.array([SNR, d, vrad, L_atm, dt_atm])
 
         return outputs

@@ -12,3 +12,8 @@ c = 299792458.0
 jour_sideral = 2 * pi / omega
 jour_stellaire = 86400.0
 J2 = 1.08263e-3
+
+AU_M = 149597870700.0  # per IAU 2012 Resolution B2
+AU_KM = 149597870.700
+ASEC360 = 1296000.0
+DAY_S = 86400.0

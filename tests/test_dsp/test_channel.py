@@ -47,7 +47,9 @@ class TestChannel(TestBase):
             mano=0.0,
             node=0.0,
         )
-        lon, lat = sat.subpoint(t0)
+        lon, lat = sat.subpoint(0.0)
+        self.assertAlmostEqual(lon * 180 / pi, -112.08124806457887, delta=1e-9)
+        self.assertAlmostEqual(lat * 180 / pi, -0.0843360495637092, delta=1e-9)
 
         # Find a point with 45° elevation
         r = Req + 630e3
@@ -55,6 +57,7 @@ class TestChannel(TestBase):
         d_lim = sqrt(r ** 2 - Req ** 2 * cos(elev_min) ** 2) - Req * sin(elev_min)
         alpha_lim = np.arccos((Req ** 2 + r ** 2 - d_lim ** 2) / (2 * r * Req))
         rad = alpha_lim * Req
+        self.assertAlmostEqual(rad, 550321.5722903715, delta=1e-3)
 
         from cartopy.geodesic import Geodesic
 
@@ -64,6 +67,10 @@ class TestChannel(TestBase):
         c_lat = val[0, 1] * pi / 180
 
         pos = geodetic_to_itrf(c_lon, c_lat, 0.0)
+        pos_ref = np.array([-2388997.88859598, -5888920.68052473, 540338.96059696])
+        err = np.max(np.abs(pos - pos_ref))
+        self.assertAlmostEqual(err, 0, delta=1e-6)
+
         stp = Step(
             name="stp",
             snames=["px", "py", "pz", "vx", "vy", "vz"],

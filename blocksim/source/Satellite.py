@@ -5,10 +5,11 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 from numpy import cos, sin, tan, sqrt, pi
 import scipy.linalg as lin
-from skyfield.api import EarthSatellite, load
+from skyfield.api import EarthSatellite, load, utc
 from sgp4.api import Satrec, WGS84
 from skyfield.units import Distance, Velocity
 from skyfield.positionlib import Geocentric
+from skyfield.sgp4lib import TEME_to_ITRF
 
 from .. import logger
 from ..constants import *
@@ -46,13 +47,13 @@ class ASatellite(AComputer):
             name="itrf", snames=["px", "py", "pz", "vx", "vy", "vz"], dtype=np.float64
         )
 
-    def subpoint(self, td: datetime) -> Tuple[float]:
+    def subpoint(self, td: float) -> Tuple[float]:
         """
         Return the latitude and longitude directly beneath this position.
 
         Args:
-          td : a datetime instance or array of datetime
-            Time for the subpoint computation
+          td (s)
+            Time elapsed since initial time
 
         Returns:
           lon, lat (rad)
@@ -103,7 +104,7 @@ class ASatellite(AComputer):
         return traj
 
     @abstractmethod
-    def getGeocentricITRFPositionAt(self, td: datetime) -> np.array:
+    def getGeocentricITRFPositionAt(self, td: float) -> np.array:
         pass
 
 
@@ -132,7 +133,7 @@ class Satellite(ASatellite):
 
     """
 
-    __slots__ = ["__sgp4"]
+    __slots__ = ["__sgp4", "__epoch"]
 
     def __init__(self, name: str):
         ASatellite.__init__(self, name)
@@ -140,48 +141,70 @@ class Satellite(ASatellite):
         self.__sgp4 = None
         self.createParameter("tsync", value=None)
 
-    def _setSGP4(self, sgp4):
+    def _setSGP4(self, epoch: datetime, sgp4: Satrec):
         self.__sgp4 = sgp4
+        self.__epoch = epoch
 
-    def getGeocentricITRFPositionAt(self, t_calc: datetime) -> np.array:
+    def getGeocentricITRFPositionAt(self, t_calc: float) -> np.array:
         """
         Return the geocentric ITRF position of the satellite at a given time
 
         Args:
-          td
-            Time of the position
+          t_calc (s)
+            Time elapsed since initial time
 
         Returns:
           x, y, z (m)
           vx, vy, vz (m/s)
 
         """
-        t = datetime_to_skyfield(t_calc)
-        pos, vel, _ = self.__sgp4.ITRF_position_velocity_error(t)
-        if np.any(np.isnan(pos)) or np.any(np.isnan(vel)):
-            raise Exception(t_calc, pos, vel)
+        # epoch time in days from jan 0, 1950. 0 hr
+        dt = (self.tsync - self.getInitialEpoch()).total_seconds() + t_calc
+        epoch = dt / 86400
 
-        pc = Distance(au=1).m
-        vc = Velocity(au_per_d=1).km_per_s * 1000
+        whole, fraction = divmod(epoch, 1.0)
+        whole_jd = whole + 2433281.5
 
-        pv = np.empty(6, dtype=np.float64)
-        pv[:3] = pos * pc
-        pv[3:] = vel * vc
+        jd = whole_jd
+        fraction = fraction
+        e, rTEME, vTEME = self.__sgp4.sgp4(jd, fraction)
+        if e == 1:
+            raise AssertionError("Mean eccentricity is outside the range 0 ≤ e < 1.")
+        elif e == 2:
+            raise AssertionError("Mean motion has fallen below zero.")
+        elif e == 3:
+            raise AssertionError(
+                "Perturbed eccentricity is outside the range 0 ≤ e ≤ 1."
+            )
+        elif e == 4:
+            raise AssertionError(
+                "Length of the orbit’s semi-latus rectum has fallen below zero."
+            )
+        elif e == 6:
+            raise AssertionError(
+                "Orbit has decayed: the computed position is underground. (The position is still returned, in case the vector is helpful to software that might be searching for the moment of re-entry.)"
+            )
 
+        rTEME = np.array(rTEME)  # km
+        vTEME = np.array(vTEME)  # km/s
+
+        rTEME /= AU_KM
+        vTEME /= AU_KM
+        vTEME *= DAY_S
+
+        rITRF, vITRF = TEME_to_ITRF(jd, rTEME, vTEME, 0.0, 0.0, fraction)
+
+        pv = np.empty(6)
+        pv[:3] = rITRF * AU_M
+        pv[3:] = vITRF * AU_M / DAY_S
         return pv
 
     def compute_outputs(
         self, t1: float, t2: float, subpoint: np.array, itrf: np.array
     ) -> dict:
-        dt = timedelta(seconds=t2)
-        if self.tsync is None:
-            td = self.epoch + dt
-        else:
-            td = self.tsync + dt
-
         outputs = {}
-        outputs["itrf"] = self.getGeocentricITRFPositionAt(td)
-        outputs["subpoint"] = np.array(self.subpoint(td))
+        outputs["itrf"] = self.getGeocentricITRFPositionAt(t2)
+        outputs["subpoint"] = np.array(self.subpoint(t2))
 
         return outputs
 
@@ -249,10 +272,8 @@ class Satellite(ASatellite):
             n * 60,  # no_kozai: mean motion (radians/minute)
             node,  # nodeo: right ascension of ascending node (radians)
         )
-        ts = load.timescale(builtin=True)
-        sgp4 = EarthSatellite.from_satrec(satrec, ts)
         sat = cls(name)
-        sat._setSGP4(sgp4)
+        sat._setSGP4(t, satrec)
 
         sat.tsync = t
 
@@ -294,12 +315,20 @@ class Satellite(ASatellite):
         line1 = lines[iline * 3 + 1]
         line2 = lines[iline * 3 + 2]
 
-        ts = load.timescale(builtin=True)
-        tle_sat = EarthSatellite(line1, line2, name=name, ts=ts)
-        sat = cls(name)
-        sat._setSGP4(tle_sat)
+        satrec = Satrec.twoline2rv(line1, line2)
+        two_digit_year = satrec.epochyr
+        if two_digit_year < 57:
+            year = two_digit_year + 2000
+        else:
+            year = two_digit_year + 1900
 
-        sat.tsync = sat.epoch
+        ts = load.timescale()
+        epoch = skyfield_to_datetime(ts.utc(year, 1, satrec.epochdays))
+
+        sat = cls(name)
+        sat._setSGP4(epoch, satrec)
+
+        sat.tsync = epoch
 
         return sat
 
@@ -368,7 +397,7 @@ class Satellite(ASatellite):
           mano (rad)
 
         """
-        return self.__sgp4.model.mo
+        return self.__sgp4.mo
 
     @property
     def orbit_eccentricity(self) -> float:
@@ -379,7 +408,7 @@ class Satellite(ASatellite):
           ecc
 
         """
-        return self.__sgp4.model.ecco
+        return self.__sgp4.ecco
 
     @property
     def orbit_semi_major_axis(self) -> float:
@@ -403,7 +432,7 @@ class Satellite(ASatellite):
           inc (rad)
 
         """
-        return self.__sgp4.model.inclo
+        return self.__sgp4.inclo
 
     @property
     def orbit_argp(self) -> float:
@@ -414,7 +443,7 @@ class Satellite(ASatellite):
           argp (rad)
 
         """
-        return self.__sgp4.model.argpo
+        return self.__sgp4.argpo
 
     @property
     def orbit_node(self) -> float:
@@ -425,7 +454,7 @@ class Satellite(ASatellite):
           node (rad)
 
         """
-        return self.__sgp4.model.nodeo
+        return self.__sgp4.nodeo
 
     @property
     def orbit_bstar(self) -> float:
@@ -436,7 +465,7 @@ class Satellite(ASatellite):
           bstar (/earth radii)
 
         """
-        return self.__sgp4.model.bstar
+        return self.__sgp4.bstar
 
     @property
     def orbit_ndot(self) -> float:
@@ -447,7 +476,7 @@ class Satellite(ASatellite):
           ndot (revs/day)
 
         """
-        return self.__sgp4.model.ndot
+        return self.__sgp4.ndot
 
     @property
     def orbit_nddot(self) -> float:
@@ -458,7 +487,7 @@ class Satellite(ASatellite):
           nddot (revs/day^3)
 
         """
-        return self.__sgp4.model.nddot
+        return self.__sgp4.nddot
 
     @property
     def orbit_periapsis(self) -> float:
@@ -513,7 +542,7 @@ class Satellite(ASatellite):
 
         """
         # https://en.wikipedia.org/wiki/Mean_motion#Mean_motion_and_Kepler's_laws
-        n = self.__sgp4.model.no_kozai / 60
+        n = self.__sgp4.no_kozai / 60
         return timedelta(seconds=2 * np.pi / n)
 
     @property
@@ -522,21 +551,10 @@ class Satellite(ASatellite):
         Return the epoch of the orbit
 
         Returns:
-          e (s)
+          Epoch
 
         """
-        return skyfield_to_datetime(self.__sgp4.epoch)
-
-    @epoch.setter
-    def epoch(self, epoch: datetime):
-        """
-        Sets the epoch of the orbit
-
-        Args:
-          e (s)
-
-        """
-        pass
+        return self.__epoch
 
 
 class CircleSatellite(ASatellite):
@@ -607,18 +625,23 @@ class CircleSatellite(ASatellite):
             n * 60,  # no_kozai: mean motion (radians/minute)
             node,  # nodeo: right ascension of ascending node (radians)
         )
-        ts = load.timescale(builtin=True)
-        sgp4 = EarthSatellite.from_satrec(satrec, ts)
+        e, rTEME, vTEME = satrec.sgp4(satrec.jdsatepoch, satrec.jdsatepochF)
+        assert e == 0
 
-        td = datetime_to_skyfield(t)
-        pos, vel, _ = sgp4.ITRF_position_velocity_error(td)
-        if np.any(np.isnan(pos)) or np.any(np.isnan(vel)):
-            raise Exception(t, pos, vel)
+        rTEME = np.array(rTEME)  # km
+        vTEME = np.array(vTEME)  # km/s
 
-        pos *= Distance(au=1).m
-        vel *= Velocity(au_per_d=1).km_per_s * 1000
+        rTEME /= AU_KM
+        vTEME /= AU_KM
+        vTEME *= DAY_S
 
-        pv = np.empty(6, dtype=np.float64)
+        rITRF, vITRF = TEME_to_ITRF(
+            satrec.jdsatepoch, rTEME, vTEME, 0.0, 0.0, satrec.jdsatepochF
+        )
+        pos = rITRF * AU_M
+        vel = vITRF * AU_M / DAY_S
+
+        pv = np.empty(6)
         pv[:3] = pos
         pv[3:] = vel
 
@@ -637,13 +660,12 @@ class CircleSatellite(ASatellite):
         # Precomputed termes of the Rodrigues's formula
         # https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula#Matrix_notation
         self.__R1 = pv
-        self.__R2 = np.hstack((np.cross(n, pv[:3]), np.cross(n, pv[3:])))
+        self.__R2 = np.hstack((np.cross(n, pos), np.cross(n, vel)))
 
         self.__sat_puls = sqrt(mu / a ** 3)
 
-    def getGeocentricITRFPositionAt(self, td: datetime) -> np.array:
-        dt = (td - self.t).total_seconds()
-        th = self.__sat_puls * dt
+    def getGeocentricITRFPositionAt(self, td: float) -> np.array:
+        th = self.__sat_puls * td
 
         cth = cos(th)
         sth = sin(th)
@@ -654,11 +676,8 @@ class CircleSatellite(ASatellite):
         return newpv
 
     def compute_outputs(self, t1: float, t2: float, itrf: np.array) -> dict:
-        dt = timedelta(seconds=t2)
-        td = self.t + dt
-
         outputs = {}
-        outputs["itrf"] = self.getGeocentricITRFPositionAt(td)
+        outputs["itrf"] = self.getGeocentricITRFPositionAt(t2)
 
         return outputs
 
