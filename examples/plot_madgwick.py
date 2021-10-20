@@ -74,7 +74,7 @@ sim.addComputer(est)
 # Simulation
 # ----------
 
-from blocksim.Graphics import plotVerif
+from blocksim.graphics import plotVerif
 from matplotlib import pyplot as plt
 
 sim.connect("ctrl.setpoint", "sys.command")

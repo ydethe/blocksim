@@ -162,7 +162,7 @@ sim.simulate(tps, progress_bar=False)
 
 log = sim.getLogger()
 
-from blocksim.Graphics import plotVerif
+from blocksim.graphics import plotVerif
 from matplotlib import pyplot as plt
 
 plotVerif(

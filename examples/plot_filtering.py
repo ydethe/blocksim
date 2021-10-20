@@ -18,7 +18,7 @@ from matplotlib import pyplot as plt
 # A Chebychev window is applied to lower the side-lobes
 
 from blocksim.dsp.DSPFilter import DSPFilter
-from blocksim.Graphics import plotBode
+from blocksim.graphics import plotBode
 from blocksim.Simulation import Simulation
 
 sim = Simulation()
@@ -50,7 +50,7 @@ plotBode(filt, axe_amp, axe_pha)
 # -------------------------
 # We construct s1 as a signal with f0 and 3*f0 frequencies
 
-from blocksim.Graphics import plotDSPLine
+from blocksim.graphics import plotDSPLine
 from blocksim.dsp.DSPSignal import DSPSignal
 
 f0 = 20

@@ -95,7 +95,7 @@ sim.simulate(sig.generateXSerie(), progress_bar=False)
 log = sim.getLogger()
 spg = kal.getSpectrogram(log)
 
-from blocksim.Graphics import plotSpectrogram
+from blocksim.graphics import plotSpectrogram
 import matplotlib.pyplot as plt
 
 fig = plt.figure()

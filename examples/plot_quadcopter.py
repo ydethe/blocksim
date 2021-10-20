@@ -152,7 +152,7 @@ sim.connect("sys.euler", "ctlatt.euler")
 # Simulation
 # ----------
 
-from blocksim.Graphics import plotVerif
+from blocksim.graphics import plotVerif
 from matplotlib import pyplot as plt
 
 tps = np.arange(0, 70, 0.05)
