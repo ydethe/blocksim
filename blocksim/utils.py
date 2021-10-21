@@ -7,9 +7,6 @@ from typing import Iterable, Tuple
 from scipy import linalg as lin
 import numpy as np
 from numpy import pi, arcsin, arctan, arctan2, sin, cos, sqrt
-import astropy.coordinates as coord
-from skyfield.api import Topos, load, utc
-from skyfield.timelib import Time
 
 from . import logger
 from .constants import *

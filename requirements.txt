@@ -3,15 +3,9 @@ slycot
 numpy
 scipy
 matplotlib
-cartopy
 control
 tqdm
 pyserial
 PyYAML
-sgp4
-skyfield
-jplephem
-astropy
 parse
 panda3d
-scikit-commpy
