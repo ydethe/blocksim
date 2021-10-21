@@ -36,11 +36,6 @@ A library to simulate a closed-loop system. Includes :
 
 Free software: MIT license
 
-Extensions
-----------
-
-* https://pypi.python.org/pypi/blocksim-sis
-
 Development
 -----------
 
