@@ -4,6 +4,9 @@ from typing import Iterable
 from keyword import kwlist, iskeyword
 import logging
 from types import FunctionType
+from datetime import datetime
+import platform
+import os
 
 import numpy as np
 from scipy.signal import firwin, fftconvolve
@@ -42,6 +45,7 @@ class Logger(object):
 
     """
 
+    __datetime_fmt = "%Y-%m-%d %H:%M-%S"
     __slots__ = ["_dst", "_data", "_binary", "_fic", "_mode"]
 
     def __init__(self, fic: str = None):
@@ -80,6 +84,28 @@ class Logger(object):
         if not self._fic is None:
             self._dst = open(self._fic, self._mode)
 
+    def getFileHeader(self, file: str) -> str:
+        f = open(file, mode="rb")
+        header = self._load_bin_log_file(stm=f, time_int=None, header_only=True)
+        f.close()
+
+        res = "File: %s\n" % header["pth"]
+        res += "FileVersion: %s\n" % header["ver"]
+        res += "Node: %s\n" % header.get("node", "")
+        res += "CreationTime: %s\n" % header.get("creation_time", "")
+        res += "User: %s\n" % header.get("user", "")
+        res += "BocksimVersion: %s\n" % header.get("blocksim_version", "")
+
+        for cl in header["comm"]:
+            res += "%s\n" % cl
+
+        for var in header["variables"]:
+            name = var.get("name", "")
+            typ = var.get("type", "")
+            res += "%s\t%s\n" % (name, typ)
+
+        return res
+
     def _load_ascii_log_file(self, stm, time_int):
         ver = int(stm.readline().strip())
 
@@ -114,7 +140,7 @@ class Logger(object):
 
             line = stm.readline().strip()
 
-    def _load_bin_log_file(self, stm, time_int):
+    def _load_bin_log_file(self, stm, time_int, header_only: bool = False):
         sver = stm.read(4)
         if len(sver) != 4:
             raise InvalidLogFile(stm.name)
@@ -122,19 +148,25 @@ class Logger(object):
         ver = struct.unpack("i", sver)[0]
 
         if ver == 1:
-            self._load_bin_log_file_v1(stm, time_int)
+            header = self._load_bin_log_file_v1(stm, time_int, header_only=header_only)
         elif ver == 2:
-            self._load_bin_log_file_v2(stm, time_int)
+            header = self._load_bin_log_file_v2(stm, time_int, header_only=header_only)
+        elif ver == 3:
+            header = self._load_bin_log_file_v3(stm, time_int, header_only=header_only)
         else:
             raise InvalidLogFile(stm.name)
 
-    def _load_bin_log_file_v1(self, stm, time_int):
+        return header
+
+    def _load_bin_log_file_v1(self, stm, time_int, header_only: bool = False):
         # Lecture entete
+        header = {"pth": stm.name}
         sn_var = stm.read(4)
         if len(sn_var) != 4:
             raise InvalidLogFile(stm.name)
 
         n_var = struct.unpack("i", sn_var)[0]
+        header.update({"ver": 1, "comm": [], "variables": []})
 
         l_var = []
         for ivar in range(n_var):
@@ -148,12 +180,14 @@ class Logger(object):
             if len(bname) != lname:
                 raise InvalidLogFile(stm.name)
             name = bname.decode("utf-8")
+            var = {"name": name}
+            header["variables"].append(var)
             l_var.append(name)
 
         # Lecture données
         fmt = n_var * "d"
         sze = struct.calcsize(fmt)
-        while True:
+        while not header_only:
             rec = stm.read(sze)
             if len(rec) == 0:
                 break
@@ -166,14 +200,18 @@ class Logger(object):
                 for name, val in zip(l_var, vals):
                     self.log(name, val)
 
-    def _load_bin_log_file_v2(self, stm, time_int):
+        return header
+
+    def _load_bin_log_file_v2(self, stm, time_int, header_only: bool = False):
         # Lecture entete
+        header = {"pth": stm.name}
         sn_var = stm.read(4)
         if len(sn_var) != 4:
             raise InvalidLogFile(stm.name)
 
         # Lecture de l'entete
         n_var = struct.unpack("i", sn_var)[0]
+        header.update({"ver": 2, "comm": [], "variables": []})
 
         l_var = []
         rec_sze = 0
@@ -189,12 +227,14 @@ class Logger(object):
                 raise InvalidLogFile(stm.name)
             name = bname.decode("utf-8")
             typ = stm.read(1)
+            var = {"name": name, "type": typ.decode("utf-8")}
+            header["variables"].append(var)
             typ, pck_f, unpck_f, sze = self._findType(typ)
             l_var.append((name, unpck_f, sze))
             rec_sze += sze
 
         # Lecture données
-        while True:
+        while not header_only:
             rec = stm.read(rec_sze)
             if len(rec) == 0:
                 break
@@ -212,6 +252,82 @@ class Logger(object):
 
                 if time_int is None or time_int[0] <= t and t < time_int[1]:
                     self.log(name, val)
+
+        return header
+
+    def _load_bin_log_file_v3(self, stm, time_int, header_only: bool = False):
+        # Lecture entete
+        header = {"pth": stm.name}
+        sn_var = stm.read(4)
+        if len(sn_var) != 4:
+            raise InvalidLogFile(stm.name)
+
+        # Lecture de l'entete
+        n_var = struct.unpack("i", sn_var)[0]
+        header.update({"ver": 3, "comm": [], "variables": []})
+        sn_comm = stm.read(4)
+        n_comm = struct.unpack("i", sn_comm)[0]
+
+        b = stm.read(172)
+        node = self.__strip_header_txt_line(b)
+        b = stm.read(172)
+        now = self.__strip_header_txt_line(b)
+        b = stm.read(172)
+        user = self.__strip_header_txt_line(b)
+        b = stm.read(172)
+        bs_version = self.__strip_header_txt_line(b)
+
+        header["node"] = node
+        header["creation_time"] = now
+        header["user"] = user
+        header["blocksim_version"] = bs_version
+
+        for _ in range(n_comm - 5):
+            b = stm.read(172)
+            comm = self.__strip_header_txt_line(b)
+            header["comm"].append(comm)
+
+        l_var = []
+        rec_sze = 0
+        for _ in range(n_var):
+            slname = stm.read(4)
+            if len(slname) != 4:
+                raise InvalidLogFile(stm.name)
+
+            lname = struct.unpack("i", slname)[0]
+
+            bname = stm.read(lname)
+            if len(bname) != lname:
+                raise InvalidLogFile(stm.name)
+            name = bname.decode("utf-8")
+            typ = stm.read(1)
+            var = {"name": name, "type": typ.decode("utf-8")}
+            header["variables"].append(var)
+            typ, pck_f, unpck_f, sze = self._findType(typ)
+            l_var.append((name, unpck_f, sze))
+            rec_sze += sze
+
+        # Lecture données
+        while not header_only:
+            rec = stm.read(rec_sze)
+            if len(rec) == 0:
+                break
+            elif len(rec) != rec_sze:
+                raise InvalidLogFile(stm.name)
+
+            ival = 0
+            kval = 0
+            for name, unpck_f, sze in l_var:
+                val = unpck_f(rec[ival : ival + sze])
+                ival += sze
+                kval += 1
+                if kval == 1:
+                    t = val
+
+                if time_int is None or time_int[0] <= t and t < time_int[1]:
+                    self.log(name, val)
+
+        return header
 
     @classmethod
     def _findType(cls, val):
@@ -255,6 +371,18 @@ class Logger(object):
         sze = calcsize(fmt_dict[typ])
         return typ, pck_f, unpck_f, sze
 
+    @classmethod
+    def __strip_header_txt_line(cls, data: bytes) -> str:
+        txt = data.decode("utf-8").replace("\x000", "")
+        return txt
+
+    @classmethod
+    def __build_header_txt_line(cls, txt: str, length: int = 172) -> bytes:
+        b = txt.encode("utf-8")
+        n = len(b)
+        zf = length - n
+        return b + zf * chr(0).encode("utf-8")
+
     def _update_bin_log_file(self, name):
         if name != "t":
             return
@@ -268,11 +396,31 @@ class Logger(object):
 
         # Ecriture de l'entete si pas déjà fait
         if n == 1:
-            sver = struct.pack("i", 2)
+            sver = struct.pack("i", 3)
             self._dst.write(b"%b" % sver)
 
-            llvar = struct.pack("i", n_var)
+            llvar = struct.pack("ii", n_var, 4)
             self._dst.write(b"%b" % llvar)
+
+            node = platform.node()
+            t0 = datetime.now()
+            now = t0.strftime(self.__datetime_fmt)
+            user = os.getlogin()
+            from . import __version__ as bs_version
+
+            bs_version = bs_version
+
+            b = self.__build_header_txt_line(txt=node, length=172)
+            self._dst.write(b)
+
+            b = self.__build_header_txt_line(txt=now, length=172)
+            self._dst.write(b)
+
+            b = self.__build_header_txt_line(txt=user, length=172)
+            self._dst.write(b)
+
+            b = self.__build_header_txt_line(txt=bs_version, length=172)
+            self._dst.write(b)
 
             for var in l_var:
                 val = self._data[var][-1]
