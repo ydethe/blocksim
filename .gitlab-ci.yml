@@ -21,11 +21,6 @@ stages:
 
 .before_script_template:
   before_script:
-    - export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
-    - echo "tzdata tzdata/Areas select Europe" > preseed.txt
-    - echo "tzdata tzdata/Zones/Europe select Berlin" >> preseed.txt
-    - debconf-set-selections preseed.txt
-    - apt-get update
     - conda install mamba
     - mamba env create -f environment_test.yml
     - conda activate bs_env
