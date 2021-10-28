@@ -21,9 +21,8 @@ stages:
 
 .before_script_template:
   before_script:
-    - echo $0
-    - conda init bash
-    - source /root/.bashrc
+    - which conda
+    - source <anaconda_root>/etc/profile.d/conda.sh
     - conda install -y mamba -n base -c conda-forge
     - mamba env create -f environment_test.yml
     - conda activate bs_env
