@@ -21,6 +21,8 @@ stages:
 
 .before_script_template:
   before_script:
+    - echo $0
+    - conda init bash
     - conda install mamba -n base -c conda-forge
     - mamba env create -f environment_test.yml
     - conda activate bs_env
