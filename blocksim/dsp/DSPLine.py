@@ -318,31 +318,6 @@ class DSPLine(object):
 
         return 10 * np.log10(amp)
 
-    @classmethod
-    def getUnitAbbrev(cls, mult: float) -> str:
-        """Given a scale factor, gives the prefix for the unit to display
-
-        Args:
-          mult
-            Scale factor
-
-        Returns:
-          Prefix
-
-        """
-        d = {
-            1: "",
-            1000: "k",
-            1e6: "M",
-            1e9: "G",
-            1e12: "T",
-            1e-3: "m",
-            1e-6: "µ",
-            1e-9: "n",
-            1e-12: "p",
-        }
-        return d[mult]
-
     def __len__(self):
         return len(self.y_serie)
 

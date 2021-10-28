@@ -17,6 +17,31 @@ from .AxeSpec import AxeSpec
 from .FigureSpec import FigureSpec
 
 
+def getUnitAbbrev(mult: float) -> str:
+    """Given a scale factor, gives the prefix for the unit to display
+
+    Args:
+      mult
+        Scale factor
+
+    Returns:
+      Prefix
+
+    """
+    d = {
+        1: "",
+        1000: "k",
+        1e6: "M",
+        1e9: "G",
+        1e12: "T",
+        1e-3: "m",
+        1e-6: "µ",
+        1e-9: "n",
+        1e-12: "p",
+    }
+    return d[mult]
+
+
 def plotFromLogger(
     log: Logger, id_x: str, id_y: str, axe: "AxesSubplot", **kwargs
 ) -> "Line2D":
@@ -156,33 +181,43 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
     """
     axe.grid(True)
     transform = kwargs.pop("transform", spg.default_transform)
-    x_unit_mult = kwargs.pop("x_unit_mult", 1)
-    x_unit_lbl = DSPLine.getUnitAbbrev(x_unit_mult)
-    y_unit_mult = kwargs.pop("y_unit_mult", 1)
-    y_unit_lbl = DSPLine.getUnitAbbrev(y_unit_mult)
+    if "x_unit_mult" in kwargs.keys():
+        x_unit_mult = kwargs.pop("x_unit_mult")
+    else:
+        x_samp = spg.generateXSerie()
+        xm = np.max(np.abs(x_samp))
+        pm = (int(log10(xm)) // 3) * 3
+        x_unit_mult = 10 ** pm
+    x_unit_lbl = getUnitAbbrev(x_unit_mult)
+
+    if "y_unit_mult" in kwargs.keys():
+        y_unit_mult = kwargs.pop("y_unit_mult")
+    else:
+        y_samp = spg.generateYSerie()
+        ym = np.max(np.abs(y_samp))
+        pm = (int(log10(ym)) // 3) * 3
+        y_unit_mult = 10 ** pm
+    y_unit_lbl = getUnitAbbrev(y_unit_mult)
     lbl = kwargs.pop("label", spg.name)
 
     ret = axe.imshow(
         transform(spg.img),
         aspect="auto",
         extent=(
-            spg.generateXSerie(0),
-            spg.generateXSerie(-1),
-            spg.generateYSerie(0),
-            spg.generateYSerie(-1),
+            spg.generateXSerie(0) / x_unit_mult,
+            spg.generateXSerie(-1) / x_unit_mult,
+            spg.generateYSerie(0) / y_unit_mult,
+            spg.generateYSerie(-1) / y_unit_mult,
         ),
         origin="lower",
         label=lbl,
         **kwargs
     )
-    axe.set_xlabel(
-        "%s (%s%s)"
-        % (spg.__class__.name_of_x_var, x_unit_lbl, spg.__class__.unit_of_x_var)
-    )
-    axe.set_ylabel(
-        "%s (%s%s)"
-        % (spg.__class__.name_of_y_var, y_unit_lbl, spg.__class__.unit_of_y_var)
-    )
+    axe.set_xlabel("%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, spg.unit_of_x_var))
+    axe.set_ylabel("%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, spg.unit_of_y_var))
+
+    axe.figure.colorbar(ret, ax=axe)
+
     return ret
 
 
@@ -252,7 +287,7 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
         xm = np.max(np.abs(x_samp))
         pm = (int(log10(xm)) // 3) * 3
         x_unit_mult = 10 ** pm
-    x_unit_lbl = line.getUnitAbbrev(x_unit_mult)
+    x_unit_lbl = getUnitAbbrev(x_unit_mult)
     lbl = kwargs.pop("label", line.name)
 
     (ret,) = axe.plot(

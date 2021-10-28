@@ -34,12 +34,6 @@ A library to simulate a closed-loop system. Includes :
 * yaml file configuration
 * Routing functions (group, split, ...)
 
-Extensions
-----------
-
-* https://pypi.org/project/blocksim-sigspace/
-* https://pypi.org/project/blocksim-quadcopter/
-
 Free software: MIT license
 
 Development
