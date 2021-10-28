@@ -4,6 +4,5 @@ pytest==6.2.2
 pytest-mpl==0.12
 pytest-cov==2.11.1
 codecov==2.1.11
-dummyserial>=1.0.0
 docutils<0.18,>=0.14
 

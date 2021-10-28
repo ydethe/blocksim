@@ -5,7 +5,6 @@ scipy
 matplotlib
 control
 tqdm
-pyserial
 PyYAML
 parse
 panda3d
