@@ -65,7 +65,7 @@ publish_pypi:
 
 release_job:
   stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latesti
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
   variables:
     VERSION: $(echo $CI_COMMIT_TAG | cut -c 2-)
   script:
