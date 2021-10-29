@@ -405,7 +405,10 @@ class Logger(object):
             node = platform.node()
             t0 = datetime.now()
             now = t0.strftime(self.__datetime_fmt)
-            user = os.getlogin()
+            try:
+                user = os.getlogin()
+            except:
+                user = "unknown"
             from . import __version__ as bs_version
 
             bs_version = bs_version
