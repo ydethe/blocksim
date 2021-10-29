@@ -65,9 +65,10 @@ publish_pypi:
 
 release_job:
   stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  image: registry.gitlab.com/gitlab-org/release-cli:latesti
+  variables:
+    VERSION: `echo $CI_COMMIT_TAG | cut -c 2-`
   script:
-    - VERSION=`echo $CI_COMMIT_TAG | cut -c 1-`
     - echo $VERSION
   needs:
     - job: test
@@ -82,9 +83,9 @@ release_job:
     assets:
       links:
         - name: 'Documentation'
-          url: 'https://manawenuz.gitlab.io/blocksim/htmldoc'
+          url: 'https://blocksim.readthedocs.io/en/$CI_COMMIT_TAG'
         - name: 'Code coverage'
-          url: 'https://manawenuz.gitlab.io/blocksim/htmlcov'
+          url: 'https://app.codecov.io/gl/manawenuz/blocksim/branch/$CI_COMMIT_TAG'
         - name: 'Python package'
           url: 'https://pypi.org/project/blocksim/$VERSION'
 
