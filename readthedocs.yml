@@ -15,25 +15,15 @@ sphinx:
 formats: []
 
 build:
-  image: stable
-  apt_packages:
-    - libblas-dev
-    - liblapack-dev
-    - cmake
-    - gfortran
-    - gcc
-    - g++
-    - make
-    - libproj-dev
-    - proj-data
-    - proj-bin
-    - libgeos-dev
+  os: "ubuntu-20.04"
+  tools:
+    python: "mambaforge-4.10"
+
+conda:
+  environment: environment_test.yml
 
 # This part is necessary otherwise the project is not built
 python:
-  version: 3.8
   install:
-    - requirements: docs/requirements.txt
-    - requirements: requirements_test.txt
     - method: pip
       path: .
