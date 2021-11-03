@@ -1,12 +1,13 @@
 # --index-url https://pypi.fury.io/manawenuz/
 # --extra-index-url https://pypi.org/simple/
-numpy==1.19.5
+numpy==1.21.3
 slycot==0.4.0
-scipy==1.5.4
-matplotlib==3.3.4
+scipy==1.7.1
+matplotlib==3.4.3
 control==0.9.0
 tqdm==4.62.3
-PyYAML==5.4.1
+PyYAML==6.0
 parse==1.19.0
 panda3d==1.10.10
-typer==0.3.2
+typer==0.4.0
+
