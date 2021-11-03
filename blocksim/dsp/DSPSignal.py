@@ -2,10 +2,11 @@ from typing import Tuple, Callable, List, Union
 
 from scipy import linalg as lin
 import numpy as np
-from numpy import log10, exp, pi, sqrt
+from numpy import log10, exp, pi, sqrt, cos, sin
 from numpy.fft import fft, fftshift
-from scipy.signal import correlate, lfilter_zi, lfilter, firwin2
+from scipy.signal import correlate, lfilter_zi, lfilter, firwin2, decimate
 
+from .. import logger
 from . import get_window, phase_unfold
 from .DSPLine import DSPLine
 from ..control.SetPoint import ASetPoint
@@ -499,12 +500,44 @@ class DSPSignal(DSPLine, ASetPoint):
         z = y.reverse().conj()
         return self.correlate(z)
 
-    def forceSamplingStart(self, samplingStart: float) -> "DSPLine":
+    def forceSamplingStart(self, samplingStart: float) -> "DSPSignal":
         res = DSPSignal(
             name=self.name,
             samplingStart=samplingStart,
             samplingPeriod=self.samplingPeriod,
             y_serie=self.y_serie,
+            default_transform=self.default_transform,
+        )
+        return res
+
+    def superheterodyneIQ(self, carrier_freq: float, bandwidth: float) -> "DSPSignal":
+        tps = self.generateXSerie()
+        lo = exp(-1j * 2 * pi * carrier_freq * tps)
+        y_mix = self.y_serie * lo
+
+        q = int(np.floor(1 / self.samplingPeriod / bandwidth))
+        logger.debug("Decimation : %i" % q)
+        eff_bp = 1 / self.samplingPeriod / q
+
+        from .DSPFilter import DSPFilter
+
+        filt = DSPFilter(
+            name="decim",
+            f_low=0.0,
+            f_high=eff_bp / 2,
+            numtaps=64,
+            samplingPeriod=self.samplingPeriod,
+            win="hamming",
+        )
+        y_filt = filt.process(y_mix)
+        # SSB : https://en.wikipedia.org/wiki/Single-sideband_modulation
+        # y_filt += filt.process(y_mix[::-1])[::-1]
+
+        res = DSPSignal(
+            name=self.name,
+            samplingStart=self.samplingStart,
+            samplingPeriod=self.samplingPeriod * q,
+            y_serie=y_filt[::q],
             default_transform=self.default_transform,
         )
         return res

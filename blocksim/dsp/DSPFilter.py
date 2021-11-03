@@ -2,6 +2,7 @@ import numpy as np
 from numpy import log10, exp, pi, sqrt, cos, sin
 from scipy.signal import firwin2, firwin, lfilter_zi, lfilter
 
+from .. import logger
 from ..core.Frame import Frame
 from ..core.Node import AComputer, Input, Output
 from .DSPSignal import DSPSignal
@@ -92,10 +93,18 @@ class DSPFilter(AComputer):
         if nt > self.numtaps:
             raise ValueError(self.numtaps, nt)
 
+        if self.f_low == 0:
+            co = self.f_high
+            pz = True
+        else:
+            co = [self.f_low, self.f_high]
+            pz = False
+        # logger.debug("%s, %f"%(str(co),1/self.samplingPeriod))
+
         b = firwin(
-            self.numtaps,
-            [self.f_low, self.f_high],
-            pass_zero=False,
+            numtaps=self.numtaps,
+            cutoff=co,
+            pass_zero=pz,
             scale=True,
             window=self.win,
             fs=fs,
@@ -145,3 +154,21 @@ class DSPFilter(AComputer):
             y_serie=z,
             default_transform=np.real,
         )
+
+    def process(self, s: np.array) -> np.array:
+        """Filters a signal without having to create a blocksim.Simulation.Simulation
+
+        Args:
+          s
+            The signal to filter
+
+        Returns:
+          The filtered signal
+
+        """
+        b = self.generateCoefficients()
+
+        zi = lfilter_zi(b, [1])
+        z, _ = lfilter(b, [1], s, zi=zi * s[0])
+
+        return z

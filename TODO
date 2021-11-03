@@ -1,1 +1,3 @@
 https://upb-lea.github.io/transistordatabase/main/transistordatabase.html
+
+* Bug : in case of plotDSPLine with 2 lines with different order of magnitude for X, the last one forces the X ticks

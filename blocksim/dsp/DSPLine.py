@@ -1,10 +1,9 @@
-from typing import Callable
-
-# from abc import ABCMeta
+from typing import Callable, List
 
 import numpy as np
 from scipy.interpolate import interp1d
 
+from .Peak import Peak
 
 __all__ = ["DSPLine"]
 
@@ -112,15 +111,17 @@ class DSPLine(object):
           The x coordinate(s)
 
         """
+        n = len(self)
         if index is None:
-            n = len(self)
-            index = range(n)
-        x = self.__x_serie[index]
+            index = np.arange(n)
+        elif index < 0:
+            index += n
+        x = index * self.samplingPeriod + self.samplingStart
         return x
 
     def findPeaksWithTransform(
         self, transform: Callable = None, nb_peaks: int = 3
-    ) -> np.array:
+    ) -> List[Peak]:
         """Finds the peaks in a :class:`blocksim.dsp.DSPLine`.
         The search is performed on the tranformed samples (with the argument *transform*, or the attribute *default_transform*)
 
@@ -131,7 +132,7 @@ class DSPLine(object):
             Max number of peaks to seach. Only the highest are kept
 
         Returns:
-          The x coordinate(s) of the peaks
+          The list of detected peaks, sorted by descreasing value of the peak
 
         """
         if transform is None:
@@ -140,16 +141,23 @@ class DSPLine(object):
         dat = transform(self.y_serie)
         n = len(dat)
         lpeak = []
-        for i in range(1, n - 1):
-            if dat[i - 1] < dat[i] and dat[i] > dat[i + 1]:
-                lpeak.append((i, dat[i]))
+        ep = 1
+        for p0 in range(ep, n - ep):
+            if dat[p0 - ep] < dat[p0] and dat[p0] > dat[p0 + ep]:
+                b = (dat[p0 + ep] - dat[p0 - ep]) / (2 * ep)
+                c = -(-dat[p0 + ep] - dat[p0 - ep] + 2 * dat[p0]) / (2 * ep ** 2)
+                dp = -b / (2 * c)
+                dval = -(b ** 2) / (4 * c)
+                x0 = self.generateXSerie(p0 + dp)
+                p = Peak(coord=(x0,), value=dat[p0] + dval)
+                lpeak.append(p)
 
-        lpeak.sort(key=lambda x: x[1], reverse=True)
+        lpeak.sort(key=lambda x: x.value, reverse=True)
 
         if len(lpeak) > nb_peaks:
             lpeak = lpeak[:nb_peaks]
 
-        return np.array([self.generateXSerie(x) for x, y in lpeak])
+        return lpeak
 
     def __interpolate(self, new_x: np.array, complex_output: bool = True) -> np.array:
         if complex_output:
