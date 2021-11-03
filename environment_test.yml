@@ -1,6 +1,7 @@
 # environment_test.yml
 # conda install -y mamba -n base -c conda-forge
-# mamba env create -f environment.yml
+# mamba env create -f environment_test.yml
+# mamba env export --no-build > environment_test.yml
 name: bs_env
 channels:
   - conda-forge
@@ -9,9 +10,9 @@ dependencies:
   - codecov=2.1.11
   - control=0.9.0
   - docutils=0.17.1
-  - matplotlib=3.3.4
+  - matplotlib=3.4.3
   - mock=4.0.3
-  - numpy=1.19.5
+  - numpy=1.21.3
   - panda3d=1.10.10
   - parse=1.19.0
   - pip=21.3.1
@@ -19,11 +20,11 @@ dependencies:
   - pytest=6.2.5
   - pytest-cov=3.0.0
   - pytest-mpl=0.13
-  - python=3.6.13
-  - pyyaml=5.4.1
-  - scipy=1.5.3
+  - python=3.8.12
+  - pyyaml=6.0
+  - scipy=1.7.1
   - slycot=0.4.0.0
-  - sphinx=4.2.0
+  - sphinx=3.5.3
   - sphinx-autoapi=1.8.4
   - sphinx-gallery=0.10.0
   - sphinx_rtd_theme=1.0.0
