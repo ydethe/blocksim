@@ -542,7 +542,12 @@ class DSPSignal(DSPLine, ASetPoint):
         )
         return res
 
-    def integrate(self, period: float, offset: float = 0) -> "DSPSignal":
+    def integrate(
+        self,
+        period: float,
+        offset: float = 0,
+        window_duration: float = -1,
+    ) -> Tuple["DSPSignal", List["DSPSignal"]]:
         """
 
         Args:
@@ -551,29 +556,23 @@ class DSPSignal(DSPLine, ASetPoint):
           offset (s)
             Time of the beginning of the first window.
             Zero means that the first window starts when the signal starts
+          window_duration (s)
+            Duration of the windows. -1 means that *window_duration* equals *period*
+
+        Returns:
+          Integrated signal
+          List of summed chunk
 
         """
-        otp = self.getOutputByName("setpoint")
-        typ = otp.getDataType()
-
-        if (
-            typ == np.complex128
-            or typ == np.complex160
-            or typ == np.complex192
-            or typ == np.complex256
-            or typ == np.complex512
-            or typ == np.complex64
-        ):
-            comp_out = True
-        else:
-            comp_out = False
+        if window_duration == -1:
+            window_duration = period
 
         s_start = self.samplingStart
         s_stop = self.samplingStop
         w_start = offset + s_start
         dt = self.samplingPeriod
 
-        w_len = int(period / dt + 1)
+        w_len = int(window_duration / dt + 1)
 
         n_win = int((s_stop - s_start) / period)
 
@@ -581,16 +580,19 @@ class DSPSignal(DSPLine, ASetPoint):
             name=self.name,
             samplingStart=0,
             samplingPeriod=dt,
-            y_serie=np.zeros(w_len, dtype=np.complex),
+            y_serie=np.zeros(w_len, dtype=np.complex128),
             default_transform=self.default_transform,
         )
+        chunks = []
         for k in range(n_win):
             chunk = self.resample(
                 samplingStart=w_start + k * period,
                 samplingPeriod=dt,
-                samplingStop=w_start + (k + 1) * period,
+                samplingStop=w_start + k * period + window_duration,
                 complex_output=self.hasOutputComplex,
             )
-            res = res + chunk.forceSamplingStart(0) / n_win
+            chunk = chunk.forceSamplingStart(0)
+            chunks.append(chunk)
+            res = res + chunk / n_win
 
-        return res
+        return res, chunks

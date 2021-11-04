@@ -149,7 +149,12 @@ class DSPLine(object):
                 dp = -b / (2 * c)
                 dval = -(b ** 2) / (4 * c)
                 x0 = self.generateXSerie(p0 + dp)
-                p = Peak(coord=(x0,), value=dat[p0] + dval)
+                p = Peak(
+                    coord_label=(self.name_of_x_var,),
+                    coord_unit=(self.unit_of_x_var,),
+                    coord=(x0,),
+                    value=dat[p0] + dval,
+                )
                 lpeak.append(p)
 
         lpeak.sort(key=lambda x: x.value, reverse=True)
@@ -333,13 +338,16 @@ class DSPLine(object):
         for y in self.y_serie:
             yield y
 
-    def __getitem__(self, key):
-        if key > len(self):
-            raise IndexError(key)
+    def __getitem__(self, idx: int):
+        if isinstance(idx, slice):
+            # Get the start, stop, and step from the slice
+            lid = range(*idx.indices(len(self)))
+        elif isinstance(idx, int):
+            lid = idx
+        else:
+            raise TypeError("Invalid argument type.")
 
-        y = self.y_serie[key]
-
-        return y
+        return self.y_serie[lid]
 
     def __radd__(self, y) -> "DSPLine":
         return self + y

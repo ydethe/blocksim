@@ -45,6 +45,15 @@ def getUnitAbbrev(mult: float) -> str:
     return d[mult]
 
 
+def format_parameter(samp: float, unit: str) -> str:
+    xm = np.abs(samp)
+    pm = (int(log10(xm)) // 3) * 3
+    x_unit_mult = 10 ** pm
+    x_unit_lbl = getUnitAbbrev(x_unit_mult)
+    txt = "%.3g %s%s" % (samp / x_unit_mult, x_unit_lbl, unit)
+    return txt
+
+
 def plotFromLogger(
     log: Logger, id_x: str, id_y: str, axe: "AxesSubplot", **kwargs
 ) -> "Line2D":
@@ -451,6 +460,7 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
     x_samp = line.generateXSerie()
     transform = kwargs.pop("transform", line.default_transform)
     find_peaks = kwargs.pop("find_peaks", 0)
+
     if "x_unit_mult" in kwargs.keys():
         x_unit_mult = kwargs.pop("x_unit_mult")
     else:

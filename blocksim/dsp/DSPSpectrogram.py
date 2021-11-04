@@ -151,6 +151,8 @@ class DSPSpectrogram(object):
 
                 if -ep / 2 <= dp and dp < ep / 2 and -eq / 2 <= dq and dq < eq / 2:
                     p = Peak(
+                        coord_label=(self.name_of_x_var, self.name_of_y_var),
+                        coord_unit=(self.unit_of_x_var, self.unit_of_y_var),
                         coord=(
                             self.generateXSerie(q0 + dq),
                             self.generateYSerie(p0 + dp),
