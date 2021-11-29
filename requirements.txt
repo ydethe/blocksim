@@ -9,3 +9,4 @@ PyYAML
 parse
 panda3d
 typer
+lazy_property

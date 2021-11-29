@@ -1,15 +1,16 @@
-from typing import Tuple, Callable, List, Union
+from typing import Tuple, Callable, List
 
 from scipy import linalg as lin
 import numpy as np
-from numpy import log10, exp, pi, sqrt, cos, sin
+from numpy import exp, pi, sqrt
 from numpy.fft import fft, fftshift
-from scipy.signal import correlate, lfilter_zi, lfilter, firwin2, decimate
+from scipy.signal import correlate
 
 from .. import logger
+from ..control.SetPoint import ASetPoint
 from . import get_window, phase_unfold
 from .DSPLine import DSPLine
-from ..control.SetPoint import ASetPoint
+from .DSPSpectrum import DSPSpectrum
 
 
 __all__ = ["DSPSignal"]
@@ -397,10 +398,12 @@ class DSPSignal(DSPLine, ASetPoint):
         n = min(len(self), len(y))
         dt = min(self.samplingPeriod, y.samplingPeriod)
         if np.abs(self.generateXSerie(n - 1) - y.generateXSerie(n - 1)) < dt / 20:
+            logger.debug("Time series in sync")
             x_buf = self.y_serie
             y_buf = y.y_serie
             dt = self.samplingPeriod
         elif self.samplingPeriod > y.samplingPeriod:
+            logger.debug("Syncing time series")
             x_sync = self.resample(
                 samplingStart=self.samplingStart,
                 samplingPeriod=y.samplingPeriod,
@@ -410,6 +413,7 @@ class DSPSignal(DSPLine, ASetPoint):
             y_buf = y.y_serie
             dt = y.samplingPeriod
         else:
+            logger.debug("Syncing time series")
             y_sync = y.resample(
                 samplingStart=y.samplingStart,
                 samplingPeriod=self.samplingPeriod,

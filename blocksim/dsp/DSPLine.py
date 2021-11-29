@@ -1,8 +1,10 @@
 from typing import Callable, List
 
+from lazy_property import LazyProperty
 import numpy as np
 from scipy.interpolate import interp1d
 
+from .. import logger
 from .Peak import Peak
 
 __all__ = ["DSPLine"]
@@ -45,8 +47,6 @@ class DSPLine(object):
         self.__y_serie = y_serie
         self.__default_transform = default_transform
 
-        self.__bootstrap()
-
     @property
     def name(self) -> str:
         return self.__name[:]
@@ -67,11 +67,9 @@ class DSPLine(object):
     def default_transform(self) -> np.array:
         return self.__default_transform
 
-    def __bootstrap(self):
+    @LazyProperty
+    def _itp_x(self):
         size = len(self)
-
-        index = np.arange(size)
-        self.__x_serie = index * self.samplingPeriod + self.samplingStart
 
         if size == 1:
             kind = "nearest"
@@ -80,8 +78,8 @@ class DSPLine(object):
         else:
             kind = "cubic"
 
-        self.__itp_x = interp1d(
-            self.__x_serie,
+        itp = interp1d(
+            self._x_serie,
             np.real(self.y_serie),
             kind=kind,
             copy=False,
@@ -90,8 +88,21 @@ class DSPLine(object):
             assume_sorted=True,
         )
 
-        self.__itp_y = interp1d(
-            self.__x_serie,
+        return itp
+
+    @LazyProperty
+    def _itp_y(self):
+        size = len(self)
+
+        if size == 1:
+            kind = "nearest"
+        elif size == 2:
+            kind = "linear"
+        else:
+            kind = "cubic"
+
+        itp = interp1d(
+            self._x_serie,
             np.imag(self.y_serie),
             kind=kind,
             copy=False,
@@ -99,6 +110,17 @@ class DSPLine(object):
             fill_value=0,
             assume_sorted=True,
         )
+
+        return itp
+
+    @LazyProperty
+    def _x_serie(self):
+        size = len(self)
+
+        index = np.arange(size)
+        x_serie = index * self.samplingPeriod + self.samplingStart
+
+        return x_serie
 
     def generateXSerie(self, index: int = None) -> np.array:
         """Generates the x samples of the line
@@ -166,10 +188,10 @@ class DSPLine(object):
 
     def __interpolate(self, new_x: np.array, complex_output: bool = True) -> np.array:
         if complex_output:
-            y_serie = 1j * self.__itp_y(new_x)
-            y_serie += self.__itp_x(new_x)
+            y_serie = 1j * self._itp_y(new_x)
+            y_serie += self._itp_x(new_x)
         else:
-            y_serie = self.__itp_x(new_x)
+            y_serie = self._itp_x(new_x)
 
         return y_serie
 
@@ -213,8 +235,8 @@ class DSPLine(object):
           A truncated new line with the same spacing
 
         """
-        istart = np.where(self.__x_serie >= samplingStart)[0]
-        iend = np.where(self.__x_serie < samplingStop)[0]
+        istart = np.where(self._x_serie >= samplingStart)[0]
+        iend = np.where(self._x_serie < samplingStop)[0]
         iok = np.intersect1d(istart, iend)
         if len(iok) == 0:
             y_serie = np.array([], dtype=np.complex128)
