@@ -590,6 +590,28 @@ class Logger(object):
 
         return res
 
+    def getRawValue(self, name: str) -> np.array:
+        """Get the value of a logged variable
+        The argument *cannot* be an expression.
+
+        Args:
+          name
+            Name or expression
+
+        Returns:
+          An array of the values
+
+        Examples:
+          >>> log = Logger()
+          >>> ref = np.linspace(0,2*np.pi,200)
+          >>> _ = [log.log('a',a) for a in ref]
+          >>> r = log.getRawValue('a')
+          >>> np.max(np.abs(r-ref)) < 1e-15
+          True
+
+        """
+        return np.array(self._data[name])
+
     def getValue(self, name: str) -> np.array:
         """Get the value of a logged variable
         The argument can be an expression. It can combine several variables

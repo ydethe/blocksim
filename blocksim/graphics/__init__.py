@@ -448,7 +448,7 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
       line
         Line to be plotted
       axe
-        Matplotlib axe to draw on
+        Matplotlib axe to draw on. Pass None to let the function create on axe
       kwargs
         Plotting options. The following extra keys are allowed:
         * transform for a different transform from the one given at instanciation
@@ -456,6 +456,9 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
         * x_unit_mult to have a more readable unit prefix
 
     """
+    if axe is None:
+        fig = plt.figure()
+        axe = fig.add_subplot(111)
     axe.grid(True)
     x_samp = line.generateXSerie()
     transform = kwargs.pop("transform", line.default_transform)

@@ -2,6 +2,7 @@ from typing import Callable, List
 
 from lazy_property import LazyProperty
 import numpy as np
+from numpy.lib.arraysetops import isin
 from scipy.interpolate import interp1d
 
 from .. import logger
@@ -136,6 +137,8 @@ class DSPLine(object):
         n = len(self)
         if index is None:
             index = np.arange(n)
+        elif hasattr(index, "__iter__"):
+            index = np.array(index)
         elif index < 0:
             index += n
         x = index * self.samplingPeriod + self.samplingStart
@@ -222,7 +225,9 @@ class DSPLine(object):
         """
         return self.samplingStart + (len(self) - 1) * self.samplingPeriod
 
-    def truncate(self, samplingStart: float, samplingStop: float) -> "DSPLine":
+    def truncate(
+        self, samplingStart: float, samplingStop: float, zero_padding: bool = True
+    ) -> "DSPLine":
         """Truncates a line between x=samplingStart and x=samplingStop.
 
         Args:
@@ -235,14 +240,21 @@ class DSPLine(object):
           A truncated new line with the same spacing
 
         """
-        istart = np.where(self._x_serie >= samplingStart)[0]
-        iend = np.where(self._x_serie < samplingStop)[0]
-        iok = np.intersect1d(istart, iend)
-        if len(iok) == 0:
+        istart = np.where(self._x_serie >= samplingStart)[0][0]
+        ns = int((samplingStop - samplingStart) / self.samplingPeriod) + 1
+        iend = min(istart + ns, len(self))
+        iok = slice(istart, iend)
+
+        if iend - istart <= 0:
             y_serie = np.array([], dtype=np.complex128)
         else:
-            samplingStart = self.generateXSerie(iok[0])
+            samplingStart = self.generateXSerie(istart)
             y_serie = self.y_serie[iok]
+
+        nz = ns - len(y_serie)
+        if zero_padding and nz > 0:
+            zp = np.zeros(nz, dtype=y_serie.dtype)
+            y_serie = np.hstack((y_serie, zp))
 
         return self.__class__(
             name=self.name,
@@ -252,11 +264,24 @@ class DSPLine(object):
             default_transform=self.default_transform,
         )
 
+    def isInSyncWith(self, y: "DSPLine") -> bool:
+        if isinstance(y, float):
+            dty = y
+        else:
+            dty = y.samplingPeriod
+
+        dt = min(self.samplingPeriod, dty)
+
+        err = np.abs(self.samplingPeriod - dty) / dt
+
+        return err < 1e-6
+
     def resample(
         self,
         samplingStart: float,
         samplingPeriod: float = None,
         samplingStop: float = None,
+        zero_padding: bool = True,
         complex_output: bool = True,
     ) -> "DSPLine":
         """Resamples the line using a cubic interpolation.
@@ -280,18 +305,33 @@ class DSPLine(object):
         if samplingPeriod is None:
             samplingPeriod = self.samplingPeriod
 
-        ns = int(np.round((samplingStop - samplingStart) / samplingPeriod, 0)) + 1
-        new_x = np.arange(ns) * samplingPeriod + samplingStart
+        if self.isInSyncWith(samplingPeriod):
+            res = self.truncate(
+                samplingStart=samplingStart,
+                samplingStop=samplingStop,
+                zero_padding=zero_padding,
+            )
+        else:
+            logger.debug("Resampling")
+            ns = int(np.round((samplingStop - samplingStart) / samplingPeriod, 0)) + 1
+            new_x = np.arange(ns) * samplingPeriod + samplingStart
 
-        y_serie = self.__interpolate(new_x, complex_output=complex_output)
+            y_serie = self.__interpolate(new_x, complex_output=complex_output)
 
-        return self.__class__(
-            name=self.name,
-            samplingStart=samplingStart,
-            samplingPeriod=samplingPeriod,
-            y_serie=y_serie,
-            default_transform=self.default_transform,
-        )
+            nz = ns - len(y_serie)
+            if zero_padding and nz > 0:
+                zp = np.zeros(nz, dtype=y_serie.dtype)
+                y_serie = np.hstack((y_serie, zp))
+
+            res = self.__class__(
+                name=self.name,
+                samplingStart=samplingStart,
+                samplingPeriod=samplingPeriod,
+                y_serie=y_serie,
+                default_transform=self.default_transform,
+            )
+
+        return res
 
     @classmethod
     def to_db_lim(cls, low: float) -> Callable:
@@ -362,8 +402,7 @@ class DSPLine(object):
 
     def __getitem__(self, idx: int):
         if isinstance(idx, slice):
-            # Get the start, stop, and step from the slice
-            lid = range(*idx.indices(len(self)))
+            pass
         elif isinstance(idx, int):
             lid = idx
         else:

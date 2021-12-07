@@ -1,5 +1,6 @@
 from typing import Tuple, Callable, List
 
+from tqdm import tqdm
 from scipy import linalg as lin
 import numpy as np
 from numpy import exp, pi, sqrt
@@ -398,12 +399,10 @@ class DSPSignal(DSPLine, ASetPoint):
         n = min(len(self), len(y))
         dt = min(self.samplingPeriod, y.samplingPeriod)
         if np.abs(self.generateXSerie(n - 1) - y.generateXSerie(n - 1)) < dt / 20:
-            logger.debug("Time series in sync")
             x_buf = self.y_serie
             y_buf = y.y_serie
             dt = self.samplingPeriod
         elif self.samplingPeriod > y.samplingPeriod:
-            logger.debug("Syncing time series")
             x_sync = self.resample(
                 samplingStart=self.samplingStart,
                 samplingPeriod=y.samplingPeriod,
@@ -413,7 +412,6 @@ class DSPSignal(DSPLine, ASetPoint):
             y_buf = y.y_serie
             dt = y.samplingPeriod
         else:
-            logger.debug("Syncing time series")
             y_sync = y.resample(
                 samplingStart=y.samplingStart,
                 samplingPeriod=self.samplingPeriod,
@@ -549,14 +547,18 @@ class DSPSignal(DSPLine, ASetPoint):
     def integrate(
         self,
         period: float,
+        n_integration: int = -1,
         offset: float = 0,
+        coherent: bool = True,
         window_duration: float = -1,
-    ) -> Tuple["DSPSignal", List["DSPSignal"]]:
+    ) -> "DSPSignal":
         """
 
         Args:
           period (s)
             Size of the window in the time domain
+          n_integration
+            Number of period to sum. A value of -1 means to sum everything
           offset (s)
             Time of the beginning of the first window.
             Zero means that the first window starts when the signal starts
@@ -565,7 +567,6 @@ class DSPSignal(DSPLine, ASetPoint):
 
         Returns:
           Integrated signal
-          List of summed chunk
 
         """
         if window_duration == -1:
@@ -573,30 +574,34 @@ class DSPSignal(DSPLine, ASetPoint):
 
         s_start = self.samplingStart
         s_stop = self.samplingStop
-        w_start = offset + s_start
         dt = self.samplingPeriod
 
-        w_len = int(window_duration / dt + 1)
+        p_len = int(period / dt)
+        if n_integration == -1:
+            n_win = int(np.floor((s_stop - s_start) / period))
+        else:
+            n_win = n_integration
 
-        n_win = int((s_stop - s_start) / period)
+        n_samp = slice(0, n_win * p_len)
+        yp = self.y_serie[n_samp]
+
+        a = yp.reshape((n_win, p_len))
+        if coherent:
+            res = a.sum(axis=0) / n_win
+        else:
+            m = np.real(a * np.conj(a))
+            res = sqrt(m.sum(axis=0) / n_win)
+
+        kstart = int(np.floor(offset / dt))
+        kend = int(np.ceil((offset + window_duration) / dt))
+        wslice = slice(kstart, kend)
 
         res = DSPSignal(
             name=self.name,
             samplingStart=0,
             samplingPeriod=dt,
-            y_serie=np.zeros(w_len, dtype=np.complex128),
+            y_serie=res[wslice],
             default_transform=self.default_transform,
         )
-        chunks = []
-        for k in range(n_win):
-            chunk = self.resample(
-                samplingStart=w_start + k * period,
-                samplingPeriod=dt,
-                samplingStop=w_start + k * period + window_duration,
-                complex_output=self.hasOutputComplex,
-            )
-            chunk = chunk.forceSamplingStart(0)
-            chunks.append(chunk)
-            res = res + chunk / n_win
 
-        return res, chunks
+        return res
