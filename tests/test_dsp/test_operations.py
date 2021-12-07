@@ -23,7 +23,7 @@ class TestSignal(TestBase):
         x1 = exp(1j * 2 * pi * f0 * t1)
         s1 = DSPSignal(name="s1", samplingStart=0, samplingPeriod=1 / fs, y_serie=x1)
 
-        t2 = 0.3 / fs + np.arange(3 * ns) / (3 * fs)
+        t2 = np.arange(3 * ns - 2) / (3 * fs)
         x2 = exp(-1j * 2 * pi * f0 * t2)
         s2 = DSPSignal(
             name="s2", samplingStart=0.3 / fs, samplingPeriod=1 / (3 * fs), y_serie=x2
@@ -130,4 +130,8 @@ class TestSignal(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+
+    a = TestSignal()
+    a.test_add()
+    a.test_mul()

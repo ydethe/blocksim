@@ -468,8 +468,12 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
         x_unit_mult = kwargs.pop("x_unit_mult")
     else:
         xm = np.max(np.abs(x_samp))
-        pm = (int(log10(xm)) // 3) * 3
+        lxm = log10(xm)
+        ilxm = int(np.round(lxm, 0))
+        ilxm3 = ilxm // 3
+        pm = ilxm3 * 3
         x_unit_mult = 10 ** pm
+    axe.x_unitilxm3_mult = x_unit_mult
     x_unit_lbl = getUnitAbbrev(x_unit_mult)
     lbl = kwargs.pop("label", line.name)
 

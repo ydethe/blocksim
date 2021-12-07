@@ -281,6 +281,7 @@ class DSPLine(object):
         samplingStart: float,
         samplingPeriod: float = None,
         samplingStop: float = None,
+        nech: int = None,
         zero_padding: bool = True,
         complex_output: bool = True,
     ) -> "DSPLine":
@@ -299,11 +300,17 @@ class DSPLine(object):
             True if we interpolate both real part and imag part
 
         """
-        if samplingStop is None:
-            samplingStop = self.samplingStop
-
         if samplingPeriod is None:
             samplingPeriod = self.samplingPeriod
+
+        if samplingStop is None and nech is None:
+            samplingStop = self.samplingStop
+        elif not samplingStop is None and nech is None:
+            pass
+        elif samplingStop is None and not nech is None:
+            samplingStop = nech * samplingPeriod + samplingStart
+        else:
+            raise AssertionError("nech and samplingStop cannot be set simultaneously")
 
         if self.isInSyncWith(samplingPeriod):
             res = self.truncate(
@@ -312,7 +319,6 @@ class DSPLine(object):
                 zero_padding=zero_padding,
             )
         else:
-            logger.debug("Resampling")
             ns = int(np.round((samplingStop - samplingStart) / samplingPeriod, 0)) + 1
             new_x = np.arange(ns) * samplingPeriod + samplingStart
 
@@ -410,21 +416,23 @@ class DSPLine(object):
 
         return self.y_serie[lid]
 
+    def _prepareOperation(self, y: "DSPLine"):
+        t_start = min(self.samplingStart, y.samplingStart)
+        dt = min(self.samplingPeriod, y.samplingPeriod)
+        t_stop = max(self.samplingStop, y.samplingStop)
+        nech = int((t_stop - t_start) / dt)
+
+        rx = self.resample(samplingStart=t_start, samplingPeriod=dt, nech=nech)
+        ry = y.resample(samplingStart=t_start, samplingPeriod=dt, nech=nech)
+
+        return t_start, dt, rx, ry
+
     def __radd__(self, y) -> "DSPLine":
         return self + y
 
     def __add__(self, y: "DSPLine") -> "DSPLine":
         if issubclass(y.__class__, DSPLine):
-            t_start = min(self.samplingStart, y.samplingStart)
-            dt = min(self.samplingPeriod, y.samplingPeriod)
-            t_stop = max(self.samplingStop, y.samplingStop)
-
-            rx = self.resample(
-                samplingStart=t_start, samplingPeriod=dt, samplingStop=t_stop
-            )
-            ry = y.resample(
-                samplingStart=t_start, samplingPeriod=dt, samplingStop=t_stop
-            )
+            t_start, dt, rx, ry = self._prepareOperation(y)
 
             y_serie = rx.y_serie + ry.y_serie
 
@@ -477,16 +485,7 @@ class DSPLine(object):
 
     def __mul__(self, y: "DSPLine") -> "DSPLine":
         if issubclass(y.__class__, DSPLine):
-            t_start = min(self.samplingStart, y.samplingStart)
-            dt = min(self.samplingPeriod, y.samplingPeriod)
-            t_stop = max(self.samplingStop, y.samplingStop)
-
-            rx = self.resample(
-                samplingStart=t_start, samplingPeriod=dt, samplingStop=t_stop
-            )
-            ry = y.resample(
-                samplingStart=t_start, samplingPeriod=dt, samplingStop=t_stop
-            )
+            t_start, dt, rx, ry = self._prepareOperation(y)
 
             y_serie = rx.y_serie * ry.y_serie
 

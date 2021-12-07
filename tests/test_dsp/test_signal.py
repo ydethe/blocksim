@@ -105,8 +105,8 @@ class TestSignal(TestBase):
         s1 = DSPSignal(name="s", samplingStart=0, samplingPeriod=1 / fs, y_serie=x1)
 
         s2 = s1.resample(
-            samplingStart=-2 / fs,
-            samplingPeriod=1 / fs,
+            samplingStart=-2.3 / fs,
+            samplingPeriod=0.5 / fs,
             samplingStop=s1.samplingStop + 2 / fs,
         )
 
@@ -116,7 +116,7 @@ class TestSignal(TestBase):
 
         plotDSPLine(s1, axe, linestyle="--", marker="x", label="orig.")
         tref = np.arange(int(50 * fs / f0)) / (50 * fs)
-        axe.plot(tref, np.cos(2 * pi * f0 * tref))
+        axe.plot(tref * 1000, np.cos(2 * pi * f0 * tref))
         plotDSPLine(s2, axe, linestyle="--", marker="+", label="oodsp")
         axe.legend()
 
@@ -161,6 +161,6 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestSignal()
-    a.test_from_logger()
+    a.test_resample()
 
-    # plt.show()
+    plt.show()
