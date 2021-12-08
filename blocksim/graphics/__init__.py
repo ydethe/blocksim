@@ -287,6 +287,9 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
         label=lbl,
         **kwargs
     )
+    # colorbar
+    axe.figure.colorbar(ret, ax=axe)
+
     axe.set_xlabel("%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, spg.unit_of_x_var))
     axe.set_ylabel("%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, spg.unit_of_y_var))
 

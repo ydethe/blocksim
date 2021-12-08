@@ -226,7 +226,10 @@ class DSPLine(object):
         return self.samplingStart + (len(self) - 1) * self.samplingPeriod
 
     def truncate(
-        self, samplingStart: float, samplingStop: float, zero_padding: bool = True
+        self,
+        samplingStart: float = None,
+        samplingStop: float = None,
+        zero_padding: bool = True,
     ) -> "DSPLine":
         """Truncates a line between x=samplingStart and x=samplingStop.
 
@@ -234,47 +237,65 @@ class DSPLine(object):
           samplingStart
             Beginning abscissa of the new line
           samplingStop
-            End abscissa of the new line
+            End abscissa of the new line (included)
+          zero_padding
+            Add zero padding if samplingStart or samplingStop are beyond the bounds of the signal
 
         Returns:
           A truncated new line with the same spacing
 
         """
-        istart = np.where(self._x_serie >= samplingStart)[0][0]
-        ns = int((samplingStop - samplingStart) / self.samplingPeriod) + 1
-        iend = min(istart + ns, len(self))
-        iok = slice(istart, iend)
+        if samplingStart is None:
+            samplingStart = self.samplingStart
 
-        if iend - istart <= 0:
-            y_serie = np.array([], dtype=np.complex128)
-        else:
+        if samplingStop is None:
+            ns = len(self)
+            samplingStop = self.generateXSerie(ns - 1)
+
+        dt = self.samplingPeriod
+        istart = int(np.ceil((samplingStart - self.samplingStart) / dt))
+        iend = int(np.floor((samplingStop - self.samplingStart) / dt)) + 1
+
+        nzl = max(-istart, 0)
+        nzr = max(iend - len(self), 0)
+        if zero_padding and (nzl > 0 or nzr > 0):
+            yp = np.pad(array=self.y_serie, pad_width=(nzl, nzr), mode="constant")
+            samplingStart = self.samplingStart - nzl * dt
+        elif not zero_padding and (nzl > 0 or nzr > 0):
+            raise IndexError("Index out of range")
+        elif not zero_padding and nzl == 0 and nzr == 0:
+            iok = slice(istart, iend)
+            yp = self.y_serie[iok]
             samplingStart = self.generateXSerie(istart)
-            y_serie = self.y_serie[iok]
-
-        nz = ns - len(y_serie)
-        if zero_padding and nz > 0:
-            zp = np.zeros(nz, dtype=y_serie.dtype)
-            y_serie = np.hstack((y_serie, zp))
+        elif zero_padding and nzl == 0 and nzr == 0:
+            iok = slice(istart, iend)
+            yp = self.y_serie[iok]
+            samplingStart = self.generateXSerie(istart)
 
         return self.__class__(
             name=self.name,
             samplingStart=samplingStart,
             samplingPeriod=self.samplingPeriod,
-            y_serie=y_serie,
+            y_serie=yp,
             default_transform=self.default_transform,
         )
 
-    def isInSyncWith(self, y: "DSPLine") -> bool:
-        if isinstance(y, float):
+    def isInSyncWith(self, y) -> bool:
+        if isinstance(y, float) or isinstance(y, int):
             dty = y
+            t0y = self.generateXSerie(0)
+        elif isinstance(y, tuple):
+            t0y, dty = y
         else:
             dty = y.samplingPeriod
+            t0y = y.generateXSerie(0)
 
         dt = min(self.samplingPeriod, dty)
+        k_time, _ = np.modf((self.generateXSerie(0) - t0y) / dt)
 
-        err = np.abs(self.samplingPeriod - dty) / dt
+        err_dt = np.abs(self.samplingPeriod - dty) / dt
 
-        return err < 1e-6
+        return err_dt < 1e-6 and k_time < 1e-3
 
     def resample(
         self,
@@ -283,7 +304,7 @@ class DSPLine(object):
         samplingStop: float = None,
         nech: int = None,
         zero_padding: bool = True,
-        complex_output: bool = True,
+        complex_output: bool = None,
     ) -> "DSPLine":
         """Resamples the line using a cubic interpolation.
         If the new bounds are larger than the original ones, the line is filled with 0
@@ -295,39 +316,46 @@ class DSPLine(object):
           samplingPeriod
             x-coord spacing of the line after resampling
           samplingStop
-            Last x-coord of the sample of the line after resampling
+            Last x-coord (included) of the sample of the line after resampling
           complex_output
             True if we interpolate both real part and imag part
 
         """
+        if complex_output is None:
+            typ = self.y_serie.dtype
+            complex_output = typ == np.complex128 or typ == np.complex64
+
         if samplingPeriod is None:
             samplingPeriod = self.samplingPeriod
 
         if samplingStop is None and nech is None:
             samplingStop = self.samplingStop
+            nech = 1 + int(np.ceil((samplingStop - samplingStart) / samplingPeriod))
         elif not samplingStop is None and nech is None:
-            pass
+            nech = 1 + int(np.ceil((samplingStop - samplingStart) / samplingPeriod))
         elif samplingStop is None and not nech is None:
-            samplingStop = nech * samplingPeriod + samplingStart
+            samplingStop = (nech - 1) * samplingPeriod + samplingStart
         else:
             raise AssertionError("nech and samplingStop cannot be set simultaneously")
 
-        if self.isInSyncWith(samplingPeriod):
+        if self.isInSyncWith((samplingStart, samplingPeriod)):
+            logger.debug("Truncate '%s'" % self.name)
             res = self.truncate(
                 samplingStart=samplingStart,
-                samplingStop=samplingStop,
+                samplingStop=samplingStop + samplingPeriod / 2,
                 zero_padding=zero_padding,
             )
+            if len(res) != nech:
+                raise AssertionError("Wrong truncation: %i, %i" % (len(res), nech))
         else:
-            ns = int(np.round((samplingStop - samplingStart) / samplingPeriod, 0)) + 1
-            new_x = np.arange(ns) * samplingPeriod + samplingStart
+            logger.debug("Resample '%s'" % self.name)
+            new_x = np.arange(nech) * samplingPeriod + samplingStart
 
             y_serie = self.__interpolate(new_x, complex_output=complex_output)
 
-            nz = ns - len(y_serie)
+            nz = nech - len(y_serie)
             if zero_padding and nz > 0:
-                zp = np.zeros(nz, dtype=y_serie.dtype)
-                y_serie = np.hstack((y_serie, zp))
+                y_serie = np.pad(array=y_serie, pad_width=(0, nz), mode="constant")
 
             res = self.__class__(
                 name=self.name,
@@ -336,6 +364,8 @@ class DSPLine(object):
                 y_serie=y_serie,
                 default_transform=self.default_transform,
             )
+            if len(res) != nech:
+                raise AssertionError("Wrong resampling: %i, %i" % (len(res), nech))
 
         return res
 
@@ -420,7 +450,7 @@ class DSPLine(object):
         t_start = min(self.samplingStart, y.samplingStart)
         dt = min(self.samplingPeriod, y.samplingPeriod)
         t_stop = max(self.samplingStop, y.samplingStop)
-        nech = int((t_stop - t_start) / dt)
+        nech = int((t_stop - t_start) / dt + 1)
 
         rx = self.resample(samplingStart=t_start, samplingPeriod=dt, nech=nech)
         ry = y.resample(samplingStart=t_start, samplingPeriod=dt, nech=nech)

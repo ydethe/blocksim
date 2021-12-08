@@ -526,18 +526,23 @@ class DSPSignal(DSPLine, ASetPoint):
         filt = DSPFilter(
             name="decim",
             f_low=0.0,
-            f_high=eff_bp / 2,
+            f_high=eff_bp,
             numtaps=64,
             samplingPeriod=self.samplingPeriod,
             win="hamming",
         )
+        dtf = filt.getTransientPhaseDuration()
         y_filt = filt.process(y_mix)
+
         # SSB : https://en.wikipedia.org/wiki/Single-sideband_modulation
-        # y_filt += filt.process(y_mix[::-1])[::-1]
+        nz = int(2 * dtf / self.samplingPeriod)
+        y_ssb = filt.process(y_mix[::-1])[::-1]
+        y_ssb_sync = np.pad(array=y_ssb[:-nz], pad_width=(nz, 0), mode="constant")
+        y_filt += y_ssb_sync
 
         res = DSPSignal(
             name=self.name,
-            samplingStart=self.samplingStart,
+            samplingStart=self.samplingStart - dtf,
             samplingPeriod=self.samplingPeriod * q,
             y_serie=y_filt[::q],
             default_transform=self.default_transform,
