@@ -711,23 +711,23 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         nb_tracks = len(self.tracks)
         t_sim = log.getValue("t")
 
-        img = np.empty((nb_tracks - 1, len(t_sim)), dtype=np.complex128)
+        img = np.empty((nb_tracks, len(t_sim)), dtype=np.complex128)
         otp = self.getOutputByName("state")
         ns = otp.getScalarNames()
-        for k in range(1, nb_tracks):
+        for k in range(nb_tracks):
             f = self.tracks[k]
             vname = "%s_%s_%s" % (self.getName(), otp.getName(), ns[k])
             x = log.getValue(vname)
             y = x * exp(-1j * 2 * pi * t_sim * f)
-            img[k - 1, :] = y
+            img[k, :] = y
 
         df = self.tracks[1] - self.tracks[0]
 
         spg = DSPSpectrogram(
             name="spectrogram",
-            samplingXStart=t_sim[0] - nb_tracks * self.dt,
+            samplingXStart=t_sim[0] - nb_tracks * self.dt / 2,
             samplingXPeriod=self.dt,
-            samplingYStart=-0.5 + self.tracks[1],
+            samplingYStart=self.tracks[0],
             samplingYPeriod=df,
             img=img,
         )

@@ -3,6 +3,7 @@ from pathlib import Path
 import unittest
 
 import numpy as np
+from numpy.testing import assert_array_almost_equal_nulp
 from numpy import pi, exp
 from matplotlib import pyplot as plt
 import pytest
@@ -13,7 +14,37 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
-class TestSignal(TestBase):
+class TestSignalOperations(TestBase):
+    def test_truncate(self):
+        sig = DSPSignal(
+            name="sig", samplingStart=0, samplingPeriod=1, y_serie=np.arange(10)
+        )
+        sig2 = sig.truncate(samplingStart=-1.2, samplingStop=10.0, zero_padding=True)
+
+        x_ref = np.arange(-1, 11)
+        assert_array_almost_equal_nulp(sig2.generateXSerie(), x_ref)
+
+        y_ref = x_ref.copy()
+        y_ref[:2] = 0
+        y_ref[-1] = 0
+        y_ref[1:11] = np.arange(10)
+        assert_array_almost_equal_nulp(sig2.y_serie, y_ref)
+
+    def test_resample(self):
+        sig = DSPSignal(
+            name="sig", samplingStart=0, samplingPeriod=1, y_serie=np.arange(10)
+        )
+        sig2 = sig.resample(samplingStart=-1.2, samplingStop=10.8)
+
+        x_ref = np.arange(13) - 1.2
+        assert_array_almost_equal_nulp(sig2.generateXSerie(), x_ref)
+
+        y_ref = x_ref.copy()
+        y_ref[:2] = 0
+        y_ref[-2:] = 0
+        y_ref[2:11] = np.arange(9) + 0.8
+        assert_array_almost_equal_nulp(sig2.y_serie, y_ref, nulp=2)
+
     def test_mul(self):
         fs = 200
         f0 = 10
@@ -21,17 +52,19 @@ class TestSignal(TestBase):
 
         t1 = np.arange(ns) / fs
         x1 = exp(1j * 2 * pi * f0 * t1)
-        s1 = DSPSignal(name="s1", samplingStart=0, samplingPeriod=1 / fs, y_serie=x1)
+        s1 = DSPSignal(
+            name="s1", samplingStart=t1[0], samplingPeriod=1 / fs, y_serie=x1
+        )
 
-        t2 = np.arange(3 * ns - 2) / (3 * fs)
+        t2 = -1 / fs + np.arange(3 * ns - 3) / (3 * fs)
         x2 = exp(-1j * 2 * pi * f0 * t2)
         s2 = DSPSignal(
-            name="s2", samplingStart=0.3 / fs, samplingPeriod=1 / (3 * fs), y_serie=x2
+            name="s2", samplingStart=t2[0], samplingPeriod=1 / (3 * fs), y_serie=x2
         )
 
         z = s1 * s2
 
-        self.assertAlmostEqual(np.max(np.abs(z.y_serie[1:-3] - 1)), 0, delta=1e-3)
+        self.assertAlmostEqual(np.max(np.abs(z.y_serie[3:-4] - 1)), 0, delta=1e-3)
 
     def test_smul(self):
         fs = 200
@@ -132,6 +165,5 @@ class TestSignal(TestBase):
 if __name__ == "__main__":
     # unittest.main()
 
-    a = TestSignal()
-    a.test_add()
+    a = TestSignalOperations()
     a.test_mul()

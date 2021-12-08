@@ -43,6 +43,7 @@ sig = (
         samplingStart=t[0] - 1,
         samplingPeriod=dt,
         samplingStop=t[-1] + 1,
+        zero_padding=True,
     )
     .applyGaussianNoise(0.5)
 )

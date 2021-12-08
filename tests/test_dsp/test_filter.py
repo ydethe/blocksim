@@ -104,7 +104,6 @@ class TestFilter(TestBase):
         ns = 200
         tau = ns / fs
         t1 = np.arange(ns) / fs
-        x1 = exp(1j * pi * t1 * bp * (t1 / tau - 1))
         s1 = DSPSignal.fromLinearFM(
             name="s1",
             samplingStart=0,
@@ -138,7 +137,7 @@ class TestFilter(TestBase):
         sim.simulate(tps, progress_bar=False)
         log = sim.getLogger()
         y = DSPSignal.fromLogger(name="filt", log=log, param="filter_filt_sample")
-        y = y.forceSamplingStart(-filt.getTransientPhaseDuration())
+        y = y.forceSamplingStart(y.generateXSerie(0) - filt.getTransientPhaseDuration())
 
         fig = plt.figure()
         axe = fig.add_subplot(111)
