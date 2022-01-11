@@ -10,4 +10,3 @@ RUN apt-get update --allow-releaseinfo-change
 RUN apt-get install -yqq --no-install-recommends curl
 RUN conda install -y mamba -n base -c conda-forge
 RUN mamba env create -f environment_test.yml
-CMD source activate bs_env
