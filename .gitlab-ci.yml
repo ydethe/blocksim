@@ -13,7 +13,6 @@ test:
   stage: test
   script:
     - source activate bs_env
-    - python setup.py develop
     - python -m pytest --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
     - python setup.py doc
     - mv docs/_build/html htmldoc
