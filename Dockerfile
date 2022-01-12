@@ -11,5 +11,7 @@ RUN echo "tzdata tzdata/Zones/Europe select Berlin" >> preseed.txt
 RUN debconf-set-selections preseed.txt
 RUN apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends curl
 RUN conda install -y mamba -n base -c conda-forge
-RUN mamba env create -f environment_test.yml
-RUN source activate bs_env && python setup.py develop
+RUN mamba env update --name base --file environment_test.yml
+# RUN mamba env create -f environment_test.yml
+# RUN source activate bs_env && python setup.py develop
+RUN python setup.py develop
