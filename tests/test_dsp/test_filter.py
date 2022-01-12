@@ -29,7 +29,7 @@ class TestFilter(TestBase):
             f_high=f2,
             numtaps=256,
             samplingPeriod=1 / fs,
-            win=("chebwin", -50),
+            win=("chebwin", -60),
         )
 
         fig = plt.figure()
