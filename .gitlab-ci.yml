@@ -1,4 +1,5 @@
 image: ydethe/blocksim
+# image: ubuntu:bionic
 
 variables:
   TWINE_USERNAME: "__token__"
