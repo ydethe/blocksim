@@ -6,6 +6,9 @@ blocksim
 .. image:: https://img.shields.io/pypi/v/blocksim.svg
         :target: https://pypi.python.org/pypi/blocksim
 
+.. image:: https://mybinder.org/badge_logo.svg
+        :target: https://mybinder.org/v2/gl/manawenuz%2Fblocksim/HEAD
+
 .. image:: https://readthedocs.org/projects/blocksim/badge/?version=latest
         :target: https://blocksim.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
