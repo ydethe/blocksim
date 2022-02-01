@@ -103,11 +103,7 @@ fig = plt.figure()
 axe = fig.add_subplot(111)
 plotSpectrogram(spg, axe)
 axe.plot(
-    t,
-    fchirp,
-    linewidth=2,
-    color="white",
-    linestyle="--",
+    t, fchirp, linewidth=2, color="white", linestyle="--",
 )
 axe.set_xlabel("Time (s)")
 axe.set_ylabel("Frequency (Hz)")

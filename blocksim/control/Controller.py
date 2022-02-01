@@ -257,8 +257,7 @@ class LQRegulator(AController):
         self.createParameter(name="matN", value=0.0)
 
     def computeGain(
-        self,
-        precomp: bool = True,
+        self, precomp: bool = True,
     ):
         """Computes the optimal gain K, and the correct precompensation gain N
 

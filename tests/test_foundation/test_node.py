@@ -80,8 +80,7 @@ class TestSimpleControl(TestBase):
         self.assertAlmostEqual(err, 0, delta=1e-10)
 
         return self.plotVerif(
-            "Figure 1",
-            [{"var": "sys_state_x"}, {"var": "stp_setpoint_c"}],
+            "Figure 1", [{"var": "sys_state_x"}, {"var": "stp_setpoint_c"}],
         )
 
 

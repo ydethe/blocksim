@@ -92,11 +92,7 @@ class TestTrackingSteadyState(TestBase):
         axe = fig.add_subplot(111)
         plotSpectrogram(spg, axe)
         axe.plot(
-            self.t,
-            self.fchirp,
-            linewidth=2,
-            color="white",
-            linestyle="--",
+            self.t, self.fchirp, linewidth=2, color="white", linestyle="--",
         )
         axe.set_xlabel("Time (s)")
         axe.set_ylabel("Frequency (Hz)")

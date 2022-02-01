@@ -120,6 +120,8 @@ class Simulation(object):
         """
         # Controllers shall be updated last
         for c in self.__computers:
+            if not c.isLogged:
+                continue
             c_name = c.getName()
             for oid in c.getListOutputsIds():
                 otp = c.getOutputById(oid)

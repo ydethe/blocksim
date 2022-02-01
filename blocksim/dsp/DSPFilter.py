@@ -116,11 +116,7 @@ class DSPFilter(AComputer):
         return self.numtaps * self.samplingPeriod / 2
 
     def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        unfilt: np.array,
-        filt: np.array,
+        self, t1: float, t2: float, unfilt: np.array, filt: np.array,
     ) -> dict:
         otp = self.getOutputByName("filt")
 

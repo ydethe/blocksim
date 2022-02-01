@@ -126,11 +126,7 @@ class ProportionalSensors(ASensors):
         self.createParameter("matC", value=0)
 
     def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        measurement: np.array,
-        state: np.array,
+        self, t1: float, t2: float, measurement: np.array, state: np.array,
     ) -> dict:
         meas = self.matC @ state
 
@@ -236,12 +232,7 @@ class StreamSensors(AComputer):
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=otp.getDataType()))
         self.createParameter("strm_data", value=strm_data)
 
-    def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        measurement: np.array,
-    ) -> dict:
+    def compute_outputs(self, t1: float, t2: float, measurement: np.array,) -> dict:
         meas = self.getOutputByName("measurement")
 
         val = np.empty(meas.getDataShape(), dtype=meas.getDataType())

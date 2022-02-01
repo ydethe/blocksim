@@ -340,7 +340,7 @@ class Logger(object):
         fmt_dict = {b"I": "q", b"F": "d", b"C": "dd", b"B": "?"}
 
         pck_dict = {
-            b"I": lambda x: lambda x: pack(fmt_dict[b"I"], x),
+            b"I": lambda x: pack(fmt_dict[b"I"], x),
             b"F": lambda x: pack(fmt_dict[b"F"], x),
             b"C": lambda x: pack(fmt_dict[b"C"], np.real(x), np.imag(x)),
             b"B": lambda x: pack(fmt_dict[b"B"], x),

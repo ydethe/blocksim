@@ -109,11 +109,7 @@ class ASystem(AComputer):
         return
 
     def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        command: np.array,
-        state: np.array,
+        self, t1: float, t2: float, command: np.array, state: np.array,
     ) -> dict:
         self.__integ.set_initial_value(state, t1).set_f_params(command).set_jac_params(
             command
@@ -430,12 +426,7 @@ class G6DOFSystem(ASystem):
         return dX
 
     def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        command: np.array,
-        state: np.array,
-        euler: np.array,
+        self, t1: float, t2: float, command: np.array, state: np.array, euler: np.array,
     ) -> dict:
         # Crouch-Grossman method CG4
         # http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf

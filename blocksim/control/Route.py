@@ -91,8 +91,7 @@ class Clip(AComputer):
         dtype=np.float64,
     ):
         AComputer.__init__(
-            self,
-            name,
+            self, name,
         )
         self.defineInput("signal", shape=signal_shape, dtype=dtype)
         self.defineOutput("clipped", snames=snames, dtype=dtype)
@@ -155,29 +154,19 @@ class Split(AComputer):
     __slots__ = []
 
     def __init__(
-        self,
-        name: str,
-        signal_shape: tuple,
-        outputs: OrderedDict,
-        dtype=np.float64,
+        self, name: str, signal_shape: tuple, outputs: OrderedDict, dtype=np.float64,
     ):
         if not isinstance(outputs, OrderedDict):
             raise TypeError
 
-        AComputer.__init__(self, name)
+        AComputer.__init__(self, name, logged=False)
         self.defineInput("signal", shape=signal_shape, dtype=dtype)
         for k in outputs.keys():
             selected_input = outputs[k]
             snames = ["spt%i" % x for x in selected_input]
             self.defineOutput(k, snames=snames, dtype=dtype)
 
-    def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        signal: np.array,
-        **lotp,
-    ) -> dict:
+    def compute_outputs(self, t1: float, t2: float, signal: np.array, **lotp,) -> dict:
         outputs = {}
 
         for otp in self.getListOutputs():
@@ -219,27 +208,19 @@ class Group(AComputer):
     __slots__ = []
 
     def __init__(
-        self,
-        name: str,
-        inputs: OrderedDict,
-        snames: Iterable[str],
-        dtype=np.float64,
+        self, name: str, inputs: OrderedDict, snames: Iterable[str], dtype=np.float64,
     ):
         if not isinstance(inputs, OrderedDict):
             raise TypeError
 
-        AComputer.__init__(self, name)
+        AComputer.__init__(self, name, logged=False)
         for k in inputs.keys():
             shape = inputs[k]
             self.defineInput(k, shape=shape, dtype=dtype)
         self.defineOutput("grouped", snames=snames, dtype=dtype)
 
     def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        grouped: np.array,
-        **inputs,
+        self, t1: float, t2: float, grouped: np.array, **inputs,
     ) -> dict:
         res = []
         for name in inputs.keys():
@@ -277,10 +258,7 @@ class Multiplier(AComputer):
     __slots__ = []
 
     def __init__(
-        self,
-        name: str,
-        coeff: Iterable[float],
-        dtype=np.float64,
+        self, name: str, coeff: Iterable[float], dtype=np.float64,
     ):
         AComputer.__init__(self, name)
         self.createParameter("coeff", value=np.array(coeff, dtype=dtype))
@@ -303,11 +281,7 @@ class Multiplier(AComputer):
         self.defineOutput("multiplied", snames=snames, dtype=dtype)
 
     def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        signal: np.array,
-        multiplied: np.array,
+        self, t1: float, t2: float, signal: np.array, multiplied: np.array,
     ) -> dict:
         res = signal * self.coeff
 

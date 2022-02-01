@@ -95,15 +95,7 @@ class TestGraphics(TestBase):
         fig = plotVerif(
             self.log,
             "Figure title",
-            [
-                {
-                    "title": "Axe title",
-                    "nrow": 1,
-                    "ncol": 1,
-                    "ind": 1,
-                },
-                {"var": 1 + t},
-            ],
+            [{"title": "Axe title", "nrow": 1, "ncol": 1, "ind": 1,}, {"var": 1 + t},],
         )
 
         return fig

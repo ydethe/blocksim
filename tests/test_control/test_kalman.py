@@ -40,11 +40,7 @@ class TestKalman(TestBase):
         sys.setInitialStateForOutput(np.array([-1.0, 0.0]), "state")
 
         kal = SteadyStateKalmanFilter(
-            "kal",
-            dt=dt,
-            shape_cmd=(1,),
-            snames_state=["x", "v"],
-            snames_output=["x"],
+            "kal", dt=dt, shape_cmd=(1,), snames_state=["x", "v"], snames_output=["x"],
         )
         kal.matA = sys.matA
         kal.matB = sys.matB
@@ -116,10 +112,7 @@ class TestKalman(TestBase):
         sys.setInitialStateForOutput(np.array([-1.0, 0.0]), "state")
 
         kal = TimeInvariantKalmanFilter(
-            "kal",
-            shape_cmd=(1,),
-            snames_state=["x", "v", "b"],
-            snames_output=["x"],
+            "kal", shape_cmd=(1,), snames_state=["x", "v", "b"], snames_output=["x"],
         )
         kal.matA = np.zeros((3, 3))
         kal.matA[:2, :2] = sys.matA

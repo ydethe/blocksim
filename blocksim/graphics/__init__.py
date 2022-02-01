@@ -367,20 +367,10 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
         axe.axe_d.grid(True)
         axe.axe_v.grid(True)
         axe.axe_d.set_xlabel(
-            "%s (%s%s)"
-            % (
-                spg.name_of_x_var,
-                x_unit_lbl,
-                spg.unit_of_x_var,
-            )
+            "%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, spg.unit_of_x_var,)
         )
         axe.axe_v.set_xlabel(
-            "%s (%s%s)"
-            % (
-                spg.name_of_y_var,
-                y_unit_lbl,
-                spg.unit_of_y_var,
-            )
+            "%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, spg.unit_of_y_var,)
         )
 
         cid = axe.figure.canvas.mpl_connect("button_press_event", on_click)

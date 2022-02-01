@@ -354,13 +354,18 @@ class AComputer(ABaseNode):
 
     """
 
-    __slots__ = ["__inputs", "__outputs", "__parameters"]
+    __slots__ = ["__inputs", "__outputs", "__parameters", "__logged"]
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, logged: bool = True):
         ABaseNode.__init__(self, name)
         self.__inputs = {}
         self.__outputs = {}
         self.__parameters = {}
+        self.__logged = logged
+
+    @property
+    def isLogged(self):
+        return self.__logged
 
     def __repr__(self):
         s = ""
@@ -831,12 +836,7 @@ class DummyComputer(AComputer):
         self.defineOutput("xout", snames=["x"], dtype=np.int64)
         self.setInitialStateForOutput(np.array([0]), output_name="xout")
 
-    def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        **inputs,
-    ) -> dict:
+    def compute_outputs(self, t1: float, t2: float, **inputs,) -> dict:
         outputs = {}
         outputs["xout"] = np.array([0])
 
