@@ -1,5 +1,6 @@
-image: ydethe/blocksim
+# image: ydethe/blocksim
 # image: ubuntu:bionic
+image: continuumio/miniconda3:4.9.2
 
 variables:
   TWINE_USERNAME: "__token__"
@@ -9,6 +10,18 @@ stages:
   - test
   - deploy
   - release
+
+prepare:
+  stage: .pre
+  script:
+    - export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+    - echo "tzdata tzdata/Areas select Europe" > preseed.txt
+    - echo "tzdata tzdata/Zones/Europe select Berlin" >> preseed.txt
+    - debconf-set-selections preseed.txt
+    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends curl
+    - conda install -y mamba -n base -c conda-forge
+    - mamba env update --name base --file environment_test.yml
+    - python setup.py develop
 
 test:
   stage: test

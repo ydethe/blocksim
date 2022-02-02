@@ -374,7 +374,7 @@ class Logger(object):
     @classmethod
     def __strip_header_txt_line(cls, data: bytes) -> str:
         txt = data.decode("utf-8").replace("\x000", "")
-        return txt
+        return txt.strip()
 
     @classmethod
     def __build_header_txt_line(cls, txt: str, length: int = 172) -> bytes:
@@ -586,7 +586,7 @@ class Logger(object):
         nd = self.getDataSize()
         res = np.empty((nname, nd), dtype=dtype)
         for idx, name in enumerate(lname):
-            res[idx, :] = self.getValue(name)
+            res[idx, :] = self.getRawValue(name)
 
         return res
 
