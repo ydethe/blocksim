@@ -19,13 +19,16 @@ prepare:
     - echo "tzdata tzdata/Zones/Europe select Berlin" >> preseed.txt
     - debconf-set-selections preseed.txt
     - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends curl
+    - source /opt/conda/etc/profile.d/conda.sh
     - conda install -y mamba -n base -c conda-forge
     - mamba env update --name base --file environment_test.yml
-    - python setup.py develop
+    - which python3
+    - python3 setup.py develop
 
 test:
   stage: test
   script:
+    - which python3
     - python3 --version
     - python3 -m pytest --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
     - python3 setup.py doc
