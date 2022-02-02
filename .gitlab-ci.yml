@@ -20,6 +20,7 @@ prepare:
     - debconf-set-selections preseed.txt
     - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends curl
     - source /opt/conda/etc/profile.d/conda.sh
+    - conda update -n base -c defaults conda
     - conda install -y mamba -n base -c conda-forge
     - mamba env update --name base --file environment_test.yml
     - which python3
