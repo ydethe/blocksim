@@ -723,7 +723,7 @@ class Logger(object):
         if self._fic.endswith('.parquet'):
             df=pd.DataFrame(self._data)
             df.to_parquet(path=self._dst, engine='auto', compression='snappy')
-            logger.info("Simulation log saved to '%s'"%self._fic)
+            logger.info("Simulation log saved to '%s'"%os.path.abspath(self._fic))
 
         if not self._dst is None:
             self._dst.close()
