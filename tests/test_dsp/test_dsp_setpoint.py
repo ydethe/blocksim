@@ -42,8 +42,8 @@ class TestDSPSetpoint(TestBase):
         k = 10
         m = 1
         a = 8
-        P = -k + 3 * a ** 2 * m
-        I = a ** 3 * m
+        P = -k + 3 * a**2 * m
+        I = a**3 * m
         D = 3 * a * m
 
         tps = np.arange(0, 10, 0.02)

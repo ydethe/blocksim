@@ -27,7 +27,11 @@ class DSPAWGN(AComputer):
     __slots__ = []
 
     def __init__(
-        self, name: str, mean: np.array, cov: np.array, dtype=np.float,
+        self,
+        name: str,
+        mean: np.array,
+        cov: np.array,
+        dtype=np.float,
     ):
         AComputer.__init__(self, name=name)
 
@@ -95,7 +99,11 @@ class DSPAWGN(AComputer):
         return otp.mean
 
     def compute_outputs(
-        self, t1: float, t2: float, noiseless: np.array, noisy: np.array,
+        self,
+        t1: float,
+        t2: float,
+        noiseless: np.array,
+        noisy: np.array,
     ) -> dict:
         noisy = noiseless
 

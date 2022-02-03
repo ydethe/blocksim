@@ -94,7 +94,10 @@ class TestExceptions(TestBase):
         self.assertRaises(KeyError, self.sim.getComputerByName, "foo")
 
         self.assertRaises(
-            UnknownInput, self.sim.connect, "ctrl.setpoint", "sys.foo",
+            UnknownInput,
+            self.sim.connect,
+            "ctrl.setpoint",
+            "sys.foo",
         )
 
         self.assertRaises(DuplicateElement, self.sim.addComputer, self.sys)

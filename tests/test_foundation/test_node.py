@@ -51,8 +51,8 @@ class TestSimpleControl(TestBase):
         k = 10
         m = 1
         a = 8
-        P = -k + 3 * a ** 2 * m
-        I = a ** 3 * m
+        P = -k + 3 * a**2 * m
+        I = a**3 * m
         D = 3 * a * m
 
         stp = Step("stp", snames=["c"], cons=np.array([1]))
@@ -80,7 +80,8 @@ class TestSimpleControl(TestBase):
         self.assertAlmostEqual(err, 0, delta=1e-10)
 
         return self.plotVerif(
-            "Figure 1", [{"var": "sys_state_x"}, {"var": "stp_setpoint_c"}],
+            "Figure 1",
+            [{"var": "sys_state_x"}, {"var": "stp_setpoint_c"}],
         )
 
 

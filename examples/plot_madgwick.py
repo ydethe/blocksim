@@ -95,7 +95,12 @@ plotVerif(
         {"var": "deg(madg_euler_roll)", "label": "FilteredRoll"},
         {"var": "deg(madg_euler_pitch)", "label": "FilteredPitch"},
         {"var": "deg(madg_euler_yaw)", "label": "FilteredYaw"},
-        {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
+        {
+            "var": deg(w),
+            "label": "Simu",
+            "color": "black",
+            "linestyle": "--",
+        },
     ],
 )
 

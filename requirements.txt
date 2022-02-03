@@ -10,3 +10,5 @@ parse
 panda3d
 typer
 lazy_property
+pandas
+fastparquet

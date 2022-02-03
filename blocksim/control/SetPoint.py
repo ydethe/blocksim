@@ -69,7 +69,12 @@ class Step(ASetPoint):
         otp = self.getOutputByName("setpoint")
         otp.setInitialState(cons)
 
-    def compute_outputs(self, t1: float, t2: float, setpoint: np.array,) -> dict:
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        setpoint: np.array,
+    ) -> dict:
         outputs = {}
         outputs["setpoint"] = setpoint
 
@@ -122,7 +127,11 @@ class InterpolatedSetPoint(ASetPoint):
         return x0
 
     def setInterpolatorForOutput(
-        self, iscal: int, t_interp: np.array, sp_interp: np.array, kind: str = "linear",
+        self,
+        iscal: int,
+        t_interp: np.array,
+        sp_interp: np.array,
+        kind: str = "linear",
     ):
         """
 
@@ -155,7 +164,12 @@ class InterpolatedSetPoint(ASetPoint):
         )
         self.interpolators[iscal] = f
 
-    def compute_outputs(self, t1: float, t2: float, setpoint: np.array,) -> dict:
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        setpoint: np.array,
+    ) -> dict:
         sp = self.evalState(t2)
 
         outputs = {}
@@ -217,7 +231,12 @@ class Sinusoid(ASetPoint):
 
         return x0
 
-    def compute_outputs(self, t1: float, t2: float, setpoint: np.array,) -> dict:
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        setpoint: np.array,
+    ) -> dict:
         sp = self.evalState(t2)
 
         outputs = {}
@@ -256,7 +275,12 @@ class Ramp(ASetPoint):
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=dtype))
         self.createParameter("slopes", value=slopes)
 
-    def compute_outputs(self, t1: float, t2: float, setpoint: np.array,) -> dict:
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        setpoint: np.array,
+    ) -> dict:
         ns = setpoint.shape
         sp = np.empty(ns, dtype=setpoint.dtype)
 
@@ -305,7 +329,10 @@ class Rectangular(ASetPoint):
     __slots__ = []
 
     def __init__(
-        self, name: str, snames: Iterable[str], dtype=np.float64,
+        self,
+        name: str,
+        snames: Iterable[str],
+        dtype=np.float64,
     ):
         ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
         self.createParameter("doors", value=[])
@@ -331,7 +358,12 @@ class Rectangular(ASetPoint):
 
         return res
 
-    def compute_outputs(self, t1: float, t2: float, setpoint: np.array,) -> dict:
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        setpoint: np.array,
+    ) -> dict:
         sp = self.evalState(t2)
 
         outputs = {}
