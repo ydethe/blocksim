@@ -92,9 +92,9 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"blocksim"
-copyright = u"2020, John Gray"
-author = u"John Gray"
+project = "blocksim"
+copyright = "2020, John Gray"
+author = "John Gray"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -304,7 +304,13 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "blocksim.tex", u"blocksim Documentation", u"John Gray", "manual",),
+    (
+        master_doc,
+        "blocksim.tex",
+        "blocksim Documentation",
+        "John Gray",
+        "manual",
+    ),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -338,7 +344,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "blocksim", u"blocksim Documentation", [author], 1)]
+man_pages = [(master_doc, "blocksim", "blocksim Documentation", [author], 1)]
 
 # If true, show URL addresses after external links.
 #
@@ -354,7 +360,7 @@ texinfo_documents = [
     (
         master_doc,
         "blocksim",
-        u"blocksim Documentation",
+        "blocksim Documentation",
         author,
         "blocksim",
         "One line description of project.",

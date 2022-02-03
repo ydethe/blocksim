@@ -836,7 +836,12 @@ class DummyComputer(AComputer):
         self.defineOutput("xout", snames=["x"], dtype=np.int64)
         self.setInitialStateForOutput(np.array([0]), output_name="xout")
 
-    def compute_outputs(self, t1: float, t2: float, **inputs,) -> dict:
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        **inputs,
+    ) -> dict:
         outputs = {}
         outputs["xout"] = np.array([0])
 

@@ -526,7 +526,7 @@ class Logger(object):
 
         self._data[name].append(val)
 
-        if not self._dst is None and not self._fic.endswith('.parquet'):
+        if not self._dst is None and not self._fic.endswith(".parquet"):
             if self._binary:
                 self._update_bin_log_file(name)
             else:
@@ -634,7 +634,7 @@ class Logger(object):
 
         """
         if len(self._data.keys()) == 0:
-            raise SystemError(u"[ERROR]Logger empty")
+            raise SystemError("[ERROR]Logger empty")
 
         expr = "def __tmp(lg):\n"
         for k in self._data.keys():
@@ -720,11 +720,14 @@ class Logger(object):
             self._dst = None
 
     def __del__(self):
-        if self._fic.endswith('.parquet'):
-            df=pd.DataFrame(self._data)
-            df.to_parquet(path=self._dst, engine='auto', compression='snappy')
-            logger.info("Simulation log saved to '%s'"%os.path.abspath(self._fic))
+        if (
+            type(self._fic) == type("")
+            and self._fic.endswith(".parquet")
+            and not self._dst is None
+        ):
+            df = pd.DataFrame(self._data)
+            df.to_parquet(path=self._dst, engine="auto", compression="snappy")
+            logger.info("Simulation log saved to '%s'" % os.path.abspath(self._fic))
 
         if not self._dst is None:
             self._dst.close()
-

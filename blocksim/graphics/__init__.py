@@ -48,7 +48,7 @@ def getUnitAbbrev(mult: float) -> str:
 def format_parameter(samp: float, unit: str) -> str:
     xm = np.abs(samp)
     pm = (int(log10(xm)) // 3) * 3
-    x_unit_mult = 10 ** pm
+    x_unit_mult = 10**pm
     x_unit_lbl = getUnitAbbrev(x_unit_mult)
     txt = "%.3g %s%s" % (samp / x_unit_mult, x_unit_lbl, unit)
     return txt
@@ -80,14 +80,14 @@ def plotFromLogger(
     elif hasattr(id_x, "__iter__"):
         val_x = id_x
     else:
-        raise SystemError(u"[ERROR]Unacceptable argument for id_x : %s" % (str(id_x)))
+        raise SystemError("[ERROR]Unacceptable argument for id_x : %s" % (str(id_x)))
 
     if type(id_y) == type(""):
         val_y = log.getValue(id_y)
     elif hasattr(id_y, "__iter__"):
         val_y = id_y
     else:
-        raise SystemError(u"[ERROR]Unacceptable argument for id_y : %s" % (str(id_y)))
+        raise SystemError("[ERROR]Unacceptable argument for id_y : %s" % (str(id_y)))
 
     (line,) = axe.plot(val_x, val_y, **kwargs)
 
@@ -199,7 +199,7 @@ def plot3DSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> Axes
         x_samp = spg.generateXSerie()
         xm = np.max(np.abs(x_samp))
         pm = (int(log10(xm)) // 3) * 3
-        x_unit_mult = 10 ** pm
+        x_unit_mult = 10**pm
     x_unit_lbl = getUnitAbbrev(x_unit_mult)
 
     if "y_unit_mult" in kwargs.keys():
@@ -208,7 +208,7 @@ def plot3DSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> Axes
         y_samp = spg.generateYSerie()
         ym = np.max(np.abs(y_samp))
         pm = (int(log10(ym)) // 3) * 3
-        y_unit_mult = 10 ** pm
+        y_unit_mult = 10**pm
     y_unit_lbl = getUnitAbbrev(y_unit_mult)
     lbl = kwargs.pop("label", spg.name)
 
@@ -259,7 +259,7 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
         x_samp = spg.generateXSerie()
         xm = np.max(np.abs(x_samp))
         pm = (int(log10(xm)) // 3) * 3
-        x_unit_mult = 10 ** pm
+        x_unit_mult = 10**pm
     x_unit_lbl = getUnitAbbrev(x_unit_mult)
 
     if "y_unit_mult" in kwargs.keys():
@@ -268,7 +268,7 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
         y_samp = spg.generateYSerie()
         ym = np.max(np.abs(y_samp))
         pm = (int(log10(ym)) // 3) * 3
-        y_unit_mult = 10 ** pm
+        y_unit_mult = 10**pm
     y_unit_lbl = getUnitAbbrev(y_unit_mult)
     lbl = kwargs.pop("label", spg.name)
 
@@ -367,10 +367,20 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
         axe.axe_d.grid(True)
         axe.axe_v.grid(True)
         axe.axe_d.set_xlabel(
-            "%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, spg.unit_of_x_var,)
+            "%s (%s%s)"
+            % (
+                spg.name_of_x_var,
+                x_unit_lbl,
+                spg.unit_of_x_var,
+            )
         )
         axe.axe_v.set_xlabel(
-            "%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, spg.unit_of_y_var,)
+            "%s (%s%s)"
+            % (
+                spg.name_of_y_var,
+                y_unit_lbl,
+                spg.unit_of_y_var,
+            )
         )
 
         cid = axe.figure.canvas.mpl_connect("button_press_event", on_click)
@@ -465,7 +475,7 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
         ilxm = int(np.round(lxm, 0))
         ilxm3 = ilxm // 3
         pm = ilxm3 * 3
-        x_unit_mult = 10 ** pm
+        x_unit_mult = 10**pm
     axe.x_unitilxm3_mult = x_unit_mult
     x_unit_lbl = getUnitAbbrev(x_unit_mult)
     lbl = kwargs.pop("label", line.name)

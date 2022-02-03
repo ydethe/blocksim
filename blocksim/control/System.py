@@ -109,7 +109,11 @@ class ASystem(AComputer):
         return
 
     def compute_outputs(
-        self, t1: float, t2: float, command: np.array, state: np.array,
+        self,
+        t1: float,
+        t2: float,
+        command: np.array,
+        state: np.array,
     ) -> dict:
         self.__integ.set_initial_value(state, t1).set_f_params(command).set_jac_params(
             command
@@ -426,7 +430,12 @@ class G6DOFSystem(ASystem):
         return dX
 
     def compute_outputs(
-        self, t1: float, t2: float, command: np.array, state: np.array, euler: np.array,
+        self,
+        t1: float,
+        t2: float,
+        command: np.array,
+        state: np.array,
+        euler: np.array,
     ) -> dict:
         # Crouch-Grossman method CG4
         # http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf
@@ -485,7 +494,7 @@ class G6DOFSystem(ASystem):
             ] / 2 * np.sinc(h * b[i] * Nwk / (2 * np.pi))
             q = E @ q
 
-        Nq2 = np.sum(q ** 2)
+        Nq2 = np.sum(q**2)
         # q = q / sqrt(Nq2)
         if np.abs(Nq2 - 1) > self.max_q_denorm:
             raise DenormalizedQuaternion(self.getName(), q)

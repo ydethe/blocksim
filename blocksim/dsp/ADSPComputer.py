@@ -160,7 +160,11 @@ class DummyDSPComputer(ADSPComputer):
         )
 
     def compute_outputs(
-        self, t1: float, t2: float, input: np.array, output: np.array,
+        self,
+        t1: float,
+        t2: float,
+        input: np.array,
+        output: np.array,
     ) -> dict:
         out = np.zeros(5, dtype=np.int64)
         out[0] = input[0]

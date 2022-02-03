@@ -204,7 +204,12 @@ class TestMadgwick(TestBase):
                 {"var": "deg(madg_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(madg_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(madg_euler_yaw)", "label": "FilteredYaw"},
-                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
+                {
+                    "var": deg(w),
+                    "label": "Simu",
+                    "color": "black",
+                    "linestyle": "--",
+                },
             ],
         )
 
@@ -244,7 +249,12 @@ class TestMadgwick(TestBase):
                 {"var": "deg(madg_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(madg_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(madg_euler_yaw)", "label": "FilteredYaw"},
-                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
+                {
+                    "var": deg(w),
+                    "label": "Simu",
+                    "color": "black",
+                    "linestyle": "--",
+                },
             ],
         )
 
@@ -405,7 +415,12 @@ class TestMahony(TestBase):
                 {"var": "deg(maho_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(maho_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(maho_euler_yaw)", "label": "FilteredYaw"},
-                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
+                {
+                    "var": deg(w),
+                    "label": "Simu",
+                    "color": "black",
+                    "linestyle": "--",
+                },
             ],
         )
 
@@ -445,7 +460,12 @@ class TestMahony(TestBase):
                 {"var": "deg(maho_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(maho_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(maho_euler_yaw)", "label": "FilteredYaw"},
-                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
+                {
+                    "var": deg(w),
+                    "label": "Simu",
+                    "color": "black",
+                    "linestyle": "--",
+                },
             ],
         )
 
