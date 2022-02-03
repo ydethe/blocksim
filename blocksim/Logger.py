@@ -8,6 +8,7 @@ from datetime import datetime
 import platform
 import os
 
+import pandas as pd
 import numpy as np
 from scipy.signal import firwin, fftconvolve
 
@@ -525,7 +526,7 @@ class Logger(object):
 
         self._data[name].append(val)
 
-        if not self._dst is None:
+        if not self._dst is None and not self._fic.endswith('.parquet'):
             if self._binary:
                 self._update_bin_log_file(name)
             else:
@@ -719,5 +720,11 @@ class Logger(object):
             self._dst = None
 
     def __del__(self):
+        if self._fic.endswith('.parquet'):
+            df=pd.DataFrame(self._data)
+            df.to_parquet(path=self._dst, engine='auto', compression='snappy')
+            logger.info("Simulation log saved to '%s'"%self._fic)
+
         if not self._dst is None:
             self._dst.close()
+

@@ -158,6 +158,7 @@ sim.connect("split.split", "ctl.estimation")
 dt = 0.05
 
 tps = np.arange(0, 4, dt)
+sim.setOutputLoggerFile(fic="tests/sim.parquet")
 sim.simulate(tps, progress_bar=False)
 
 log = sim.getLogger()
