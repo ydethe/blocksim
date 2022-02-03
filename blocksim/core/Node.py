@@ -2,6 +2,7 @@ from abc import abstractmethod
 from typing import Iterable, Iterator
 from itertools import product
 from uuid import UUID, uuid4
+from black import out
 
 import numpy as np
 from numpy import sqrt
@@ -458,6 +459,28 @@ class AComputer(ABaseNode):
 
             setattr(self.__class__, name, property(get, set))
 
+    def getValueFromLogger(
+        self, logger: "Logger", output_name: str, dtype=np.complex128
+    ) -> "array":
+        """Gets the list of output vectors for a computer's output
+
+        Args:
+            logger
+                A :class:`blocksim.Logger.Logger` that contains the values
+            output_name
+                Name of an output. For example, for a sensor, *measurement*
+            dtype
+                Type of the output array
+
+        Returns:
+            An 2D array of the output
+
+        """
+        val = logger.getMatrixOutput(
+            name="%s_%s" % (self.getName(), output_name), dtype=dtype
+        )
+        return val
+
     def isController(self) -> bool:
         """Checks if the element is derived from AController
         See :class:`blocksim.control.Controller.AController`
@@ -836,7 +859,12 @@ class DummyComputer(AComputer):
         self.defineOutput("xout", snames=["x"], dtype=np.int64)
         self.setInitialStateForOutput(np.array([0]), output_name="xout")
 
-    def compute_outputs(self, t1: float, t2: float, **inputs,) -> dict:
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        **inputs,
+    ) -> dict:
         outputs = {}
         outputs["xout"] = np.array([0])
 

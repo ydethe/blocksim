@@ -11,6 +11,8 @@ import os
 import numpy as np
 from scipy.signal import firwin, fftconvolve
 
+from blocksim.core.Node import AComputer
+
 from .exceptions import *
 from .utils import deg, rad
 from .dsp.DSPSignal import DSPSignal
@@ -564,6 +566,28 @@ class Logger(object):
 
         return res
 
+    def getValueForComputer(
+        self, comp: AComputer, output_name: str, dtype=np.complex128
+    ) -> "array":
+        """Gets the list of output vectors for a computer's output
+
+        Args:
+            comp
+                A :class:`blocksim.core.Node.AComputer` whose output are to be retrieved
+            output_name
+                Name of an output. For example, for a sensor, *measurement*
+            dtype
+                Type of the output array
+
+        Returns:
+            An 2D array of the output
+
+        """
+        val = self.getMatrixOutput(
+            name="%s_%s" % (comp.getName(), output_name), dtype=dtype
+        )
+        return val
+
     def getMatrixOutput(self, name: str, dtype=np.complex128) -> np.array:
         """Gets the list of output vectors for a computer's output
 
@@ -633,7 +657,7 @@ class Logger(object):
 
         """
         if len(self._data.keys()) == 0:
-            raise SystemError(u"[ERROR]Logger empty")
+            raise SystemError("[ERROR]Logger empty")
 
         expr = "def __tmp(lg):\n"
         for k in self._data.keys():
