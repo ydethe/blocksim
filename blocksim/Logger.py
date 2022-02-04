@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 from scipy.signal import firwin, fftconvolve
 
+from . import logger
 from .exceptions import *
 from .utils import deg, rad
 from .dsp.DSPSignal import DSPSignal
@@ -47,7 +48,7 @@ class Logger(object):
     """
 
     __datetime_fmt = "%Y-%m-%d %H:%M-%S"
-    __slots__ = ["_dst", "_data", "_binary", "_fic", "_mode"]
+    __slots__ = ["_dst", "_data", "_binary", "_fic", "_mode", "__index", "__alloc"]
 
     def __init__(self, fic: str = None):
         self._dst = None
@@ -73,17 +74,34 @@ class Logger(object):
 
         """
         self._binary = binary
-        if binary:
-            self._mode = "wb"
-        else:
-            self._mode = "w"
 
         if not fic is None and type(fic) == type(""):
             self._fic = fic
+        else:
+            return
+
+        if fic.endswith(".pkl") and binary:
+            self._fic = fic
+            self._mode = "wb"
+        elif not fic.endswith(".pkl") and binary:
+            self._fic = fic
+            self._mode = "wb"
+        elif fic.endswith(".pkl") and not binary:
+            raise AssertionError(
+                "With .pkl file, you must call Logger.loadLoggerFile with binary=True (fic='%s', binary=%s)"
+                % (fic, binary)
+            )
+        else:
+            self._fic = fic
+            self._mode = "w"
 
     def openFile(self):
+        self.__index = 0
         if not self._fic is None:
             self._dst = open(self._fic, self._mode)
+
+    def allocate(self, size: int):
+        self.__alloc = size
 
     def getFileHeader(self, file: str) -> str:
         f = open(file, mode="rb")
@@ -484,6 +502,13 @@ class Logger(object):
 
         """
         self._binary = binary
+
+        if fic.endswith(".pkl") and not binary:
+            raise AssertionError(
+                "With .pkl file, you must call Logger.loadLoggerFile with binary=True (fic='%s', binary=%s)"
+                % (fic, binary)
+            )
+
         if binary:
             mode = "rb"
         else:
@@ -496,8 +521,16 @@ class Logger(object):
 
         self.reset()
 
-        if binary:
+        if fic.endswith(".pkl") and binary:
+            # self._data = pd.read_parquet(f)
+            self._data = pd.read_pickle(f)
+        elif not fic.endswith(".pkl") and binary:
             self._load_bin_log_file(f, time_int)
+        elif fic.endswith(".pkl") and not binary:
+            raise AssertionError(
+                "With .pkl file, you must call Logger.loadLoggerFile with binary=True (fic='%s', binary=%s)"
+                % (fic, binary)
+            )
         else:
             self._load_ascii_log_file(f, time_int)
 
@@ -505,8 +538,10 @@ class Logger(object):
 
     def reset(self):
         """Resets the element internal state to zero."""
-        self._data = defaultdict(list)
         self.closeFile()
+        self._data = defaultdict(list)
+        self.__index = 0
+        self.__alloc = 0
 
     def log(self, name: str, val: float):
         """Log a value for a variable. If *name* is '_', nothing is logged
@@ -524,9 +559,26 @@ class Logger(object):
         if iskeyword(name) or name == "keep_up":
             raise NameIsPythonKeyword(name)
 
-        self._data[name].append(val)
+        typ_map = {
+            b"I": np.int64,
+            b"F": np.float64,
+            b"C": np.complex128,
+            b"B": bool,
+        }
+        typ, pck_f, unpck_f, sze = self._findType(val)
+        dtyp = typ_map[typ]
 
-        if not self._dst is None and not self._fic.endswith(".parquet"):
+        if self.__alloc > 0:
+            if not name in self._data.keys():
+                self._data[name] = np.empty(self.__alloc, dtype=dtyp)
+            self._data[name][self.__index] = dtyp(val)
+        else:
+            self._data[name].append(dtyp(val))
+
+        if name == "t":
+            self.__index += 1
+
+        if not self._dst is None and not self._fic.endswith(".pkl"):
             if self._binary:
                 self._update_bin_log_file(name)
             else:
@@ -715,19 +767,16 @@ class Logger(object):
         return y
 
     def closeFile(self):
-        if not self._dst is None:
-            self._dst.close()
-            self._dst = None
-
-    def __del__(self):
         if (
             type(self._fic) == type("")
-            and self._fic.endswith(".parquet")
+            and self._fic.endswith(".pkl")
             and not self._dst is None
         ):
             df = pd.DataFrame(self._data)
-            df.to_parquet(path=self._dst, engine="auto", compression="snappy")
+            # df.to_parquet(path=self._dst)
+            df.to_pickle(self._dst)
             logger.info("Simulation log saved to '%s'" % os.path.abspath(self._fic))
 
         if not self._dst is None:
             self._dst.close()
+            self._dst = None
