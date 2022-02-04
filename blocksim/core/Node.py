@@ -2,7 +2,6 @@ from abc import abstractmethod
 from typing import Iterable, Iterator
 from itertools import product
 from uuid import UUID, uuid4
-from black import out
 
 import numpy as np
 from numpy import sqrt
