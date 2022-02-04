@@ -39,7 +39,7 @@ def casedpath(path):
     return r and r[0] or path
 
 
-def resource_path(resource: str) -> str:
+def resource_path(resource: str, package: str = "blocksim") -> str:
     """
 
     Examples:
@@ -49,7 +49,6 @@ def resource_path(resource: str) -> str:
     """
     from importlib import import_module
 
-    package = "blocksim"
     module = import_module(package)
     spec = module.__spec__
     if spec.submodule_search_locations is None:

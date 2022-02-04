@@ -157,6 +157,7 @@ class Simulation(object):
 
         """
         self.__logger.openFile()
+        self.__logger.allocate(len(tps))
 
         frame = Frame(start_timestamp=tps[0], stop_timestamp=tps[0])
         self.update(frame, error_on_unconnected=error_on_unconnected)
