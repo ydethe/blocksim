@@ -12,3 +12,5 @@ typer
 lazy_property
 pandas
 fastparquet
+psycopg2
+sqlalchemy

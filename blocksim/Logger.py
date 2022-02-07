@@ -7,16 +7,30 @@ from types import FunctionType
 from datetime import datetime
 import platform
 import os
+import sys
+from numpy.lib.function_base import meshgrid
 
+from tqdm import tqdm
 import pandas as pd
 import numpy as np
 from scipy.signal import firwin, fftconvolve
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
 from . import logger
 from .core.Node import AComputer
 from .exceptions import *
 from .utils import deg, rad
 from .dsp.DSPSignal import DSPSignal
+from .DatabaseModel import (
+    Base,
+    Simulation,
+    IntegerSerie,
+    FloatSerie,
+    ComplexSerie,
+    BoolSerie,
+)
 
 
 __all__ = ["Logger"]
@@ -49,7 +63,17 @@ class Logger(object):
     """
 
     __datetime_fmt = "%Y-%m-%d %H:%M-%S"
-    __slots__ = ["_dst", "_data", "_binary", "_fic", "_mode", "__index", "__alloc"]
+    __slots__ = [
+        "_dst",
+        "_data",
+        "_binary",
+        "_fic",
+        "_mode",
+        "__index",
+        "__alloc",
+        "__defer_write",
+        "__start_time",
+    ]
 
     def __init__(self, fic: str = None):
         self._dst = None
@@ -84,21 +108,39 @@ class Logger(object):
         if fic.endswith(".pkl") and binary:
             self._fic = fic
             self._mode = "wb"
+            self.__defer_write = True
         elif not fic.endswith(".pkl") and binary:
             self._fic = fic
             self._mode = "wb"
+            self.__defer_write = False
         elif fic.endswith(".pkl") and not binary:
             raise AssertionError(
                 "With .pkl file, you must call Logger.loadLoggerFile with binary=True (fic='%s', binary=%s)"
                 % (fic, binary)
             )
-        else:
+        elif not fic.endswith(".pkl") and not binary:
             self._fic = fic
             self._mode = "w"
+            self.__defer_write = False
+
+        if fic.startswith("postgresql+psycopg2://"):
+            self._fic = fic
+            self._mode = ""
+            self.__defer_write = True
 
     def openFile(self):
         self.__index = 0
-        if not self._fic is None:
+        if self._fic is None:
+            return
+
+        self.__start_time = datetime.now()
+
+        if self._fic.startswith("postgresql+psycopg2://"):
+            engine = create_engine(self._fic)
+            Base.metadata.bind = engine
+            DBSession = sessionmaker(bind=engine)
+            self._dst = DBSession()
+        else:
             self._dst = open(self._fic, self._mode)
 
     def allocate(self, size: int):
@@ -492,6 +534,31 @@ class Logger(object):
         self._dst.write(fmt.format(*rec))
         self._dst.write("\n")
 
+    def _load_postgre(self, uri: str):
+        uri, sim_id = uri.split("?sim_id=")
+        sim_id = int(sim_id)
+
+        engine = create_engine(uri)
+        Base.metadata.bind = engine
+        DBSession = sessionmaker(bind=engine)
+        session = DBSession()
+        q = session.query(IntegerSerie).filter(IntegerSerie.simulation_id == sim_id)
+        for s in q.all():
+            self._data[s.name] = np.array(s.data, dtype=np.int64)
+
+        q = session.query(FloatSerie).filter(FloatSerie.simulation_id == sim_id)
+        for s in q.all():
+            self._data[s.name] = np.array(s.data, dtype=np.float64)
+
+        q = session.query(ComplexSerie).filter(ComplexSerie.simulation_id == sim_id)
+        for s in q.all():
+            cdata = [x + 1j * y for x, y in s.data]
+            self._data[s.name] = np.array(cdata, dtype=np.complex128)
+
+        q = session.query(BoolSerie).filter(BoolSerie.simulation_id == sim_id)
+        for s in q.all():
+            self._data[s.name] = np.array(s.data)
+
     def loadLoggerFile(
         self, fic: str, binary: bool = False, time_int: Iterable[float] = None
     ):
@@ -515,27 +582,24 @@ class Logger(object):
         else:
             mode = "r"
 
-        try:
-            f = open(fic, mode)
-        except Exception as e:
-            raise FileError(fic)
-
         self.reset()
 
-        if fic.endswith(".pkl") and binary:
-            # self._data = pd.read_parquet(f)
-            self._data = pd.read_pickle(f)
+        if fic.startswith("postgresql+psycopg2://"):
+            self._load_postgre(fic)
+        elif fic.endswith(".pkl") and binary:
+            with open(fic, mode) as f:
+                self._data = pd.read_pickle(f)
         elif not fic.endswith(".pkl") and binary:
-            self._load_bin_log_file(f, time_int)
+            with open(fic, mode) as f:
+                self._load_bin_log_file(f, time_int)
         elif fic.endswith(".pkl") and not binary:
             raise AssertionError(
                 "With .pkl file, you must call Logger.loadLoggerFile with binary=True (fic='%s', binary=%s)"
                 % (fic, binary)
             )
-        else:
-            self._load_ascii_log_file(f, time_int)
-
-        f.close()
+        elif not fic.endswith(".pkl") and not binary:
+            with open(fic, mode) as f:
+                self._load_ascii_log_file(f, time_int)
 
     def reset(self):
         """Resets the element internal state to zero."""
@@ -543,6 +607,31 @@ class Logger(object):
         self._data = defaultdict(list)
         self.__index = 0
         self.__alloc = 0
+
+    def export(self, fic: str, format: str):
+        df = pd.DataFrame(self._data)
+        print(df)
+
+        if format == "":
+            if fic.endswith(".xls"):
+                format = "xls"
+            elif fic.endswith(".csv"):
+                format = "csv"
+            elif fic.endswith(".parquet"):
+                format = "parquet"
+            elif fic.endswith(".feather"):
+                format = "feather"
+
+        logger.debug("Export to '%s' (%s)" % (fic, format))
+
+        if format == "xls":
+            df.to_excel(fic, engine="openpyxl", na_rep="", index=False)
+        elif format == "csv":
+            df.to_csv(fic, sep=";", na_rep="", index=False)
+        elif format == "parquet":
+            df.to_parquet(fic)
+        elif format == "feather":
+            df.to_feather(fic)
 
     def log(self, name: str, val: float):
         """Log a value for a variable. If *name* is '_', nothing is logged
@@ -579,7 +668,7 @@ class Logger(object):
         if name == "t":
             self.__index += 1
 
-        if not self._dst is None and not self._fic.endswith(".pkl"):
+        if not self._dst is None and not self.__defer_write:
             if self._binary:
                 self._update_bin_log_file(name)
             else:
@@ -589,8 +678,13 @@ class Logger(object):
         return self._data.keys()
 
     def getDataSize(self) -> int:
-        tps = self._data["t"]
-        return len(tps)
+        lnames = list(self._data.keys())
+        if len(lnames) == 0:
+            return 0
+
+        data0 = self._data[lnames[0]]
+
+        return len(data0)
 
     def getFlattenOutput(self, name: str, dtype=np.complex128) -> np.array:
         """Gets the list of output vectors for a computer's output
@@ -790,16 +884,65 @@ class Logger(object):
         return y
 
     def closeFile(self):
-        if (
-            type(self._fic) == type("")
-            and self._fic.endswith(".pkl")
-            and not self._dst is None
-        ):
+        if self._dst is None:
+            return
+
+        sim_id = 0
+
+        if type(self._fic) == type("") and self._fic.endswith(".pkl"):
             df = pd.DataFrame(self._data)
             # df.to_parquet(path=self._dst)
             df.to_pickle(self._dst)
             logger.info("Simulation log saved to '%s'" % os.path.abspath(self._fic))
-
-        if not self._dst is None:
             self._dst.close()
             self._dst = None
+        elif self._fic.startswith("postgresql+psycopg2://"):
+            try:
+                user = os.getlogin()
+            except:
+                user = "unknown"
+
+            pgm = list(os.path.split(sys.argv[0]))[-1]
+            args = " ".join(sys.argv[1:])
+            if pgm.startswith("python"):
+                pgm = sys.argv[1]
+                args = " ".join(sys.argv[2:])
+            sim = Simulation(
+                start_time=self.__start_time,
+                end_time=datetime.now(),
+                program=pgm,
+                arguments=args,
+                node=platform.node(),
+                user=user,
+                cwd=os.getcwd(),
+            )
+            self._dst.add(sim)
+            self._dst.commit()
+            sim_id = sim.id
+            logger.info(
+                "Simulation logged in DB. URI %s?sim_id=%i" % (self._fic, sim_id)
+            )
+
+            for k in self._data.keys():
+                data = self.getRawValue(k)
+                typ, pck_f, unpck_f, sze = self._findType(data[0])
+                if typ == b"I":
+                    s = IntegerSerie(name=k, unit="", data=data, simulation=sim)
+                elif typ == b"F":
+                    s = FloatSerie(name=k, unit="", data=data, simulation=sim)
+                elif typ == b"C":
+                    ns = len(data)
+                    cdata = np.empty((ns, 2))
+                    cdata[:, 0] = np.real(data)
+                    cdata[:, 1] = np.imag(data)
+                    s = ComplexSerie(name=k, unit="", data=cdata, simulation=sim)
+                elif typ == b"B":
+                    s = BoolSerie(name=k, unit="", data=data, simulation=sim)
+                else:
+                    raise ValueError("%s, %s" % (typ, data[0]))
+                self._dst.add(s)
+            self._dst.commit()
+
+            self._dst = None
+
+        return sim_id
