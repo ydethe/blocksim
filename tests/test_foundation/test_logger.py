@@ -202,4 +202,4 @@ if __name__ == "__main__":
     # a.test_save_load_parquet()
 
     a.setUp()
-    a.test_save_load_psql()
+    a.ntest_save_load_psql()
