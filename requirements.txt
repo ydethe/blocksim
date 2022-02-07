@@ -12,5 +12,6 @@ typer
 lazy_property
 pandas
 fastparquet
-psycopg2
+openpyxl
+psycopg2-binary
 sqlalchemy

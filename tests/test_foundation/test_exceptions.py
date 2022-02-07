@@ -143,7 +143,7 @@ class TestExceptions(TestBase):
 
     def test_logger_exc(self):
         log = self.sim.getLogger()
-        self.assertRaises(FileError, log.loadLoggerFile, "")
+        self.assertRaises(FileNotFoundError, log.loadLoggerFile, "")
         self.assertRaises(SystemError, log.getValue, "tps")
         log.log("tps", 0)
         log.log("y", 0)
