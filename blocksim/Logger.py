@@ -799,6 +799,12 @@ class Logger(object):
           True
 
         """
+        lnames = self.getParametersName()
+        if len(lnames) == 0:
+            raise SystemError("Logger empty")
+        if not name in lnames:
+            raise SystemError("Logger has no variable '%s'" % name)
+
         if self.__db_session is None:
             data = np.array(self._data[name])
         else:
@@ -825,9 +831,6 @@ class Logger(object):
           True
 
         """
-        # if len(self._data.keys()) == 0:
-        #     raise SystemError("[ERROR]Logger empty")
-
         expr = "def __tmp(lg):\n"
         for k in self.getParametersName():
             expr += "   %s=lg.getRawValue('%s')\n" % (k, k)
