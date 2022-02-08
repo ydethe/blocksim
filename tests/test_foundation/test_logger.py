@@ -1,4 +1,5 @@
 import sys
+import os
 from pathlib import Path
 import unittest
 
@@ -16,6 +17,11 @@ from TestBase import TestBase
 
 class TestLogger(TestBase):
     def test_save_load_psql(self):
+        pth = "postgresql+psycopg2://%s:%s@postgres/%s" % (
+            os.environ["POSTGRES_USER"],
+            os.environ["POSTGRES_PASSWORD"],
+            os.environ["POSTGRES_DB"],
+        )
         pth = "postgresql+psycopg2://postgres@localhost/simulations"
 
         log = Logger()
