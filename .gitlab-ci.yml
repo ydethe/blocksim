@@ -28,6 +28,7 @@ test:
     - which python3
     - python3 setup.py develop
     - python3 --version
+    - blocksim db init postgresql+psycopg2://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres/$POSTGRES_DB
     - python3 -m pytest --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
     - python3 setup.py doc
     - mv docs/_build/html htmldoc
