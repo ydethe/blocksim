@@ -73,6 +73,8 @@ class Logger(object):
         "__alloc",
         "__defer_write",
         "__start_time",
+        "__db_session",
+        "__sim",
     ]
 
     def __init__(self, fic: str = None):
@@ -541,23 +543,34 @@ class Logger(object):
         engine = create_engine(uri)
         Base.metadata.bind = engine
         DBSession = sessionmaker(bind=engine)
-        session = DBSession()
-        q = session.query(IntegerSerie).filter(IntegerSerie.simulation_id == sim_id)
-        for s in q.all():
-            self._data[s.name] = np.array(s.data, dtype=np.int64)
+        self.__db_session = DBSession()
 
-        q = session.query(FloatSerie).filter(FloatSerie.simulation_id == sim_id)
-        for s in q.all():
-            self._data[s.name] = np.array(s.data, dtype=np.float64)
+        q = self.__db_session.query(Simulation).filter(Simulation.id == sim_id)
+        self.__sim = q.first()
 
-        q = session.query(ComplexSerie).filter(ComplexSerie.simulation_id == sim_id)
+        q = self.__db_session.query(IntegerSerie.name).filter(
+            IntegerSerie.simulation_id == sim_id
+        )
         for s in q.all():
-            cdata = [x + 1j * y for x, y in s.data]
-            self._data[s.name] = np.array(cdata, dtype=np.complex128)
+            self._data[s.name] = None
 
-        q = session.query(BoolSerie).filter(BoolSerie.simulation_id == sim_id)
+        q = self.__db_session.query(FloatSerie.name).filter(
+            FloatSerie.simulation_id == sim_id
+        )
         for s in q.all():
-            self._data[s.name] = np.array(s.data)
+            self._data[s.name] = None
+
+        q = self.__db_session.query(ComplexSerie.name).filter(
+            ComplexSerie.simulation_id == sim_id
+        )
+        for s in q.all():
+            self._data[s.name] = None
+
+        q = self.__db_session.query(BoolSerie.name).filter(
+            BoolSerie.simulation_id == sim_id
+        )
+        for s in q.all():
+            self._data[s.name] = None
 
     def loadLoggerFile(
         self, fic: str, binary: bool = False, time_int: Iterable[float] = None
@@ -607,8 +620,12 @@ class Logger(object):
         self._data = defaultdict(list)
         self.__index = 0
         self.__alloc = 0
+        self.__sim = None
+        self.__db_session = None
 
     def export(self, fic: str, format: str):
+        for k in self.getParametersName():
+            _ = self.getRawValue(k)
         df = pd.DataFrame(self._data)
         print(df)
 
@@ -678,11 +695,12 @@ class Logger(object):
         return self._data.keys()
 
     def getDataSize(self) -> int:
-        lnames = list(self._data.keys())
+        lnames = list(self.getParametersName())
         if len(lnames) == 0:
             return 0
 
-        data0 = self._data[lnames[0]]
+        name = lnames[0]
+        data0 = self.getRawValue(name)
 
         return len(data0)
 
@@ -734,14 +752,12 @@ class Logger(object):
         )
         return val
 
-    def getMatrixOutput(self, name: str, dtype=np.complex128) -> np.array:
+    def getMatrixOutput(self, name: str) -> np.array:
         """Gets the list of output vectors for a computer's output
 
         Args:
           name
             Name of an output. For example, for a sensor, *sensor_measurement*
-          dtype
-            Type of the output array
 
         Returns:
           An 2D array of the output
@@ -753,10 +769,13 @@ class Logger(object):
                 lname.append(k)
 
         nname = len(lname)
-        nd = self.getDataSize()
-        res = np.empty((nname, nd), dtype=dtype)
+        nd = -1
         for idx, name in enumerate(lname):
-            res[idx, :] = self.getRawValue(name)
+            data = self.getRawValue(name)
+            if nd < 0:
+                nd = len(data)
+                res = np.empty((nname, nd), dtype=data.dtype)
+            res[idx, :] = data
 
         return res
 
@@ -780,7 +799,11 @@ class Logger(object):
           True
 
         """
-        return np.array(self._data[name])
+        if self.__db_session is None:
+            data = np.array(self._data[name])
+        else:
+            data = self.__sim.loadSerieByName(session=self.__db_session, name=name)
+        return data
 
     def getValue(self, name: str) -> np.array:
         """Get the value of a logged variable
@@ -802,12 +825,12 @@ class Logger(object):
           True
 
         """
-        if len(self._data.keys()) == 0:
-            raise SystemError("[ERROR]Logger empty")
+        # if len(self._data.keys()) == 0:
+        #     raise SystemError("[ERROR]Logger empty")
 
         expr = "def __tmp(lg):\n"
-        for k in self._data.keys():
-            expr += "   %s=np.array(lg._data['%s'])\n" % (k, k)
+        for k in self.getParametersName():
+            expr += "   %s=lg.getRawValue('%s')\n" % (k, k)
         expr += "   return %s" % name
 
         foo_code = compile(expr, "<string>", "exec")

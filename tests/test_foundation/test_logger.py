@@ -22,7 +22,6 @@ class TestLogger(TestBase):
             os.environ["POSTGRES_PASSWORD"],
             os.environ["POSTGRES_DB"],
         )
-        # pth = "postgresql+psycopg2://postgres@localhost/simulations"
 
         log = Logger()
         log.setOutputLoggerFile(fic=pth)
