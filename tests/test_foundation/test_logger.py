@@ -15,7 +15,7 @@ from TestBase import TestBase
 
 
 class TestLogger(TestBase):
-    def ntest_save_load_psql(self):
+    def test_save_load_psql(self):
         pth = "postgresql+psycopg2://postgres@localhost/simulations"
 
         log = Logger()
