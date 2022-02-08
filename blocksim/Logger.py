@@ -831,6 +831,10 @@ class Logger(object):
           True
 
         """
+        lnames = self.getParametersName()
+        if len(lnames) == 0:
+            raise SystemError("Logger empty")
+
         expr = "def __tmp(lg):\n"
         for k in self.getParametersName():
             expr += "   %s=lg.getRawValue('%s')\n" % (k, k)
