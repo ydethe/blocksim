@@ -1,4 +1,4 @@
-from datetime import datetime
+from typing import List
 
 import numpy as np
 from sqlalchemy import (
@@ -16,6 +16,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from psycopg2.extensions import register_adapter, AsIs
+from sympy import ln
 
 register_adapter(np.int64, AsIs)
 
@@ -53,14 +54,60 @@ class Simulation(Base):
         )
         return s
 
-    def loadSerieById(self, session, serie_id: int):
+    def listSeriesId(self, session) -> List[int]:
+        lid = []
+
+        q = session.query(IntegerSerie.id).filter(IntegerSerie.simulation_id == self.id)
+        for s in q.all():
+            lid.append(s.id)
+
+        q = session.query(FloatSerie.id).filter(FloatSerie.simulation_id == self.id)
+        for s in q.all():
+            lid.append(s.id)
+
+        q = session.query(ComplexSerie.id).filter(ComplexSerie.simulation_id == self.id)
+        for s in q.all():
+            lid.append(s.id)
+
+        q = session.query(BoolSerie.id).filter(BoolSerie.simulation_id == self.id)
+        for s in q.all():
+            lid.append(s.id)
+
+        return lid
+
+    def listSeriesNames(self, session) -> List[str]:
+        lnames = []
+
+        q = session.query(IntegerSerie.name).filter(
+            IntegerSerie.simulation_id == self.id
+        )
+        for s in q.all():
+            lnames.append(s.name)
+
+        q = session.query(FloatSerie.name).filter(FloatSerie.simulation_id == self.id)
+        for s in q.all():
+            lnames.append(s.name)
+
+        q = session.query(ComplexSerie.name).filter(
+            ComplexSerie.simulation_id == self.id
+        )
+        for s in q.all():
+            lnames.append(s.name)
+
+        q = session.query(BoolSerie.name).filter(BoolSerie.simulation_id == self.id)
+        for s in q.all():
+            lnames.append(s.name)
+
+        return lnames
+
+    def loadSerieById(self, session, serie_id: int) -> "array":
         for cls in [IntegerSerie, FloatSerie, ComplexSerie, BoolSerie]:
             q = session.query(cls.id).filter(cls.id == serie_id)
             if q.count() > 0:
                 data = cls.loadFromID(session, serie_id)
                 return data
 
-    def loadSerieByName(self, session, name: str):
+    def loadSerieByName(self, session, name: str) -> "array":
         for cls in [IntegerSerie, FloatSerie, ComplexSerie, BoolSerie]:
             q = (
                 session.query(cls.id)

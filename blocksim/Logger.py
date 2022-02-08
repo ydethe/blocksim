@@ -548,29 +548,8 @@ class Logger(object):
         q = self.__db_session.query(Simulation).filter(Simulation.id == sim_id)
         self.__sim = q.first()
 
-        q = self.__db_session.query(IntegerSerie.name).filter(
-            IntegerSerie.simulation_id == sim_id
-        )
-        for s in q.all():
-            self._data[s.name] = None
-
-        q = self.__db_session.query(FloatSerie.name).filter(
-            FloatSerie.simulation_id == sim_id
-        )
-        for s in q.all():
-            self._data[s.name] = None
-
-        q = self.__db_session.query(ComplexSerie.name).filter(
-            ComplexSerie.simulation_id == sim_id
-        )
-        for s in q.all():
-            self._data[s.name] = None
-
-        q = self.__db_session.query(BoolSerie.name).filter(
-            BoolSerie.simulation_id == sim_id
-        )
-        for s in q.all():
-            self._data[s.name] = None
+        for k in self.__sim.listSeriesNames(self.__db_session):
+            self._data[k] = None
 
     def loadLoggerFile(
         self, fic: str, binary: bool = False, time_int: Iterable[float] = None
