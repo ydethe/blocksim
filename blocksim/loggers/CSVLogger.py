@@ -3,8 +3,9 @@ from datetime import datetime
 
 import pluggy
 import pandas as pd
+from singleton3 import Singleton
 
-from ..LoggerSpec import if_suitable
+# from ..LoggerSpec import if_suitable
 from ..Logger import Logger
 from .. import logger
 from ..exceptions import *
@@ -15,26 +16,30 @@ __all__ = ["Logger"]
 hookimpl = pluggy.HookimplMarker("blocksim")
 
 
-class Logger(object):
+class Logger(object, metaclass=Singleton):
     @hookimpl
-    def test_suitable(self, logger: Logger) -> bool:
-        fic = logger.getLoadedFile()
+    def test_suitable(self, fic: str) -> bool:
         if fic is None:
             return False
 
         istat = fic.endswith(".csv")
         return istat
 
-    @if_suitable
     @hookimpl
-    def loadLogFile(self, logger: Logger):
-        fic = logger.getLoadedFile()
-        data = pd.read_csv(fic, sep=";", na_rep="")
-        logger.setRawData(data)
+    def loadLogFile(self, log: Logger) -> bool:
+        fic = log.getLoadedFile()
+        if not self.test_suitable(fic):
+            return False
 
-    @if_suitable
+        data = pd.read_csv(fic, sep=";", na_values="")
+        for k in data.columns:
+            if data[k].dtype == "O":
+                data[k] = data[k].apply(np.complex128)
+        log.setRawData(data)
+        return True
+
     @hookimpl
-    def getRawValue(self, logger: Logger, name: str) -> "array":
+    def getRawValue(self, log: Logger, name: str) -> "array":
         """Loads the content of an existing log file
 
         Args:
@@ -42,25 +47,15 @@ class Logger(object):
             Path of a log file
 
         """
-        fic = logger.getLoadedFile()
-        if fic is None:
-            return
+        return
 
-        lnames = logger.getParametersName()
-        if len(lnames) == 0:
-            raise SystemError("Logger empty")
-        if not name in lnames:
-            raise SystemError("Logger has no variable '%s'" % name)
-
-        data = logger.getRawData()
-        value = np.array(data[name])
-
-        return value
-
-    @if_suitable
     @hookimpl
-    def export(self, logger: Logger):
-        fic = logger.getLoadedFile()
-        data = logger.getRawData()
+    def export(self, log: Logger) -> int:
+        fic = log.getLoadedFile()
+        if not self.test_suitable(fic):
+            return -1
+
+        data = log.getRawData()
         df = pd.DataFrame(data)
         df.to_csv(fic, sep=";", na_rep="", index=False)
+        return 0

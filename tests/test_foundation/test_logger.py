@@ -32,23 +32,21 @@ class TestLogger(TestBase):
             pth = "postgresql+psycopg2://postgres@localhost/simulations"
 
         log = Logger()
-        log.setOutputLoggerFile(fic=pth)
 
         dt = 0.01
         f = 11
         ns = 1000
 
-        log.openFile()
         for i in range(ns):
             log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
             log.log("_", 0)  # Variable named '_' is not recorded
 
-        sim_id = log.closeFile()
+        sim_id = log.export(pth)
         del log
 
         log2 = Logger()
-        log2.loadLoggerFile("%s?sim_id=%i" % (pth, sim_id))
+        log2.loadLogFile("%s?sim_id=%i" % (pth, sim_id))
 
         vars = log2.getParametersName()
         self.assertIn("t", vars)
@@ -61,40 +59,31 @@ class TestLogger(TestBase):
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
         self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
 
-    def test_save_load_parquet(self):
+    def test_save_load_pickle(self):
         log = Logger()
-        self.assertFalse(log.hasOutputLoggerFile())
 
         pth = Path(__file__).parent / "test_pkl.pkl"
 
-        self.assertRaises(
-            AssertionError, log.setOutputLoggerFile, fic=str(pth), binary=False
-        )
-
-        log.setOutputLoggerFile(fic=str(pth), binary=True)
-        self.assertTrue(log.hasOutputLoggerFile())
-
         dt = 0.01
         f = 11
         ns = 1000
 
-        log.openFile()
         for i in range(ns):
             log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
             log.log("_", 0)  # Variable named '_' is not recorded
 
         log.reset()
-        log.openFile()
         for i in range(ns):
             log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
 
-        log.closeFile()
+        istat = log.export(pth)
+        self.assertEqual(istat, 0)
         del log
 
         log2 = Logger()
-        log2.loadLoggerFile(str(pth), binary=True)
+        log2.loadLogFile(str(pth))
 
         vars = log2.getParametersName()
         self.assertIn("t", vars)
@@ -107,35 +96,30 @@ class TestLogger(TestBase):
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
         self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
 
-    def test_save_load_ascii(self):
+    def test_save_load_csv(self):
         log = Logger()
-        self.assertFalse(log.hasOutputLoggerFile())
 
-        pth = Path(__file__).parent / "test_ascii.log"
-
-        log.setOutputLoggerFile(str(pth))
-        self.assertTrue(log.hasOutputLoggerFile())
+        pth = Path(__file__).parent / "test_ascii.csv"
 
         dt = 0.01
         f = 11
         ns = 1000
 
-        log.openFile()
         for i in range(ns):
             log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
             log.log("_", 0)  # Variable named '_' is not recorded
 
         log.reset()
-        log.openFile()
         for i in range(ns):
             log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
 
+        log.export(pth)
         del log
 
         log2 = Logger()
-        log2.loadLoggerFile(str(pth))
+        log2.loadLogFile(pth)
 
         vars = log2.getParametersName()
         self.assertIn("t", vars)
@@ -148,44 +132,34 @@ class TestLogger(TestBase):
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
         self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
 
-    def test_load_binary_v1(self):
-        pth = Path(__file__).parent / "test_bin_v1.log"
-
+    def test_save_load_xls(self):
         log = Logger()
-        log.loadLoggerFile(str(pth), binary=True)
+
+        pth = Path(__file__).parent / "test_excel.xls"
 
         dt = 0.01
         f = 11
         ns = 1000
 
-        tps = np.arange(ns) * dt
-        x = sin(tps * f * 2 * np.pi + 1)
-        err_t = np.max(np.abs(tps - log.getValue("t")))
-        err_x = np.max(np.abs(x - log.getValue("x")))
-        self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
-        self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
-
-    def test_save_load_binary(self):
-        log = Logger()
-        self.assertFalse(log.hasOutputLoggerFile())
-
-        pth = Path(__file__).parent / "test_bin.log"
-
-        log.setOutputLoggerFile(str(pth), binary=True)
-        self.assertTrue(log.hasOutputLoggerFile())
-
-        dt = 0.01
-        f = 11
-        ns = 1000
-
-        log.openFile()
         for i in range(ns):
             log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
+            log.log("_", 0)  # Variable named '_' is not recorded
+
+        log.reset()
+        for i in range(ns):
+            log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
+            log.log("t", i * dt)
+
+        log.export(pth)
         del log
 
         log2 = Logger()
-        log2.loadLoggerFile(str(pth), binary=True)
+        log2.loadLogFile(pth)
+
+        vars = log2.getParametersName()
+        self.assertIn("t", vars)
+        self.assertIn("x", vars)
 
         tps = np.arange(ns) * dt
         x = exp(1j * tps * f * 2 * np.pi + 1)
@@ -203,16 +177,13 @@ if __name__ == "__main__":
 
     a = TestLogger()
     # a.setUp()
-    # a.test_save_load_ascii()
-
-    # a.setUp()
-    # a.test_save_load_binary()
-
-    # a.setUp()
-    # a.test_load_binary_v1()
-
-    # a.setUp()
-    # a.test_save_load_parquet()
+    # a.test_save_load_csv()
 
     a.setUp()
-    a.test_save_load_psql()
+    a.test_save_load_xls()
+
+    # a.setUp()
+    # a.test_save_load_pickle()
+
+    # a.setUp()
+    # a.test_save_load_psql()

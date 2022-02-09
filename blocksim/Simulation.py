@@ -156,7 +156,6 @@ class Simulation(object):
           The time frame used for the simulation
 
         """
-        self.__logger.openFile()
         self.__logger.allocate(len(tps))
 
         frame = Frame(start_timestamp=tps[0], stop_timestamp=tps[0])
@@ -172,21 +171,7 @@ class Simulation(object):
             frame.updateByStep(dt)
             self.update(frame, error_on_unconnected=error_on_unconnected)
 
-        self.__logger.closeFile()
-
         return frame
-
-    def setOutputLoggerFile(self, fic: str, binary: bool = False):
-        """Sets a file to write the logs in
-
-        Args:
-          fic
-            File to write the logs in
-          binary
-            True to write a binary log
-
-        """
-        self.__logger.setOutputLoggerFile(fic, binary)
 
     def getLogger(self) -> Logger:
         """Gets the Logger used for the simulation

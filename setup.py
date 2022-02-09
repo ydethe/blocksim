@@ -5,8 +5,6 @@ from setuptools.config import read_configuration
 import distutils.cmd
 import distutils.log
 import subprocess
-import shutil
-import pathlib
 
 
 conf_pth = os.path.join(os.path.dirname(os.path.abspath(__file__)), "setup.cfg")

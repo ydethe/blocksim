@@ -1,8 +1,9 @@
 from collections import defaultdict
 from typing import Iterable
-from keyword import kwlist, iskeyword
+from keyword import iskeyword
 from types import FunctionType
 from datetime import datetime, timezone
+import os
 
 import pluggy
 import numpy as np
@@ -29,21 +30,20 @@ class Logger(object):
          Name of a file to write
 
     Examples:
-      >>> log = Logger('tests/example.log')
-      >>> log.openFile()
-      >>> log.hasOutputLoggerFile()
-      True
+      >>> log = Logger()
       >>> log.log('t',0)
       >>> log.log('t',1)
       >>> log.getValue('t')
       array([0, 1])
       >>> log.getValue('2*t')
       array([0, 2])
+      >>> log.export('tests/example.csv')
+      0
       >>> del log
       >>> log2 = Logger()
-      >>> log2.loadLoggerFile('tests/example.log')
+      >>> log2.loadLogFile('tests/example.csv')
       >>> log2.getValue('2*t')
-      array([0., 2.])
+      array([0, 2])
 
     """
 
@@ -85,8 +85,16 @@ class Logger(object):
         return self.__fic
 
     def loadLogFile(self, fic: str):
-        self.__fic = fic
-        plugin_manager.hook.loadLogFile(logger=self)
+        self.__fic = str(fic)
+        if self.__fic == "":
+            raise (FileNotFoundError(self.__fic))
+
+        ldata = plugin_manager.hook.loadLogFile(log=self)
+        lok = [x for x in ldata if x]
+        if len(lok) == 0:
+            raise IOError("No logger to handle '%s'" % fic)
+        elif len(lok) > 1:
+            raise IOError("Too many loggers to handle '%s'" % fic)
 
     def allocate(self, size: int):
         self.__alloc = size
@@ -276,15 +284,23 @@ class Logger(object):
           True
 
         """
-        ldata = plugin_manager.hook.getRawValue(logger=self, name=name)
+        lnames = self.getParametersName()
+        if len(lnames) == 0:
+            raise SystemError("Logger empty")
+        if not name in lnames:
+            raise SystemError("Logger has no variable '%s'" % name)
+
+        ldata = plugin_manager.hook.getRawValue(log=self, name=name)
         lok = [x for x in ldata if not x is None]
         if len(lok) == 1:
             return lok[0]
         elif len(lok) == 0:
             data = self.getRawData()
-            return data[name]
+            return np.array(data[name])
         else:
-            raise ValueError("No logger to handle file '%s'" % self.getLoadedFile())
+            raise ValueError(
+                "Too many loggers to handle file '%s'" % self.getLoadedFile()
+            )
 
     def getValue(self, name: str) -> np.array:
         """Get the value of a logged variable
@@ -312,7 +328,7 @@ class Logger(object):
 
         expr = "def __tmp(lg):\n"
         for k in self.getParametersName():
-            expr += "   %s=lg.getRawValue('%s')\n" % (k, k)
+            expr += "   %s=lg.getRawValue(name='%s')\n" % (k, k)
         expr += "   return %s" % name
 
         foo_code = compile(expr, "<string>", "exec")
@@ -388,6 +404,16 @@ class Logger(object):
         y = fftconvolve(sig, a, mode="same")
         return y
 
-    def export(self, fic: str):
-        self.__fic = fic
-        plugin_manager.hook.export(logger=self)
+    def export(self, fic: str) -> int:
+        self.__fic = str(fic)
+
+        lstat = plugin_manager.hook.export(log=self)
+
+        lok = [x for x in lstat if x >= 0]
+
+        if len(lok) == 0:
+            raise SystemError("Unable to write '%s'" % fic)
+        elif len(lok) > 1:
+            raise SystemError("Uncoherent return '%s'" % lok)
+
+        return lok[0]

@@ -4,9 +4,9 @@ import platform
 import os
 import sys
 
-from ..LoggerSpec import if_suitable
 import pluggy
 import pandas as pd
+from singleton3 import Singleton
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -27,19 +27,17 @@ __all__ = ["Logger"]
 hookimpl = pluggy.HookimplMarker("blocksim")
 
 
-class Logger(object):
+class Logger(object, metaclass=Singleton):
     @hookimpl
-    def test_suitable(self, logger: Logger) -> bool:
-        uri = logger.getLoadedFile()
-        if uri is None:
+    def test_suitable(self, fic: str) -> bool:
+        if fic is None:
             return False
 
-        istat = uri.startswith("postgresql+psycopg2://")
+        istat = fic.startswith("postgresql+psycopg2://")
         return istat
 
-    @if_suitable
     @hookimpl
-    def loadLogFile(self, logger: Logger):
+    def loadLogFile(self, log: Logger):
         """Loads the content of an existing log file
 
         Args:
@@ -47,7 +45,10 @@ class Logger(object):
             Path of a log file
 
         """
-        uri = logger.getLoadedFile()
+        uri = log.getLoadedFile()
+        if not self.test_suitable(uri):
+            return False
+
         uri, sim_id = uri.split("?sim_id=")
         sim_id = int(sim_id)
 
@@ -60,25 +61,26 @@ class Logger(object):
         self.__sim = q.first()
 
         for k in self.__sim.listSeriesNames(self.__db_session):
-            logger.createEmptyValue(k)
+            log.createEmptyValue(k)
 
-    @if_suitable
+        return True
+
     @hookimpl
-    def getRawValue(self, logger: Logger, name: str) -> "array":
-        lnames = logger.getParametersName()
-        if len(lnames) == 0:
-            raise SystemError("Logger empty")
-        if not name in lnames:
-            raise SystemError("Logger has no variable '%s'" % name)
+    def getRawValue(self, log: Logger, name: str) -> "array":
+        uri = log.getLoadedFile()
+        if not self.test_suitable(uri):
+            return
 
-        data = logger.__sim.loadSerieByName(session=logger.__db_session, name=name)
+        data = self.__sim.loadSerieByName(session=self.__db_session, name=name)
 
         return data
 
-    @if_suitable
     @hookimpl
-    def export(self, logger: Logger):
-        uri = logger.getLoadedFile()
+    def export(self, log: Logger) -> int:
+        uri = log.getLoadedFile()
+        if not self.test_suitable(uri):
+            return -1
+
         engine = create_engine(uri)
         Base.metadata.bind = engine
         DBSession = sessionmaker(bind=engine)
@@ -95,7 +97,7 @@ class Logger(object):
             pgm = sys.argv[1]
             args = " ".join(sys.argv[2:])
         sim = Simulation(
-            start_time=logger.getStartTime(),
+            start_time=log.getStartTime(),
             end_time=datetime.now(),
             program=pgm,
             arguments=args,
@@ -108,9 +110,10 @@ class Logger(object):
         sim_id = sim.id
         logger.info("Simulation logged in DB. URI %s?sim_id=%i" % (uri, sim_id))
 
-        for k in logger.getParametersName():
-            data = self.getRawValue(k)
-            typ, pck_f, unpck_f, sze = logger._findType(data[0])
+        raw_data = log.getRawData()
+        for k in log.getParametersName():
+            data = raw_data[k]
+            typ, pck_f, unpck_f, sze = log._findType(data[0])
             if typ == b"I":
                 s = IntegerSerie(name=k, unit="", data=data, simulation=sim)
             elif typ == b"F":
@@ -129,3 +132,5 @@ class Logger(object):
         self.__db_session.commit()
 
         self.__db_session = None
+
+        return sim_id

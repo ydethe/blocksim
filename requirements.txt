@@ -16,3 +16,4 @@ openpyxl
 psycopg2-binary
 sqlalchemy
 requests
+singleton3
