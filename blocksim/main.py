@@ -19,11 +19,7 @@ def header(fic_bin: str):
     """
     Visualize a binary log file's header
     """
-    from .Logger import Logger
-
-    log = Logger()
-    res = log.getFileHeader(fic_bin)
-    typer.echo(res)
+    typer.echo("Je suis un poney")
 
 
 def main():
