@@ -1,13 +1,15 @@
 # __init__.py
 from pkg_resources import get_distribution
 import logging
-from datetime import datetime
-import os
+from importlib import import_module
+from importlib.metadata import entry_points
 
+from pluggy import PluginManager
 import control
 
 control.use_numpy_matrix(flag=False, warn=True)
 
+from .LoggerSpec import LoggerSpec
 from .LogFormatter import LogFormatter
 
 
@@ -32,3 +34,14 @@ formatter = LogFormatter()
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
+
+plugin_manager = PluginManager("blocksim")
+plugin_manager.add_hookspecs(LoggerSpec)
+
+eps = entry_points()
+plugins = eps["blocksim"]
+
+for ep in plugins:
+    plugin = import_module(ep.value)
+    plugin_manager.register(plugin.Logger())
+    logger.info("Registered %s.Logger()" % ep.value)

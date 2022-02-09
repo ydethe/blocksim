@@ -17,11 +17,19 @@ from TestBase import TestBase
 
 class TestLogger(TestBase):
     def test_save_load_psql(self):
-        pth = "postgresql+psycopg2://%s:%s@postgres/%s" % (
-            os.environ["POSTGRES_USER"],
-            os.environ["POSTGRES_PASSWORD"],
-            os.environ["POSTGRES_DB"],
-        )
+        if (
+            "POSTGRES_USER" in os.environ.keys()
+            and "POSTGRES_PASSWORD" in os.environ.keys()
+            and "POSTGRES_DB" in os.environ.keys()
+        ):
+            # Gitlab CI environment
+            pth = "postgresql+psycopg2://%s:%s@postgres/%s" % (
+                os.environ["POSTGRES_USER"],
+                os.environ["POSTGRES_PASSWORD"],
+                os.environ["POSTGRES_DB"],
+            )
+        else:
+            pth = "postgresql+psycopg2://postgres@localhost/simulations"
 
         log = Logger()
         log.setOutputLoggerFile(fic=pth)
@@ -207,4 +215,4 @@ if __name__ == "__main__":
     # a.test_save_load_parquet()
 
     a.setUp()
-    a.ntest_save_load_psql()
+    a.test_save_load_psql()
