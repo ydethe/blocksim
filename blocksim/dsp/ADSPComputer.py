@@ -51,7 +51,7 @@ class ADSPComputer(AComputer):
             dtype=output_dtype,
         )
 
-    def process(self, data: np.array) -> np.array:
+    def process(self, data: "array") -> "array":
         """Batch processes an input stream by calling compute_outputs.
 
         Args:
@@ -61,10 +61,22 @@ class ADSPComputer(AComputer):
         Returns:
           An stream of output data
 
+        Examples:
+          >>> a = DummyDSPComputer()
+          >>> data = np.arange(6)
+          >>> a.process(data) # doctest: +ELLIPSIS
+          array([[0, 3],
+                 [0, 0],
+                 [1, 4],
+                 [0, 0],
+                 [2, 5]]...
+
         """
         if len(data.shape) == 1:
             assert len(data) % self.input_size == 0
-            data = data.reshape((self.input_size, len(data) // self.input_size))
+            data = data.reshape(
+                (self.input_size, len(data) // self.input_size), order="F"
+            )
 
         ny, n = data.shape
         assert ny == self.input_size
@@ -166,10 +178,23 @@ class DummyDSPComputer(ADSPComputer):
         input: np.array,
         output: np.array,
     ) -> dict:
-        out = np.zeros(5, dtype=np.int64)
-        out[0] = input[0]
-        out[2] = input[1]
-        out[4] = input[2]
+        if len(input.shape) == 1:
+            n = 1
+            ny = self.input_size
+            input = input.reshape((ny, n))
+        else:
+            ny, n = input.shape
+            assert ny == self.input_size
+
+        out = np.zeros((self.output_size, n), dtype=np.int64)
+
+        for k in range(n):
+            out[0, k] = input[0, k]
+            out[2, k] = input[1, k]
+            out[4, k] = input[2, k]
+
+        if n == 1:
+            out = out.reshape(self.output_size)
 
         outputs = {}
         outputs["output"] = out

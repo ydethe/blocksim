@@ -12,7 +12,7 @@ from matplotlib.backend_bases import Event
 
 from .. import logger
 from ..Logger import Logger
-from ..dsp.DSPFilter import DSPFilter
+from ..dsp.DSPFilter import ADSPFilter
 from ..dsp.DSPLine import DSPLine
 from ..dsp.DSPSpectrogram import DSPSpectrogram
 from ..dsp import phase_unfold
@@ -403,7 +403,7 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
     return ret
 
 
-def plotBode(filt: DSPFilter, axe_amp: "AxesSubplot", axe_pha: "AxesSubplot"):
+def plotBode(filt: ADSPFilter, axe_amp: "AxesSubplot", axe_pha: "AxesSubplot"):
     """Plots the bode diagram of a filter
 
     Args:

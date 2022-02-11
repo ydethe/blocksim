@@ -815,7 +815,7 @@ class AComputer(ABaseNode):
         return res
 
     @abstractmethod
-    def compute_outputs(self, **inputs: dict) -> dict:
+    def compute_outputs(self, **inputs: dict) -> dict:  # pragma: no cover
         pass
 
     def updateAllOutput(self, frame: Frame, error_on_unconnected: bool = True):

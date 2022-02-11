@@ -12,7 +12,11 @@ import pytest
 from blocksim.core.Node import Frame
 from blocksim.control.SetPoint import Step
 from blocksim.control.System import LTISystem, G6DOFSystem
-from blocksim.control.Controller import PIDController, LQRegulator
+from blocksim.control.Controller import (
+    PIDController,
+    LQRegulator,
+    AntiWindupPIDController,
+)
 from blocksim.control.Estimator import (
     SteadyStateKalmanFilter,
     TimeInvariantKalmanFilter,
@@ -28,7 +32,7 @@ from TestBase import TestBase
 
 class TestKalman(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
-    def test_ss_kal(self):
+    def test_awc_kal(self):
         m = 1.0  # Mass
         k = 40.0  # Spring rate
         f = 5
@@ -41,6 +45,87 @@ class TestKalman(TestBase):
 
         kal = SteadyStateKalmanFilter(
             "kal",
+            dt=dt,
+            shape_cmd=(1,),
+            snames_state=["x", "v"],
+            snames_output=["x"],
+        )
+        kal.matA = sys.matA
+        kal.matB = sys.matB
+        kal.matC = np.array([[1, 0]])
+        kal.matD = np.zeros((1, 1))
+        kal.matQ = np.eye(2) / 10000
+        kal.matR = np.eye(1) / 100
+
+        cpt = ProportionalSensors("cpt", shape_state=(2,), snames=["x"])
+        cpt.matC = np.array([1, 0])
+        cpt.setCovariance(np.eye(1) / 200)
+        cpt.setMean(np.zeros(1))
+
+        err_cov = lin.norm(cpt.getCovariance() - np.eye(1) / 200)
+        err_mean = lin.norm(cpt.getMean() - np.zeros(1))
+        self.assertAlmostEqual(err_cov, 0, delta=1e-9)
+        self.assertAlmostEqual(err_mean, 0, delta=1e-9)
+
+        a = 8
+        P = -k + 3 * a**2 * m
+        I = a**3 * m
+        D = 3 * a * m
+        Umin = -100
+        Umax = 100
+        Ks = 0
+        ctl = AntiWindupPIDController(
+            "ctl", shape_estimation=(2,), snames=["u"], coeffs=(P, I, D, Umin, Umax, Ks)
+        )
+
+        stp = Step(name="stp", snames=["c"], cons=np.array([1]))
+
+        sim = Simulation()
+        sim.addComputer(sys)
+        sim.addComputer(ctl)
+        sim.addComputer(cpt)
+        sim.addComputer(kal)
+        sim.addComputer(stp)
+
+        sim.connect("stp.setpoint", "ctl.setpoint")
+        sim.connect("ctl.command", "sys.command")
+        sim.connect("sys.state", "cpt.state")
+        sim.connect("cpt.measurement", "kal.measurement")
+        sim.connect("ctl.command", "kal.command")
+        sim.connect("kal.state", "ctl.estimation")
+
+        tps = np.arange(0, 4, dt)
+        sim.simulate(tps, progress_bar=False)
+
+        self.log = sim.getLogger()
+        u = self.log.getRawValue("ctl_command_u")
+        self.assertGreaterEqual(np.min(u), Umin)
+        self.assertLessEqual(np.max(u), Umax)
+
+        return self.plotVerif(
+            "test_awc_kal",
+            [
+                {"var": "sys_state_x"},
+                {"var": "stp_setpoint_c"},
+                {"var": "kal_state_x"},
+                {"var": "cpt_measurement_x", "linestyle": "", "marker": "+"},
+            ],
+        )
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_ss_kal(self):
+        m = 1.0  # Mass
+        k = 40.0  # Spring rate
+        f = 5
+        dt = 0.05
+
+        sys = LTISystem("sys", shape_command=(1,), snames_state=["x", "v"])
+        sys.matA = np.array([[0, 1], [-k / m, -f / m]])
+        sys.matB = np.array([[0, 1 / m]]).T
+        sys.setInitialStateForOutput(np.array([-1.0, 0.0]), "state")
+
+        kal = SteadyStateKalmanFilter(
+            name="kal",
             dt=dt,
             shape_cmd=(1,),
             snames_state=["x", "v"],
@@ -88,7 +173,7 @@ class TestKalman(TestBase):
         sim.connect("kal.state", "ctl.estimation")
 
         tps = np.arange(0, 4, dt)
-        frame = sim.simulate(tps, progress_bar=True)
+        sim.simulate(tps, progress_bar=False)
 
         self.log = sim.getLogger()
 
@@ -189,10 +274,11 @@ class TestKalman(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
 
     a = TestKalman()
     # a.test_ss_kal()
-    a.test_ti_kal()
+    # a.test_ti_kal()
+    a.test_awc_kal()
 
     plt.show()

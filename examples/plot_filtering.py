@@ -17,7 +17,7 @@ from matplotlib import pyplot as plt
 # We define a FIR pass-band filter between f1 (Hz) and f2 (Hz)
 # A Chebychev window is applied to lower the side-lobes
 
-from blocksim.dsp.DSPFilter import DSPFilter
+from blocksim.dsp.DSPFilter import BandpassDSPFilter
 from blocksim.graphics import plotBode
 from blocksim.Simulation import Simulation
 
@@ -26,7 +26,7 @@ sim = Simulation()
 fs = 200
 f1 = 10
 f2 = 30
-filt = DSPFilter(
+filt = BandpassDSPFilter(
     name="filter",
     f_low=f1,
     f_high=f2,

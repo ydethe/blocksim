@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 import numpy as np
 from numpy import log10, exp, pi, sqrt, cos, sin
 from scipy.signal import firwin2, firwin, lfilter_zi, lfilter
@@ -9,7 +11,7 @@ from .DSPSignal import DSPSignal
 from .CircularBuffer import CircularBuffer
 
 
-__all__ = ["DSPFilter"]
+__all__ = ["ADSPFilter", "BandpassDSPFilter", "DSPFilter"]
 
 
 class WeightedOutput(Output):
@@ -35,20 +37,14 @@ class WeightedOutput(Output):
         return res
 
 
-class DSPFilter(AComputer):
+class ADSPFilter(AComputer):
     """A filter
 
     Args:
       name
         Name of the spectrum
-      f_low (Hz)
-        Start frequency of the band pass
-      f_high (Hz)
-        End frequency of the band pass
-      numtaps
-        Number of coefficients
-      win
-        The window to be applied. Should be compatible with `get_window`_.
+      samplingPeriod (s)
+        Time spacing of the signal
 
         .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html
 
@@ -59,61 +55,24 @@ class DSPFilter(AComputer):
     def __init__(
         self,
         name: str,
-        f_low: float,
-        f_high: float,
-        numtaps: int,
         samplingPeriod: float,
-        win: str = "hamming",
         dtype=np.complex128,
     ):
         AComputer.__init__(self, name=name)
 
-        self.createParameter(name="f_low", value=f_low)
-        self.createParameter(name="f_high", value=f_high)
-        self.createParameter(name="numtaps", value=numtaps)
-        self.createParameter(name="win", value=win)
         self.createParameter(name="samplingPeriod", value=samplingPeriod)
 
         self.defineInput("unfilt", shape=1, dtype=dtype)
         otp = WeightedOutput(name="filt", dtype=dtype)
         self.addOutput(otp)
 
-    def generateCoefficients(self) -> np.array:
-        """Generates the filter's coefficients
-
-        Returns:
-          The coefficients
-
-        """
-        fs = 1 / self.samplingPeriod
-
-        # https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need/31077
-        d = 10e-2
-        nt = int(-2 / 3 * log10(10 * d**2) * fs / (self.f_high - self.f_low))
-        if nt > self.numtaps:
-            raise ValueError(self.numtaps, nt)
-
-        if self.f_low == 0:
-            co = self.f_high
-            pz = True
-        else:
-            co = [self.f_low, self.f_high]
-            pz = False
-        # logger.debug("%s, %f"%(str(co),1/self.samplingPeriod))
-
-        b = firwin(
-            numtaps=self.numtaps,
-            cutoff=co,
-            pass_zero=pz,
-            scale=True,
-            window=self.win,
-            fs=fs,
-        )
-
-        return b
-
     def getTransientPhaseDuration(self) -> float:
-        return self.numtaps * self.samplingPeriod / 2
+        numtaps = len(self.generateCoefficients())
+        return numtaps * self.samplingPeriod / 2
+
+    @abstractmethod
+    def generateCoefficients(self):  # pragma: no cover
+        pass
 
     def compute_outputs(
         self,
@@ -172,3 +131,109 @@ class DSPFilter(AComputer):
         z, _ = lfilter(b, [1], s, zi=zi * s[0])
 
         return z
+
+
+class ArbitraryDSPFilter(ADSPFilter):
+    """A filter
+
+    Args:
+      name
+        Name of the spectrum
+      samplingPeriod (s)
+        Time spacing of the signal
+      taps
+        Coefficients of the filter
+
+        .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html
+
+    """
+
+    __slots__ = []
+
+    def __init__(
+        self,
+        name: str,
+        samplingPeriod: float,
+        taps: "array",
+        dtype=np.complex128,
+    ):
+        ADSPFilter.__init__(self, name=name, samplingPeriod=samplingPeriod, dtype=dtype)
+
+        self.createParameter(name="samplingPeriod", value=samplingPeriod)
+        self.createParameter(name="taps", value=taps)
+
+    def generateCoefficients(self):
+        return self.taps
+
+
+class BandpassDSPFilter(ADSPFilter):
+    """A filter
+
+    Args:
+      name
+        Name of the spectrum
+      f_low (Hz)
+        Start frequency of the band pass
+      f_high (Hz)
+        End frequency of the band pass
+      numtaps
+        Number of coefficients
+      win
+        The window to be applied. Should be compatible with `get_window`_.
+
+        .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html
+
+    """
+
+    __slots__ = []
+
+    def __init__(
+        self,
+        name: str,
+        f_low: float,
+        f_high: float,
+        numtaps: int,
+        samplingPeriod: float,
+        win: str = "hamming",
+        dtype=np.complex128,
+    ):
+        ADSPFilter.__init__(self, name=name, samplingPeriod=samplingPeriod, dtype=dtype)
+
+        self.createParameter(name="f_low", value=f_low)
+        self.createParameter(name="f_high", value=f_high)
+        self.createParameter(name="numtaps", value=numtaps)
+        self.createParameter(name="win", value=win)
+
+    def generateCoefficients(self) -> "array":
+        """Generates the filter's coefficients
+
+        Returns:
+          The coefficients
+
+        """
+        fs = 1 / self.samplingPeriod
+
+        # https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need/31077
+        d = 10e-2
+        nt = int(-2 / 3 * log10(10 * d**2) * fs / (self.f_high - self.f_low))
+        if nt > self.numtaps:
+            raise ValueError(self.numtaps, nt)
+
+        if self.f_low == 0:
+            co = self.f_high
+            pz = True
+        else:
+            co = [self.f_low, self.f_high]
+            pz = False
+        # logger.debug("%s, %f"%(str(co),1/self.samplingPeriod))
+
+        b = firwin(
+            numtaps=self.numtaps,
+            cutoff=co,
+            pass_zero=pz,
+            scale=True,
+            window=self.win,
+            fs=fs,
+        )
+
+        return b

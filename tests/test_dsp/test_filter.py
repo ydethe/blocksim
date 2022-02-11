@@ -1,5 +1,7 @@
+from os import fstat
 import sys
 from pathlib import Path
+from math import factorial
 import unittest
 
 import numpy as np
@@ -9,7 +11,8 @@ from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.graphics import plotBode, plotDSPLine
-from blocksim.dsp.DSPFilter import DSPFilter
+from blocksim.dsp import derivative_coeff
+from blocksim.dsp.DSPFilter import ArbitraryDSPFilter, BandpassDSPFilter
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.Simulation import Simulation
 
@@ -23,7 +26,7 @@ class TestFilter(TestBase):
         fs = 200
         f1 = 10
         f2 = 30
-        filt = DSPFilter(
+        filt = BandpassDSPFilter(
             name="filter",
             f_low=f1,
             f_high=f2,
@@ -59,7 +62,7 @@ class TestFilter(TestBase):
 
         f1 = 10
         f2 = 30
-        filt = DSPFilter(
+        filt = BandpassDSPFilter(
             name="filter",
             f_low=f1,
             f_high=f2,
@@ -120,7 +123,7 @@ class TestFilter(TestBase):
 
         f1 = 47
         f2 = 53
-        filt = DSPFilter(
+        filt = BandpassDSPFilter(
             name="filter",
             f_low=f1,
             f_high=f2,
@@ -146,6 +149,44 @@ class TestFilter(TestBase):
 
         return fig
 
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    def test_freq_estimator(self):
+        fs = 200
+        bp = 40
+        ns = 200
+        tau = ns / fs
+        s1 = DSPSignal.fromLinearFM(
+            name="s1",
+            samplingStart=0,
+            samplingPeriod=1 / fs,
+            tau=tau,
+            fstart=-bp / 2,
+            fend=bp / 2,
+        )
+        sig = s1.resample(
+            samplingStart=-1, samplingPeriod=1 / fs, samplingStop=s1.samplingStop + 1
+        )
+        # sig=sig.applyGaussianNoise(0.1)
+
+        tps = np.arange(ns) / fs
+        freq = -bp / 2 + bp * tps / tau
+
+        fig = plt.figure()
+
+        axe = fig.add_subplot(111)
+        axe.grid(True)
+
+        taps = derivative_coeff(rank=1, order=10)
+        filt = ArbitraryDSPFilter(name="filt", samplingPeriod=1 / fs, taps=taps * fs)
+
+        psig = filt.apply(sig)
+        res = -psig / sig / (2 * pi * 1j)
+        plotDSPLine(line=res, axe=axe, transform=np.real)
+        axe.plot(tps, freq)
+        axe.set_ylabel("Frequency (Hz)")
+
+        return fig
+
 
 if __name__ == "__main__":
     # unittest.main()
@@ -153,6 +194,6 @@ if __name__ == "__main__":
     a = TestFilter()
     # a.test_bode()
     # a.test_filtrage()
-    a.test_filtrage_chirp()
+    a.test_phase_estimator()
 
     plt.show()

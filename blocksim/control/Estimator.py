@@ -235,7 +235,7 @@ class AKalmanFilter(AEstimator):
         otp.setInitialState(matK0)
 
     @abstractmethod
-    def A(self, t1: float, t2: float) -> np.array:
+    def A(self, t1: float, t2: float) -> np.array:  # pragma: no cover
         """(n x n) State (or system) matrix
 
         Args:
@@ -246,7 +246,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def B(self, t1: float, t2: float) -> np.array:
+    def B(self, t1: float, t2: float) -> np.array:  # pragma: no cover
         """(n x m) Input matrix
 
         Args:
@@ -257,7 +257,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def C(self, t: float) -> np.array:
+    def C(self, t: float) -> np.array:  # pragma: no cover
         """(p x n) Output matrix
 
         Args:
@@ -268,7 +268,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def D(self, t: float) -> np.array:
+    def D(self, t: float) -> np.array:  # pragma: no cover
         """(p x m) Feedthrough (or feedforward) matrix
 
         Args:
@@ -279,7 +279,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def Q(self, t: float) -> np.array:
+    def Q(self, t: float) -> np.array:  # pragma: no cover
         """(n x n) Gaussian noise covariance for the state vector
 
         Args:
@@ -290,7 +290,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def R(self, t: float) -> np.array:
+    def R(self, t: float) -> np.array:  # pragma: no cover
         """(n x n) Gaussian noise covariance for the measurement vector
 
         Args:

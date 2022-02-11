@@ -180,7 +180,7 @@ class DSPSignal(DSPLine, ASetPoint):
 
     @classmethod
     def fromTimeAndSamples(
-        cls, name: str, tps: np.array, y_serie: np.array
+        cls, name: str, tps: "array", y_serie: "array"
     ) -> "DSPSignal":
         """Builds a signal from 2 time and samples series
 

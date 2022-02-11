@@ -4,6 +4,15 @@ from dataclasses import dataclass
 
 @dataclass(init=True)
 class Peak:
+    """Represents a peak in a plot or a 3D plot
+
+    Examples:
+        >>> p = Peak(coord_label=("x",), coord_unit=("m",),coord=(1,), value=3.5)
+        >>> print(p)
+        Peak(x=1 m, value=3.5)
+
+    """
+
     coord_label: tuple
     coord_unit: tuple
     coord: tuple

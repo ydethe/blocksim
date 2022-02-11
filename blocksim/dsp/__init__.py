@@ -1,6 +1,42 @@
+from math import factorial
+from itertools import product
+
 import numpy as np
 from numpy import sqrt, sign, pi, exp
 from numpy.fft import fft, ifft
+from scipy import linalg as lin
+
+
+def derivative_coeff(rank: int = 1, order: int = None) -> "array":
+    """Computes the coefficients of a derivaive estimator
+
+    Args:
+        rank
+            Rank of the derivative
+        order
+            Order of the Taylor serie used to estimate the derivative. Shall be >= rank
+            The default value is *rank*
+
+    """
+    if order is None:
+        order = rank
+
+    if order < rank:
+        raise AssertionError("order=%s, rank=%s" % (order, rank))
+
+    k = int(np.ceil(order / 2))
+
+    # Dans wxMaxima:
+    # k:3;A:genmatrix(lambda([i, j],(if (i # 0 or j+k#0) then (i^(j+k)/factorial(j+k)) else 1)), k,k,-k,-k);
+    # k:2$;invert(genmatrix(lambda([i, j],(if (i # 0 or j+k#0) then (i^(j+k)/factorial(j+k)) else 1)), k,k,-k,-k));
+    n = 2 * k + 1
+    A = np.empty((n, n))
+    for r, s in product(range(n), repeat=2):
+        A[r, s] = (r - k) ** s / factorial(s)
+    iA = lin.inv(A)
+    coeffs = iA[rank, :]
+
+    return coeffs
 
 
 def get_window(win, n: int) -> np.array:

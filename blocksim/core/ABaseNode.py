@@ -78,7 +78,7 @@ class ABaseNode(metaclass=ABCMeta):
         self.__current_frame = frame.copy()
 
     @abstractmethod
-    def updateAllOutput(self, frame: Frame):
+    def updateAllOutput(self, frame: Frame):  # pragma: no cover
         """Method used to update a Node.
         Useful only for :class:`blocksim.core.Node.AComputer` to update its outputs
 

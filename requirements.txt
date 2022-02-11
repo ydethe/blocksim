@@ -13,7 +13,5 @@ lazy_property
 pandas
 fastparquet
 openpyxl
-psycopg2-binary
-sqlalchemy
 requests
 singleton3

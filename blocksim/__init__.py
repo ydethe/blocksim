@@ -46,4 +46,4 @@ for ep in plugins:
         plugin = import_module(ep.value)
         if not plugin_manager.is_registered(plugin=plugin.Logger()):
             plugin_manager.register(plugin=plugin.Logger(), name=ep.name)
-            logger.info("Registered %s.Logger()" % ep.value)
+            logger.info("Registered %s" % ep.value)

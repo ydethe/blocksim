@@ -69,7 +69,9 @@ class ASystem(AComputer):
         self.__integ.set_integrator(method, nsteps=10000)
 
     @abstractmethod
-    def transition(self, t: float, x: np.array, u: np.array) -> np.array:
+    def transition(
+        self, t: float, x: "array", u: "array"
+    ) -> "array":  # pragma: no cover
         """Defines the transition function f(t,x,u) :
 
         x' = f(t,x,u)
@@ -88,7 +90,7 @@ class ASystem(AComputer):
         """
         pass
 
-    def example_jacobian(self, t: float, x: np.array, u: np.array) -> np.array:
+    def example_jacobian(self, t: float, x: "array", u: "array") -> "array":
         """Defines the jacobian of
         the transition function f(t,x,u) with respect to x:
 
@@ -112,8 +114,8 @@ class ASystem(AComputer):
         self,
         t1: float,
         t2: float,
-        command: np.array,
-        state: np.array,
+        command: "array",
+        state: "array",
     ) -> dict:
         self.__integ.set_initial_value(state, t1).set_f_params(command).set_jac_params(
             command
@@ -194,7 +196,7 @@ class LTISystem(ASystem):
 
     def getDiscreteMatrices(
         self, dt: float, method: str = "zoh", alpha: float = None
-    ) -> Iterable[np.array]:
+    ) -> Iterable["array"]:
         """
 
         Args:
@@ -242,7 +244,7 @@ class LTISystem(ASystem):
         Ad, Bd, _, _, _ = cont2discrete(sys, dt, method, alpha)
         return Ad, Bd
 
-    def transition(self, t: float, x: np.array, u: np.array) -> np.array:
+    def transition(self, t: float, x: "array", u: "array") -> "array":
         """Defines the transition function f(t,x,u) :
 
         x' = f(t,x,u)

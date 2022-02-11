@@ -33,17 +33,17 @@ class Logger(object):
       >>> log = Logger()
       >>> log.log('t',0)
       >>> log.log('t',1)
-      >>> log.getValue('t')
-      array([0, 1])
-      >>> log.getValue('2*t')
-      array([0, 2])
+      >>> log.getValue('t') # doctest: +ELLIPSIS
+      array([0, 1]...
+      >>> log.getValue('2*t') # doctest: +ELLIPSIS
+      array([0, 2]...
       >>> log.export('tests/example.csv')
       0
       >>> del log
       >>> log2 = Logger()
       >>> log2.loadLogFile('tests/example.csv')
-      >>> log2.getValue('2*t')
-      array([0, 2])
+      >>> log2.getValue('2*t') # doctest: +ELLIPSIS
+      array([0, 2]...
 
     """
 
@@ -254,6 +254,9 @@ class Logger(object):
                 lname.append(k)
 
         nname = len(lname)
+        if nname == 0:
+            raise KeyError(name)
+
         nd = -1
         for idx, name in enumerate(lname):
             data = self.getRawValue(name)

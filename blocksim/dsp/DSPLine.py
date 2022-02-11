@@ -1,10 +1,14 @@
 from typing import Callable, List
+from itertools import product
+from math import factorial
 
 from lazy_property import LazyProperty
 import numpy as np
+from scipy import linalg as lin
 from numpy.lib.arraysetops import isin
 from scipy.interpolate import interp1d
 
+from . import derivative_coeff
 from .. import logger
 from .Peak import Peak
 
@@ -446,6 +450,34 @@ class DSPLine(object):
 
         return self.y_serie[lid]
 
+    def derivate(self, rank: int = 1, order: int = None) -> "DSPLine":
+        """Performs numerical derivation if the line
+
+        Args:
+            rank
+                Rank of the derivative
+            order
+                Order of the Taylor serie used to estimate the derivative. Shall be >= rank
+                The default value is *rank*
+
+        """
+        coeffs = derivative_coeff(rank, order)
+        n = len(coeffs)
+        k = (n - 1) // 2
+
+        ns = len(self) - 2 * k
+        dy = np.zeros(ns, dtype=self.y_serie.dtype)
+        for p in range(-k, k + 1):
+            dy += coeffs[p + k] * self.y_serie[p + k : ns + p + k]
+
+        return self.__class__(
+            name=self.name,
+            samplingStart=self.samplingStart + k * self.samplingPeriod,
+            samplingPeriod=self.samplingPeriod,
+            y_serie=dy / self.samplingPeriod**rank,
+            default_transform=self.default_transform,
+        )
+
     def _prepareOperation(self, y: "DSPLine"):
         t_start = min(self.samplingStart, y.samplingStart)
         dt = min(self.samplingPeriod, y.samplingPeriod)
@@ -504,6 +536,9 @@ class DSPLine(object):
             t_start = self.samplingStart
             dt = self.samplingPeriod
             y_serie = self.y_serie / y
+        else:
+            t_start, dt, rx, ry = self._prepareOperation(y)
+            y_serie = rx.y_serie / ry.y_serie
 
         return self.__class__(
             name=self.name,
