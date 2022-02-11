@@ -33,8 +33,10 @@ def derivative_coeff(rank: int = 1, order: int = None) -> "array":
     A = np.empty((n, n))
     for r, s in product(range(n), repeat=2):
         A[r, s] = (r - k) ** s / factorial(s)
-    iA = lin.inv(A)
-    coeffs = iA[rank, :]
+
+    y = np.zeros(n)
+    y[rank] = 1
+    coeffs = lin.solve(a=A, b=y, overwrite_a=True, overwrite_b=True, transposed=True)
 
     return coeffs
 
