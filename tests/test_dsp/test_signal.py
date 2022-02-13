@@ -3,7 +3,7 @@ from pathlib import Path
 import unittest
 
 import numpy as np
-from numpy import pi, exp
+from numpy import testing, pi, exp
 from matplotlib import pyplot as plt
 import pytest
 
@@ -32,6 +32,8 @@ class TestSignal(TestBase):
 
         rep = DSPSignal("rep", samplingStart=0, samplingPeriod=3 / fs, y_serie=x[::3])
         s = DSPSignal("s", samplingStart=-1e-3, samplingPeriod=1 / fs, y_serie=y)
+
+        acf = rep.autoCorrelation()
 
         y = rep.correlate(rep)
         y1 = rep.correlate(s)
@@ -156,11 +158,26 @@ class TestSignal(TestBase):
 
         self.assertAlmostEqual(err, 0, delta=1e-9)
 
+    def test_instanciation(self):
+        # Unevenly spaced time samples
+        tps = np.array([0, 2, 3, 4])
+        self.assertRaises(
+            ValueError,
+            DSPSignal.fromTimeAndSamples,
+            name="sig",
+            tps=tps,
+            y_serie=np.zeros_like(tps),
+        )
+
+        sig = DSPSignal.fromBinaryRandom(
+            name="sig", samplingPeriod=0.1, size=10, seed=14887
+        )
+        testing.assert_equal(sig.y_serie, [0, 1, 0, 0, 0, 1, 0, 0, 0, 0])
+        self.assertEqual(sig.energy, 2)
+
+        self.assertFalse(sig.hasOutputComplex)
+
 
 if __name__ == "__main__":
-    # unittest.main()
-
     a = TestSignal()
-    a.test_resample()
-
-    plt.show()
+    a.test_instanciation()

@@ -1,6 +1,7 @@
 from math import factorial
 from itertools import product
 
+from tqdm import tqdm
 import numpy as np
 from numpy import sqrt, sign, pi, exp
 from numpy.fft import fft, ifft
@@ -84,3 +85,122 @@ def phase_unfold(sig: np.array, eps: float = 1e-9) -> np.array:
         pha[j] = pha[j - 1] + dpha
 
     return pha
+
+
+def analyse_DV(
+    wavelength: float,
+    period: float,
+    dist0: float,
+    damb: float,
+    vrad0: float,
+    vamb: float,
+    seq: "DSPSignal",
+    rxsig: "DSPSignal",
+    nv: int,
+    n_integration: int = -1,
+    coherent: bool = True,
+    progress_bar: bool = True,
+    corr_window: str = "hamming",
+) -> "DSPSpectrogram":
+    """Distance / velocity analysis for acquisition
+
+    Args:
+      wavelength (m)
+        Wavelength of the carrier
+      period (s)
+        Window length
+      dist0 (m)
+        Center of the distance research domain
+      damb (m)
+        Width of the distance research domain
+      vrad0 (m/s)
+        Center of the velocity research domain
+      vamb (m/s)
+        Width of the velocity research domain
+      n_integration
+        Number of period to sum. A value of -1 means to sum everything
+      seq
+        Local replica of the signal
+      rxsig
+        Received signal to be analysed
+      nv
+        Number of velocity hypothesis to be tested
+      progress_bar
+        To turn on the display of a progress bar
+      corr_window
+        Window to be used for correlation
+
+    Returns:
+      The spectrogram of the analysis
+
+    """
+    from ..constants import c
+    from .DSPSpectrogram import DSPSpectrogram
+
+    if nv % 2 == 0:
+        nv += 1
+
+    # Number of samples shift at each period
+    vrad_max = max(np.abs(vrad0 + vamb / 2), np.abs(vrad0 - vamb / 2))
+    ns_shift = period * vrad_max / c / rxsig.samplingPeriod
+    if ns_shift > 1:
+        raise AssertionError("Too much sample shift: %.3f" % ns_shift)
+
+    # Number of sample in a period
+    nsig = int(period / rxsig.samplingPeriod + 1)
+
+    # Number of samples in a distance window
+    nd = int(damb / c / rxsig.samplingPeriod + 1)
+
+    # Sample index of the center distance window
+    n0 = int(dist0 / c / rxsig.samplingPeriod)
+
+    kmin = max(n0 - nd // 2, 0)
+    kmax = min(n0 - nd // 2 + nd, nsig - 1)
+    img = np.empty((kmax - kmin, nv), dtype=np.complex128)
+
+    tab_v = np.linspace(vrad0 - vamb / 2, vrad0 + vamb / 2, nv)
+    if progress_bar:
+        v_gen = tqdm(tab_v)
+    else:
+        v_gen = tab_v
+
+    for kv, vrad in enumerate(v_gen):
+        fd = -vrad / wavelength
+
+        # Doppler compensation
+        dop_free = rxsig.applyDopplerFrequency(fdop=-fd)
+
+        # Correlation
+        corr = dop_free.correlate(seq, win=corr_window)
+
+        # Integration
+        zi = corr.integrate(
+            period=period,
+            n_integration=n_integration,
+            offset=kmin * rxsig.samplingPeriod,
+            coherent=coherent,
+            window_duration=(kmax - kmin) * rxsig.samplingPeriod,
+        )
+
+        if vrad == vrad0:
+            from blocksim.graphics import plotDSPLine
+
+            plotDSPLine(zi, axe=None, transform=zi.to_db)
+
+        img[:, kv] = zi.y_serie
+
+    spg = DSPSpectrogram(
+        name="spg",
+        samplingXStart=tab_v[0] - vrad0,
+        samplingXPeriod=tab_v[1] - tab_v[0],
+        samplingYStart=zi.samplingStart,
+        samplingYPeriod=zi.samplingPeriod,
+        img=img,
+    )
+    spg.name_of_x_var = "Radial Velocity (%.1f m/s delta)" % vrad0
+    spg.unit_of_x_var = "m/s"
+    spg.name_of_y_var = "Delay"
+    spg.unit_of_y_var = "s"
+
+    return spg

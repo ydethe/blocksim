@@ -215,9 +215,7 @@ class Logger(object):
 
         return res
 
-    def getValueForComputer(
-        self, comp: AComputer, output_name: str, dtype=np.complex128
-    ) -> "array":
+    def getValueForComputer(self, comp: AComputer, output_name: str) -> "array":
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -225,16 +223,12 @@ class Logger(object):
                 A :class:`blocksim.core.Node.AComputer` whose output are to be retrieved
             output_name
                 Name of an output. For example, for a sensor, *measurement*
-            dtype
-                Type of the output array
 
         Returns:
             An 2D array of the output
 
         """
-        val = self.getMatrixOutput(
-            name="%s_%s" % (comp.getName(), output_name), dtype=dtype
-        )
+        val = self.getMatrixOutput(name="%s_%s" % (comp.getName(), output_name))
         return val
 
     def getMatrixOutput(self, name: str) -> np.array:

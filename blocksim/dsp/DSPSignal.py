@@ -438,8 +438,12 @@ class DSPSignal(DSPLine, ASetPoint):
             default_transform=self.to_db,
         )
 
-    def autoCorrelation(self) -> "DSPSignal":
+    def autoCorrelation(self, win="ones") -> "DSPSignal":
         """Autocorrelation of the signal
+
+        Args:
+          win : string, float, or tuple
+            The type of window to create. See :class:`blocksim.dsp.DSPSignal.DSPSignal.correlate` for more details.
 
         Returns:
           The resulting :class:`blocksim.dsp.DSPSignal`

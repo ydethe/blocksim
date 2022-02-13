@@ -37,6 +37,17 @@ class TestSystem(TestBase):
 
         self.log = sim.getLogger()
 
+        ns = self.log.getDataSize()
+        self.assertEqual(ns, len(tps))
+
+        ms = self.log.getMatrixOutput(name="stp_setpoint")
+        err = np.max(np.abs(ms))
+        self.assertAlmostEqual(err, 0, delta=1e-10)
+
+        ms = self.log.getValueForComputer(comp=stp, output_name="setpoint")
+        err = np.max(np.abs(ms))
+        self.assertAlmostEqual(err, 0, delta=1e-10)
+
         x = self.log.getValue("sys_state_x")
         x_ref = plotAnalyticsolution(tps, xv0=(1, 0), cons=0, PID=(0, 0, 0))
         err = np.max(np.abs(x - x_ref))
@@ -44,4 +55,6 @@ class TestSystem(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    a = TestSystem()
+    a.setUp()
+    a.test_ltisystem()

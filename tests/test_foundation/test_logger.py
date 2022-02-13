@@ -1,3 +1,4 @@
+from datetime import datetime
 import sys
 import os
 from pathlib import Path
@@ -56,6 +57,11 @@ class TestLogger(TestBase):
     def test_save_load_csv(self):
         log = Logger()
 
+        t0 = datetime.now()
+        log.setStartTime(t0)
+        t1 = log.getStartTime()
+        self.assertEqual(t0, t1)
+
         pth = Path(__file__).parent / "test_ascii.csv"
 
         dt = 0.01
@@ -109,10 +115,18 @@ class TestLogger(TestBase):
             log.log("t", i * dt)
 
         log.export(pth)
+
+        self.assertRaises(SystemError, log.export, "poney.unknown")
+
         del log
 
         log2 = Logger()
+
+        self.assertRaises(SystemError, log2.getRawValue, "poney")
+
         log2.loadLogFile(pth)
+
+        self.assertRaises(SystemError, log2.getRawValue, "poney")
 
         vars = log2.getParametersName()
         self.assertIn("t", vars)
@@ -120,7 +134,7 @@ class TestLogger(TestBase):
 
         tps = np.arange(ns) * dt
         x = exp(1j * tps * f * 2 * np.pi + 1)
-        err_t = np.max(np.abs(tps - log2.getValue("t")))
+        err_t = np.max(np.abs(tps - log2.getRawValue("t")))
         err_x = np.max(np.abs(x - log2.getValue("x")))
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
         self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
@@ -133,11 +147,11 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestLogger()
-    # a.setUp()
-    # a.test_save_load_csv()
-
     a.setUp()
-    a.test_save_load_xls()
+    a.test_save_load_csv()
+
+    # a.setUp()
+    # a.test_save_load_xls()
 
     # a.setUp()
     # a.test_save_load_pickle()
