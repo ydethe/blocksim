@@ -1,5 +1,4 @@
 from typing import Iterable
-from collections import OrderedDict
 
 import numpy as np
 from scipy import linalg as lin
@@ -225,10 +224,7 @@ class StreamSensors(AComputer):
 
     __slots__ = []
 
-    def __init__(self, name: str, strm_data: OrderedDict, dtype=np.float64):
-        if not isinstance(strm_data, OrderedDict):
-            raise UnorderedDict(self.__class__)
-
+    def __init__(self, name: str, strm_data: dict, dtype=np.float64):
         AComputer.__init__(self, name)
 
         snames = list(strm_data.keys())[1:]
@@ -278,7 +274,7 @@ class StreamCSVSensors(StreamSensors):
             dat = f.readline()
         f.close()
         elem = dat.strip().split(",")
-        strm_data = OrderedDict()
+        strm_data = dict()
         for kn in elem:
             strm_data[kn] = None
 

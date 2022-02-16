@@ -286,11 +286,3 @@ class DenormalizedQuaternion(Exception):
             "For element '%s' : the attitude quaternion '%s' has a norm different from 1 : %f"
             % (self.elem_name, self.q, np.sum(self.q**2))
         )
-
-
-class UnorderedDict(Exception):
-    def __init__(self, cls):
-        self.cls = cls
-
-    def __str__(self):
-        return "In %s, data passed is not a OrderedDict instance" % self.cls.__name__

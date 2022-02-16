@@ -1,6 +1,5 @@
 from typing import Iterable
 from itertools import product
-from collections import OrderedDict
 from types import FunctionType
 
 import numpy as np
@@ -143,7 +142,7 @@ class Split(AComputer):
          * the values are the indices in the input vector of the chosen salars
 
     Examples:
-      >>> out = OrderedDict()
+      >>> out = dict()
       >>> out['split'] = [0, 2]
       >>> spt = Split("spt", signal_shape=(5,), outputs=out)
       >>> out = spt.compute_outputs(t1=0, t2=1, signal=np.arange(5), split=np.zeros(2))
@@ -158,12 +157,9 @@ class Split(AComputer):
         self,
         name: str,
         signal_shape: tuple,
-        outputs: OrderedDict,
+        outputs: dict,
         dtype=np.float64,
     ):
-        if not isinstance(outputs, OrderedDict):
-            raise TypeError
-
         AComputer.__init__(self, name, logged=False)
         self.defineInput("signal", shape=signal_shape, dtype=dtype)
         for k in outputs.keys():
@@ -207,7 +203,7 @@ class Group(AComputer):
         Its shape defines the shape of the data
 
     Examples:
-      >>> inp = OrderedDict()
+      >>> inp = dict()
       >>> inp["s1"]=(1,); inp["s2"]=(1,)
       >>> grp = Group("grp", snames=["gs1", "gs2"], inputs=inp)
       >>> out = grp.compute_outputs(t1=0, t2=1, grouped=np.zeros(2), s1=np.array([2]), s2=np.array([-1]))
@@ -221,13 +217,10 @@ class Group(AComputer):
     def __init__(
         self,
         name: str,
-        inputs: OrderedDict,
+        inputs: dict,
         snames: Iterable[str],
         dtype=np.float64,
     ):
-        if not isinstance(inputs, OrderedDict):
-            raise TypeError
-
         AComputer.__init__(self, name, logged=False)
         for k in inputs.keys():
             shape = inputs[k]

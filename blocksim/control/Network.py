@@ -1,6 +1,5 @@
 from typing import Iterable
 from itertools import product
-from collections import OrderedDict
 
 import numpy as np
 
