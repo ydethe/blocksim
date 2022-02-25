@@ -424,14 +424,17 @@ class AComputer(ABaseNode):
 
         return s
 
-    def createParameter(self, name: str, value: float, read_only: bool = False):
+    def createParameter(self, name: str, value: float = None, read_only: bool = False):
         """This method creates an attribute, with getter an optional setter
+        Use :class:`printParameters` to see the list of all declared parameters
 
         Args:
           name
             Name of the parameter to be created
           value
             Value of the parameter to be created
+          read_only
+            If True, the value cannot be modified (no setter defined)
 
         Examples:
           >>> e = DummyComputer('el')
@@ -459,6 +462,52 @@ class AComputer(ABaseNode):
                 self.__parameters[name] = val
 
             setattr(self.__class__, name, property(get, set))
+
+    def printParameters(self) -> str:
+        """Prints the list of all declared parameters and their values
+        Paremeter declaration is made through :class:`createParameter`
+
+        Returns:
+            A string containing the parameters and their value
+
+        """
+        s = ""
+        sn = "'%s'" % self.getName()
+        sc = self.__class__.__name__
+        tot_w = 2 + len(sn)
+        tot_w = max(tot_w, len(sc) + 2)
+
+        s_out = []
+        for otp in self.getListOutputs():
+            s_out.append(str(otp))
+
+        s_inp = []
+        for inp in self.getListInputs():
+            s_inp.append(str(inp))
+
+        if len(s_out) == 0:
+            out_w = 2
+        else:
+            out_w = 2 + max([len(s) for s in s_out])
+
+        if len(s_inp) == 0:
+            inp_w = 2
+        else:
+            inp_w = 2 + max([len(s) for s in s_inp])
+
+        tot_w = max(tot_w, out_w - 2 + inp_w)
+
+        s += "=" + tot_w * "=" + "=\n"
+        s += "|" + sn.center(tot_w) + "|\n"
+        s += "|" + sc.center(tot_w) + "|\n"
+        s += "=" + tot_w * "=" + "=\n"
+
+        for k in self.__parameters.keys():
+            val = self.__parameters[k]
+            l = "%s:\t%s\n" % (k, val)
+            s += l
+
+        return s
 
     def getValueFromLogger(
         self, logger: "Logger", output_name: str, dtype=np.complex128

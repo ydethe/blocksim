@@ -32,11 +32,6 @@ class DSPSpectrogram(object):
 
     """
 
-    name_of_x_var = "Time"
-    unit_of_x_var = "s"
-    name_of_y_var = "Frequency"
-    unit_of_y_var = "Hz"
-
     def __init__(
         self,
         name: str,
@@ -54,6 +49,10 @@ class DSPSpectrogram(object):
         self.samplingYPeriod = samplingYPeriod
         self.img = img
         self.default_transform = default_transform
+        self.name_of_x_var = "Time"
+        self.unit_of_x_var = "s"
+        self.name_of_y_var = "Frequency"
+        self.unit_of_y_var = "Hz"
 
     def generateXSerie(self, index: int = None) -> np.array:
         """Generates the x samples of the spectrogram

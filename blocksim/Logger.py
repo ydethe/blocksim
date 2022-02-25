@@ -7,6 +7,7 @@ import os
 
 import pluggy
 import numpy as np
+from numpy import *
 from scipy.signal import firwin, fftconvolve
 
 from . import logger

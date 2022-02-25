@@ -89,7 +89,12 @@ def plotFromLogger(
     else:
         raise SystemError("[ERROR]Unacceptable argument for id_y : %s" % (str(id_y)))
 
+    if not "label" in kwargs.keys():
+        kwargs["label"] = id_y
+
     (line,) = axe.plot(val_x, val_y, **kwargs)
+
+    line.x_unit_mult = 1.0
 
     return line
 
@@ -483,10 +488,7 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
     (ret,) = axe.plot(
         x_samp / x_unit_mult, transform(line.y_serie), label=lbl, **kwargs
     )
-    axe.set_xlabel(
-        "%s (%s%s)"
-        % (line.__class__.name_of_x_var, x_unit_lbl, line.__class__.unit_of_x_var)
-    )
+    axe.set_xlabel("%s (%s%s)" % (line.name_of_x_var, x_unit_lbl, line.unit_of_x_var))
 
     if find_peaks > 0:
         lpeaks = line.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
@@ -497,10 +499,12 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
             )
             axe.annotate(
                 "(%.1f %s%s,%.1f)"
-                % (x / x_unit_mult, x_unit_lbl, line.__class__.unit_of_x_var, p.value),
+                % (x / x_unit_mult, x_unit_lbl, line.unit_of_x_var, p.value),
                 xy=(x / x_unit_mult, p.value),
                 fontsize="x-small",
             )
+
+    ret.x_unit_mult = x_unit_mult
 
     return ret
 
