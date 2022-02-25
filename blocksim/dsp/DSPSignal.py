@@ -38,9 +38,6 @@ class DSPSignal(DSPLine, ASetPoint):
 
     """
 
-    name_of_x_var = "Time"
-    unit_of_x_var = "s"
-
     def __init__(
         self,
         name: str,
@@ -64,6 +61,9 @@ class DSPSignal(DSPLine, ASetPoint):
             y_serie=y_serie,
             default_transform=default_transform,
         )
+
+        self.name_of_x_var = "Time"
+        self.unit_of_x_var = "s"
 
     def compute_outputs(
         self,

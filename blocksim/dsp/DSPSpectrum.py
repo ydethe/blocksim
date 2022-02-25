@@ -26,9 +26,6 @@ class DSPSpectrum(DSPLine):
 
     """
 
-    name_of_x_var = "Frequency"
-    unit_of_x_var = "Hz"
-
     def __init__(
         self,
         name: str,
@@ -45,6 +42,9 @@ class DSPSpectrum(DSPLine):
             y_serie=y_serie,
             default_transform=default_transform,
         )
+
+        self.name_of_x_var = "Frequency"
+        self.unit_of_x_var = "Hz"
 
     @property
     def energy(self) -> float:

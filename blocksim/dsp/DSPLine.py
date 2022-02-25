@@ -35,9 +35,6 @@ class DSPLine(object):
 
     # __slots__=["__name","__samplingStart","__samplingPeriod","__y_serie","__default_transform"]
 
-    name_of_x_var = "Samples"
-    unit_of_x_var = "ech"
-
     def __init__(
         self,
         name: str,
@@ -51,6 +48,8 @@ class DSPLine(object):
         self.__samplingPeriod = samplingPeriod
         self.__y_serie = y_serie
         self.__default_transform = default_transform
+        self.name_of_x_var = "Samples"
+        self.unit_of_x_var = "ech"
 
     @property
     def name(self) -> str:
@@ -201,6 +200,9 @@ class DSPLine(object):
             y_serie = self._itp_x(new_x)
 
         return y_serie
+
+    def __call__(self, x: float):
+        return self.getSample(x, complex_output=True)
 
     def getSample(self, x: float, complex_output: bool = True) -> np.complex128:
         """Gets the sample at x-coord x. A cubic interpolation is used.

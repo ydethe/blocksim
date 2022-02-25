@@ -294,8 +294,10 @@ class Ramp(ASetPoint):
         for iscal in product(*it):
             sp[iscal] = self.slopes[iscal] * t2
 
+        sp0 = self.getInitialStateForOutput("setpoint")
+
         outputs = {}
-        outputs["setpoint"] = sp
+        outputs["setpoint"] = sp0 + sp
 
         return outputs
 
