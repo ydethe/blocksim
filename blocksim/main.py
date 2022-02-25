@@ -4,8 +4,6 @@ from typing import Tuple
 import os
 
 import typer
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from . import logger
 from .Logger import Logger
