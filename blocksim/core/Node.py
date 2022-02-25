@@ -348,6 +348,8 @@ class AComputer(ABaseNode):
     Args:
       name
         Name of the element
+      logged
+        True to log the computer in the Simulation's log
 
     Examples:
       >>> e = DummyComputer(name='tst')

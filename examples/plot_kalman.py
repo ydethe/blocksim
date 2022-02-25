@@ -30,7 +30,6 @@ This case consists in :
   Here, we will use a unit step function
 
 """
-from collections import OrderedDict
 import numpy as np
 
 ###############################################################################
@@ -121,7 +120,7 @@ stp = Step(name="stp", snames=["c"], cons=np.array([1]))
 
 from blocksim.control.Route import Split
 
-spt_otp = OrderedDict()
+spt_otp = dict()
 spt_otp["split"] = [0, 1]  # We keep outputs 0 and 1 of the input vector
 split = Split("split", signal_shape=(3,), outputs=spt_otp)
 
