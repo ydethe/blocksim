@@ -29,9 +29,9 @@ class DSPAWGN(AComputer):
     def __init__(
         self,
         name: str,
-        mean: np.array,
-        cov: np.array,
-        dtype=np.float,
+        mean: "array",
+        cov: "array",
+        dtype=np.float64,
     ):
         AComputer.__init__(self, name=name)
 
