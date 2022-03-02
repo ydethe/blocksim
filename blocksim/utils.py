@@ -43,8 +43,7 @@ def resource_path(resource: str, package: str = "blocksim") -> str:
     """
 
     Examples:
-      >>> resource_path('dummy.txt') # doctest: +ELLIPSIS
-      '.../blocksim/blocksim/resources/dummy.txt'
+      >>> pth = resource_path('dummy.txt')
 
     """
     from importlib import import_module
