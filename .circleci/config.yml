@@ -22,6 +22,8 @@ jobs:
     # Change the version below to your required version of python
     docker:
       - image: ydethe/blocksim
+        docker_layer_caching: true    # default - false
+
     # Checkout the code as the first step. This is a dedicated CircleCI step.
     # The python orb's install-packages step will install the dependencies from a Pipfile via Pipenv by default.
     # Here we're making sure we use just use the system-wide pip. By default it uses the project root's requirements.txt.
@@ -45,6 +47,18 @@ jobs:
             coverage html
             python3 setup.py sdist
             pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
+      - store_artifacts:
+          path: results
+          destination: results
+      - store_artifacts:
+          path: htmlcov
+          destination: htmlcov
+      - store_artifacts:
+          path: htmldoc
+          destination: htmldoc
+      - store_artifacts:
+          path: dist
+          destination: dist
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
