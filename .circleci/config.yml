@@ -57,11 +57,40 @@ jobs:
       - store_artifacts:
           path: dist
           destination: dist
+  publish_rtd:
+    steps:
+      - run:
+            name: Publish RTD
+            command: |
+              'curl --insecure -d "" -X POST -H "Authorization: Token $RTD_TOKEN" https://readthedocs.org/api/v3/projects/blocksim/versions/latest/builds/'
+              'curl --insecure -X PATCH -H "Authorization: Token $RTD_TOKEN" -H "Content-Type: application/json" -d "{\"active\": true,\"hidden\": false}" https://readthedocs.org/api/v3/projects/blocksim/versions/$CI_COMMIT_TAG'
+  publish_pypi:
+    steps:
+      - run:
+            name: Publish PyPi
+            command: twine upload dist/*
 
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+# https://circleci.com/docs/2.0/workflows/#executing-workflows-for-a-git-tag
 workflows:
-  sample: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
+  version: 2
+  untagged-build:
     jobs:
       - build-and-test
+  tagged-build:
+    jobs:
+      - build-and-test:
+          filters:
+            tags:
+              only: /^v.*/
+      - publish_rtd:
+          requires:
+            - build-and-test
+          filters:
+            tags:
+              only: /^v.*/
+      - publish_pypi:
+          requires:
+            - build-and-test
+          filters:
+            tags:
+              only: /^v.*/
