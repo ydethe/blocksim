@@ -4,6 +4,10 @@ results/
 docs/blocksim*.rst
 docs/modules.rst
 docs/examples/
+tests/example.csv
+tests/test_foundation/test_ascii.csv
+tests/test_foundation/test_excel.xls
+tests/test_foundation/test_pkl.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
