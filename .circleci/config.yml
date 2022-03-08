@@ -59,23 +59,22 @@ jobs:
           destination: dist
   publish-rtd:
     docker:
-      - image: ubuntu
+      - image: alpine:3.15.0
     steps:
       - run:
             name: Publish RTD
             command: |
-              apt-get install -y curl
+              apk add curl
               'curl --insecure -d "" -X POST -H "Authorization: Token $RTD_TOKEN" https://readthedocs.org/api/v3/projects/blocksim/versions/latest/builds/'
               'curl --insecure -X PATCH -H "Authorization: Token $RTD_TOKEN" -H "Content-Type: application/json" -d "{\"active\": true,\"hidden\": false}" https://readthedocs.org/api/v3/projects/blocksim/versions/$CI_COMMIT_TAG'
   publish-pypi:
     docker:
-      - image: ubuntu
+      - image: alpine:3.15.0
     steps:
       - run:
             name: Publish PyPi
             command: |
-              apt-get install -y python3-pip
-              pip3 install twine
+              apk add py3-twine
               twine upload dist/*
 
 # https://circleci.com/docs/2.0/workflows/#executing-workflows-for-a-git-tag
