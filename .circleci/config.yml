@@ -87,17 +87,23 @@ workflows:
     jobs:
       - build-and-test:
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
       - publish-rtd:
           requires:
             - build-and-test
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
       - publish-pypi:
           requires:
             - build-and-test
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
