@@ -26,6 +26,8 @@ class DSPSpectrogram(object):
         Frequency spacing of the spectrogram
       img
         Matrix of complex samples
+      projection
+        Axe projection. Can be 'rectilinear' or 'polar'
       default_transform
         Function to apply to the samples before plotting.
         Shall be vectorized
@@ -40,6 +42,7 @@ class DSPSpectrogram(object):
         samplingYStart: float = None,
         samplingYPeriod: float = None,
         img: np.array = None,
+        projection:str='rectilinear',
         default_transform=np.abs,
     ):
         self.name = name
@@ -53,6 +56,7 @@ class DSPSpectrogram(object):
         self.unit_of_x_var = "s"
         self.name_of_y_var = "Frequency"
         self.unit_of_y_var = "Hz"
+        self.projection=projection
 
     def generateXSerie(self, index: int = None) -> np.array:
         """Generates the x samples of the spectrogram
@@ -168,3 +172,49 @@ class DSPSpectrogram(object):
             lpeak = lpeak[:nb_peaks]
 
         return lpeak
+
+    @classmethod
+    def to_db_lim(cls, low: float) -> Callable:
+        """Returns a function that turns a complex signal into the power serie of the signal, in dB.
+
+        Args:
+          low (dB)
+            The min value to clamp to
+
+        Returns:
+          The function to map on a complex time serie
+
+        Examples:
+          >>> f = DSPLine.to_db_lim(low=-80)
+          >>> f(1e-3)
+          -60.0
+          >>> f(1e-4)
+          -80.0
+          >>> f(1e-5)
+          -80.0
+
+        """
+
+        def _to_db(x):
+            low_lin = 10 ** (low / 10)
+            pwr = np.real(np.conj(x) * x)
+            pwr = np.clip(pwr, low_lin, None)
+            return 10 * np.log10(pwr)
+
+        return _to_db
+
+    @classmethod
+    def to_db(cls, x: np.array) -> np.array:
+        """Converts the samples into their power, in dB.
+        If a sample's power is below *low*, the dB value in clamped to *low*.
+
+        Args:
+          x
+            The array of samples
+
+        Returns:
+          The power of the serie *x* in dB
+
+        """
+        pwr = np.real(np.conj(x) * x)
+        return 10 * np.log10(pwr)

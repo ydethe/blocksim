@@ -148,10 +148,10 @@ class TestExceptions(TestBase):
         log.log("tps", 0)
         log.log("y", 0)
         self.assertRaises(
-            SystemError, plotFromLogger, log, id_x=None, id_y="y", axe=None
+            SystemError, plotFromLogger, log, id_x=None, id_y="y", spec=None
         )
         self.assertRaises(
-            SystemError, plotFromLogger, log, id_x="tps", id_y=None, axe=None
+            SystemError, plotFromLogger, log, id_x="tps", id_y=None, spec=None
         )
 
     def test_aelem_exc(self):

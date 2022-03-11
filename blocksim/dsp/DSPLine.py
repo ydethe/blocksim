@@ -27,6 +27,8 @@ class DSPLine(object):
         x coord spacing of the line
       y_serie
         Complex samples of the line
+      projection
+        Axe projection. Can be 'rectilinear' or 'polar'
       default_transform
         Function to apply to the samples before plotting.
         Shall be vectorized
@@ -41,6 +43,7 @@ class DSPLine(object):
         samplingStart: float = None,
         samplingPeriod: float = None,
         y_serie: np.array = None,
+        projection:str='rectilinear',
         default_transform=lambda x: x,
     ):
         self.__name = name
@@ -50,6 +53,7 @@ class DSPLine(object):
         self.__default_transform = default_transform
         self.name_of_x_var = "Samples"
         self.unit_of_x_var = "ech"
+        self.projection=projection
 
     @property
     def name(self) -> str:
@@ -399,41 +403,27 @@ class DSPLine(object):
 
         def _to_db(x):
             low_lin = 10 ** (low / 10)
-            amp = np.real(np.conj(x) * x)
-            if hasattr(amp, "__iter__"):
-                i_th = np.where(amp < low_lin)[0]
-                amp[i_th] = low_lin
-            else:
-                amp = max(low_lin, amp)
-
-            return 10 * np.log10(amp)
+            pwr = np.real(np.conj(x) * x)
+            pwr = np.clip(pwr, low_lin, None)
+            return 10 * np.log10(pwr)
 
         return _to_db
 
     @classmethod
-    def to_db(cls, x: np.array, low: float = -80) -> np.array:
+    def to_db(cls, x: "array") -> np.array:
         """Converts the samples into their power, in dB.
         If a sample's power is below *low*, the dB value in clamped to *low*.
 
         Args:
           x
             The array of samples
-          low (dB)
-            The min value to clamp to
 
         Returns:
           The power of the serie *x* in dB
 
         """
-        low_lin = 10 ** (low / 10)
-        amp = np.real(np.conj(x) * x)
-        if hasattr(amp, "__iter__"):
-            i_th = np.where(amp < low_lin)[0]
-            amp[i_th] = low_lin
-        else:
-            amp = max(low_lin, amp)
-
-        return 10 * np.log10(amp)
+        pwr = np.real(np.conj(x) * x)
+        return 10 * np.log10(pwr)
 
     def __len__(self):
         return len(self.y_serie)

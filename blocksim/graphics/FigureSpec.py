@@ -68,7 +68,7 @@ class FigureSpec(object):
             lines.append(line)
 
         aSpec = AxeSpec(
-            props={"nrow": 1, "ncol": 1, "ind": 1, "title": "Axe", "sharex": None},
+            props={"nrow": 1, "ncol": 1, "ind": 1, "title": "Axe", "projection":"rectilinear","sharex": None},
             lines=lines,
         )
         spec = FigureSpec(props={"title": "Figure"}, axes=[aSpec])

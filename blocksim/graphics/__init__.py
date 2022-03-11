@@ -1,4 +1,4 @@
-from typing import Iterable, Any
+from typing import Any, Tuple
 
 from parse import compile
 import numpy as np
@@ -55,8 +55,8 @@ def format_parameter(samp: float, unit: str) -> str:
 
 
 def plotFromLogger(
-    log: Logger, id_x: str, id_y: str, axe: "AxesSubplot", **kwargs
-) -> "Line2D":
+    log: Logger, id_x: str, id_y: str, spec: "SubplotSpec"=None, **kwargs
+) -> "AxesSubplot":
     """Plots a value on a matplotlib axe
 
     Args:
@@ -66,8 +66,8 @@ def plotFromLogger(
         Name or expression for the X axis
       id_y
         Name or expression for the Y axis
-      axe
-        The axis to draw on
+      spec
+        The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
       kwargs
         matplotlib plotting options for the 'plot' method
 
@@ -75,6 +75,16 @@ def plotFromLogger(
       The lines drawn by matplotlib
 
     """
+    if spec is None:
+        fig=plt.figure()
+        gs=fig.add_gridspec(1,1)
+        spec=gs[0,0]
+
+    gs=spec.get_gridspec()
+    fig=gs.figure
+    axe=fig.add_subplot(spec)
+    axe.grid(True)
+
     if type(id_x) == type(""):
         val_x = log.getValue(id_x)
     elif hasattr(id_x, "__iter__"):
@@ -96,7 +106,7 @@ def plotFromLogger(
 
     line.x_unit_mult = 1.0
 
-    return line
+    return axe
 
 
 def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
@@ -128,12 +138,13 @@ def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
         ind = spec.axes[k - 1].props["ind"]
         shx = spec.axes[k - 1].props["sharex"]
         title = spec.axes[k - 1].props["title"]
+        proj = spec.axes[k - 1].props.pop("projection","rectilinear")
 
         if shx is None:
-            axe = fig.add_subplot(nrow, ncol, ind)
+            axe = fig.add_subplot(nrow, ncol, ind, projection=proj)
             axe.grid(True)
         else:
-            axe = fig.add_subplot(nrow, ncol, ind, sharex=l_axes[shx - 1])
+            axe = fig.add_subplot(nrow, ncol, ind, projection=proj, sharex=l_axes[shx - 1])
             axe.grid(True)
         l_axes.append(axe)
 
@@ -154,14 +165,15 @@ def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
             varx = d["varx"]
             vary = d["vary"]
             if "label" in d.keys():
-                line = plotFromLogger(log, varx, vary, axe, **lp)
+                axe = plotFromLogger(log, varx, vary, axe, **lp)
                 disp_leg = True
             elif type(vary) == type(""):
-                line = plotFromLogger(log, varx, vary, axe, label=vary, **lp)
+                axe = plotFromLogger(log, varx, vary, axe, label=vary, **lp)
                 disp_leg = True
             else:
-                line = plotFromLogger(log, varx, vary, axe, **lp)
+                axe = plotFromLogger(log, varx, vary, axe, **lp)
 
+            line=axe.get_lines()[-1]
             d["_line"] = line
             xdata, ydata = line.get_data()
             d["_xdata"] = xdata
@@ -175,63 +187,7 @@ def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
     return fig
 
 
-def plot3DSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesImage:
-    """Plots a 3D surface with the following refinements :
-
-    * a callable *transform* is applied to all samples
-    * the label of the plot is the name given at instanciation
-
-    Args:
-      spg
-        Spectrogram to plot
-      axe
-        Matplotlib axe to draw on
-      kwargs
-        Plotting options. The following extra keys are allowed:
-        * transform for a different transform from the one given at instanciation
-        * find_peaks to search peaks
-        * x_unit_mult to have a more readable unit prefix
-
-    Returns:
-      The matplotlib image generated
-
-    """
-    axe.grid(True)
-    transform = kwargs.pop("transform", spg.default_transform)
-    if "x_unit_mult" in kwargs.keys():
-        x_unit_mult = kwargs.pop("x_unit_mult")
-    else:
-        x_samp = spg.generateXSerie()
-        xm = np.max(np.abs(x_samp))
-        pm = (int(log10(xm)) // 3) * 3
-        x_unit_mult = 10**pm
-    x_unit_lbl = getUnitAbbrev(x_unit_mult)
-
-    if "y_unit_mult" in kwargs.keys():
-        y_unit_mult = kwargs.pop("y_unit_mult")
-    else:
-        y_samp = spg.generateYSerie()
-        ym = np.max(np.abs(y_samp))
-        pm = (int(log10(ym)) // 3) * 3
-        y_unit_mult = 10**pm
-    y_unit_lbl = getUnitAbbrev(y_unit_mult)
-    lbl = kwargs.pop("label", spg.name)
-
-    X, Y = np.meshgrid(
-        spg.generateXSerie() / x_unit_mult, spg.generateYSerie() / y_unit_mult
-    )
-    Z = transform(spg.img)
-
-    ret = axe.plot_surface(X, Y, Z, label=lbl, **kwargs)
-    axe.set_xlabel("%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, spg.unit_of_x_var))
-    axe.set_ylabel("%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, spg.unit_of_y_var))
-
-    axe.figure.colorbar(ret, ax=axe)
-
-    return ret
-
-
-def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesImage:
+def plotSpectrogram(spg: DSPSpectrogram, spec: "SubplotSpec"=None, fill:str='pcolormesh', **kwargs) -> "AxesSubplot":
     """Plots a line with the following refinements :
 
     * a callable *transform* is applied to all samples
@@ -240,8 +196,10 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
     Args:
       spg
         Spectrogram to plot
-      axe
-        Matplotlib axe to draw on
+      spec
+        The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
+      fill
+        Method to plot the DSPSpectrogram. Can be 'plot_surface', 'pcolormesh', 'contour' or 'contourf'
       kwargs
         Plotting options. The following extra keys are allowed:
         * transform for a different transform from the one given at instanciation
@@ -253,7 +211,21 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
       The matplotlib image generated
 
     """
+    if spec is None:
+        fig=plt.figure()
+        gs=fig.add_gridspec(1,1)
+        spec=gs[0,0]
+
+    if fill=='plot_surface':
+        proj='3d'
+    else:
+        proj=spg.projection
+
+    gs=spec.get_gridspec()
+    fig=gs.figure
+    axe=fig.add_subplot(spec, projection=proj)
     axe.grid(True)
+
     transform = kwargs.pop("transform", spg.default_transform)
     search_fig = kwargs.pop("search_fig", False)
     find_peaks = kwargs.pop("find_peaks", 0)
@@ -278,25 +250,31 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
     lbl = kwargs.pop("label", spg.name)
 
     Z = transform(spg.img)
+    if fill=='plot_surface' and spg.projection=='polar':
+        P,R=np.meshgrid(spg.generateXSerie() / x_unit_mult,spg.generateYSerie() / y_unit_mult)
+        X,Y=R*np.cos(P), R*np.sin(P)
+    else:
+        X,Y=np.meshgrid(spg.generateXSerie() / x_unit_mult,spg.generateYSerie() / y_unit_mult)
 
-    ret = axe.imshow(
-        Z,
-        aspect="auto",
-        extent=(
-            spg.generateXSerie(0) / x_unit_mult,
-            spg.generateXSerie(-1) / x_unit_mult,
-            spg.generateYSerie(0) / y_unit_mult,
-            spg.generateYSerie(-1) / y_unit_mult,
-        ),
-        origin="lower",
-        label=lbl,
-        **kwargs
-    )
-    # colorbar
-    axe.figure.colorbar(ret, ax=axe)
+    if fill=='plot_surface':
+        kwargs.pop('levels',None)
+        ret=axe.plot_surface(X,Y,Z,**kwargs)
+        axe.figure.colorbar(ret, ax=axe)
+    elif fill=='pcolormesh':
+        kwargs.pop('levels',None)
+        ret=axe.pcolormesh(X,Y,Z,**kwargs)
+        axe.figure.colorbar(ret, ax=axe)
+    elif fill=='contourf':
+        ret=axe.contourf(X,Y,Z,**kwargs)
+        axe.figure.colorbar(ret, ax=axe)
+    elif fill=='contour':
+        ret=axe.contour(X,Y,Z,**kwargs)
+        axe.clabel(ret, inline=True, fontsize=10)
 
-    axe.set_xlabel("%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, spg.unit_of_x_var))
-    axe.set_ylabel("%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, spg.unit_of_y_var))
+    if spg.name_of_x_var!='':
+        axe.set_xlabel("%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, spg.unit_of_x_var))
+    if spg.name_of_y_var!='':
+        axe.set_ylabel("%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, spg.unit_of_y_var))
 
     if find_peaks > 0:
         lpeaks = spg.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
@@ -405,21 +383,31 @@ def plotSpectrogram(spg: DSPSpectrogram, axe: "AxesSubplot", **kwargs) -> AxesIm
 
         on_click(evt)
 
-    return ret
+    return axe
 
 
-def plotBode(filt: ADSPFilter, axe_amp: "AxesSubplot", axe_pha: "AxesSubplot"):
+def plotBode(filt: ADSPFilter, spec_amp: "SubplotSpec", spec_pha: "SubplotSpec")->Tuple["AxesSubplot","AxesSubplot"]:
     """Plots the bode diagram of a filter
 
     Args:
       filt
         Filter to analyse
-      axe_amp
-        Matplotlib axe to draw the ampltiude on
-      axe_pha
-        Matplotlib axe to draw the unfolded phase on
+      spec_amp
+        The matplotlib SubplotSpec that defines the amplitude axis to draw on. Obtained by fig.add_gridspec and slicing
+      spec_pha
+        The matplotlib SubplotSpec that defines the phase axis to draw on. Obtained by fig.add_gridspec and slicing
 
     """
+    gs=spec_amp.get_gridspec()
+    fig=gs.figure
+    axe_amp=fig.add_subplot(spec_amp)
+    axe_amp.grid(True)
+
+    gs=spec_pha.get_gridspec()
+    fig=gs.figure
+    axe_pha=fig.add_subplot(spec_pha)
+    axe_pha.grid(True)
+
     fs = 1 / filt.samplingPeriod
 
     n = 200
@@ -442,8 +430,10 @@ def plotBode(filt: ADSPFilter, axe_amp: "AxesSubplot", axe_pha: "AxesSubplot"):
     axe_pha.set_xlabel("Frequency (Hz)")
     axe_pha.set_ylabel("Phase (deg)")
 
+    return axe_amp,axe_pha
 
-def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
+
+def plotDSPLine(line: DSPLine, spec: "SubplotSpec"=None, **kwargs) -> "AxesSubplot":
     """Plots a DSPLine with the following refinements :
 
     * a callable *transform* is applied to all samples
@@ -455,8 +445,8 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
     Args:
       line
         Line to be plotted
-      axe
-        Matplotlib axe to draw on. Pass None to let the function create on axe
+      spec
+        The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
       kwargs
         Plotting options. The following extra keys are allowed:
         * transform for a different transform from the one given at instanciation
@@ -464,10 +454,16 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
         * x_unit_mult to have a more readable unit prefix
 
     """
-    if axe is None:
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
+    if spec is None:
+        fig=plt.figure()
+        gs=fig.add_gridspec(1,1)
+        spec=gs[0,0]
+
+    gs=spec.get_gridspec()
+    fig=gs.figure
+    axe=fig.add_subplot(spec)
     axe.grid(True)
+
     x_samp = line.generateXSerie()
     transform = kwargs.pop("transform", line.default_transform)
     find_peaks = kwargs.pop("find_peaks", 0)
@@ -506,7 +502,7 @@ def plotDSPLine(line: DSPLine, axe: "AxesSubplot", **kwargs) -> "Line2D":
 
     ret.x_unit_mult = x_unit_mult
 
-    return ret
+    return axe
 
 
 def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":

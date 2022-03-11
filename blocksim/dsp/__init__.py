@@ -183,11 +183,6 @@ def analyse_DV(
             window_duration=(kmax - kmin) * rxsig.samplingPeriod,
         )
 
-        if vrad == vrad0:
-            from blocksim.graphics import plotDSPLine
-
-            plotDSPLine(zi, axe=None, transform=zi.to_db)
-
         img[:, kv] = zi.y_serie
 
     spg = DSPSpectrogram(
