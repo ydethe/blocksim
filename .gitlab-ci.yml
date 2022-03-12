@@ -11,7 +11,7 @@ test:
   stage: test
   image: ydethe/blocksim:latest
   script:
-    - conda init bash
+    - source /opt/conda/etc/profile.d/conda.sh
     - conda activate bs_env
     - python3 setup.py develop
     - python3 --version
