@@ -11,9 +11,7 @@ test:
   stage: test
   image: ydethe/blocksim
   script:
-    - mamba env create -f environment_test.yml
     - conda activate bs_env
-    # - source /app/bs_env/bin/activate
     - python3 setup.py develop
     - python3 --version
     - python3 -m pytest --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim

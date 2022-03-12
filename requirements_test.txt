@@ -27,7 +27,6 @@ sphinxcontrib-apidoc==0.3.0
 sphinxcontrib-napoleon==0.7
 tqdm==4.62.3
 wheel==0.37.1
-twine==3.4.2
 cartopy<0.20.0
 lazy_property==0.0.1
 singleton3==1.0
