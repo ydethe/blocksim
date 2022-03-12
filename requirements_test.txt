@@ -6,7 +6,7 @@ docutils==0.17.1
 matplotlib==3.4.3
 mock==4.0.3
 numpy==1.21.3
-panda3d==1.10.10
+panda3d==1.10.11
 pandas==1.4.0
 fastparquet==0.8.0
 openpyxl==3.0.9
