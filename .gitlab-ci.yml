@@ -9,8 +9,9 @@ stages:
 
 test:
   stage: test
-  image: ydethe/blocksim
+  image: ydethe/blocksim:latest
   script:
+    - conda init bash
     - conda activate bs_env
     - python3 setup.py develop
     - python3 --version
