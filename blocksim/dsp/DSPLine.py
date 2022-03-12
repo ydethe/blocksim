@@ -43,7 +43,7 @@ class DSPLine(object):
         samplingStart: float = None,
         samplingPeriod: float = None,
         y_serie: np.array = None,
-        projection:str='rectilinear',
+        projection: str = "rectilinear",
         default_transform=lambda x: x,
     ):
         self.__name = name
@@ -53,7 +53,7 @@ class DSPLine(object):
         self.__default_transform = default_transform
         self.name_of_x_var = "Samples"
         self.unit_of_x_var = "ech"
-        self.projection=projection
+        self.projection = projection
 
     @property
     def name(self) -> str:

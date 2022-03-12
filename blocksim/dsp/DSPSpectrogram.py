@@ -42,7 +42,7 @@ class DSPSpectrogram(object):
         samplingYStart: float = None,
         samplingYPeriod: float = None,
         img: np.array = None,
-        projection:str='rectilinear',
+        projection: str = "rectilinear",
         default_transform=np.abs,
     ):
         self.name = name
@@ -56,7 +56,7 @@ class DSPSpectrogram(object):
         self.unit_of_x_var = "s"
         self.name_of_y_var = "Frequency"
         self.unit_of_y_var = "Hz"
-        self.projection=projection
+        self.projection = projection
 
     def generateXSerie(self, index: int = None) -> np.array:
         """Generates the x samples of the spectrogram

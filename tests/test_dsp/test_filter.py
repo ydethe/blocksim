@@ -172,14 +172,14 @@ class TestFilter(TestBase):
         freq = -bp / 2 + bp * tps / tau
 
         fig = plt.figure()
-        gs = fig.add_gridspec(1,1)
+        gs = fig.add_gridspec(1, 1)
 
         taps = derivative_coeff(rank=1, order=10)
         filt = ArbitraryDSPFilter(name="filt", samplingPeriod=1 / fs, taps=taps * fs)
 
         psig = filt.apply(sig)
         res = -psig / sig / (2 * pi * 1j)
-        axe=plotDSPLine(line=res, spec=gs[0,0], transform=np.real)
+        axe = plotDSPLine(line=res, spec=gs[0, 0], transform=np.real)
         axe.plot(tps, freq)
         axe.set_ylabel("Frequency (Hz)")
 

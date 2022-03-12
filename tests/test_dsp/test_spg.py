@@ -39,9 +39,9 @@ class TestDSPSpectrogram(TestBase):
         )
 
         fig = plt.figure()
-        gs = fig.add_gridspec(1,1)
+        gs = fig.add_gridspec(1, 1)
 
-        plotSpectrogram(spg=spg, spec=gs[0,0], find_peaks=2)
+        plotSpectrogram(spg=spg, spec=gs[0, 0], find_peaks=2)
 
         return fig
 
