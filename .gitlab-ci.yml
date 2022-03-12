@@ -8,9 +8,10 @@ stages:
   - release
 
 test:
-  image: ydethe/blocksim
   stage: test
+  image: ydethe/blocksim
   script:
+    - ls
     - source bs_env/bin/activate
     - python3 setup.py develop
     - python3 --version
