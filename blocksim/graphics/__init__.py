@@ -415,7 +415,7 @@ def plotBode(
 
     gs = spec_pha.get_gridspec()
     fig = gs.figure
-    axe_pha = fig.add_subplot(spec_pha)
+    axe_pha = fig.add_subplot(spec_pha, sharex=axe_amp)
     axe_pha.grid(True)
 
     fs = 1 / filt.samplingPeriod
@@ -423,7 +423,7 @@ def plotBode(
     n = 200
     b = filt.generateCoefficients()
 
-    freq = np.linspace(0, fs / 2, n)
+    freq = np.arange(0, fs / 2, fs / 2 / n)
 
     p = Polynomial(b)
     z = np.exp(-1j * 2 * np.pi * freq / fs)

@@ -36,10 +36,9 @@ class TestFilter(TestBase):
         )
 
         fig = plt.figure()
-        axe_amp = fig.add_subplot(211)
-        axe_pha = fig.add_subplot(212, sharex=axe_amp)
+        gs = fig.add_gridspec(2, 1)
 
-        plotBode(filt, axe_amp, axe_pha)
+        plotBode(filt, gs[0, 0], gs[1, 0])
 
         return fig
 
@@ -190,8 +189,8 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestFilter()
-    # a.test_bode()
+    a.test_bode()
     # a.test_filtrage()
-    a.test_phase_estimator()
+    # a.test_phase_estimator()
 
     plt.show()
