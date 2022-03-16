@@ -475,6 +475,7 @@ if __name__ == "__main__":
 
     a = TestMadgwick()
     a.setUp()
-    a.test_madgwick_cl()
+    # a.test_madgwick_cl()
+    a.test_madgwick_pitch()
 
     plt.show()

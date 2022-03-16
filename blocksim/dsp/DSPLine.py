@@ -177,9 +177,9 @@ class DSPLine(object):
         for p0 in range(ep, n - ep):
             if dat[p0 - ep] < dat[p0] and dat[p0] > dat[p0 + ep]:
                 b = (dat[p0 + ep] - dat[p0 - ep]) / (2 * ep)
-                c = -(-dat[p0 + ep] - dat[p0 - ep] + 2 * dat[p0]) / (2 * ep**2)
+                c = -(-dat[p0 + ep] - dat[p0 - ep] + 2 * dat[p0]) / (2 * ep ** 2)
                 dp = -b / (2 * c)
-                dval = -(b**2) / (4 * c)
+                dval = -(b ** 2) / (4 * c)
                 x0 = self.generateXSerie(p0 + dp)
                 p = Peak(
                     coord_label=(self.name_of_x_var,),
@@ -466,7 +466,7 @@ class DSPLine(object):
             name=self.name,
             samplingStart=self.samplingStart + k * self.samplingPeriod,
             samplingPeriod=self.samplingPeriod,
-            y_serie=dy / self.samplingPeriod**rank,
+            y_serie=dy / self.samplingPeriod ** rank,
             default_transform=self.default_transform,
         )
 

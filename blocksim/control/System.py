@@ -496,7 +496,7 @@ class G6DOFSystem(ASystem):
             ] / 2 * np.sinc(h * b[i] * Nwk / (2 * np.pi))
             q = E @ q
 
-        Nq2 = np.sum(q**2)
+        Nq2 = np.sum(q ** 2)
         # q = q / sqrt(Nq2)
         if np.abs(Nq2 - 1) > self.max_q_denorm:
             raise DenormalizedQuaternion(self.getName(), q)

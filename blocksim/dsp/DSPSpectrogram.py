@@ -117,13 +117,13 @@ class DSPSpectrogram(object):
 
         ep = 2
         eq = 2
-        iDtr = 1 / (2 * ep**2 * eq**2)
+        iDtr = 1 / (2 * ep ** 2 * eq ** 2)
         iA = iDtr * np.array(
             [
-                [0, -ep * eq**2, 0, 0, ep * eq**2],
-                [0, 0, -(ep**2) * eq, ep**2 * eq, 0],
-                [-2 * eq**2, eq**2, 0, 0, eq**2],
-                [-2 * ep**2, 0, ep**2, ep**2, 0],
+                [0, -ep * eq ** 2, 0, 0, ep * eq ** 2],
+                [0, 0, -(ep ** 2) * eq, ep ** 2 * eq, 0],
+                [-2 * eq ** 2, eq ** 2, 0, 0, eq ** 2],
+                [-2 * ep ** 2, 0, ep ** 2, ep ** 2, 0],
             ]
         )
 
@@ -150,7 +150,7 @@ class DSPSpectrogram(object):
 
                 dp = -b / (2 * d)
                 dq = -c / (2 * f)
-                dval = (-(b**2) * f - c**2 * d) / (4 * d * f)
+                dval = (-(b ** 2) * f - c ** 2 * d) / (4 * d * f)
 
                 if -ep / 2 <= dp and dp < ep / 2 and -eq / 2 <= dq and dq < eq / 2:
                     p = Peak(

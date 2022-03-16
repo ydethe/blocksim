@@ -3,6 +3,8 @@ from uuid import UUID
 
 import tqdm
 import numpy as np
+import matplotlib.animation as animation
+from matplotlib import pyplot as plt
 
 from .exceptions import *
 from .core.Frame import Frame
@@ -119,26 +121,25 @@ class Simulation(object):
         """
         # Controllers shall be updated last
         for c in self.__computers:
-            if not c.isLogged:
-                continue
             c_name = c.getName()
             for oid in c.getListOutputsIds():
                 otp = c.getOutputById(oid)
                 o_name = otp.getName()
-
                 for n, x in otp.iterScalarNameValue(
                     frame, error_on_unconnected=error_on_unconnected
                 ):
-                    self.__logger.log(name="%s_%s_%s" % (c_name, o_name, n), val=x)
+                    if c.isLogged:
+                        self.__logger.log(name="%s_%s_%s" % (c_name, o_name, n), val=x)
 
         t = frame.getStopTimeStamp()
         self.__logger.log(name="t", val=t)
 
     def simulate(
         self,
-        tps: np.array,
+        tps: "array",
         progress_bar: bool = True,
         error_on_unconnected: bool = True,
+        fig=None,
     ) -> Frame:
         """Resets the simulator, and simulates the closed-loop system
         up to the date given as an argument :
@@ -150,27 +151,51 @@ class Simulation(object):
             Dates to be simulated (s)
           progress_bar
             True to display a progress bar in the terminal
+          error_on_unconnected
+            True to raise an exception is an input is not connected. If an input is not connected and error_on_unconnected is False, the input will be padded with zeros
+          fig
+            In the case of a realtime plot (use of RTPlotter for example), must be the figure that is updated in real time
 
         Returns:
           The time frame used for the simulation
 
         """
-        self.__logger.allocate(len(tps))
+        # self.__logger.allocate(len(tps))
 
         frame = Frame(start_timestamp=tps[0], stop_timestamp=tps[0])
+
+        for c in self.__computers:
+            c.resetCallback(frame)
+
         self.update(frame, error_on_unconnected=error_on_unconnected)
 
-        if progress_bar:
+        if progress_bar and fig is None:
             itr = tqdm.tqdm(range(len(tps) - 1))
         else:
             itr = range(len(tps) - 1)
 
-        for k in itr:
+        def _anim_func(k):
             dt = tps[k + 1] - tps[k]
             frame.updateByStep(dt)
             self.update(frame, error_on_unconnected=error_on_unconnected)
 
-        return frame
+        if fig is None:
+            for k in itr:
+                _anim_func(k)
+            ani = None
+        else:
+            dt = np.mean(np.diff(tps))
+            ani = animation.FuncAnimation(
+                fig,
+                func=_anim_func,
+                init_func=None,
+                frames=itr,
+                interval=1000 * dt,
+                blit=False,
+                repeat=False,
+            )
+
+        return ani
 
     def getLogger(self) -> Logger:
         """Gets the Logger used for the simulation
@@ -201,10 +226,11 @@ class Simulation(object):
         otp = src.getOutputByName(src_out_name)
         inp = dst.getInputByName(dst_in_name)
 
-        if inp.getDataShape() != otp.getDataShape():
-            raise IncompatibleShapes(
-                src_name, otp.getDataShape(), dst_name, inp.getDataShape()
-            )
+        if not inp.getDataShape() is None and not otp.getDataShape() is None:
+            if inp.getDataShape() != otp.getDataShape():
+                raise IncompatibleShapes(
+                    src_name, otp.getDataShape(), dst_name, inp.getDataShape()
+                )
 
         inp.setOutput(otp)
 

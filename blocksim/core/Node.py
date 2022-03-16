@@ -102,6 +102,10 @@ class Input(ABaseNode):
         valid_data = assignVector(
             data, self.getDataShape(), self.getName(), oname, self.getDataType()
         )
+
+        if self.getCurrentFrame() != frame and frame.getTimeStep() == 0:
+            self.resetCallback(frame)
+
         return valid_data
 
     def updateAllOutput(self, frame: Frame):
@@ -853,17 +857,14 @@ class AComputer(ABaseNode):
         """Returns the parent computers
 
         Returns:
-          The parent computers
+          An iterator on the computers' parents
 
         """
-        res = []
         for iid in self.getListInputsIds():
             inp = self.getInputById(iid)
             otp = inp.getOutput()
             c = otp.getComputer()
-            res.append(c)
-
-        return res
+            yield c
 
     @abstractmethod
     def compute_outputs(self, **inputs: dict) -> dict:  # pragma: no cover

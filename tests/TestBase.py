@@ -18,29 +18,29 @@ def exact(t, yyp, vvp, u):
     f = 5
     m = 1
 
-    w_0 = sqrt(4 * k * m - f**2) / (2 * m)
+    w_0 = sqrt(4 * k * m - f ** 2) / (2 * m)
     x = (
         (
-            (4 * f * m**2 * w_0**2 + f**3) * sin(t * w_0)
-            + (8 * m**3 * w_0**3 + 2 * f**2 * m * w_0) * cos(t * w_0)
+            (4 * f * m ** 2 * w_0 ** 2 + f ** 3) * sin(t * w_0)
+            + (8 * m ** 3 * w_0 ** 3 + 2 * f ** 2 * m * w_0) * cos(t * w_0)
         )
         * yyp
-        + (8 * m**3 * vvp * w_0**2 + 2 * f**2 * m * vvp - 4 * f * m * u)
+        + (8 * m ** 3 * vvp * w_0 ** 2 + 2 * f ** 2 * m * vvp - 4 * f * m * u)
         * sin(t * w_0)
-        - 8 * m**2 * u * w_0 * cos(t * w_0)
-        + 8 * m**2 * exp((f * t) / (2 * m)) * u * w_0
+        - 8 * m ** 2 * u * w_0 * cos(t * w_0)
+        + 8 * m ** 2 * exp((f * t) / (2 * m)) * u * w_0
     ) / (
-        8 * m**3 * exp((f * t) / (2 * m)) * w_0**3
-        + 2 * f**2 * m * exp((f * t) / (2 * m)) * w_0
+        8 * m ** 3 * exp((f * t) / (2 * m)) * w_0 ** 3
+        + 2 * f ** 2 * m * exp((f * t) / (2 * m)) * w_0
     )
     v = -(
         exp(-(f * t) / (2 * m))
         * (
-            (4 * m**2 * w_0**2 + f**2) * sin(t * w_0) * yyp
+            (4 * m ** 2 * w_0 ** 2 + f ** 2) * sin(t * w_0) * yyp
             + (2 * f * m * vvp - 4 * m * u) * sin(t * w_0)
-            - 4 * m**2 * vvp * w_0 * cos(t * w_0)
+            - 4 * m ** 2 * vvp * w_0 * cos(t * w_0)
         )
-    ) / (4 * m**2 * w_0)
+    ) / (4 * m ** 2 * w_0)
 
     return x, v
 

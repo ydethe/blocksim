@@ -179,6 +179,12 @@ def assignVector(
     #     )
     #     logger.warning(txt)
 
+    if expected_shape is None:
+        expected_shape = len(v)
+
+    if isinstance(expected_shape, int):
+        expected_shape = (expected_shape,)
+
     if not hasattr(v, "__iter__") and expected_shape[0] == 1:
         v = np.array([v])
 
@@ -186,9 +192,6 @@ def assignVector(
         vshape = (v.shape,)
     else:
         vshape = v.shape
-
-    if isinstance(expected_shape, int):
-        expected_shape = (expected_shape,)
 
     if type(v) != type(np.empty(1)):
         txt = "Element '%s' : Argument '%s'=%s is not a vector" % (
@@ -213,12 +216,9 @@ def assignVector(
     elif not (dtype == np.complex64 or dtype == np.complex128) and (
         v.dtype == np.complex64 or v.dtype == np.complex128
     ):
-        txt = (
-            "Element '%s' : Argument '%s' - trying to affect a complex vector into a real or integer vector"
-            % (
-                dst_name,
-                src_name,
-            )
+        txt = "Element '%s' : Argument '%s' - trying to affect a complex vector into a real or integer vector" % (
+            dst_name,
+            src_name,
         )
         raise WrongDataType(txt)
 
@@ -260,9 +260,9 @@ def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> np.array:
     """
     res = np.empty((3, 3))
 
-    res[0, 0] = qr**2 + qi**2 - qj**2 - qk**2
-    res[1, 1] = qr**2 - qi**2 + qj**2 - qk**2
-    res[2, 2] = qr**2 - qi**2 - qj**2 + qk**2
+    res[0, 0] = qr ** 2 + qi ** 2 - qj ** 2 - qk ** 2
+    res[1, 1] = qr ** 2 - qi ** 2 + qj ** 2 - qk ** 2
+    res[2, 2] = qr ** 2 - qi ** 2 - qj ** 2 + qk ** 2
     res[0, 1] = 2 * (qi * qj - qk * qr)
     res[0, 2] = 2 * (qi * qk + qj * qr)
     res[1, 0] = 2 * (qi * qj + qk * qr)

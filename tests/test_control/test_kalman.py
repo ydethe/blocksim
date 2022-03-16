@@ -67,8 +67,8 @@ class TestKalman(TestBase):
         self.assertAlmostEqual(err_mean, 0, delta=1e-9)
 
         a = 8
-        P = -k + 3 * a**2 * m
-        I = a**3 * m
+        P = -k + 3 * a ** 2 * m
+        I = a ** 3 * m
         D = 3 * a * m
         Umin = -100
         Umax = 100
@@ -148,8 +148,8 @@ class TestKalman(TestBase):
         self.assertAlmostEqual(err_mean, 0, delta=1e-9)
 
         a = 8
-        P = -k + 3 * a**2 * m
-        I = a**3 * m
+        P = -k + 3 * a ** 2 * m
+        I = a ** 3 * m
         D = 3 * a * m
         ctl = PIDController(
             "ctl", shape_estimation=(2,), snames=["u"], coeffs=(P, I, D)
