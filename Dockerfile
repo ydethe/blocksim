@@ -7,7 +7,6 @@ FROM continuumio/miniconda3
 WORKDIR /app
 SHELL ["/bin/bash", "-c"]
 ADD environment_test.yml /app/environment_test.yml
-ADD gen_baseline.sh /app
 RUN conda install -y mamba -n base -c conda-forge
 RUN mamba env create -f environment_test.yml
 
