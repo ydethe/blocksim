@@ -15,7 +15,7 @@ test:
     - conda activate bs_env
     - python3 setup.py develop
     - python3 --version
-    - python3 -m pytest --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
+    - python3 -m pytest --junitxml=test_results.xml --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
     - python3 setup.py doc
     - mv docs/_build/html htmldoc
     - codecov
@@ -29,6 +29,8 @@ test:
       - htmlcov
       - htmldoc
       - dist
+    reports:
+      junit: test_results.xml
 
 publish_rtd:
   image: alpine:3.15.0
