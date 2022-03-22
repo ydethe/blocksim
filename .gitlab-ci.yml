@@ -20,6 +20,7 @@ test:
     - mv docs/_build/html htmldoc
     - codecov
     - coverage html
+    - coverage xml
     - python3 setup.py sdist
     - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
   artifacts:
@@ -31,6 +32,7 @@ test:
       - dist
     reports:
       junit: test_results.xml
+      cobertura: coverage.xml
 
 publish_rtd:
   image: alpine:3.15.0
