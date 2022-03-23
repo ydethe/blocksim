@@ -15,12 +15,11 @@ test:
     - conda activate bs_env
     - python3 setup.py develop
     - python3 --version
-    - python3 -m pytest --junitxml=test_results.xml --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
+    - python3 -m pytest --junitxml=test_results.xml --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov-report xml:coverage.xml --cov-config=.coveragerc --cov blocksim tests --doctest-modules blocksim
     - python3 setup.py doc
     - mv docs/_build/html htmldoc
     - codecov
     - coverage html
-    - coverage xml
     - python3 setup.py sdist
     - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
   artifacts:
