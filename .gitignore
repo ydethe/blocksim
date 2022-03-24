@@ -1,4 +1,5 @@
 htmldoc/
+test_results.xml
 
 *.bak
 .vscode/
