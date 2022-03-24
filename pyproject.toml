@@ -21,6 +21,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
+setuptools = "^60.9.0"
 matplotlib = "^3.5.1"
 numpy = "^1.22.3"
 pandas = "^1.4.0"
@@ -39,21 +40,21 @@ lazy_property = "^0.0.1"
 singleton3 = "^1.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.0"
-pytest-cov = "^3.0.0"
-pytest-mpl = "^0.13"
-sphinx = "=3.3.1"
+sphinx = "^4.4.0"
 sphinx_rtd_theme = "^1.0.0"
 sphinx-autoapi =  "^1.8.4"
 sphinx-gallery = "^0.10.0"
 sphinxcontrib-apidoc = "^0.3.0"
 sphinxcontrib-napoleon = "^0.7"
 mock = "^4.0.3"
+docutils = "<0.18,>=0.14"
+pytest = "^6.0"
+pytest-cov = "^3.0.0"
+pytest-mpl = "^0.13"
 black = "^22.1.0"
 ipython = "^7.17.0"
 pre-commit = "^2.10.1"
 codecov= "^2.1.11"
-docutils = "<0.18,>=0.14"
 scikit-build = "^0.13.1 "
 numpy = "^1.22.3"
 
@@ -64,11 +65,12 @@ p3d = ["panda3d"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "tests --cov blocksim --doctest-modules blocksim"
+addopts = "tests --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim --doctest-modules blocksim"
 
 [tool.poetry.scripts]
-doc = "docs.build:bld_doc"
 blocksim = "blocksim.main:main"
+doc = "devtools.commands:build_doc"
+baseline = "devtools.commands:build_baseline"
 
 [tool.poetry.plugins.blocksim]
 logger_csv = "blocksim.loggers.CSVLogger"
