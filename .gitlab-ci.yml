@@ -13,7 +13,7 @@ test:
   script:
     - poetry install
     - poetry run pytest --junitxml=test_results.xml --cov-report html
-    - poetry run doc
+    - poetry run blocksim_build_doc
     - poetry build
     - codecov
   artifacts:
