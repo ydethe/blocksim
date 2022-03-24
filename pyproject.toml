@@ -54,7 +54,6 @@ pytest-mpl = "^0.13"
 black = "^22.1.0"
 ipython = "^7.17.0"
 pre-commit = "^2.10.1"
-codecov= "^2.1.11"
 scikit-build = "^0.13.1 "
 numpy = "^1.22.3"
 
