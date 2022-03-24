@@ -15,7 +15,7 @@ test:
     - echo "tzdata tzdata/Areas select Europe" > preseed.txt
     - echo "tzdata tzdata/Zones/Europe select Berlin" >> preseed.txt
     - debconf-set-selections preseed.txt
-    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends pipx python3.8-venv gcc g++ gfortran swig
+    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends pipx python3.8-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev
     - export PATH=/root/.local/bin:$PATH
     - pipx install poetry
     - poetry install
@@ -97,4 +97,3 @@ pages:
   artifacts:
     paths:
       - public
-
