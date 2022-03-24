@@ -48,7 +48,6 @@ sphinx-autoapi =  "^1.8.4"
 sphinx-gallery = "^0.10.0"
 sphinxcontrib-apidoc = "^0.3.0"
 sphinxcontrib-napoleon = "^0.7"
-recommonmark = "^0.5.0"
 mock = "^4.0.3"
 black = "^22.1.0"
 ipython = "^7.17.0"
@@ -70,3 +69,8 @@ addopts = "tests --cov blocksim --doctest-modules blocksim"
 [tool.poetry.scripts]
 doc = "docs.build:bld_doc"
 blocksim = "blocksim.main:main"
+
+[tool.poetry.plugins.blocksim]
+logger_csv = "blocksim.loggers.CSVLogger"
+logger_pickle = "blocksim.loggers.PickleLogger"
+logger_xls = "blocksim.loggers.XlsLogger"

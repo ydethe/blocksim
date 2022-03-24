@@ -42,7 +42,7 @@ eps = entry_points()
 plugins = eps["blocksim"]
 
 for ep in plugins:
-    if ep.name.startswith("logger."):
+    if ep.name.startswith("logger_"):
         plugin = import_module(ep.value)
         if not plugin_manager.is_registered(plugin=plugin.Logger()):
             plugin_manager.register(plugin=plugin.Logger(), name=ep.name)

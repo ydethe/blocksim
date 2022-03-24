@@ -1,3 +1,5 @@
+htmldoc/
+
 *.bak
 .vscode/
 results/
@@ -117,4 +119,3 @@ venv.bak/
 .DS_Store
 ._.DS_Store
 Zone.sav
-
