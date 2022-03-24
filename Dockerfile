@@ -10,4 +10,5 @@ RUN echo "tzdata tzdata/Areas select Europe" > preseed.txt
 RUN echo "tzdata tzdata/Zones/Europe select Paris" >> preseed.txt
 RUN debconf-set-selections preseed.txt
 RUN apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends pipx python3.8-dev python3.8-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl
-RUN pipx install poetry && pipx ensurepath
+RUN pipx install poetry
+ENV PATH=/root/.local/bin:$PATH
