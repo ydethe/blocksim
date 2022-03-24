@@ -9,21 +9,20 @@ stages:
 
 test:
   stage: test
-  image: ydethe/blocksim:latest
+  image: ubuntu:focal
   script:
-    - source /opt/conda/etc/profile.d/conda.sh
-    - conda activate bs_env
-    - python3 setup.py develop
-    - python3 --version
-    - python3 -m pytest --junitxml=test_results.xml --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov-config=.coveragerc --cov ./ tests --doctest-modules blocksim
-    - python3 setup.py doc
-    - mv docs/_build/html htmldoc
+    - export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+    - echo "tzdata tzdata/Areas select Europe" > preseed.txt
+    - echo "tzdata tzdata/Zones/Europe select Berlin" >> preseed.txt
+    - debconf-set-selections preseed.txt
+    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends pipx python3.8-venv gcc g++ gfortran swig
+    - export PATH=/root/.local/bin:$PATH
+    - pipx install poetry
+    - poetry install
+    - poetry run pytest --junitxml=test_results.xml --cov-report html
+    - poetry run doc
+    - poetry build
     - codecov
-    - coverage report
-    - coverage xml
-    - coverage html
-    - python3 setup.py sdist
-    - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
   artifacts:
     when: always
     paths:
