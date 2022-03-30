@@ -38,6 +38,7 @@ cartopy = "<0.20.0"
 control = "^0.9.0"
 lazy_property = "^0.0.1"
 singleton3 = "^1.0"
+pluggy = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 sphinx = "^4.4.0"
