@@ -1,7 +1,0 @@
-blocksim.control.Controller module
-==================================
-
-.. automodule:: blocksim.control.Controller
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,7 +1,0 @@
-blocksim.control.SetPoint module
-================================
-
-.. automodule:: blocksim.control.SetPoint
-   :members:
-   :undoc-members:
-   :show-inheritance:

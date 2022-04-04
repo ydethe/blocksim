@@ -1,7 +1,0 @@
-blocksim.dsp.FEC module
-=======================
-
-.. automodule:: blocksim.dsp.FEC
-   :members:
-   :undoc-members:
-   :show-inheritance:

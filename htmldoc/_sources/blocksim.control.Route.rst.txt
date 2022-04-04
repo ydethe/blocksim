@@ -1,7 +1,0 @@
-blocksim.control.Route module
-=============================
-
-.. automodule:: blocksim.control.Route
-   :members:
-   :undoc-members:
-   :show-inheritance:

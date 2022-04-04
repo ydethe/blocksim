@@ -1,7 +1,0 @@
-blocksim.gnss.GNSSTracker module
-================================
-
-.. automodule:: blocksim.gnss.GNSSTracker
-   :members:
-   :undoc-members:
-   :show-inheritance:

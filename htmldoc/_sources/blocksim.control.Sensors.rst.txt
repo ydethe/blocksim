@@ -1,7 +1,0 @@
-blocksim.control.Sensors module
-===============================
-
-.. automodule:: blocksim.control.Sensors
-   :members:
-   :undoc-members:
-   :show-inheritance:

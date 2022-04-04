@@ -1,7 +1,0 @@
-blocksim.dsp.DSPFilter module
-=============================
-
-.. automodule:: blocksim.dsp.DSPFilter
-   :members:
-   :undoc-members:
-   :show-inheritance:

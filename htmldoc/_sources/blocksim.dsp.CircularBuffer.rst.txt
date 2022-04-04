@@ -1,7 +1,0 @@
-blocksim.dsp.CircularBuffer module
-==================================
-
-.. automodule:: blocksim.dsp.CircularBuffer
-   :members:
-   :undoc-members:
-   :show-inheritance:

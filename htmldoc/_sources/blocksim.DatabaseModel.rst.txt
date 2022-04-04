@@ -1,7 +1,0 @@
-blocksim.DatabaseModel module
-=============================
-
-.. automodule:: blocksim.DatabaseModel
-   :members:
-   :undoc-members:
-   :show-inheritance:

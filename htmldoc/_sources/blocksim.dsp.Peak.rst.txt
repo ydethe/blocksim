@@ -1,7 +1,0 @@
-blocksim.dsp.Peak module
-========================
-
-.. automodule:: blocksim.dsp.Peak
-   :members:
-   :undoc-members:
-   :show-inheritance:

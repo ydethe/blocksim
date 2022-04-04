@@ -1,7 +1,0 @@
-blocksim.dsp.DSPChannel module
-==============================
-
-.. automodule:: blocksim.dsp.DSPChannel
-   :members:
-   :undoc-members:
-   :show-inheritance:

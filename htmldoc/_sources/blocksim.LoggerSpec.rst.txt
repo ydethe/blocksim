@@ -1,7 +1,0 @@
-blocksim.LoggerSpec module
-==========================
-
-.. automodule:: blocksim.LoggerSpec
-   :members:
-   :undoc-members:
-   :show-inheritance:

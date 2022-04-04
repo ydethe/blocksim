@@ -1,7 +1,0 @@
-blocksim.graphics.RTPlotter module
-==================================
-
-.. automodule:: blocksim.graphics.RTPlotter
-   :members:
-   :undoc-members:
-   :show-inheritance:

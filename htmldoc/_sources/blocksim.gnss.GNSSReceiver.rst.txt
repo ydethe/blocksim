@@ -1,7 +1,0 @@
-blocksim.gnss.GNSSReceiver module
-=================================
-
-.. automodule:: blocksim.gnss.GNSSReceiver
-   :members:
-   :undoc-members:
-   :show-inheritance:

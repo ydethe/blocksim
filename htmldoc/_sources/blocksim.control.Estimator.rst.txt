@@ -1,7 +1,0 @@
-blocksim.control.Estimator module
-=================================
-
-.. automodule:: blocksim.control.Estimator
-   :members:
-   :undoc-members:
-   :show-inheritance:

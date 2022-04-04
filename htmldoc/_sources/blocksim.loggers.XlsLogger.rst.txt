@@ -1,7 +1,0 @@
-blocksim.loggers.XlsLogger module
-=================================
-
-.. automodule:: blocksim.loggers.XlsLogger
-   :members:
-   :undoc-members:
-   :show-inheritance:

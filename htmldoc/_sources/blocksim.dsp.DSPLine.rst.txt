@@ -1,7 +1,0 @@
-blocksim.dsp.DSPLine module
-===========================
-
-.. automodule:: blocksim.dsp.DSPLine
-   :members:
-   :undoc-members:
-   :show-inheritance:

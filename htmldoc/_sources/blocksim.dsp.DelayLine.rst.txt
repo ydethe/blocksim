@@ -1,7 +1,0 @@
-blocksim.dsp.DelayLine module
-=============================
-
-.. automodule:: blocksim.dsp.DelayLine
-   :members:
-   :undoc-members:
-   :show-inheritance:

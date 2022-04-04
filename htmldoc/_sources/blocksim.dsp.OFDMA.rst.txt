@@ -1,7 +1,0 @@
-blocksim.dsp.OFDMA module
-=========================
-
-.. automodule:: blocksim.dsp.OFDMA
-   :members:
-   :undoc-members:
-   :show-inheritance:

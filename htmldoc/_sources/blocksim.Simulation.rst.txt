@@ -1,7 +1,0 @@
-blocksim.Simulation module
-==========================
-
-.. automodule:: blocksim.Simulation
-   :members:
-   :undoc-members:
-   :show-inheritance:

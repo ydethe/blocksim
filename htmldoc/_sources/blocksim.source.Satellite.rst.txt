@@ -1,7 +1,0 @@
-blocksim.source.Satellite module
-================================
-
-.. automodule:: blocksim.source.Satellite
-   :members:
-   :undoc-members:
-   :show-inheritance:

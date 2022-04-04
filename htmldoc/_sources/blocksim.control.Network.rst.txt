@@ -1,7 +1,0 @@
-blocksim.control.Network module
-===============================
-
-.. automodule:: blocksim.control.Network
-   :members:
-   :undoc-members:
-   :show-inheritance:
