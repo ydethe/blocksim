@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.Simulation module &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/translations.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="blocksim.constants module" href="blocksim.constants.html" />
+    <link rel="prev" title="blocksim.LoggerSpec module" href="blocksim.LoggerSpec.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">blocksim</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="blocksim.html">blocksim package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#subpackages">Subpackages</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="blocksim.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="blocksim.DatabaseModel.html">blocksim.DatabaseModel module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.LogFormatter.html">blocksim.LogFormatter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.Logger.html">blocksim.Logger module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.LoggerSpec.html">blocksim.LoggerSpec module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">blocksim.Simulation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.constants.html">blocksim.constants module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.exceptions.html">blocksim.exceptions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.main.html">blocksim.main module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.utils.html">blocksim.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#module-blocksim">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">blocksim</a> &raquo;</li>
+          <li><a href="blocksim.html">blocksim package</a> &raquo;</li>
+      <li>blocksim.Simulation module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/blocksim.Simulation.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="module-blocksim.Simulation">
+<span id="blocksim-simulation-module"></span><h1>blocksim.Simulation module<a class="headerlink" href="#module-blocksim.Simulation" title="Lien permanent vers ce titre"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.Simulation.Simulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.Simulation.</span></span><span class="sig-name descname"><span class="pre">Simulation</span></span><a class="reference internal" href="_modules/blocksim/Simulation.html#Simulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.Simulation.Simulation" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class which handles the closed-loop simulation</p>
+<p>Also logs all the simulated values</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.Simulation.Simulation.addComputer">
+<span class="sig-name descname"><span class="pre">addComputer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">computer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.core.Node.html#blocksim.core.Node.AComputer" title="blocksim.core.Node.AComputer"><span class="pre">blocksim.core.Node.AComputer</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/Simulation.html#Simulation.addComputer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.Simulation.Simulation.addComputer" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Adds a computer to the simulation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>computer</strong> – Computer to be added</p>
+</dd>
+<dt class="field-even">Lève</dt>
+<dd class="field-even"><p><a class="reference internal" href="blocksim.exceptions.html#blocksim.exceptions.DuplicateElement" title="blocksim.exceptions.DuplicateElement"><strong>DuplicateElement</strong></a> – If the computer is already in the simulation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.Simulation.Simulation.connect">
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/Simulation.html#Simulation.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.Simulation.Simulation.connect" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Links an computer with another, so that the state of the source is connected to the input of the destination.
+Both src and dst must have been added with <a class="reference internal" href="#blocksim.Simulation.Simulation.addComputer" title="blocksim.Simulation.Simulation.addComputer"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.Simulation.Simulation.addComputer</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src_name</strong> – Source computer. Example : sys.output</p></li>
+<li><p><strong>dst_name</strong> – Target computer. Example : ctl.estimation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.Simulation.Simulation.getComputerById">
+<span class="sig-name descname"><span class="pre">getComputerById</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uuid.UUID</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="blocksim.core.Node.html#blocksim.core.Node.AComputer" title="blocksim.core.Node.AComputer"><span class="pre">blocksim.core.Node.AComputer</span></a></span></span><a class="reference internal" href="_modules/blocksim/Simulation.html#Simulation.getComputerById"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.Simulation.Simulation.getComputerById" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Returns the computer with given id</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>cid</strong> – Id of the computer. If it does not exist, raises KeyError</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns</dt><dd><p>The computer with id <em>cid</em></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Lève</dt>
+<dd class="field-odd"><p><strong>KeyError</strong> – If no element has the id <em>cid</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.Simulation.Simulation.getComputerByName">
+<span class="sig-name descname"><span class="pre">getComputerByName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="blocksim.core.Node.html#blocksim.core.Node.AComputer" title="blocksim.core.Node.AComputer"><span class="pre">blocksim.core.Node.AComputer</span></a></span></span><a class="reference internal" href="_modules/blocksim/Simulation.html#Simulation.getComputerByName"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.Simulation.Simulation.getComputerByName" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Returns the computer named <em>name</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>name</strong> – Name of the computer. If it does not exist, raises KeyError</p>
+</dd>
+<dt class="field-even">Lève</dt>
+<dd class="field-even"><p><strong>KeyError</strong> – If no computer has the name <em>name</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.Simulation.Simulation.getComputerOutputByName">
+<span class="sig-name descname"><span class="pre">getComputerOutputByName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.core.Frame.html#blocksim.core.Frame.Frame" title="blocksim.core.Frame.Frame"><span class="pre">blocksim.core.Frame.Frame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/Simulation.html#Simulation.getComputerOutputByName"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.Simulation.Simulation.getComputerOutputByName" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Returns the data of the computer’s output
+The <em>name</em> of the data is designated by :
+&lt;computer&gt;.&lt;output&gt;[coord]</p>
+<ul class="simple">
+<li><p>computer is the name of the computer (str)</p></li>
+<li><p>output is the name of the output (str)</p></li>
+<li><p>coord is optional, and is the number of the scalar in the data vector</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> – The current time frame</p></li>
+<li><p><strong>name</strong> – Name of the data. If it does not exist, raises KeyError</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The requested data</p>
+</dd>
+<dt class="field-odd">Lève</dt>
+<dd class="field-odd"><p><strong>KeyError</strong> – If the data cannot be found</p>
+</dd>
+</dl>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">el</span> <span class="o">=</span> <span class="n">DummyComputer</span><span class="p">(</span><span class="s1">&#39;el&#39;</span><span class="p">,</span> <span class="n">with_input</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span><span class="o">.</span><span class="n">addComputer</span><span class="p">(</span><span class="n">el</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">Frame</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span><span class="o">.</span><span class="n">getComputerOutputByName</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="s1">&#39;el.xout&#39;</span><span class="p">)</span>
+<span class="go">array([0]...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span><span class="o">.</span><span class="n">getComputerOutputByName</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="s1">&#39;el.xout[0]&#39;</span><span class="p">)</span>
+<span class="go">0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.Simulation.Simulation.getComputersList">
+<span class="sig-name descname"><span class="pre">getComputersList</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="blocksim.core.Node.html#blocksim.core.Node.AComputer" title="blocksim.core.Node.AComputer"><span class="pre">blocksim.core.Node.AComputer</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/Simulation.html#Simulation.getComputersList"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.Simulation.Simulation.getComputersList" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Returns the list of all the computers of the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>The list of all the computers in the simulation</p>
+</dd>
+</dl>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">el</span> <span class="o">=</span> <span class="n">DummyComputer</span><span class="p">(</span><span class="s1">&#39;el&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span><span class="o">.</span><span class="n">addComputer</span><span class="p">(</span><span class="n">el</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">sim</span><span class="o">.</span><span class="n">getComputersList</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">getName</span><span class="p">())</span>
+<span class="go">el</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.Simulation.Simulation.getLogger">
+<span class="sig-name descname"><span class="pre">getLogger</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="blocksim.Logger.html#blocksim.Logger.Logger" title="blocksim.Logger.Logger"><span class="pre">blocksim.Logger.Logger</span></a></span></span><a class="reference internal" href="_modules/blocksim/Simulation.html#Simulation.getLogger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.Simulation.Simulation.getLogger" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Gets the Logger used for the simulation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>The logger used by the simulation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.Simulation.Simulation.simulate">
+<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_bar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_on_unconnected</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="blocksim.core.Frame.html#blocksim.core.Frame.Frame" title="blocksim.core.Frame.Frame"><span class="pre">blocksim.core.Frame.Frame</span></a></span></span><a class="reference internal" href="_modules/blocksim/Simulation.html#Simulation.simulate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.Simulation.Simulation.simulate" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Resets the simulator, and simulates the closed-loop system
+up to the date given as an argument :</p>
+<ul class="simple">
+<li><p>As much calls to update as time samples in the <em>tps</em> argument</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tps</strong> – Dates to be simulated (s)</p></li>
+<li><p><strong>progress_bar</strong> – True to display a progress bar in the terminal</p></li>
+<li><p><strong>error_on_unconnected</strong> – True to raise an exception is an input is not connected. If an input is not connected and error_on_unconnected is False, the input will be padded with zeros</p></li>
+<li><p><strong>fig</strong> – In the case of a realtime plot (use of RTPlotter for example), must be the figure that is updated in real time</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The time frame used for the simulation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.Simulation.Simulation.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.core.Frame.html#blocksim.core.Frame.Frame" title="blocksim.core.Frame.Frame"><span class="pre">blocksim.core.Frame.Frame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_on_unconnected</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/Simulation.html#Simulation.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.Simulation.Simulation.update" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Steps the simulation, and logs all the outputs of the computers</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="blocksim.LoggerSpec.html" class="btn btn-neutral float-left" title="blocksim.LoggerSpec module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="blocksim.constants.html" class="btn btn-neutral float-right" title="blocksim.constants module" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

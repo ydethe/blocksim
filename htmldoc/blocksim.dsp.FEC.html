@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.dsp.FEC module &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/translations.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="blocksim.dsp.NPSS module" href="blocksim.dsp.NPSS.html" />
+    <link rel="prev" title="blocksim.dsp.DelayLine module" href="blocksim.dsp.DelayLine.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">blocksim</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="blocksim.html">blocksim package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="blocksim.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="blocksim.control.html">blocksim.control package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.core.html">blocksim.core package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="blocksim.dsp.html">blocksim.dsp package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.gnss.html">blocksim.gnss package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.graphics.html">blocksim.graphics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.loggers.html">blocksim.loggers package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.source.html">blocksim.source package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#module-blocksim">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">blocksim</a> &raquo;</li>
+          <li><a href="blocksim.html">blocksim package</a> &raquo;</li>
+          <li><a href="blocksim.dsp.html">blocksim.dsp package</a> &raquo;</li>
+      <li>blocksim.dsp.FEC module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/blocksim.dsp.FEC.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="module-blocksim.dsp.FEC">
+<span id="blocksim-dsp-fec-module"></span><h1>blocksim.dsp.FEC module<a class="headerlink" href="#module-blocksim.dsp.FEC" title="Lien permanent vers ce titre"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.dsp.FEC.FECCoder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.dsp.FEC.</span></span><span class="sig-name descname"><span class="pre">FECCoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/dsp/FEC.html#FECCoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.dsp.FEC.FECCoder" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference internal" href="blocksim.dsp.ADSPComputer.html#blocksim.dsp.ADSPComputer.ADSPComputer" title="blocksim.dsp.ADSPComputer.ADSPComputer"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.dsp.ADSPComputer.ADSPComputer</span></code></a></p>
+<p>Forward Error Correction encoder for NB-IoT (TODO : for any FEC)
+For an input vector of n bits, this computer will generate an output vector of 3*n bits</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the computer</p></li>
+<li><p><strong>output_size</strong> – Number of scalar in the output vector. Shall be divisible by 3.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.dsp.FEC.FECCoder.compute_outputs">
+<span class="sig-name descname"><span class="pre">compute_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coded</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/blocksim/dsp/FEC.html#FECCoder.compute_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.dsp.FEC.FECCoder.compute_outputs" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blocksim.dsp.FEC.FECCoder.k_cc">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">k_cc</span></span><a class="headerlink" href="#blocksim.dsp.FEC.FECCoder.k_cc" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.dsp.FEC.FECDecoder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.dsp.FEC.</span></span><span class="sig-name descname"><span class="pre">FECDecoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/dsp/FEC.html#FECDecoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.dsp.FEC.FECDecoder" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference internal" href="blocksim.dsp.ADSPComputer.html#blocksim.dsp.ADSPComputer.ADSPComputer" title="blocksim.dsp.ADSPComputer.ADSPComputer"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.dsp.ADSPComputer.ADSPComputer</span></code></a></p>
+<p>Forward Error Correction decoder for NB-IoT (TODO : for any FEC)
+For an input vector of n bits, this computer will generate an output vector of n//3 bits</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the computer</p></li>
+<li><p><strong>output_size</strong> – Number of scalar in the output vector.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.dsp.FEC.FECDecoder.compute_outputs">
+<span class="sig-name descname"><span class="pre">compute_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coded</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/blocksim/dsp/FEC.html#FECDecoder.compute_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.dsp.FEC.FECDecoder.compute_outputs" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="blocksim.dsp.FEC.FECDecoder.k_cc">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">k_cc</span></span><a class="headerlink" href="#blocksim.dsp.FEC.FECDecoder.k_cc" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="blocksim.dsp.DelayLine.html" class="btn btn-neutral float-left" title="blocksim.dsp.DelayLine module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="blocksim.dsp.NPSS.html" class="btn btn-neutral float-right" title="blocksim.dsp.NPSS module" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

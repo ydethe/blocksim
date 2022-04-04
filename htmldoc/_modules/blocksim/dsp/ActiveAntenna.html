@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.dsp.ActiveAntenna &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">blocksim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Code du module</a> &raquo;</li>
+          <li><a href="../dsp.html">blocksim.dsp</a> &raquo;</li>
+      <li>blocksim.dsp.ActiveAntenna</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Code source de blocksim.dsp.ActiveAntenna</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
+
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">arccos</span><span class="p">,</span> <span class="n">arctan</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">tan</span><span class="p">,</span> <span class="n">log2</span><span class="p">,</span> <span class="n">arcsin</span><span class="p">,</span> <span class="n">arctan2</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span> <span class="k">as</span> <span class="n">lin</span>
+
+<span class="kn">from</span> <span class="nn">..core.Node</span> <span class="kn">import</span> <span class="n">AComputer</span>
+<span class="kn">from</span> <span class="nn">.DSPSpectrogram</span> <span class="kn">import</span> <span class="n">DSPSpectrogram</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">..constants</span> <span class="kn">import</span> <span class="n">c</span><span class="p">,</span> <span class="n">Req</span><span class="p">,</span> <span class="n">mu</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">cexp</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ActiveAntenna&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="ActiveAntenna"><a class="viewcode-back" href="../../../blocksim.dsp.ActiveAntenna.html#blocksim.dsp.ActiveAntenna.ActiveAntenna">[docs]</a><span class="k">class</span> <span class="nc">ActiveAntenna</span><span class="p">(</span><span class="n">AComputer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Active antenna implementation</span>
+
+<span class="sd">    The inputs of the computer are **tx_pos**, **rx_pos** and **tx_sig**</span>
+<span class="sd">    The outputs of the computer are **rx_sig**</span>
+
+<span class="sd">    The **tx_pos** and **rx_pos** vectors represent a 3D position (m) and 3D velocity (m/s) in ITRF</span>
+<span class="sd">    **tx_sig** is the RX signal</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name</span>
+<span class="sd">            Name of the computer</span>
+<span class="sd">        freq (Hz)</span>
+<span class="sd">            Frequency of the antenna</span>
+<span class="sd">        hpbw (rad)</span>
+<span class="sd">            Half Power Beam Width of the antenna</span>
+<span class="sd">        th_profile</span>
+<span class="sd">            Function that associated to an off-axis angle the distance between the antenna and the receiver</span>
+<span class="sd">        win</span>
+<span class="sd">            The window to apply to the antenna</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_coeff&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ac</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">):</span>
+        <span class="n">AComputer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">ac</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">defineInput</span><span class="p">(</span><span class="s2">&quot;txpos&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defineInput</span><span class="p">(</span><span class="s2">&quot;rxpos&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defineInput</span><span class="p">(</span><span class="s2">&quot;txsig&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defineOutput</span><span class="p">(</span><span class="s2">&quot;rxsig&quot;</span><span class="p">,</span> <span class="n">snames</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defineOutput</span><span class="p">(</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="n">snames</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;theta&quot;</span><span class="p">,</span> <span class="s2">&quot;psi&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;th_profile&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">ac</span><span class="o">.</span><span class="n">th_profile</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mapping&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">ac</span><span class="o">.</span><span class="n">mapping</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;frequency&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">ac</span><span class="o">.</span><span class="n">freq</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;hpbw&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">ac</span><span class="o">.</span><span class="n">hpbw</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;wavelength&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">c</span> <span class="o">/</span> <span class="n">ac</span><span class="o">.</span><span class="n">freq</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">N</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ac</span><span class="o">.</span><span class="n">coefficients</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">pickle</span> <span class="kn">import</span> <span class="n">load</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ac</span><span class="o">.</span><span class="n">coefficients</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_coeff</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+            <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coeff</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loaded &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">ac</span><span class="o">.</span><span class="n">coefficients</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;num_elem&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ActiveAntenna.getCoefficients"><a class="viewcode-back" href="../../../blocksim.dsp.ActiveAntenna.html#blocksim.dsp.ActiveAntenna.ActiveAntenna.getCoefficients">[docs]</a>    <span class="k">def</span> <span class="nf">getCoefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;array&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coeff</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ActiveAntenna.antennaDiagram"><a class="viewcode-back" href="../../../blocksim.dsp.ActiveAntenna.html#blocksim.dsp.ActiveAntenna.ActiveAntenna.antennaDiagram">[docs]</a>    <span class="k">def</span> <span class="nf">antennaDiagram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_points</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DSPSpectrogram</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes the antenna diagram</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_points</span>
+<span class="sd">                Number of points in the diagram</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A DSPSpectrogram that represents the diagram</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">used_theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n_points</span><span class="p">)</span>
+        <span class="n">used_psi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span><span class="p">,</span> <span class="n">n_points</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_points</span><span class="p">,</span> <span class="n">n_points</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+        <span class="n">Emax</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">psi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">used_psi</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">theta</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">used_theta</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_elem</span><span class="p">):</span>
+                    <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">th_profile</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+                        <span class="n">cos</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span> <span class="o">*</span> <span class="n">p</span> <span class="o">+</span> <span class="n">sin</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span> <span class="o">*</span> <span class="n">q</span>
+                    <span class="p">)</span>
+                    <span class="n">m</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coeff</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">cexp</span><span class="p">(</span><span class="n">d</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">Emax</span><span class="p">:</span>
+                    <span class="n">Emax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">])</span>
+
+        <span class="n">diag</span> <span class="o">=</span> <span class="n">DSPSpectrogram</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;diag&quot;</span><span class="p">,</span>
+            <span class="n">samplingXStart</span><span class="o">=</span><span class="n">used_psi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">samplingXPeriod</span><span class="o">=</span><span class="n">used_psi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">used_psi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">samplingYStart</span><span class="o">=</span><span class="n">used_theta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">pi</span><span class="p">,</span>
+            <span class="n">samplingYPeriod</span><span class="o">=</span><span class="p">(</span><span class="n">used_theta</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">used_theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">pi</span><span class="p">,</span>
+            <span class="n">img</span><span class="o">=</span><span class="n">m</span> <span class="o">/</span> <span class="n">Emax</span><span class="p">,</span>
+            <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;polar&quot;</span><span class="p">,</span>
+            <span class="n">default_transform</span><span class="o">=</span><span class="n">DSPSpectrogram</span><span class="o">.</span><span class="n">to_db_lim</span><span class="p">(</span><span class="o">-</span><span class="mi">40</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">diag</span><span class="o">.</span><span class="n">name_of_x_var</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Off-axis angle</span>
+        <span class="n">diag</span><span class="o">.</span><span class="n">unit_of_x_var</span> <span class="o">=</span> <span class="s2">&quot;rad&quot;</span>
+        <span class="n">diag</span><span class="o">.</span><span class="n">name_of_y_var</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Azimut angle</span>
+        <span class="n">diag</span><span class="o">.</span><span class="n">unit_of_y_var</span> <span class="o">=</span> <span class="s2">&quot;deg&quot;</span>
+
+        <span class="k">return</span> <span class="n">diag</span></div>
+
+<div class="viewcode-block" id="ActiveAntenna.compute_outputs"><a class="viewcode-back" href="../../../blocksim.dsp.ActiveAntenna.html#blocksim.dsp.ActiveAntenna.ActiveAntenna.compute_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">compute_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">t1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">t2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">txpos</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+        <span class="n">rxpos</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+        <span class="n">txsig</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+        <span class="n">rxsig</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+        <span class="n">info</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">rxpos</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">txpos</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="n">u</span> <span class="o">/=</span> <span class="n">d</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">arccos</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">psi</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">amp</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">d0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">th_profile</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_elem</span><span class="p">):</span>
+            <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">dk</span> <span class="o">=</span> <span class="n">d0</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span> <span class="o">*</span> <span class="n">p</span> <span class="o">+</span> <span class="n">sin</span><span class="p">(</span><span class="n">psi</span><span class="p">)</span> <span class="o">*</span> <span class="n">q</span><span class="p">)</span>
+            <span class="n">amp</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coeff</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">cexp</span><span class="p">(</span><span class="n">dk</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">wavelength</span><span class="p">)</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;rxsig&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">txsig</span> <span class="o">*</span> <span class="n">amp</span>
+
+        <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">theta</span><span class="p">,</span> <span class="n">psi</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

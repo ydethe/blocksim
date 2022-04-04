@@ -1,0 +1,19 @@
+blocksim.source package
+=======================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   blocksim.source.Satellite
+   blocksim.source.Trajectory
+
+Module contents
+---------------
+
+.. automodule:: blocksim.source
+   :members:
+   :undoc-members:
+   :show-inheritance:

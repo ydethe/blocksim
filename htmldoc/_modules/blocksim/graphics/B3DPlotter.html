@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.graphics.B3DPlotter &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">blocksim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Code du module</a> &raquo;</li>
+          <li><a href="../graphics.html">blocksim.graphics</a> &raquo;</li>
+      <li>blocksim.graphics.B3DPlotter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Code source de blocksim.graphics.B3DPlotter</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timezone</span>
+<span class="kn">import</span> <span class="nn">pkg_resources</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">pi</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span> <span class="k">as</span> <span class="n">lin</span>
+
+<span class="kn">from</span> <span class="nn">skyfield.api</span> <span class="kn">import</span> <span class="n">Loader</span>
+<span class="kn">from</span> <span class="nn">skyfield.api</span> <span class="kn">import</span> <span class="n">utc</span>
+
+<span class="kn">import</span> <span class="nn">panda3d</span>
+
+<span class="c1"># from pandac.PandaModules import *</span>
+<span class="c1"># ConfigVariableBool(&#39;fullscreen&#39;).setValue(1)</span>
+<span class="kn">from</span> <span class="nn">direct.showbase.ShowBase</span> <span class="kn">import</span> <span class="n">ShowBase</span>
+<span class="kn">from</span> <span class="nn">panda3d.core</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GeomVertexFormat</span><span class="p">,</span>
+    <span class="n">GeomVertexData</span><span class="p">,</span>
+    <span class="n">GeomVertexWriter</span><span class="p">,</span>
+    <span class="n">GeomTriangles</span><span class="p">,</span>
+    <span class="n">Geom</span><span class="p">,</span>
+    <span class="n">GeomNode</span><span class="p">,</span>
+    <span class="n">Texture</span><span class="p">,</span>
+    <span class="n">PointLight</span><span class="p">,</span>
+    <span class="n">TextureStage</span><span class="p">,</span>
+    <span class="n">GeomTristrips</span><span class="p">,</span>
+    <span class="n">GeomLinestrips</span><span class="p">,</span>
+    <span class="n">WindowProperties</span><span class="p">,</span>
+    <span class="n">NodePath</span><span class="p">,</span>
+    <span class="n">LVecBase3</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">resource_path</span>
+
+<span class="kn">from</span> <span class="nn">..constants</span> <span class="kn">import</span> <span class="n">Req</span><span class="p">,</span> <span class="n">rf</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">datetime_to_skyfield</span><span class="p">,</span> <span class="n">geodetic_to_itrf</span>
+<span class="kn">from</span> <span class="nn">..source.Trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
+
+
+<div class="viewcode-block" id="B3DPlotter"><a class="viewcode-back" href="../../../blocksim.graphics.B3DPlotter.html#blocksim.graphics.B3DPlotter.B3DPlotter">[docs]</a><span class="k">class</span> <span class="nc">B3DPlotter</span><span class="p">(</span><span class="n">ShowBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Panda3d application that shows the Earth with trajectories</span>
+
+<span class="sd">    Usage::</span>
+
+<span class="sd">        from datetime import datetime, timedelta, timezone</span>
+
+<span class="sd">        import numpy as np</span>
+<span class="sd">        from numpy import sqrt, cos, sin, pi</span>
+
+<span class="sd">        from blocksim.constants import Req</span>
+<span class="sd">        from blocksim.source.Satellite import SGP4Satellite</span>
+<span class="sd">        from blocksim.B3DPlotter import B3DPlotter</span>
+
+<span class="sd">        sat = SGP4Satellite.fromTLE(&#39;tests/rigidsphere.tle&#39;)</span>
+
+<span class="sd">        traj = sat.geocentricITRFTrajectory()</span>
+
+<span class="sd">        app = B3DPlotter()</span>
+<span class="sd">        app.buildEarth()</span>
+<span class="sd">        app.buildLine(color=(1, 0, 0, 1), itrf_positions=list(zip(*traj)))</span>
+<span class="sd">        app.buildTrajectory(traj)</span>
+
+<span class="sd">        app.run()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ShowBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setBackgroundColor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="c1"># self.disableMouse()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">useTrackball</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trackball</span><span class="o">.</span><span class="n">getNode</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">setControlMode</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># self.trackball.getNode(0).setOrigin(LVecBase3(0,0,0))</span>
+        <span class="c1"># self.trackball.getNode(0).setPos(0.0, -20.0, 20.0)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">camLens</span><span class="o">.</span><span class="n">setNearFar</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">500.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camLens</span><span class="o">.</span><span class="n">setFov</span><span class="p">(</span><span class="mf">40.0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">20.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">lookAt</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># props = WindowProperties()</span>
+        <span class="c1"># props.setCursorHidden(True)</span>
+        <span class="c1"># props.setMouseMode(WindowProperties.M_relative)</span>
+        <span class="c1"># self.win.requestProperties(props)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sun_light</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="B3DPlotter.buildSunLight"><a class="viewcode-back" href="../../../blocksim.graphics.B3DPlotter.html#blocksim.graphics.B3DPlotter.B3DPlotter.buildSunLight">[docs]</a>    <span class="k">def</span> <span class="nf">buildSunLight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">datetime</span><span class="p">):</span>
+        <span class="n">load</span> <span class="o">=</span> <span class="n">Loader</span><span class="p">(</span><span class="s2">&quot;skyfield-data&quot;</span><span class="p">)</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">datetime_to_skyfield</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+        <span class="n">eph</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="s2">&quot;de421.bsp&quot;</span><span class="p">)</span>
+        <span class="n">sun</span> <span class="o">=</span> <span class="n">eph</span><span class="p">[</span><span class="s2">&quot;sun&quot;</span><span class="p">]</span>
+        <span class="n">earth</span> <span class="o">=</span> <span class="n">eph</span><span class="p">[</span><span class="s2">&quot;earth&quot;</span><span class="p">]</span>
+
+        <span class="n">v</span> <span class="o">=</span> <span class="p">(</span><span class="n">sun</span> <span class="o">-</span> <span class="n">earth</span><span class="p">)</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">itrf_xyz</span><span class="p">()</span><span class="o">.</span><span class="n">au</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">LVecBase3</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">pos</span> <span class="o">/</span> <span class="n">d</span> <span class="o">*</span> <span class="mi">50</span><span class="p">))</span>
+
+        <span class="n">plight</span> <span class="o">=</span> <span class="n">PointLight</span><span class="p">(</span><span class="s2">&quot;sun light&quot;</span><span class="p">)</span>
+        <span class="n">plight</span><span class="o">.</span><span class="n">setColor</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sun_light</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">attachNewNode</span><span class="p">(</span><span class="n">plight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sun_light</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">setLight</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sun_light</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="B3DPlotter.buildTrajectory"><a class="viewcode-back" href="../../../blocksim.graphics.B3DPlotter.html#blocksim.graphics.B3DPlotter.B3DPlotter.buildTrajectory">[docs]</a>    <span class="k">def</span> <span class="nf">buildTrajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">traj</span><span class="p">:</span> <span class="n">Trajectory</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buildCube</span><span class="p">(</span>
+            <span class="n">itrf_position</span><span class="o">=</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">traj</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">traj</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="n">size</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">traj</span><span class="o">.</span><span class="n">color</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">traj</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">buildLine</span><span class="p">(</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">traj</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">itrf_positions</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">traj</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">traj</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">traj</span><span class="o">.</span><span class="n">z</span><span class="p">))</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="B3DPlotter.buildLine"><a class="viewcode-back" href="../../../blocksim.graphics.B3DPlotter.html#blocksim.graphics.B3DPlotter.B3DPlotter.buildLine">[docs]</a>    <span class="k">def</span> <span class="nf">buildLine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">itrf_positions</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NodePath</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plots a line</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          color</span>
+<span class="sd">            The color as a 4-elements tuple:</span>
+<span class="sd">            r between 0 and 1</span>
+<span class="sd">            g between 0 and 1</span>
+<span class="sd">            b between 0 and 1</span>
+<span class="sd">            alpha between 0 and 1</span>
+<span class="sd">          itrf_positions</span>
+<span class="sd">            A list of (x,y,z) positions in the geocentric ITRF coordinate system</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          A panda3d NodePath</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">format</span> <span class="o">=</span> <span class="n">GeomVertexFormat</span><span class="o">.</span><span class="n">get_v3c4</span><span class="p">()</span>
+        <span class="nb">format</span> <span class="o">=</span> <span class="n">GeomVertexFormat</span><span class="o">.</span><span class="n">registerFormat</span><span class="p">(</span><span class="nb">format</span><span class="p">)</span>
+
+        <span class="n">number_of_vertices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">itrf_positions</span><span class="p">)</span>
+
+        <span class="n">vdata</span> <span class="o">=</span> <span class="n">GeomVertexData</span><span class="p">(</span><span class="s2">&quot;line&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">Geom</span><span class="o">.</span><span class="n">UHStatic</span><span class="p">)</span>
+        <span class="n">vdata</span><span class="o">.</span><span class="n">setNumRows</span><span class="p">(</span><span class="n">number_of_vertices</span><span class="p">)</span>
+
+        <span class="n">vertex</span> <span class="o">=</span> <span class="n">GeomVertexWriter</span><span class="p">(</span><span class="n">vdata</span><span class="p">,</span> <span class="s2">&quot;vertex&quot;</span><span class="p">)</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="n">GeomVertexWriter</span><span class="p">(</span><span class="n">vdata</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">)</span>
+
+        <span class="n">prim</span> <span class="o">=</span> <span class="n">GeomLinestrips</span><span class="p">(</span><span class="n">Geom</span><span class="o">.</span><span class="n">UHStatic</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_vertices</span><span class="p">):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">itrf_positions</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">vertex</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">Req</span><span class="p">,</span> <span class="n">y</span> <span class="o">/</span> <span class="n">Req</span><span class="p">,</span> <span class="n">z</span> <span class="o">/</span> <span class="n">Req</span><span class="p">)</span>
+            <span class="n">colors</span><span class="o">.</span><span class="n">addData4</span><span class="p">(</span><span class="o">*</span><span class="n">color</span><span class="p">)</span>
+
+            <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+        <span class="n">prim</span><span class="o">.</span><span class="n">close_primitive</span><span class="p">()</span>
+
+        <span class="n">geom</span> <span class="o">=</span> <span class="n">Geom</span><span class="p">(</span><span class="n">vdata</span><span class="p">)</span>
+        <span class="n">geom</span><span class="o">.</span><span class="n">addPrimitive</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
+
+        <span class="n">node</span> <span class="o">=</span> <span class="n">GeomNode</span><span class="p">(</span><span class="s2">&quot;gnode&quot;</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">addGeom</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
+
+        <span class="n">nodePath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">attachNewNode</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">nodePath</span><span class="o">.</span><span class="n">reparentTo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">)</span>
+
+        <span class="n">nodePath</span><span class="o">.</span><span class="n">setLightOff</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">nodePath</span></div>
+
+<div class="viewcode-block" id="B3DPlotter.buildCube"><a class="viewcode-back" href="../../../blocksim.graphics.B3DPlotter.html#blocksim.graphics.B3DPlotter.B3DPlotter.buildCube">[docs]</a>    <span class="k">def</span> <span class="nf">buildCube</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">itrf_position</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NodePath</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plots a cube</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          itrf_position</span>
+<span class="sd">            A (x,y,z) positions in the geocentric ITRF coordinate system</span>
+<span class="sd">          size (m)</span>
+<span class="sd">            The cube&#39;s size</span>
+<span class="sd">          color</span>
+<span class="sd">            The color as a 4-elements tuple:</span>
+<span class="sd">            r between 0 and 1</span>
+<span class="sd">            g between 0 and 1</span>
+<span class="sd">            b between 0 and 1</span>
+<span class="sd">            alpha between 0 and 1</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          A panda3d NodePath</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">format</span> <span class="o">=</span> <span class="n">GeomVertexFormat</span><span class="o">.</span><span class="n">get_v3c4</span><span class="p">()</span>
+        <span class="nb">format</span> <span class="o">=</span> <span class="n">GeomVertexFormat</span><span class="o">.</span><span class="n">registerFormat</span><span class="p">(</span><span class="nb">format</span><span class="p">)</span>
+
+        <span class="n">vdata</span> <span class="o">=</span> <span class="n">GeomVertexData</span><span class="p">(</span><span class="s2">&quot;cube&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">Geom</span><span class="o">.</span><span class="n">UHStatic</span><span class="p">)</span>
+        <span class="n">vdata</span><span class="o">.</span><span class="n">setNumRows</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+
+        <span class="n">vertex</span> <span class="o">=</span> <span class="n">GeomVertexWriter</span><span class="p">(</span><span class="n">vdata</span><span class="p">,</span> <span class="s2">&quot;vertex&quot;</span><span class="p">)</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="n">GeomVertexWriter</span><span class="p">(</span><span class="n">vdata</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+            <span class="n">colors</span><span class="o">.</span><span class="n">addData4</span><span class="p">(</span><span class="o">*</span><span class="n">color</span><span class="p">)</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">itrf_position</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">itrf_position</span><span class="p">)</span>
+        <span class="n">ap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">ux</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+        <span class="n">uy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">ux</span><span class="p">)</span>
+
+        <span class="c1"># Repere ENV (Est, Nord, Vertical)</span>
+        <span class="n">ux</span> <span class="o">=</span> <span class="n">ux</span> <span class="o">/</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">ux</span><span class="p">)</span>
+        <span class="n">uy</span> <span class="o">=</span> <span class="n">uy</span> <span class="o">/</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">uy</span><span class="p">)</span>
+        <span class="n">uz</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">/</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+        <span class="n">s2</span> <span class="o">=</span> <span class="n">size</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">pos</span> <span class="o">+</span> <span class="n">s2</span> <span class="o">*</span> <span class="p">(</span><span class="n">ux</span> <span class="o">-</span> <span class="n">uy</span> <span class="o">+</span> <span class="n">uz</span><span class="p">))</span> <span class="o">/</span> <span class="n">Req</span><span class="p">))</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">pos</span> <span class="o">+</span> <span class="n">s2</span> <span class="o">*</span> <span class="p">(</span><span class="n">ux</span> <span class="o">-</span> <span class="n">uy</span> <span class="o">-</span> <span class="n">uz</span><span class="p">))</span> <span class="o">/</span> <span class="n">Req</span><span class="p">))</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">pos</span> <span class="o">+</span> <span class="n">s2</span> <span class="o">*</span> <span class="p">(</span><span class="n">ux</span> <span class="o">+</span> <span class="n">uy</span> <span class="o">+</span> <span class="n">uz</span><span class="p">))</span> <span class="o">/</span> <span class="n">Req</span><span class="p">))</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">pos</span> <span class="o">+</span> <span class="n">s2</span> <span class="o">*</span> <span class="p">(</span><span class="n">ux</span> <span class="o">+</span> <span class="n">uy</span> <span class="o">-</span> <span class="n">uz</span><span class="p">))</span> <span class="o">/</span> <span class="n">Req</span><span class="p">))</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">pos</span> <span class="o">+</span> <span class="n">s2</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">ux</span> <span class="o">+</span> <span class="n">uy</span> <span class="o">+</span> <span class="n">uz</span><span class="p">))</span> <span class="o">/</span> <span class="n">Req</span><span class="p">))</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">pos</span> <span class="o">+</span> <span class="n">s2</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">ux</span> <span class="o">+</span> <span class="n">uy</span> <span class="o">-</span> <span class="n">uz</span><span class="p">))</span> <span class="o">/</span> <span class="n">Req</span><span class="p">))</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">pos</span> <span class="o">+</span> <span class="n">s2</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">ux</span> <span class="o">-</span> <span class="n">uy</span> <span class="o">+</span> <span class="n">uz</span><span class="p">))</span> <span class="o">/</span> <span class="n">Req</span><span class="p">))</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">pos</span> <span class="o">+</span> <span class="n">s2</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">ux</span> <span class="o">-</span> <span class="n">uy</span> <span class="o">-</span> <span class="n">uz</span><span class="p">))</span> <span class="o">/</span> <span class="n">Req</span><span class="p">))</span>
+
+        <span class="n">prim</span> <span class="o">=</span> <span class="n">GeomTristrips</span><span class="p">(</span><span class="n">Geom</span><span class="o">.</span><span class="n">UHStatic</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+        <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+        <span class="n">prim</span><span class="o">.</span><span class="n">close_primitive</span><span class="p">()</span>
+
+        <span class="n">geom</span> <span class="o">=</span> <span class="n">Geom</span><span class="p">(</span><span class="n">vdata</span><span class="p">)</span>
+        <span class="n">geom</span><span class="o">.</span><span class="n">addPrimitive</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
+
+        <span class="n">node</span> <span class="o">=</span> <span class="n">GeomNode</span><span class="p">(</span><span class="s2">&quot;gnode&quot;</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">addGeom</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
+
+        <span class="n">nodePath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">attachNewNode</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">nodePath</span><span class="o">.</span><span class="n">reparentTo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">)</span>
+
+        <span class="n">nodePath</span><span class="o">.</span><span class="n">setLightOff</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">nodePath</span></div>
+
+<div class="viewcode-block" id="B3DPlotter.buildEarth"><a class="viewcode-back" href="../../../blocksim.graphics.B3DPlotter.html#blocksim.graphics.B3DPlotter.B3DPlotter.buildEarth">[docs]</a>    <span class="k">def</span> <span class="nf">buildEarth</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NodePath</span><span class="p">:</span>
+        <span class="n">tex_path</span> <span class="o">=</span> <span class="n">resource_path</span><span class="p">(</span><span class="s2">&quot;8081_earthmap4k.jpg&quot;</span><span class="p">,</span> <span class="n">package</span><span class="o">=</span><span class="s2">&quot;blocksim&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">buildSphere</span><span class="p">(</span>
+            <span class="n">texture</span><span class="o">=</span><span class="n">tex_path</span><span class="p">,</span>
+            <span class="n">number_of_meridians</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span>
+            <span class="n">number_of_latcircles</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="B3DPlotter.buildSphere"><a class="viewcode-back" href="../../../blocksim.graphics.B3DPlotter.html#blocksim.graphics.B3DPlotter.B3DPlotter.buildSphere">[docs]</a>    <span class="k">def</span> <span class="nf">buildSphere</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">texture</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">number_of_meridians</span><span class="p">,</span> <span class="n">number_of_latcircles</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NodePath</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plots a textured sphere</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          texture</span>
+<span class="sd">            The texture file to apply</span>
+<span class="sd">          number_of_meridians</span>
+<span class="sd">            Number of meridians in the mesh</span>
+<span class="sd">          number_of_latcircles</span>
+<span class="sd">            Number of latitude circles in the mesh</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          A panda3d NodePath</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">format</span> <span class="o">=</span> <span class="n">GeomVertexFormat</span><span class="o">.</span><span class="n">get_v3n3t2</span><span class="p">()</span>
+        <span class="nb">format</span> <span class="o">=</span> <span class="n">GeomVertexFormat</span><span class="o">.</span><span class="n">registerFormat</span><span class="p">(</span><span class="nb">format</span><span class="p">)</span>
+
+        <span class="n">number_of_vertices</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">number_of_meridians</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">number_of_latcircles</span>
+
+        <span class="n">vdata</span> <span class="o">=</span> <span class="n">GeomVertexData</span><span class="p">(</span><span class="s2">&quot;sphere&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">Geom</span><span class="o">.</span><span class="n">UHStatic</span><span class="p">)</span>
+        <span class="n">vdata</span><span class="o">.</span><span class="n">setNumRows</span><span class="p">(</span><span class="n">number_of_vertices</span><span class="p">)</span>
+
+        <span class="n">vertex</span> <span class="o">=</span> <span class="n">GeomVertexWriter</span><span class="p">(</span><span class="n">vdata</span><span class="p">,</span> <span class="s2">&quot;vertex&quot;</span><span class="p">)</span>
+        <span class="n">normal</span> <span class="o">=</span> <span class="n">GeomVertexWriter</span><span class="p">(</span><span class="n">vdata</span><span class="p">,</span> <span class="s2">&quot;normal&quot;</span><span class="p">)</span>
+        <span class="n">texcoord</span> <span class="o">=</span> <span class="n">GeomVertexWriter</span><span class="p">(</span><span class="n">vdata</span><span class="p">,</span> <span class="s2">&quot;texcoord&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">vert_index</span><span class="p">(</span><span class="n">klon</span><span class="p">,</span> <span class="n">klat</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">klon</span> <span class="o">*</span> <span class="n">number_of_latcircles</span> <span class="o">+</span> <span class="n">klat</span>
+
+        <span class="k">for</span> <span class="n">klon</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_meridians</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">lon</span> <span class="o">=</span> <span class="o">-</span><span class="n">pi</span> <span class="o">+</span> <span class="n">klon</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">/</span> <span class="n">number_of_meridians</span>
+            <span class="k">for</span> <span class="n">klat</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_latcircles</span><span class="p">):</span>
+                <span class="n">lat</span> <span class="o">=</span> <span class="p">(</span><span class="n">klat</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="n">number_of_latcircles</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span>
+
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">geodetic_to_itrf</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">Req</span>
+
+                <span class="n">vertex</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+                <span class="n">normal</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+                <span class="n">texcoord</span><span class="o">.</span><span class="n">addData2</span><span class="p">((</span><span class="n">lon</span> <span class="o">+</span> <span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span><span class="p">),</span> <span class="p">(</span><span class="n">lat</span> <span class="o">+</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">pi</span><span class="p">)</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">geodetic_to_itrf</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="o">-</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">Req</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+        <span class="n">normal</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+        <span class="n">texcoord</span><span class="o">.</span><span class="n">addData2</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">k_south_pole</span> <span class="o">=</span> <span class="p">(</span><span class="n">number_of_meridians</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">number_of_latcircles</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">geodetic_to_itrf</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">Req</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+        <span class="n">normal</span><span class="o">.</span><span class="n">addData3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+        <span class="n">texcoord</span><span class="o">.</span><span class="n">addData2</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">k_north_pole</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">number_of_meridians</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">number_of_latcircles</span>
+
+        <span class="n">prim</span> <span class="o">=</span> <span class="n">GeomTristrips</span><span class="p">(</span><span class="n">Geom</span><span class="o">.</span><span class="n">UHStatic</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">klon</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_meridians</span><span class="p">):</span>
+            <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">k_south_pole</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">klat</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_latcircles</span><span class="p">):</span>
+                <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">vert_index</span><span class="p">(</span><span class="n">klon</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">klat</span><span class="p">))</span>
+                <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">vert_index</span><span class="p">(</span><span class="n">klon</span><span class="p">,</span> <span class="n">klat</span><span class="p">))</span>
+            <span class="n">prim</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">k_north_pole</span><span class="p">)</span>
+
+        <span class="n">prim</span><span class="o">.</span><span class="n">close_primitive</span><span class="p">()</span>
+
+        <span class="n">geom</span> <span class="o">=</span> <span class="n">Geom</span><span class="p">(</span><span class="n">vdata</span><span class="p">)</span>
+        <span class="n">geom</span><span class="o">.</span><span class="n">addPrimitive</span><span class="p">(</span><span class="n">prim</span><span class="p">)</span>
+
+        <span class="n">node</span> <span class="o">=</span> <span class="n">GeomNode</span><span class="p">(</span><span class="s2">&quot;gnode&quot;</span><span class="p">)</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">addGeom</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
+
+        <span class="n">nodePath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="o">.</span><span class="n">attachNewNode</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">nodePath</span><span class="o">.</span><span class="n">reparentTo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">)</span>
+
+        <span class="n">texture</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">loadTexture</span><span class="p">(</span><span class="n">texture</span><span class="p">)</span>
+        <span class="n">texture</span><span class="o">.</span><span class="n">setWrapU</span><span class="p">(</span><span class="n">Texture</span><span class="o">.</span><span class="n">WMClamp</span><span class="p">)</span>
+        <span class="n">texture</span><span class="o">.</span><span class="n">setWrapV</span><span class="p">(</span><span class="n">Texture</span><span class="o">.</span><span class="n">WMClamp</span><span class="p">)</span>
+
+        <span class="n">stage</span> <span class="o">=</span> <span class="n">TextureStage</span><span class="p">(</span><span class="s2">&quot;Circle&quot;</span><span class="p">)</span>
+        <span class="n">stage</span><span class="o">.</span><span class="n">setSort</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">nodePath</span><span class="o">.</span><span class="n">setTexture</span><span class="p">(</span><span class="n">stage</span><span class="p">,</span> <span class="n">texture</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sun_light</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nodePath</span><span class="o">.</span><span class="n">setLight</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sun_light</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">nodePath</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

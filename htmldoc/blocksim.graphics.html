@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.graphics package &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/translations.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="blocksim.graphics.AxeSpec module" href="blocksim.graphics.AxeSpec.html" />
+    <link rel="prev" title="blocksim.gnss.GNSSTracker module" href="blocksim.gnss.GNSSTracker.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">blocksim</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="blocksim.html">blocksim package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="blocksim.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="blocksim.control.html">blocksim.control package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.core.html">blocksim.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.dsp.html">blocksim.dsp package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.gnss.html">blocksim.gnss package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">blocksim.graphics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.loggers.html">blocksim.loggers package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.source.html">blocksim.source package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#module-blocksim">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">blocksim</a> &raquo;</li>
+          <li><a href="blocksim.html">blocksim package</a> &raquo;</li>
+      <li>blocksim.graphics package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/blocksim.graphics.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="blocksim-graphics-package">
+<h1>blocksim.graphics package<a class="headerlink" href="#blocksim-graphics-package" title="Lien permanent vers ce titre"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Lien permanent vers ce titre"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="blocksim.graphics.AxeSpec.html">blocksim.graphics.AxeSpec module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blocksim.graphics.B3DPlotter.html">blocksim.graphics.B3DPlotter module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blocksim.graphics.EarthPlotter.html">blocksim.graphics.EarthPlotter module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blocksim.graphics.FigureSpec.html">blocksim.graphics.FigureSpec module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blocksim.graphics.RTPlotter.html">blocksim.graphics.RTPlotter module</a></li>
+</ul>
+</div>
+</section>
+<section id="module-blocksim.graphics">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-blocksim.graphics" title="Lien permanent vers ce titre"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.graphics.createFigureFromSpec">
+<span class="sig-prename descclassname"><span class="pre">blocksim.graphics.</span></span><span class="sig-name descname"><span class="pre">createFigureFromSpec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.graphics.FigureSpec.html#blocksim.graphics.FigureSpec.FigureSpec" title="blocksim.graphics.FigureSpec.FigureSpec"><span class="pre">blocksim.graphics.FigureSpec.FigureSpec</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.Logger.html#blocksim.Logger.Logger" title="blocksim.Logger.Logger"><span class="pre">blocksim.Logger.Logger</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Figure</span></span></span><a class="reference internal" href="_modules/blocksim/graphics.html#createFigureFromSpec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.graphics.createFigureFromSpec" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Parses a <a class="reference internal" href="blocksim.graphics.FigureSpec.html#module-blocksim.graphics.FigureSpec" title="blocksim.graphics.FigureSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">FigureSpec</span></code></a> to build a matplotlib figure, and returns it</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> – A <a class="reference internal" href="blocksim.graphics.FigureSpec.html#module-blocksim.graphics.FigureSpec" title="blocksim.graphics.FigureSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">FigureSpec</span></code></a> instance</p></li>
+<li><p><strong>log</strong> – A <a class="reference internal" href="blocksim.Logger.html#blocksim.Logger.Logger" title="blocksim.Logger.Logger"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.Logger.Logger</span></code></a> to read data from</p></li>
+<li><p><strong>fig</strong> – A matplotlib figure. If None, the function creates ones</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The matplotlib figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.graphics.format_parameter">
+<span class="sig-prename descclassname"><span class="pre">blocksim.graphics.</span></span><span class="sig-name descname"><span class="pre">format_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/blocksim/graphics.html#format_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.graphics.format_parameter" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.graphics.getUnitAbbrev">
+<span class="sig-prename descclassname"><span class="pre">blocksim.graphics.</span></span><span class="sig-name descname"><span class="pre">getUnitAbbrev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mult</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/blocksim/graphics.html#getUnitAbbrev"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.graphics.getUnitAbbrev" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Given a scale factor, gives the prefix for the unit to display</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>mult</strong> – Scale factor</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Prefix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.graphics.plot3DEarth">
+<span class="sig-prename descclassname"><span class="pre">blocksim.graphics.</span></span><span class="sig-name descname"><span class="pre">plot3DEarth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="blocksim.source.Trajectory.html#blocksim.source.Trajectory.Trajectory" title="blocksim.source.Trajectory.Trajectory"><span class="pre">blocksim.source.Trajectory.Trajectory</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="blocksim.graphics.B3DPlotter.html#blocksim.graphics.B3DPlotter.B3DPlotter" title="blocksim.graphics.B3DPlotter.B3DPlotter"><span class="pre">blocksim.graphics.B3DPlotter.B3DPlotter</span></a></span></span><a class="reference internal" href="_modules/blocksim/graphics.html#plot3DEarth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.graphics.plot3DEarth" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.graphics.plotBER">
+<span class="sig-prename descclassname"><span class="pre">blocksim.graphics.</span></span><span class="sig-name descname"><span class="pre">plotBER</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/graphics.html#plotBER"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.graphics.plotBER" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.graphics.plotBode">
+<span class="sig-prename descclassname"><span class="pre">blocksim.graphics.</span></span><span class="sig-name descname"><span class="pre">plotBode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.dsp.DSPFilter.html#blocksim.dsp.DSPFilter.ADSPFilter" title="blocksim.dsp.DSPFilter.ADSPFilter"><span class="pre">blocksim.dsp.DSPFilter.ADSPFilter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec_amp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SubplotSpec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec_pha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SubplotSpec</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">AxesSubplot</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">AxesSubplot</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/graphics.html#plotBode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.graphics.plotBode" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Plots the bode diagram of a filter</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filt</strong> – Filter to analyse</p></li>
+<li><p><strong>spec_amp</strong> – The matplotlib SubplotSpec that defines the amplitude axis to draw on. Obtained by fig.add_gridspec and slicing</p></li>
+<li><p><strong>spec_pha</strong> – The matplotlib SubplotSpec that defines the phase axis to draw on. Obtained by fig.add_gridspec and slicing</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.graphics.plotDSPLine">
+<span class="sig-prename descclassname"><span class="pre">blocksim.graphics.</span></span><span class="sig-name descname"><span class="pre">plotDSPLine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.dsp.DSPLine.html#blocksim.dsp.DSPLine.DSPLine" title="blocksim.dsp.DSPLine.DSPLine"><span class="pre">blocksim.dsp.DSPLine.DSPLine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SubplotSpec</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AxesSubplot</span></span></span><a class="reference internal" href="_modules/blocksim/graphics.html#plotDSPLine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.graphics.plotDSPLine" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Plots a DSPLine with the following refinements :</p>
+<ul class="simple">
+<li><p>a callable <em>transform</em> is applied to all samples</p></li>
+<li><p>the X and Y axes are labeled according to <em>x_unit_mult</em></p></li>
+<li><p>the X axe is labeled according to the class attributes name_of_x_var and unit_of_x_var</p></li>
+<li><p>the <em>find_peaks</em> highest peaks are displayed (default : 0)</p></li>
+<li><p>the label of the plot is the name given at instanciation</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line</strong> – Line to be plotted</p></li>
+<li><p><strong>spec</strong> – The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing</p></li>
+<li><p><strong>kwargs</strong> – Plotting options. The following extra keys are allowed:
+* transform for a different transform from the one given at instanciation
+* find_peaks to search peaks
+* x_unit_mult to have a more readable unit prefix</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.graphics.plotFromLogger">
+<span class="sig-prename descclassname"><span class="pre">blocksim.graphics.</span></span><span class="sig-name descname"><span class="pre">plotFromLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.Logger.html#blocksim.Logger.Logger" title="blocksim.Logger.Logger"><span class="pre">blocksim.Logger.Logger</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SubplotSpec</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AxesSubplot</span></span></span><a class="reference internal" href="_modules/blocksim/graphics.html#plotFromLogger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.graphics.plotFromLogger" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Plots a value on a matplotlib axe</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log</strong> – <a class="reference internal" href="blocksim.Logger.html#blocksim.Logger.Logger" title="blocksim.Logger.Logger"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.Logger.Logger</span></code></a> instance</p></li>
+<li><p><strong>id_x</strong> – Name or expression for the X axis</p></li>
+<li><p><strong>id_y</strong> – Name or expression for the Y axis</p></li>
+<li><p><strong>spec</strong> – The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing</p></li>
+<li><p><strong>kwargs</strong> – matplotlib plotting options for the “plot” method</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The lines drawn by matplotlib</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.graphics.plotSpectrogram">
+<span class="sig-prename descclassname"><span class="pre">blocksim.graphics.</span></span><span class="sig-name descname"><span class="pre">plotSpectrogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.dsp.DSPSpectrogram.html#blocksim.dsp.DSPSpectrogram.DSPSpectrogram" title="blocksim.dsp.DSPSpectrogram.DSPSpectrogram"><span class="pre">blocksim.dsp.DSPSpectrogram.DSPSpectrogram</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SubplotSpec</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'pcolormesh'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AxesSubplot</span></span></span><a class="reference internal" href="_modules/blocksim/graphics.html#plotSpectrogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.graphics.plotSpectrogram" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Plots a line with the following refinements :</p>
+<ul class="simple">
+<li><p>a callable <em>transform</em> is applied to all samples</p></li>
+<li><p>the label of the plot is the name given at instanciation</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spg</strong> – Spectrogram to plot</p></li>
+<li><p><strong>spec</strong> – The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing</p></li>
+<li><p><strong>fill</strong> – Method to plot the DSPSpectrogram. Can be “plot_surface”, “pcolormesh”, “contour” or “contourf”</p></li>
+<li><p><strong>kwargs</strong> – Plotting options. The following extra keys are allowed:
+* transform for a different transform from the one given at instanciation
+* find_peaks to search peaks
+* x_unit_mult to have a more readable unit prefix
+* search_fig (bool) to generate a search figure</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The matplotlib image generated</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.graphics.plotVerif">
+<span class="sig-prename descclassname"><span class="pre">blocksim.graphics.</span></span><span class="sig-name descname"><span class="pre">plotVerif</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.Logger.html#blocksim.Logger.Logger" title="blocksim.Logger.Logger"><span class="pre">blocksim.Logger.Logger</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig_title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">axes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Figure</span></span></span><a class="reference internal" href="_modules/blocksim/graphics.html#plotVerif"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.graphics.plotVerif" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Plots a set of axes and curves on a single figure</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log</strong> – Logger which contains the simulated values</p></li>
+<li><p><strong>fig_title</strong> – Title of the figure</p></li>
+<li><p><strong>axes</strong> – List of lists of dicts
+Each list is the description of an axe, each dict the description of a line.
+Each dict has a key « var », which is the name of a variable contained in <em>log</em>.
+The other keys are keyword arguments for the plot method of matplotlib</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The resulting figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="blocksim.gnss.GNSSTracker.html" class="btn btn-neutral float-left" title="blocksim.gnss.GNSSTracker module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="blocksim.graphics.AxeSpec.html" class="btn btn-neutral float-right" title="blocksim.graphics.AxeSpec module" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

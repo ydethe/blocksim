@@ -1,0 +1,7 @@
+blocksim.control.IMU module
+===========================
+
+.. automodule:: blocksim.control.IMU
+   :members:
+   :undoc-members:
+   :show-inheritance:

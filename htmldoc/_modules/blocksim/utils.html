@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.utils &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">blocksim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Code du module</a> &raquo;</li>
+      <li>blocksim.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Code source de blocksim.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timezone</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span> <span class="k">as</span> <span class="n">lin</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">root_scalar</span>
+<span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">quad</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize_scalar</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span><span class="p">,</span> <span class="n">arcsin</span><span class="p">,</span> <span class="n">arccos</span><span class="p">,</span> <span class="n">arctan</span><span class="p">,</span> <span class="n">arctan2</span><span class="p">,</span> <span class="n">tan</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">exp</span>
+<span class="kn">from</span> <span class="nn">skyfield.api</span> <span class="kn">import</span> <span class="n">Topos</span><span class="p">,</span> <span class="n">load</span><span class="p">,</span> <span class="n">utc</span>
+<span class="kn">from</span> <span class="nn">skyfield.timelib</span> <span class="kn">import</span> <span class="n">Time</span>
+<span class="kn">from</span> <span class="nn">skyfield.sgp4lib</span> <span class="kn">import</span> <span class="n">TEME_to_ITRF</span><span class="p">,</span> <span class="n">theta_GMST1982</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">.constants</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;casedpath&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;resource_path&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;test_diag&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;calc_cho&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;deg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rad&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;assignVector&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;quat_to_matrix&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;matrix_to_quat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;matrix_to_euler&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;euler_to_matrix&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;quat_to_euler&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;euler_to_quat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;vecBodyToEarth&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;vecEarthToBody&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;q_function&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;anomaly_mean_to_ecc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;anomaly_ecc_to_mean&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;anomaly_ecc_to_true&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;anomaly_true_to_ecc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;anomaly_mean_to_true&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;anomaly_true_to_mean&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;build_env&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;geodetic_to_itrf&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;orbital_to_teme&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;teme_to_orbital&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;itrf_to_geodetic&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;time_to_jd_fraction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rotation_matrix&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;teme_to_itrf&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;itrf_to_teme&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;itrf_to_azeld&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;datetime_to_skyfield&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;skyfield_to_datetime&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pdot&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;q_function&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cexp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;load_antenna_config&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="casedpath"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.casedpath">[docs]</a><span class="k">def</span> <span class="nf">casedpath</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;([^:/</span><span class="se">\\</span><span class="s2">])(?=[/</span><span class="se">\\</span><span class="s2">]|$)&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;[\1]&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">r</span> <span class="ow">and</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">path</span></div>
+
+
+<div class="viewcode-block" id="resource_path"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.resource_path">[docs]</a><span class="k">def</span> <span class="nf">resource_path</span><span class="p">(</span><span class="n">resource</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">package</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;blocksim&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      &gt;&gt;&gt; pth = resource_path(&#39;dummy.txt&#39;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">import_module</span>
+
+    <span class="n">module</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">package</span><span class="p">)</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">__spec__</span>
+    <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">submodule_search_locations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{!r}</span><span class="s2"> is not a package&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">package</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">submodule_search_locations</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;resources&quot;</span><span class="p">,</span> <span class="n">resource</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">casedpath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;:&quot;</span><span class="p">:</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;/</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">path</span><span class="p">[</span><span class="mi">3</span><span class="p">:])</span>
+            <span class="k">return</span> <span class="n">path</span>
+
+    <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_diag"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.test_diag">[docs]</a><span class="k">def</span> <span class="nf">test_diag</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Tests if a square matrix is diagonal</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      A</span>
+<span class="sd">        Matrix to test</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      The result of the test</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="n">m</span> <span class="o">==</span> <span class="n">n</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">j</span> <span class="ow">and</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="calc_cho"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.calc_cho">[docs]</a><span class="k">def</span> <span class="nf">calc_cho</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Returns the cholesky decomposition C of a symetric matrix A:</span>
+
+<span class="sd">    :math:`A = C.C^T`</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      A</span>
+<span class="sd">        Matrix</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Cholesky decomposition C</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="n">m</span> <span class="o">==</span> <span class="n">n</span>
+
+    <span class="k">if</span> <span class="n">test_diag</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">c</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">lin</span><span class="o">.</span><span class="n">cho_factor</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">return</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="deg"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.deg">[docs]</a><span class="k">def</span> <span class="nf">deg</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Converts from radians to degrees</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      x</span>
+<span class="sd">        Angle in radians</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Angle in degrees</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span></div>
+
+
+<div class="viewcode-block" id="rad"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.rad">[docs]</a><span class="k">def</span> <span class="nf">rad</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Converts from degrees to radians</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      x</span>
+<span class="sd">        Angle in degrees</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Angle in radians</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span></div>
+
+
+<div class="viewcode-block" id="assignVector"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.assignVector">[docs]</a><span class="k">def</span> <span class="nf">assignVector</span><span class="p">(</span>
+    <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">expected_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">dst_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">src_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dtype</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      v</span>
+<span class="sd">        np.array to assign</span>
+<span class="sd">      expected_shape</span>
+<span class="sd">        Expected shape for v</span>
+<span class="sd">      dst_name</span>
+<span class="sd">        Name of the element where the assignement will take place. (To allow meaningfull error messages)</span>
+<span class="sd">      src_name</span>
+<span class="sd">        Name of the source vector. (To allow meaningfull error messages)</span>
+<span class="sd">      dtype</span>
+<span class="sd">        Type of the assigned vector</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Copy of the vector v if no problem encountered</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">      ValueError</span>
+<span class="sd">        If the vector is not a np.array or not with the correct shape</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      &gt;&gt;&gt; v = np.arange(5)</span>
+<span class="sd">      &gt;&gt;&gt; assignVector(v, (5,), &#39;elem&#39;, &#39;v&#39;, np.float64)</span>
+<span class="sd">      array([0., 1., 2., 3., 4.])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># if np.any(np.isnan(v)):</span>
+    <span class="c1">#     txt = &quot;Element &#39;%s&#39; : Argument &#39;%s&#39;=%s has NaN&quot; % (</span>
+    <span class="c1">#         dst_name,</span>
+    <span class="c1">#         src_name,</span>
+    <span class="c1">#         v,</span>
+    <span class="c1">#     )</span>
+    <span class="c1">#     logger.warning(txt)</span>
+
+    <span class="k">if</span> <span class="n">expected_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">expected_shape</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expected_shape</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">expected_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">expected_shape</span><span class="p">,)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">expected_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">vshape</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">,)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">vshape</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">1</span><span class="p">)):</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;Element &#39;</span><span class="si">%s</span><span class="s2">&#39; : Argument &#39;</span><span class="si">%s</span><span class="s2">&#39;=</span><span class="si">%s</span><span class="s2"> is not a vector&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">dst_name</span><span class="p">,</span>
+            <span class="n">src_name</span><span class="p">,</span>
+            <span class="n">v</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">InvalidAssignedVector</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">vshape</span> <span class="o">!=</span> <span class="n">expected_shape</span><span class="p">:</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;Element &#39;</span><span class="si">%s</span><span class="s2">&#39; : Array &#39;</span><span class="si">%s</span><span class="s2">&#39;=</span><span class="si">%s</span><span class="s2"> has shape </span><span class="si">%s</span><span class="s2">; expected </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">dst_name</span><span class="p">,</span>
+            <span class="n">src_name</span><span class="p">,</span>
+            <span class="n">v</span><span class="p">,</span>
+            <span class="n">vshape</span><span class="p">,</span>
+            <span class="n">expected_shape</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">InvalidAssignedVector</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="ow">not</span> <span class="p">(</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">complex64</span> <span class="ow">or</span> <span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+        <span class="n">v</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">complex64</span> <span class="ow">or</span> <span class="n">v</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">complex128</span>
+    <span class="p">):</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;Element &#39;</span><span class="si">%s</span><span class="s2">&#39; : Argument &#39;</span><span class="si">%s</span><span class="s2">&#39; - trying to affect a complex vector into a real or integer vector&quot;</span>
+            <span class="o">%</span> <span class="p">(</span><span class="n">dst_name</span><span class="p">,</span> <span class="n">src_name</span><span class="p">,)</span>
+        <span class="p">)</span>
+        <span class="k">raise</span> <span class="n">WrongDataType</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">txt</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Element &#39;</span><span class="si">%s</span><span class="s2">&#39; : Argument &#39;</span><span class="si">%s</span><span class="s2">&#39; - impossible to instantiate array:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">dst_name</span><span class="p">,</span> <span class="n">src_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">WrongDataType</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="quat_to_matrix"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.quat_to_matrix">[docs]</a><span class="k">def</span> <span class="nf">quat_to_matrix</span><span class="p">(</span><span class="n">qr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">qi</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">qj</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">qk</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      qr</span>
+<span class="sd">        Real part of the quaternion</span>
+<span class="sd">      qi</span>
+<span class="sd">        First imaginary of the quaternion</span>
+<span class="sd">      qj</span>
+<span class="sd">        Second imaginary of the quaternion</span>
+<span class="sd">      qk</span>
+<span class="sd">        Third imaginary of the quaternion</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Rotation matrix</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      &gt;&gt;&gt; R = quat_to_matrix(1.,0.,0.,0.)</span>
+<span class="sd">      &gt;&gt;&gt; lin.norm(R - np.eye(3)) # doctest: +ELLIPSIS</span>
+<span class="sd">      0.0...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+    <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">qr</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">qi</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">qj</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">qk</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">qr</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">qi</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">qj</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">qk</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">qr</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">qi</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">qj</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">qk</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">qi</span> <span class="o">*</span> <span class="n">qj</span> <span class="o">-</span> <span class="n">qk</span> <span class="o">*</span> <span class="n">qr</span><span class="p">)</span>
+    <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">qi</span> <span class="o">*</span> <span class="n">qk</span> <span class="o">+</span> <span class="n">qj</span> <span class="o">*</span> <span class="n">qr</span><span class="p">)</span>
+    <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">qi</span> <span class="o">*</span> <span class="n">qj</span> <span class="o">+</span> <span class="n">qk</span> <span class="o">*</span> <span class="n">qr</span><span class="p">)</span>
+    <span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">qj</span> <span class="o">*</span> <span class="n">qk</span> <span class="o">-</span> <span class="n">qi</span> <span class="o">*</span> <span class="n">qr</span><span class="p">)</span>
+    <span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">qi</span> <span class="o">*</span> <span class="n">qk</span> <span class="o">-</span> <span class="n">qj</span> <span class="o">*</span> <span class="n">qr</span><span class="p">)</span>
+    <span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">qj</span> <span class="o">*</span> <span class="n">qk</span> <span class="o">+</span> <span class="n">qi</span> <span class="o">*</span> <span class="n">qr</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">res</span></div>
+
+
+<div class="viewcode-block" id="matrix_to_quat"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.matrix_to_quat">[docs]</a><span class="k">def</span> <span class="nf">matrix_to_quat</span><span class="p">(</span><span class="n">R</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      &gt;&gt;&gt; q = np.array([2, -3, 4, -5])</span>
+<span class="sd">      &gt;&gt;&gt; q = q/lin.norm(q)</span>
+<span class="sd">      &gt;&gt;&gt; qr,qx,qy,qz = q</span>
+<span class="sd">      &gt;&gt;&gt; R = quat_to_matrix(qr,qx,qy,qz)</span>
+<span class="sd">      &gt;&gt;&gt; q2 = matrix_to_quat(R)</span>
+<span class="sd">      &gt;&gt;&gt; lin.norm(q-q2) # doctest: +ELLIPSIS</span>
+<span class="sd">      0.0...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">K</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">K</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">K</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">K</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">K</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">K</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">w</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">lin</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">K</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="c1"># w,v = lin.eigh(K/3)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="n">qi</span><span class="p">,</span> <span class="n">qj</span><span class="p">,</span> <span class="n">qk</span><span class="p">,</span> <span class="n">qr</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">qr</span><span class="p">,</span> <span class="n">qi</span><span class="p">,</span> <span class="n">qj</span><span class="p">,</span> <span class="n">qk</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="matrix_to_euler"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.matrix_to_euler">[docs]</a><span class="k">def</span> <span class="nf">matrix_to_euler</span><span class="p">(</span><span class="n">R</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    https://www.learnopencv.com/rotation-matrix-to-euler-angles/</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      &gt;&gt;&gt; q = np.array([2, -3, 4, -5])</span>
+<span class="sd">      &gt;&gt;&gt; q = q/lin.norm(q)</span>
+<span class="sd">      &gt;&gt;&gt; qr,qx,qy,qz = q</span>
+<span class="sd">      &gt;&gt;&gt; R = quat_to_matrix(qr,qx,qy,qz)</span>
+<span class="sd">      &gt;&gt;&gt; qr,qi,qj,qk = matrix_to_quat(R)</span>
+<span class="sd">      &gt;&gt;&gt; r0,p0,y0 = quat_to_euler(qr,qi,qj,qk)</span>
+<span class="sd">      &gt;&gt;&gt; r,p,y = matrix_to_euler(R)</span>
+<span class="sd">      &gt;&gt;&gt; np.abs(r-r0) &lt; 1e-10</span>
+<span class="sd">      True</span>
+<span class="sd">      &gt;&gt;&gt; np.abs(p-p0) &lt; 1e-10</span>
+<span class="sd">      True</span>
+<span class="sd">      &gt;&gt;&gt; np.abs(y-y0) &lt; 1e-10</span>
+<span class="sd">      True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">singular</span> <span class="o">=</span> <span class="n">sy</span> <span class="o">&lt;</span> <span class="mf">1e-6</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">singular</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">sy</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">R</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">R</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">sy</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="euler_to_matrix"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.euler_to_matrix">[docs]</a><span class="k">def</span> <span class="nf">euler_to_matrix</span><span class="p">(</span><span class="n">roll</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">pitch</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">yaw</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    https://www.learnopencv.com/rotation-matrix-to-euler-angles/</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      &gt;&gt;&gt; roll = 1; pitch = -2; yaw = 3</span>
+<span class="sd">      &gt;&gt;&gt; qr,qi,qj,qk = euler_to_quat(roll, pitch, yaw)</span>
+<span class="sd">      &gt;&gt;&gt; R0 = quat_to_matrix(qr,qi,qj,qk)</span>
+<span class="sd">      &gt;&gt;&gt; R = euler_to_matrix(roll, pitch, yaw)</span>
+<span class="sd">      &gt;&gt;&gt; lin.norm(R-R0) &lt; 1e-10</span>
+<span class="sd">      True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Ry</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">yaw</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">yaw</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">yaw</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">yaw</span><span class="p">),</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="p">)</span>
+    <span class="n">Rp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">pitch</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pitch</span><span class="p">)],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pitch</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">pitch</span><span class="p">)],</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">Rr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">roll</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">roll</span><span class="p">)],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">roll</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">roll</span><span class="p">)]]</span>
+    <span class="p">)</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">Ry</span> <span class="o">@</span> <span class="n">Rp</span> <span class="o">@</span> <span class="n">Rr</span>
+    <span class="k">return</span> <span class="n">R</span></div>
+
+
+<div class="viewcode-block" id="quat_to_euler"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.quat_to_euler">[docs]</a><span class="k">def</span> <span class="nf">quat_to_euler</span><span class="p">(</span>
+    <span class="n">qr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">qi</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">qj</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">qk</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">normalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      qr</span>
+<span class="sd">        Real part of the quaternion</span>
+<span class="sd">      qi</span>
+<span class="sd">        First imaginary of the quaternion</span>
+<span class="sd">      qj</span>
+<span class="sd">        Second imaginary of the quaternion</span>
+<span class="sd">      qk</span>
+<span class="sd">        Third imaginary of the quaternion</span>
+<span class="sd">      normalize</span>
+<span class="sd">        Pass True to force normalization</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Roll angle (rad)</span>
+
+<span class="sd">      Pitch angle (rad)</span>
+
+<span class="sd">      Yaw angle (rad)</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      &gt;&gt;&gt; quat_to_euler(1.,0.,0.,0.)</span>
+<span class="sd">      (0.0, -0.0, 0.0)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">qr</span><span class="p">,</span> <span class="n">qi</span><span class="p">,</span> <span class="n">qj</span><span class="p">,</span> <span class="n">qk</span><span class="p">])</span>
+        <span class="n">qr</span><span class="p">,</span> <span class="n">qi</span><span class="p">,</span> <span class="n">qj</span><span class="p">,</span> <span class="n">qk</span> <span class="o">=</span> <span class="n">q</span> <span class="o">/</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+
+    <span class="n">roll</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">qr</span> <span class="o">*</span> <span class="n">qi</span> <span class="o">+</span> <span class="n">qj</span> <span class="o">*</span> <span class="n">qk</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="n">qi</span> <span class="o">*</span> <span class="n">qi</span> <span class="o">-</span> <span class="n">qj</span> <span class="o">*</span> <span class="n">qj</span><span class="p">)</span>
+    <span class="n">t2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">qi</span> <span class="o">*</span> <span class="n">qk</span> <span class="o">-</span> <span class="n">qr</span> <span class="o">*</span> <span class="n">qj</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">t2</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">t2</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">if</span> <span class="n">t2</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">t2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+    <span class="n">pitch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
+    <span class="n">yaw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">qi</span> <span class="o">*</span> <span class="n">qj</span> <span class="o">+</span> <span class="n">qr</span> <span class="o">*</span> <span class="n">qk</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="n">qj</span> <span class="o">*</span> <span class="n">qj</span> <span class="o">-</span> <span class="n">qk</span> <span class="o">*</span> <span class="n">qk</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span></div>
+
+
+<div class="viewcode-block" id="euler_to_quat"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.euler_to_quat">[docs]</a><span class="k">def</span> <span class="nf">euler_to_quat</span><span class="p">(</span><span class="n">roll</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">pitch</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">yaw</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      roll</span>
+<span class="sd">        Roll angle (rad)</span>
+<span class="sd">      pitch</span>
+<span class="sd">        Pitch angle (rad)</span>
+<span class="sd">      yaw</span>
+<span class="sd">        Yaw angle (rad)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Real part of the quaternion</span>
+
+<span class="sd">      First imaginary of the quaternion</span>
+
+<span class="sd">      Second imaginary of the quaternion</span>
+
+<span class="sd">      Third imaginary of the quaternion</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      &gt;&gt;&gt; qr,qi,qj,qk = euler_to_quat(10.*np.pi/180., 20.*np.pi/180., 30.*np.pi/180.)</span>
+<span class="sd">      &gt;&gt;&gt; r,p,y = quat_to_euler(qr,qi,qj,qk)</span>
+<span class="sd">      &gt;&gt;&gt; r*180/np.pi # doctest: +ELLIPSIS</span>
+<span class="sd">      10.0...</span>
+<span class="sd">      &gt;&gt;&gt; p*180/np.pi # doctest: +ELLIPSIS</span>
+<span class="sd">      20.0...</span>
+<span class="sd">      &gt;&gt;&gt; y*180/np.pi # doctest: +ELLIPSIS</span>
+<span class="sd">      29.999...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">yaw</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">yaw</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">cr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">roll</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">sr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">roll</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">cp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">pitch</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">sp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pitch</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="n">qr</span> <span class="o">=</span> <span class="n">cy</span> <span class="o">*</span> <span class="n">cr</span> <span class="o">*</span> <span class="n">cp</span> <span class="o">+</span> <span class="n">sy</span> <span class="o">*</span> <span class="n">sr</span> <span class="o">*</span> <span class="n">sp</span>
+    <span class="n">qi</span> <span class="o">=</span> <span class="n">cy</span> <span class="o">*</span> <span class="n">sr</span> <span class="o">*</span> <span class="n">cp</span> <span class="o">-</span> <span class="n">sy</span> <span class="o">*</span> <span class="n">cr</span> <span class="o">*</span> <span class="n">sp</span>
+    <span class="n">qj</span> <span class="o">=</span> <span class="n">cy</span> <span class="o">*</span> <span class="n">cr</span> <span class="o">*</span> <span class="n">sp</span> <span class="o">+</span> <span class="n">sy</span> <span class="o">*</span> <span class="n">sr</span> <span class="o">*</span> <span class="n">cp</span>
+    <span class="n">qk</span> <span class="o">=</span> <span class="n">sy</span> <span class="o">*</span> <span class="n">cr</span> <span class="o">*</span> <span class="n">cp</span> <span class="o">-</span> <span class="n">cy</span> <span class="o">*</span> <span class="n">sr</span> <span class="o">*</span> <span class="n">sp</span>
+
+    <span class="k">return</span> <span class="n">qr</span><span class="p">,</span> <span class="n">qi</span><span class="p">,</span> <span class="n">qj</span><span class="p">,</span> <span class="n">qk</span></div>
+
+
+<div class="viewcode-block" id="vecBodyToEarth"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.vecBodyToEarth">[docs]</a><span class="k">def</span> <span class="nf">vecBodyToEarth</span><span class="p">(</span><span class="n">attitude</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Expresses a vector from the body frame to the Earth&#39;s frame</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      attitude</span>
+<span class="sd">        If 3 elements array, roll, pitch, yaw (rad)</span>
+<span class="sd">        If 4 elements array, qw, qx, qy, qz</span>
+<span class="sd">      x</span>
+<span class="sd">        Vector expressed in the body frame</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Vector x expressed in Earth&#39;s frame</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">attitude</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">euler_to_matrix</span><span class="p">(</span><span class="o">*</span><span class="n">attitude</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">attitude</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">quat_to_matrix</span><span class="p">(</span><span class="o">*</span><span class="n">attitude</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+
+    <span class="k">return</span> <span class="n">R</span> <span class="o">@</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="vecEarthToBody"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.vecEarthToBody">[docs]</a><span class="k">def</span> <span class="nf">vecEarthToBody</span><span class="p">(</span><span class="n">attitude</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Expresses a vector from Earth&#39;s frame to the body&#39;s frame</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      attitude</span>
+<span class="sd">        If 3 elements array, roll, pitch, yaw (rad)</span>
+<span class="sd">        If 4 elements array, qw, qx, qy, qz</span>
+<span class="sd">      x</span>
+<span class="sd">        Vector expressed in Earth&#39;s frame</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Vector x expressed in the body frame</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">attitude</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">euler_to_matrix</span><span class="p">(</span><span class="o">*</span><span class="n">attitude</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">attitude</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">quat_to_matrix</span><span class="p">(</span><span class="o">*</span><span class="n">attitude</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span>
+
+    <span class="k">return</span> <span class="n">R</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">x</span></div>
+
+
+<span class="k">def</span> <span class="nf">q_function</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    https://en.wikipedia.org/wiki/Q-function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">erfc</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="anomaly_mean_to_ecc"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.anomaly_mean_to_ecc">[docs]</a><span class="k">def</span> <span class="nf">anomaly_mean_to_ecc</span><span class="p">(</span><span class="n">ecc</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">M</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_fun</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">ecc</span><span class="p">,</span> <span class="n">M</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">E</span> <span class="o">-</span> <span class="n">ecc</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">E</span><span class="p">)</span> <span class="o">-</span> <span class="n">M</span>
+
+    <span class="k">def</span> <span class="nf">_dfun</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">ecc</span><span class="p">,</span> <span class="n">M</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">ecc</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">root_scalar</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="n">_fun</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">ecc</span><span class="p">,</span> <span class="n">M</span><span class="p">),</span> <span class="n">bracket</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">pi</span><span class="p">,</span> <span class="n">pi</span><span class="p">),</span> <span class="n">fprime</span><span class="o">=</span><span class="n">_dfun</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">M</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">res</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">root</span></div>
+
+
+<div class="viewcode-block" id="anomaly_ecc_to_mean"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.anomaly_ecc_to_mean">[docs]</a><span class="k">def</span> <span class="nf">anomaly_ecc_to_mean</span><span class="p">(</span><span class="n">ecc</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">E</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">E</span> <span class="o">-</span> <span class="n">ecc</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">E</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="anomaly_ecc_to_true"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.anomaly_ecc_to_true">[docs]</a><span class="k">def</span> <span class="nf">anomaly_ecc_to_true</span><span class="p">(</span><span class="n">ecc</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">E</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">tv2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">ecc</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ecc</span><span class="p">))</span> <span class="o">*</span> <span class="n">tan</span><span class="p">(</span><span class="n">E</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">arctan</span><span class="p">(</span><span class="n">tv2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="anomaly_true_to_ecc"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.anomaly_true_to_ecc">[docs]</a><span class="k">def</span> <span class="nf">anomaly_true_to_ecc</span><span class="p">(</span><span class="n">ecc</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">tE2</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ecc</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">ecc</span><span class="p">))</span> <span class="o">*</span> <span class="n">tan</span><span class="p">(</span><span class="n">v</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">arctan</span><span class="p">(</span><span class="n">tE2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="anomaly_mean_to_true"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.anomaly_mean_to_true">[docs]</a><span class="k">def</span> <span class="nf">anomaly_mean_to_true</span><span class="p">(</span><span class="n">ecc</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">M</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="n">anomaly_mean_to_ecc</span><span class="p">(</span><span class="n">ecc</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">anomaly_ecc_to_true</span><span class="p">(</span><span class="n">ecc</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">v</span></div>
+
+
+<div class="viewcode-block" id="anomaly_true_to_mean"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.anomaly_true_to_mean">[docs]</a><span class="k">def</span> <span class="nf">anomaly_true_to_mean</span><span class="p">(</span><span class="n">ecc</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="n">anomaly_true_to_ecc</span><span class="p">(</span><span class="n">ecc</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">anomaly_ecc_to_mean</span><span class="p">(</span><span class="n">ecc</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">M</span></div>
+
+
+<div class="viewcode-block" id="build_env"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.build_env">[docs]</a><span class="k">def</span> <span class="nf">build_env</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Builds a ENV frame at a given position</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      pos</span>
+<span class="sd">        Position (m) of a point in ITRF</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Matrix :</span>
+<span class="sd">      * Local East vector</span>
+<span class="sd">      * Local North vector</span>
+<span class="sd">      * Local Vertical vector</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Local ENV for the observer</span>
+    <span class="n">vert</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">vert</span> <span class="o">/=</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vert</span><span class="p">)</span>
+
+    <span class="n">east</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">pos</span><span class="p">)</span>
+    <span class="n">east</span> <span class="o">/=</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">east</span><span class="p">)</span>
+
+    <span class="n">north</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">vert</span><span class="p">,</span> <span class="n">east</span><span class="p">)</span>
+
+    <span class="n">env</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">env</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">east</span>
+    <span class="n">env</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">north</span>
+    <span class="n">env</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">vert</span>
+
+    <span class="k">return</span> <span class="n">env</span></div>
+
+
+<div class="viewcode-block" id="geodetic_to_itrf"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.geodetic_to_itrf">[docs]</a><span class="k">def</span> <span class="nf">geodetic_to_itrf</span><span class="p">(</span><span class="n">lon</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lat</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;array&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the Geocentric (Cartesian) Coordinates X, Y, Z</span>
+<span class="sd">    given the Geodetic Coordinates lat, lon + Ellipsoid Height h</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      lon (rad)</span>
+<span class="sd">        L</span>
+<span class="sd">      lat (rad)</span>
+<span class="sd">        Latitude</span>
+<span class="sd">      h (m)</span>
+<span class="sd">        Altitude</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      x, y, z (m) : geocentric position as numpy array</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      &gt;&gt;&gt; x,y,z = geodetic_to_itrf(0,0,0)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">Req</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">rf</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span> <span class="o">+</span> <span class="n">h</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span> <span class="o">+</span> <span class="n">h</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">rf</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">N</span> <span class="o">+</span> <span class="n">h</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span><span class="p">])</span></div>
+
+
+<span class="k">def</span> <span class="nf">Iter_phi_h</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="n">Req</span>
+    <span class="n">hg</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">Req</span> <span class="o">-</span> <span class="n">Rpo</span><span class="p">)</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">Rpo</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">Req</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">phig</span> <span class="o">=</span> <span class="n">arctan</span><span class="p">(</span><span class="n">z</span> <span class="o">*</span> <span class="p">(</span><span class="n">N</span> <span class="o">+</span> <span class="n">hg</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">p</span> <span class="o">*</span> <span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">hg</span><span class="p">)))</span>
+
+    <span class="n">cont</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">niter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">cont</span><span class="p">:</span>
+        <span class="n">hgp</span> <span class="o">=</span> <span class="n">hg</span>
+        <span class="n">phigp</span> <span class="o">=</span> <span class="n">phig</span>
+
+        <span class="n">N</span> <span class="o">=</span> <span class="n">Req</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">phigp</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">hg</span> <span class="o">=</span> <span class="n">p</span> <span class="o">/</span> <span class="n">cos</span><span class="p">(</span><span class="n">phigp</span><span class="p">)</span> <span class="o">-</span> <span class="n">N</span>
+        <span class="n">phig</span> <span class="o">=</span> <span class="n">arctan</span><span class="p">(</span><span class="n">z</span> <span class="o">*</span> <span class="p">(</span><span class="n">N</span> <span class="o">+</span> <span class="n">hg</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">p</span> <span class="o">*</span> <span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">hg</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="n">eps</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">phigp</span> <span class="o">-</span> <span class="n">phig</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">hgp</span> <span class="o">-</span> <span class="n">hg</span><span class="p">)):</span>
+            <span class="n">cont</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">niter</span> <span class="o">&gt;</span> <span class="mi">50</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Too many iterations in Iter_phi_h&quot;</span><span class="p">)</span>
+
+        <span class="n">niter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">phig</span><span class="p">,</span> <span class="n">hgp</span>
+
+
+<div class="viewcode-block" id="time_to_jd_fraction"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.time_to_jd_fraction">[docs]</a><span class="k">def</span> <span class="nf">time_to_jd_fraction</span><span class="p">(</span><span class="n">t_epoch</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      t_epoch (s)</span>
+<span class="sd">        Time since 31/12/1949 00:00 UT</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">epoch</span> <span class="o">=</span> <span class="n">t_epoch</span> <span class="o">/</span> <span class="mi">86400</span>
+
+    <span class="n">whole</span><span class="p">,</span> <span class="n">fraction</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">whole_jd</span> <span class="o">=</span> <span class="n">whole</span> <span class="o">+</span> <span class="mf">2433281.5</span>
+
+    <span class="n">jd</span> <span class="o">=</span> <span class="n">whole_jd</span>
+    <span class="n">fraction</span> <span class="o">=</span> <span class="n">fraction</span>
+
+    <span class="k">return</span> <span class="n">jd</span><span class="p">,</span> <span class="n">fraction</span></div>
+
+
+<div class="viewcode-block" id="rotation_matrix"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.rotation_matrix">[docs]</a><span class="k">def</span> <span class="nf">rotation_matrix</span><span class="p">(</span><span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">):</span>
+    <span class="n">kx</span><span class="p">,</span> <span class="n">ky</span><span class="p">,</span> <span class="n">kz</span> <span class="o">=</span> <span class="n">axis</span> <span class="o">/</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">kz</span><span class="p">,</span> <span class="n">ky</span><span class="p">],</span> <span class="p">[</span><span class="n">kz</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">kx</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="n">ky</span><span class="p">,</span> <span class="n">kx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">*</span> <span class="n">K</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span> <span class="o">*</span> <span class="n">K</span> <span class="o">@</span> <span class="n">K</span>
+    <span class="k">return</span> <span class="n">R</span></div>
+
+
+<div class="viewcode-block" id="teme_to_itrf"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.teme_to_itrf">[docs]</a><span class="k">def</span> <span class="nf">teme_to_itrf</span><span class="p">(</span><span class="n">t_epoch</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">pv_teme</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;array&quot;</span><span class="p">:</span>
+    <span class="n">jd</span><span class="p">,</span> <span class="n">fraction</span> <span class="o">=</span> <span class="n">time_to_jd_fraction</span><span class="p">(</span><span class="n">t_epoch</span><span class="p">)</span>
+
+    <span class="n">theta</span><span class="p">,</span> <span class="n">theta_dot</span> <span class="o">=</span> <span class="n">theta_GMST1982</span><span class="p">(</span><span class="n">jd</span><span class="p">,</span> <span class="n">fraction</span><span class="p">)</span>
+    <span class="n">uz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+    <span class="n">angular_velocity</span> <span class="o">=</span> <span class="o">-</span><span class="n">theta_dot</span> <span class="o">*</span> <span class="n">uz</span> <span class="o">/</span> <span class="mf">86400.0</span>
+
+    <span class="n">R</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">(</span><span class="o">-</span><span class="n">theta</span><span class="p">,</span> <span class="n">uz</span><span class="p">)</span>
+
+    <span class="n">rTEME</span> <span class="o">=</span> <span class="n">pv_teme</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">vTEME</span> <span class="o">=</span> <span class="n">pv_teme</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+
+    <span class="n">rITRF</span> <span class="o">=</span> <span class="n">R</span> <span class="o">@</span> <span class="n">rTEME</span>
+    <span class="n">vITRF</span> <span class="o">=</span> <span class="n">R</span> <span class="o">@</span> <span class="n">vTEME</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">angular_velocity</span><span class="p">,</span> <span class="n">rITRF</span><span class="p">)</span>
+
+    <span class="n">pv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">pv</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">rITRF</span>
+    <span class="n">pv</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span> <span class="o">=</span> <span class="n">vITRF</span>
+
+    <span class="k">return</span> <span class="n">pv</span></div>
+
+
+<div class="viewcode-block" id="itrf_to_teme"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.itrf_to_teme">[docs]</a><span class="k">def</span> <span class="nf">itrf_to_teme</span><span class="p">(</span><span class="n">t_epoch</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">pv_itrf</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;array&quot;</span><span class="p">:</span>
+    <span class="n">jd</span><span class="p">,</span> <span class="n">fraction</span> <span class="o">=</span> <span class="n">time_to_jd_fraction</span><span class="p">(</span><span class="n">t_epoch</span><span class="p">)</span>
+
+    <span class="n">theta</span><span class="p">,</span> <span class="n">theta_dot</span> <span class="o">=</span> <span class="n">theta_GMST1982</span><span class="p">(</span><span class="n">jd</span><span class="p">,</span> <span class="n">fraction</span><span class="p">)</span>
+    <span class="n">uz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+    <span class="n">angular_velocity</span> <span class="o">=</span> <span class="o">-</span><span class="n">theta_dot</span> <span class="o">*</span> <span class="n">uz</span> <span class="o">/</span> <span class="mf">86400.0</span>
+
+    <span class="n">R</span> <span class="o">=</span> <span class="n">rotation_matrix</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">uz</span><span class="p">)</span>
+
+    <span class="n">rITRF</span> <span class="o">=</span> <span class="n">pv_itrf</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">vITRF</span> <span class="o">=</span> <span class="n">pv_itrf</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+
+    <span class="n">rTEME</span> <span class="o">=</span> <span class="n">R</span> <span class="o">@</span> <span class="n">rITRF</span>
+    <span class="n">vTEME</span> <span class="o">=</span> <span class="n">R</span> <span class="o">@</span> <span class="n">vITRF</span> <span class="o">-</span> <span class="n">R</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">angular_velocity</span><span class="p">,</span> <span class="n">rITRF</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">rTEME</span><span class="p">,</span> <span class="n">vTEME</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="teme_to_orbital"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.teme_to_orbital">[docs]</a><span class="k">def</span> <span class="nf">teme_to_orbital</span><span class="p">(</span><span class="n">pv</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">):</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pv</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">pos</span>
+    <span class="n">vel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pv</span><span class="p">[</span><span class="mi">3</span><span class="p">:])</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+    <span class="n">v2</span> <span class="o">=</span> <span class="n">vel</span> <span class="o">@</span> <span class="n">vel</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">v2</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">/</span> <span class="n">r</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="o">-</span><span class="n">mu</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">W</span><span class="p">)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">vel</span><span class="p">)</span>
+    <span class="n">hx</span><span class="p">,</span> <span class="n">hy</span><span class="p">,</span> <span class="n">hz</span> <span class="o">=</span> <span class="n">h</span>
+    <span class="n">h2</span> <span class="o">=</span> <span class="n">h</span> <span class="o">@</span> <span class="n">h</span>
+    <span class="n">nh</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">h2</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">h2</span> <span class="o">/</span> <span class="n">mu</span>
+    <span class="n">asqr</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">p</span> <span class="o">/</span> <span class="n">a</span>
+    <span class="n">inc</span> <span class="o">=</span> <span class="n">arccos</span><span class="p">(</span><span class="n">hz</span> <span class="o">/</span> <span class="n">nh</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">asqr</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">tano</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">asqr</span><span class="p">)</span>
+        <span class="n">tano</span> <span class="o">=</span> <span class="n">arccos</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">e</span> <span class="o">*</span> <span class="p">(</span><span class="n">p</span> <span class="o">/</span> <span class="n">r</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">vel</span> <span class="o">@</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">tano</span> <span class="o">=</span> <span class="o">-</span><span class="n">tano</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">hx</span><span class="p">,</span> <span class="o">-</span><span class="n">hy</span><span class="p">)</span>
+    <span class="n">argp</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">arctan2</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">-</span> <span class="n">x</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">node</span><span class="p">))</span> <span class="o">/</span> <span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">),</span> <span class="n">x</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="o">-</span> <span class="n">tano</span>
+    <span class="p">)</span>
+    <span class="n">mano</span> <span class="o">=</span> <span class="n">anomaly_true_to_mean</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">tano</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">argp</span><span class="p">,</span> <span class="n">inc</span><span class="p">,</span> <span class="n">mano</span><span class="p">,</span> <span class="n">node</span></div>
+
+
+<div class="viewcode-block" id="orbital_to_teme"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.orbital_to_teme">[docs]</a><span class="k">def</span> <span class="nf">orbital_to_teme</span><span class="p">(</span>
+    <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">ecc</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">argp</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">inc</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mano</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;array&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      a (m)</span>
+<span class="sd">        Semi-major axis</span>
+<span class="sd">      ecc</span>
+<span class="sd">        Eccentricity</span>
+<span class="sd">      argp (rad)</span>
+<span class="sd">        Argument of periapsis</span>
+<span class="sd">      inc (rad)</span>
+<span class="sd">        Inclination</span>
+<span class="sd">      mano (rad)</span>
+<span class="sd">        Mean anomaly</span>
+<span class="sd">      node (rad)</span>
+<span class="sd">        Longitude of the ascending node</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Position (m) and velocity (m/s) in TEME frame</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      &gt;&gt;&gt; pv = orbital_to_teme(7e6, 0.01, 0, 1, 1, 0)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># https://en.wikipedia.org/wiki/True_anomaly#From_the_mean_anomaly</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ecc</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">tano</span> <span class="o">=</span> <span class="n">anomaly_mean_to_true</span><span class="p">(</span><span class="n">ecc</span><span class="p">,</span> <span class="n">mano</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">p</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">ecc</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">tano</span><span class="p">))</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">mu</span> <span class="o">/</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">argp</span> <span class="o">+</span> <span class="n">tano</span><span class="p">)</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">argp</span> <span class="o">+</span> <span class="n">tano</span><span class="p">))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="p">(</span><span class="n">sin</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">argp</span> <span class="o">+</span> <span class="n">tano</span><span class="p">)</span> <span class="o">+</span> <span class="n">cos</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">argp</span> <span class="o">+</span> <span class="n">tano</span><span class="p">))</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">inc</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">argp</span> <span class="o">+</span> <span class="n">tano</span><span class="p">)</span>
+
+    <span class="n">E</span> <span class="o">=</span> <span class="n">anomaly_true_to_ecc</span><span class="p">(</span><span class="n">ecc</span><span class="p">,</span> <span class="n">tano</span><span class="p">)</span>
+    <span class="c1"># M = E - e.sin(E)</span>
+    <span class="n">dE</span> <span class="o">=</span> <span class="n">n</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">cos</span><span class="p">(</span><span class="n">E</span><span class="p">)</span> <span class="o">*</span> <span class="n">ecc</span><span class="p">)</span>
+    <span class="n">rr</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">ecc</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ecc</span><span class="p">))</span>
+    <span class="n">dtano</span> <span class="o">=</span> <span class="n">dE</span> <span class="o">*</span> <span class="n">rr</span> <span class="o">*</span> <span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="n">tano</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">cos</span><span class="p">(</span><span class="n">E</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">vr</span> <span class="o">=</span> <span class="n">ecc</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">tano</span><span class="p">)</span> <span class="o">*</span> <span class="n">dtano</span> <span class="o">/</span> <span class="p">(</span><span class="n">ecc</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">tano</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="n">vx</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="o">-</span><span class="n">cos</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">*</span> <span class="n">dtano</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">tano</span> <span class="o">+</span> <span class="n">argp</span><span class="p">)</span>
+        <span class="o">-</span> <span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">*</span> <span class="n">dtano</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">tano</span> <span class="o">+</span> <span class="n">argp</span><span class="p">)</span>
+    <span class="p">)</span> <span class="o">+</span> <span class="n">vr</span> <span class="o">*</span> <span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">tano</span> <span class="o">+</span> <span class="n">argp</span><span class="p">)</span> <span class="o">-</span> <span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">tano</span> <span class="o">+</span> <span class="n">argp</span><span class="p">))</span>
+    <span class="n">vy</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">*</span> <span class="n">dtano</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">tano</span> <span class="o">+</span> <span class="n">argp</span><span class="p">)</span>
+        <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">*</span> <span class="n">dtano</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">tano</span> <span class="o">+</span> <span class="n">argp</span><span class="p">)</span>
+    <span class="p">)</span> <span class="o">+</span> <span class="n">vr</span> <span class="o">*</span> <span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="n">inc</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">tano</span> <span class="o">+</span> <span class="n">argp</span><span class="p">)</span> <span class="o">+</span> <span class="n">sin</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">tano</span> <span class="o">+</span> <span class="n">argp</span><span class="p">))</span>
+    <span class="n">vz</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">inc</span><span class="p">)</span> <span class="o">*</span> <span class="n">vr</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">tano</span> <span class="o">+</span> <span class="n">argp</span><span class="p">)</span> <span class="o">+</span> <span class="n">sin</span><span class="p">(</span><span class="n">inc</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">dtano</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">tano</span> <span class="o">+</span> <span class="n">argp</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="itrf_to_geodetic"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.itrf_to_geodetic">[docs]</a><span class="k">def</span> <span class="nf">itrf_to_geodetic</span><span class="p">(</span><span class="n">position</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Converts the ITRF coordinates into latitude, longiutde, altitude (WGS84)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      position (m)</span>
+<span class="sd">        x, y, z position in ITRF frame</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Longitude (rad)</span>
+<span class="sd">      Latitude (rad)</span>
+<span class="sd">      Altitude (m)</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      &gt;&gt;&gt; pos = geodetic_to_itrf(2,1,3)</span>
+<span class="sd">      &gt;&gt;&gt; lon,lat,alt = itrf_to_geodetic(pos)</span>
+<span class="sd">      &gt;&gt;&gt; lon # doctest: +ELLIPSIS</span>
+<span class="sd">      2.0...</span>
+<span class="sd">      &gt;&gt;&gt; lat # doctest: +ELLIPSIS</span>
+<span class="sd">      1.0...</span>
+<span class="sd">      &gt;&gt;&gt; alt # doctest: +ELLIPSIS</span>
+<span class="sd">      3.0...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">position</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">cl</span> <span class="o">=</span> <span class="n">x</span> <span class="o">/</span> <span class="n">p</span>  <span class="c1"># cos(lambda)</span>
+    <span class="n">sl</span> <span class="o">=</span> <span class="n">y</span> <span class="o">/</span> <span class="n">p</span>  <span class="c1"># sin(lambda)</span>
+    <span class="n">lon</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">sl</span><span class="p">,</span> <span class="n">cl</span><span class="p">)</span>
+    <span class="n">lat</span><span class="p">,</span> <span class="n">alt</span> <span class="o">=</span> <span class="n">Iter_phi_h</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">alt</span></div>
+
+
+<div class="viewcode-block" id="itrf_to_azeld"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.itrf_to_azeld">[docs]</a><span class="k">def</span> <span class="nf">itrf_to_azeld</span><span class="p">(</span><span class="n">obs</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span> <span class="n">sat</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;array&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Converts an ITRF position &amp; velocity into</span>
+<span class="sd">    azimut, elevation, distance, radial velocity, slope of velocity, azimut of velocity</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      obs</span>
+<span class="sd">        Position (m) &amp; velocity (m/s) of terrestrial observer in ITRF</span>
+<span class="sd">      sat</span>
+<span class="sd">        Position (m) &amp; velocity (m/s) of the observed satellite in ITRF</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Azimut (deg)</span>
+<span class="sd">      Elevation (deg)</span>
+<span class="sd">      Distance (m)</span>
+<span class="sd">      Radial velocity (m/s)</span>
+<span class="sd">      Slope of velocity (deg)</span>
+<span class="sd">      Azimut of velocity (deg)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Local ENV for the observer</span>
+    <span class="n">obs_env</span> <span class="o">=</span> <span class="n">build_env</span><span class="p">(</span><span class="n">obs</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="n">deltap</span> <span class="o">=</span> <span class="n">sat</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">obs</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">deltav</span> <span class="o">=</span> <span class="n">sat</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span> <span class="o">-</span> <span class="n">obs</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">obs_env</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">deltap</span>
+
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">deltap</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">z</span> <span class="o">&gt;</span> <span class="n">dist</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">dist</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Near zenith elevation&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">z</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">dist</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="o">-</span><span class="n">dist</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Near nadir elevation&quot;</span><span class="p">)</span>
+
+    <span class="n">el</span> <span class="o">=</span> <span class="n">arcsin</span><span class="p">(</span><span class="n">z</span> <span class="o">/</span> <span class="n">dist</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">pi</span>
+    <span class="n">az</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">pi</span>
+
+    <span class="c1"># Local ENV for the satellite</span>
+    <span class="n">sat_env</span> <span class="o">=</span> <span class="n">build_env</span><span class="p">(</span><span class="n">sat</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">obs</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+    <span class="n">ve</span><span class="p">,</span> <span class="n">vn</span><span class="p">,</span> <span class="n">vr</span> <span class="o">=</span> <span class="n">sat_env</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">deltav</span>
+    <span class="n">nv</span> <span class="o">=</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">deltav</span><span class="p">)</span>
+
+    <span class="c1"># vr_verif = deltav @ deltap / dist</span>
+    <span class="c1"># assert(lin.norm(vr-vr_verif)&lt;1e-3)</span>
+
+    <span class="n">vs</span> <span class="o">=</span> <span class="n">arcsin</span><span class="p">(</span><span class="n">vr</span> <span class="o">/</span> <span class="n">nv</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">pi</span>
+    <span class="n">va</span> <span class="o">=</span> <span class="n">arctan2</span><span class="p">(</span><span class="n">ve</span><span class="p">,</span> <span class="n">vn</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">pi</span>
+
+    <span class="k">return</span> <span class="n">az</span><span class="p">,</span> <span class="n">el</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">vr</span><span class="p">,</span> <span class="n">vs</span><span class="p">,</span> <span class="n">va</span></div>
+
+
+<div class="viewcode-block" id="datetime_to_skyfield"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.datetime_to_skyfield">[docs]</a><span class="k">def</span> <span class="nf">datetime_to_skyfield</span><span class="p">(</span><span class="n">td</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Time</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a datetime struct to a skyfield Time struct</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      td : a datetime instance or array of datetime</span>
+<span class="sd">        Time to convert</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Skyfield date and time structure</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">    &gt;&gt;&gt; fmt = &quot;%Y/%m/%d %H:%M:%S.%f&quot;</span>
+<span class="sd">    &gt;&gt;&gt; sts = &quot;2021/04/15 09:29:54.996640&quot;</span>
+<span class="sd">    &gt;&gt;&gt; tsync = datetime.strptime(sts, fmt)</span>
+<span class="sd">    &gt;&gt;&gt; tsync = tsync.replace(tzinfo=utc)</span>
+<span class="sd">    &gt;&gt;&gt; datetime_to_skyfield(tsync)</span>
+<span class="sd">    &lt;Time tt=2459319.8965761648&gt;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">load</span><span class="o">.</span><span class="n">timescale</span><span class="p">(</span><span class="n">builtin</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">utc</span><span class="p">(</span><span class="n">td</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">t</span></div>
+
+
+<div class="viewcode-block" id="skyfield_to_datetime"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.skyfield_to_datetime">[docs]</a><span class="k">def</span> <span class="nf">skyfield_to_datetime</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">Time</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a skyfield Time struct to a datetime struct</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      t</span>
+<span class="sd">        Skyfield date and time structure</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      A datetime instance</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">utc_datetime</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="pdot"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.pdot">[docs]</a><span class="k">def</span> <span class="nf">pdot</span><span class="p">(</span><span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Pseudo scalar product :</span>
+
+<span class="sd">    :math:`x.x&#39;+y.y&#39;+z.z&#39;-t.t&#39;`</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      u</span>
+<span class="sd">        First quadri-vector</span>
+<span class="sd">      v</span>
+<span class="sd">        Second quadri-vector</span>
+
+<span class="sd">      Returns:</span>
+<span class="sd">        Pseudo scalar product</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">u</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">u</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">v</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="q_function"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.q_function">[docs]</a><span class="k">def</span> <span class="nf">q_function</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    https://en.wikipedia.org/wiki/Q-function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">erfc</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="cexp"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.cexp">[docs]</a><span class="k">def</span> <span class="nf">cexp</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">exp</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_antenna_config"><a class="viewcode-back" href="../../blocksim.utils.html#blocksim.utils.load_antenna_config">[docs]</a><span class="k">def</span> <span class="nf">load_antenna_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">pth</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">pth</span><span class="p">)[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">pth</span><span class="p">)</span>
+    <span class="n">ac</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">mod</span><span class="p">]</span> <span class="o">=</span> <span class="n">ac</span>
+    <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ac</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

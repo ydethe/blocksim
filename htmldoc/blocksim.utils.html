@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.utils module &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/translations.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="Examples" href="examples/index.html" />
+    <link rel="prev" title="blocksim.main module" href="blocksim.main.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">blocksim</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="blocksim.html">blocksim package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#subpackages">Subpackages</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="blocksim.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="blocksim.DatabaseModel.html">blocksim.DatabaseModel module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.LogFormatter.html">blocksim.LogFormatter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.Logger.html">blocksim.Logger module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.LoggerSpec.html">blocksim.LoggerSpec module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.Simulation.html">blocksim.Simulation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.constants.html">blocksim.constants module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.exceptions.html">blocksim.exceptions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.main.html">blocksim.main module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">blocksim.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#module-blocksim">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">blocksim</a> &raquo;</li>
+          <li><a href="blocksim.html">blocksim package</a> &raquo;</li>
+      <li>blocksim.utils module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/blocksim.utils.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="module-blocksim.utils">
+<span id="blocksim-utils-module"></span><h1>blocksim.utils module<a class="headerlink" href="#module-blocksim.utils" title="Lien permanent vers ce titre"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.anomaly_ecc_to_mean">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">anomaly_ecc_to_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#anomaly_ecc_to_mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.anomaly_ecc_to_mean" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.anomaly_ecc_to_true">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">anomaly_ecc_to_true</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#anomaly_ecc_to_true"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.anomaly_ecc_to_true" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.anomaly_mean_to_ecc">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">anomaly_mean_to_ecc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#anomaly_mean_to_ecc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.anomaly_mean_to_ecc" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.anomaly_mean_to_true">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">anomaly_mean_to_true</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#anomaly_mean_to_true"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.anomaly_mean_to_true" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.anomaly_true_to_ecc">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">anomaly_true_to_ecc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#anomaly_true_to_ecc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.anomaly_true_to_ecc" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.anomaly_true_to_mean">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">anomaly_true_to_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#anomaly_true_to_mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.anomaly_true_to_mean" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.assignVector">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">assignVector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#assignVector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.assignVector" title="Lien permanent vers cette définition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v</strong> – np.array to assign</p></li>
+<li><p><strong>expected_shape</strong> – Expected shape for v</p></li>
+<li><p><strong>dst_name</strong> – Name of the element where the assignement will take place. (To allow meaningfull error messages)</p></li>
+<li><p><strong>src_name</strong> – Name of the source vector. (To allow meaningfull error messages)</p></li>
+<li><p><strong>dtype</strong> – Type of the assigned vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Copy of the vector v if no problem encountered</p>
+</dd>
+<dt class="field-odd">Lève</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If the vector is not a np.array or not with the correct shape</p>
+</dd>
+</dl>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">assignVector</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,),</span> <span class="s1">&#39;elem&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="go">array([0., 1., 2., 3., 4.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.build_env">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">build_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#build_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.build_env" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Builds a ENV frame at a given position</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>pos</strong> – Position (m) of a point in ITRF</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Local East vector</p></li>
+<li><p>Local North vector</p></li>
+<li><p>Local Vertical vector</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Type renvoyé</dt>
+<dd class="field-odd"><p>Matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.calc_cho">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">calc_cho</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#calc_cho"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.calc_cho" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Returns the cholesky decomposition C of a symetric matrix A:</p>
+<p><span class="math notranslate nohighlight">\(A = C.C^T\)</span></p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>A</strong> – Matrix</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Cholesky decomposition C</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.casedpath">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">casedpath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/utils.html#casedpath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.casedpath" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.cexp">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">cexp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/utils.html#cexp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.cexp" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.datetime_to_skyfield">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">datetime_to_skyfield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">td</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime.datetime</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">skyfield.timelib.Time</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#datetime_to_skyfield"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.datetime_to_skyfield" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Converts a datetime struct to a skyfield Time struct</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>td</strong> – a datetime instance or array of datetime
+Time to convert</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Skyfield date and time structure</p>
+</dd>
+</dl>
+<p>Examples:
+&gt;&gt;&gt; fmt = « %Y/%m/%d %H:%M:%S.%f »
+&gt;&gt;&gt; sts = « 2021/04/15 09:29:54.996640 »
+&gt;&gt;&gt; tsync = datetime.strptime(sts, fmt)
+&gt;&gt;&gt; tsync = tsync.replace(tzinfo=utc)
+&gt;&gt;&gt; datetime_to_skyfield(tsync)
+&lt;Time tt=2459319.8965761648&gt;</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.deg">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">deg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#deg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.deg" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Converts from radians to degrees</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>x</strong> – Angle in radians</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Angle in degrees</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.euler_to_matrix">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">euler_to_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roll</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pitch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#euler_to_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.euler_to_matrix" title="Lien permanent vers cette définition"></a></dt>
+<dd><p><a class="reference external" href="https://www.learnopencv.com/rotation-matrix-to-euler-angles/">https://www.learnopencv.com/rotation-matrix-to-euler-angles/</a></p>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">roll</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">pitch</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="p">;</span> <span class="n">yaw</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qr</span><span class="p">,</span><span class="n">qi</span><span class="p">,</span><span class="n">qj</span><span class="p">,</span><span class="n">qk</span> <span class="o">=</span> <span class="n">euler_to_quat</span><span class="p">(</span><span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">R0</span> <span class="o">=</span> <span class="n">quat_to_matrix</span><span class="p">(</span><span class="n">qr</span><span class="p">,</span><span class="n">qi</span><span class="p">,</span><span class="n">qj</span><span class="p">,</span><span class="n">qk</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">R</span> <span class="o">=</span> <span class="n">euler_to_matrix</span><span class="p">(</span><span class="n">roll</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">yaw</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">R</span><span class="o">-</span><span class="n">R0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.euler_to_quat">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">euler_to_quat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">roll</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pitch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#euler_to_quat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.euler_to_quat" title="Lien permanent vers cette définition"></a></dt>
+<dd><p><a class="reference external" href="https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles">https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>roll</strong> – Roll angle (rad)</p></li>
+<li><p><strong>pitch</strong> – Pitch angle (rad)</p></li>
+<li><p><strong>yaw</strong> – Yaw angle (rad)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p><p>Real part of the quaternion</p>
+<p>First imaginary of the quaternion</p>
+<p>Second imaginary of the quaternion</p>
+<p>Third imaginary of the quaternion</p>
+</p>
+</dd>
+</dl>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">qr</span><span class="p">,</span><span class="n">qi</span><span class="p">,</span><span class="n">qj</span><span class="p">,</span><span class="n">qk</span> <span class="o">=</span> <span class="n">euler_to_quat</span><span class="p">(</span><span class="mf">10.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">180.</span><span class="p">,</span> <span class="mf">20.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">180.</span><span class="p">,</span> <span class="mf">30.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">180.</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">quat_to_euler</span><span class="p">(</span><span class="n">qr</span><span class="p">,</span><span class="n">qi</span><span class="p">,</span><span class="n">qj</span><span class="p">,</span><span class="n">qk</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="go">10.0...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="go">20.0...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="go">29.999...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.geodetic_to_itrf">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">geodetic_to_itrf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#geodetic_to_itrf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.geodetic_to_itrf" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Compute the Geocentric (Cartesian) Coordinates X, Y, Z
+given the Geodetic Coordinates lat, lon + Ellipsoid Height h</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lon</strong> (<em>rad</em>) – L</p></li>
+<li><p><strong>lat</strong> (<em>rad</em>) – Latitude</p></li>
+<li><p><strong>h</strong> (<em>m</em>) – Altitude</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>geocentric position as numpy array</p>
+</dd>
+<dt class="field-odd">Type renvoyé</dt>
+<dd class="field-odd"><p>x, y, z (m)</p>
+</dd>
+</dl>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span> <span class="o">=</span> <span class="n">geodetic_to_itrf</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.itrf_to_azeld">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">itrf_to_azeld</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#itrf_to_azeld"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.itrf_to_azeld" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Converts an ITRF position &amp; velocity into
+azimut, elevation, distance, radial velocity, slope of velocity, azimut of velocity</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> – Position (m) &amp; velocity (m/s) of terrestrial observer in ITRF</p></li>
+<li><p><strong>sat</strong> – Position (m) &amp; velocity (m/s) of the observed satellite in ITRF</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Azimut (deg)
+Elevation (deg)
+Distance (m)
+Radial velocity (m/s)
+Slope of velocity (deg)
+Azimut of velocity (deg)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.itrf_to_geodetic">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">itrf_to_geodetic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#itrf_to_geodetic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.itrf_to_geodetic" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Converts the ITRF coordinates into latitude, longiutde, altitude (WGS84)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>position</strong> (<em>m</em>) – x, y, z position in ITRF frame</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Longitude (rad)
+Latitude (rad)
+Altitude (m)</p>
+</dd>
+</dl>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pos</span> <span class="o">=</span> <span class="n">geodetic_to_itrf</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lon</span><span class="p">,</span><span class="n">lat</span><span class="p">,</span><span class="n">alt</span> <span class="o">=</span> <span class="n">itrf_to_geodetic</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lon</span>
+<span class="go">2.0...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lat</span>
+<span class="go">1.0...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">alt</span>
+<span class="go">3.0...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.itrf_to_teme">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">itrf_to_teme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pv_itrf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#itrf_to_teme"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.itrf_to_teme" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.load_antenna_config">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">load_antenna_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/utils.html#load_antenna_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.load_antenna_config" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.matrix_to_euler">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">matrix_to_euler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#matrix_to_euler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.matrix_to_euler" title="Lien permanent vers cette définition"></a></dt>
+<dd><p><a class="reference external" href="https://www.learnopencv.com/rotation-matrix-to-euler-angles/">https://www.learnopencv.com/rotation-matrix-to-euler-angles/</a></p>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">q</span><span class="o">/</span><span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qr</span><span class="p">,</span><span class="n">qx</span><span class="p">,</span><span class="n">qy</span><span class="p">,</span><span class="n">qz</span> <span class="o">=</span> <span class="n">q</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">R</span> <span class="o">=</span> <span class="n">quat_to_matrix</span><span class="p">(</span><span class="n">qr</span><span class="p">,</span><span class="n">qx</span><span class="p">,</span><span class="n">qy</span><span class="p">,</span><span class="n">qz</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qr</span><span class="p">,</span><span class="n">qi</span><span class="p">,</span><span class="n">qj</span><span class="p">,</span><span class="n">qk</span> <span class="o">=</span> <span class="n">matrix_to_quat</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r0</span><span class="p">,</span><span class="n">p0</span><span class="p">,</span><span class="n">y0</span> <span class="o">=</span> <span class="n">quat_to_euler</span><span class="p">(</span><span class="n">qr</span><span class="p">,</span><span class="n">qi</span><span class="p">,</span><span class="n">qj</span><span class="p">,</span><span class="n">qk</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">matrix_to_euler</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">r</span><span class="o">-</span><span class="n">r0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">p</span><span class="o">-</span><span class="n">p0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-10</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.matrix_to_quat">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">matrix_to_quat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#matrix_to_quat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.matrix_to_quat" title="Lien permanent vers cette définition"></a></dt>
+<dd><p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">q</span><span class="o">/</span><span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qr</span><span class="p">,</span><span class="n">qx</span><span class="p">,</span><span class="n">qy</span><span class="p">,</span><span class="n">qz</span> <span class="o">=</span> <span class="n">q</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">R</span> <span class="o">=</span> <span class="n">quat_to_matrix</span><span class="p">(</span><span class="n">qr</span><span class="p">,</span><span class="n">qx</span><span class="p">,</span><span class="n">qy</span><span class="p">,</span><span class="n">qz</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q2</span> <span class="o">=</span> <span class="n">matrix_to_quat</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">q</span><span class="o">-</span><span class="n">q2</span><span class="p">)</span>
+<span class="go">0.0...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.orbital_to_teme">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">orbital_to_teme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ecc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">argp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mano</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#orbital_to_teme"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.orbital_to_teme" title="Lien permanent vers cette définition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>m</em>) – Semi-major axis</p></li>
+<li><p><strong>ecc</strong> – Eccentricity</p></li>
+<li><p><strong>argp</strong> (<em>rad</em>) – Argument of periapsis</p></li>
+<li><p><strong>inc</strong> (<em>rad</em>) – Inclination</p></li>
+<li><p><strong>mano</strong> (<em>rad</em>) – Mean anomaly</p></li>
+<li><p><strong>node</strong> (<em>rad</em>) – Longitude of the ascending node</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Position (m) and velocity (m/s) in TEME frame</p>
+</dd>
+</dl>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pv</span> <span class="o">=</span> <span class="n">orbital_to_teme</span><span class="p">(</span><span class="mf">7e6</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.pdot">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">pdot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#pdot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.pdot" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Pseudo scalar product :</p>
+<p><span class="math notranslate nohighlight">\(x.x'+y.y'+z.z'-t.t'\)</span></p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> – First quadri-vector</p></li>
+<li><p><strong>v</strong> – Second quadri-vector</p></li>
+<li><p><strong>Returns</strong> – Pseudo scalar product</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.q_function">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">q_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/utils.html#q_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.q_function" title="Lien permanent vers cette définition"></a></dt>
+<dd><p><a class="reference external" href="https://en.wikipedia.org/wiki/Q-function">https://en.wikipedia.org/wiki/Q-function</a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.quat_to_euler">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">quat_to_euler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#quat_to_euler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.quat_to_euler" title="Lien permanent vers cette définition"></a></dt>
+<dd><p><a class="reference external" href="https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles">https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qr</strong> – Real part of the quaternion</p></li>
+<li><p><strong>qi</strong> – First imaginary of the quaternion</p></li>
+<li><p><strong>qj</strong> – Second imaginary of the quaternion</p></li>
+<li><p><strong>qk</strong> – Third imaginary of the quaternion</p></li>
+<li><p><strong>normalize</strong> – Pass True to force normalization</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p><p>Roll angle (rad)</p>
+<p>Pitch angle (rad)</p>
+<p>Yaw angle (rad)</p>
+</p>
+</dd>
+</dl>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">quat_to_euler</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">)</span>
+<span class="go">(0.0, -0.0, 0.0)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.quat_to_matrix">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">quat_to_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qk</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#quat_to_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.quat_to_matrix" title="Lien permanent vers cette définition"></a></dt>
+<dd><p><a class="reference external" href="https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix">https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qr</strong> – Real part of the quaternion</p></li>
+<li><p><strong>qi</strong> – First imaginary of the quaternion</p></li>
+<li><p><strong>qj</strong> – Second imaginary of the quaternion</p></li>
+<li><p><strong>qk</strong> – Third imaginary of the quaternion</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Rotation matrix</p>
+</dd>
+</dl>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">R</span> <span class="o">=</span> <span class="n">quat_to_matrix</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">R</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="go">0.0...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.rad">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">rad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#rad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.rad" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Converts from degrees to radians</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>x</strong> – Angle in degrees</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Angle in radians</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.resource_path">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">resource_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">package</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'blocksim'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#resource_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.resource_path" title="Lien permanent vers cette définition"></a></dt>
+<dd><p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pth</span> <span class="o">=</span> <span class="n">resource_path</span><span class="p">(</span><span class="s1">&#39;dummy.txt&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.rotation_matrix">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">rotation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/utils.html#rotation_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.rotation_matrix" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.skyfield_to_datetime">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">skyfield_to_datetime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">skyfield.timelib.Time</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime.datetime</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#skyfield_to_datetime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.skyfield_to_datetime" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Converts a skyfield Time struct to a datetime struct</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>t</strong> – Skyfield date and time structure</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>A datetime instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.teme_to_itrf">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">teme_to_itrf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pv_teme</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#teme_to_itrf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.teme_to_itrf" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.teme_to_orbital">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">teme_to_orbital</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/utils.html#teme_to_orbital"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.teme_to_orbital" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.test_diag">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">test_diag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#test_diag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.test_diag" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Tests if a square matrix is diagonal</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>A</strong> – Matrix to test</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The result of the test</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.time_to_jd_fraction">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">time_to_jd_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#time_to_jd_fraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.time_to_jd_fraction" title="Lien permanent vers cette définition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>t_epoch</strong> (<em>s</em>) – Time since 31/12/1949 00:00 UT</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.vecBodyToEarth">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">vecBodyToEarth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attitude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#vecBodyToEarth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.vecBodyToEarth" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Expresses a vector from the body frame to the Earth’s frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attitude</strong> – If 3 elements array, roll, pitch, yaw (rad)
+If 4 elements array, qw, qx, qy, qz</p></li>
+<li><p><strong>x</strong> – Vector expressed in the body frame</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Vector x expressed in Earth’s frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.utils.vecEarthToBody">
+<span class="sig-prename descclassname"><span class="pre">blocksim.utils.</span></span><span class="sig-name descname"><span class="pre">vecEarthToBody</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attitude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/utils.html#vecEarthToBody"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.utils.vecEarthToBody" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Expresses a vector from Earth’s frame to the body’s frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attitude</strong> – If 3 elements array, roll, pitch, yaw (rad)
+If 4 elements array, qw, qx, qy, qz</p></li>
+<li><p><strong>x</strong> – Vector expressed in Earth’s frame</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Vector x expressed in the body frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="blocksim.main.html" class="btn btn-neutral float-left" title="blocksim.main module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="examples/index.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+blocksim.core.Frame module
+==========================
+
+.. automodule:: blocksim.core.Frame
+   :members:
+   :undoc-members:
+   :show-inheritance:

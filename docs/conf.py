@@ -14,6 +14,7 @@ import os
 import sys
 import mock
 from sphinx_gallery.sorting import ExplicitOrder, FileNameSortKey
+from setuptools.config import read_configuration
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -98,14 +99,19 @@ author = "Y. BLAUDIN DE THE"
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-import tomli
+# import tomli
 
-conf_pth = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "pyproject.toml"
-)
-with open(conf_pth, "rb") as f:
-    conf_dict = tomli.load(f)
-release = conf_dict["tool"]["poetry"]["version"]
+# conf_pth = os.path.join(
+#     os.path.dirname(os.path.abspath(__file__)), "..", "pyproject.toml"
+# )
+# with open(conf_pth, "rb") as f:
+#     conf_dict = tomli.load(f)
+# release = conf_dict["tool"]["poetry"]["version"]
+
+conf_pth = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "setup.cfg")
+conf_dict = read_configuration(conf_pth)
+release = conf_dict["metadata"]["version"]
+
 
 # The short X.Y version.
 version = ".".join(release.split(".")[:2])

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.dsp.klobuchar &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">blocksim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Code du module</a> &raquo;</li>
+          <li><a href="../dsp.html">blocksim.dsp</a> &raquo;</li>
+      <li>blocksim.dsp.klobuchar</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Code source de blocksim.dsp.klobuchar</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="nb">abs</span>
+
+
+<div class="viewcode-block" id="klobuchar"><a class="viewcode-back" href="../../../blocksim.dsp.klobuchar.html#blocksim.dsp.klobuchar.klobuchar">[docs]</a><span class="k">def</span> <span class="nf">klobuchar</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">lbd</span><span class="p">,</span> <span class="n">elev</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">tow</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="c1"># https://fr.mathworks.com/matlabcentral/fileexchange/59530-klobuchar-ionospheric-delay-model</span>
+    <span class="sd">&quot;&quot;&quot;Function for computing an Ionospheric range correction for the</span>
+<span class="sd">    GPS L1 frequency from the parameters broadcasted in the GPS Navigation Message.</span>
+
+<span class="sd">    References:</span>
+<span class="sd">    Klobuchar, J.A., (1996) &quot;Ionosphercic Effects on GPS&quot;, in</span>
+<span class="sd">      Parkinson, Spilker (ed), &quot;Global Positioning System Theory and</span>
+<span class="sd">      Applications, pp.513-514.</span>
+<span class="sd">    ICD-GPS-200, Rev. C, (1997), pp. 125-128</span>
+<span class="sd">    NATO, (1991), &quot;Technical Characteristics of the NAVSTAR GPS&quot;,</span>
+<span class="sd">      pp. A-6-31   -   A-6-33</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      phi (rad)</span>
+<span class="sd">        Geodetic latitude of receiver</span>
+<span class="sd">      lbd (rad)</span>
+<span class="sd">        Geodetic longitude of receiver</span>
+<span class="sd">      elev (rad)</span>
+<span class="sd">        Elevation angle of satellite</span>
+<span class="sd">      azimuth (rad)</span>
+<span class="sd">        Geodetic azimuth of satellite</span>
+<span class="sd">      tow (s)</span>
+<span class="sd">        Time of Week</span>
+<span class="sd">      alpha[3]</span>
+<span class="sd">        The coefficients of a cubic equation</span>
+<span class="sd">        representing the amplitude of the vertical</span>
+<span class="sd">        delay (4 coefficients)</span>
+<span class="sd">      beta[3]</span>
+<span class="sd">        The coefficients of a cubic equation</span>
+<span class="sd">        representing the period of the model</span>
+<span class="sd">        (4 coefficients)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Ionospheric delay for the L1 frequency (sec)</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">      &gt;&gt;&gt; alpha = np.array([0.3820e-7, 0.1490e-7, -0.1790e-6, 0.0000])</span>
+<span class="sd">      &gt;&gt;&gt; beta = np.array([0.1430e6, 0.0000, -0.3280e6, 0.1130e6])</span>
+<span class="sd">      &gt;&gt;&gt; elev = 20*pi/180</span>
+<span class="sd">      &gt;&gt;&gt; azimuth = 210*pi/180</span>
+<span class="sd">      &gt;&gt;&gt; phi = 40*pi/180</span>
+<span class="sd">      &gt;&gt;&gt; lbd = 260*pi/180</span>
+<span class="sd">      &gt;&gt;&gt; tow = 0.0</span>
+<span class="sd">      &gt;&gt;&gt; dIon1 = klobuchar(phi, lbd, elev, azimuth, tow, alpha, beta)</span>
+<span class="sd">      &gt;&gt;&gt; dIon1 # doctest: +ELLIPSIS</span>
+<span class="sd">      6.93560658...e-08</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rad2semi</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">pi</span>  <span class="c1"># radians to semisircles</span>
+    <span class="n">semi2rad</span> <span class="o">=</span> <span class="n">pi</span>  <span class="c1"># semisircles to radians</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">azimuth</span>  <span class="c1"># asimuth in radians</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="n">elev</span> <span class="o">*</span> <span class="n">rad2semi</span>  <span class="c1"># elevation angle in semicircles</span>
+    <span class="n">psi</span> <span class="o">=</span> <span class="mf">0.0137</span> <span class="o">/</span> <span class="p">(</span><span class="n">e</span> <span class="o">+</span> <span class="mf">0.11</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.022</span>  <span class="c1"># Earth Centered angle</span>
+    <span class="n">lat_i</span> <span class="o">=</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">rad2semi</span> <span class="o">+</span> <span class="n">psi</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>  <span class="c1"># Subionospheric lat</span>
+    <span class="k">if</span> <span class="n">lat_i</span> <span class="o">&gt;</span> <span class="mf">0.416</span><span class="p">:</span>
+        <span class="n">lat_i</span> <span class="o">=</span> <span class="mf">0.416</span>
+    <span class="k">elif</span> <span class="n">lat_i</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">0.416</span><span class="p">:</span>
+        <span class="n">lat_i</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.416</span>
+
+    <span class="c1"># Subionospheric long</span>
+    <span class="n">long_i</span> <span class="o">=</span> <span class="n">lbd</span> <span class="o">*</span> <span class="n">rad2semi</span> <span class="o">+</span> <span class="p">(</span><span class="n">psi</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="n">cos</span><span class="p">(</span><span class="n">lat_i</span> <span class="o">*</span> <span class="n">semi2rad</span><span class="p">))</span>
+
+    <span class="c1"># Geomagnetic latitude</span>
+    <span class="n">lat_m</span> <span class="o">=</span> <span class="n">lat_i</span> <span class="o">+</span> <span class="mf">0.064</span> <span class="o">*</span> <span class="n">cos</span><span class="p">((</span><span class="n">long_i</span> <span class="o">-</span> <span class="mf">1.617</span><span class="p">)</span> <span class="o">*</span> <span class="n">semi2rad</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="mf">4.32e4</span> <span class="o">*</span> <span class="n">long_i</span> <span class="o">+</span> <span class="n">tow</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">t</span> <span class="o">%</span> <span class="mf">86400.0</span>  <span class="c1"># Seconds of day</span>
+    <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mf">86400.0</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span> <span class="o">-</span> <span class="mf">86400.0</span>
+
+    <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span> <span class="o">+</span> <span class="mf">86400.0</span>
+
+    <span class="n">sF</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">16.0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.53</span> <span class="o">-</span> <span class="n">e</span><span class="p">)</span> <span class="o">**</span> <span class="mi">3</span>  <span class="c1"># Slant factor</span>
+    <span class="c1"># Period of model</span>
+    <span class="n">PER</span> <span class="o">=</span> <span class="n">beta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">beta</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">lat_m</span> <span class="o">+</span> <span class="n">beta</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">lat_m</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">beta</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">lat_m</span><span class="o">**</span><span class="mi">3</span>
+    <span class="k">if</span> <span class="n">PER</span> <span class="o">&lt;</span> <span class="mf">72000.0</span><span class="p">:</span>
+        <span class="n">PER</span> <span class="o">=</span> <span class="mf">72000.0</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="mf">50400.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">PER</span>  <span class="c1"># Phase of the model</span>
+    <span class="c1"># (Max at 14.00 =</span>
+    <span class="c1"># 50400 sec local time)</span>
+    <span class="c1"># Amplitud of the model</span>
+    <span class="n">AMP</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">lat_m</span> <span class="o">+</span> <span class="n">alpha</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">lat_m</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">alpha</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">lat_m</span><span class="o">**</span><span class="mi">3</span>
+    <span class="k">if</span> <span class="n">AMP</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="n">AMP</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># Ionospheric corr.</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.57</span><span class="p">:</span>
+        <span class="n">dIon1</span> <span class="o">=</span> <span class="n">sF</span> <span class="o">*</span> <span class="p">(</span><span class="mf">5.0e-9</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dIon1</span> <span class="o">=</span> <span class="n">sF</span> <span class="o">*</span> <span class="p">(</span><span class="mf">5.0e-9</span> <span class="o">+</span> <span class="n">AMP</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="o">/</span> <span class="mf">24.0</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">dIon1</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+blocksim.dsp.NPSS module
+========================
+
+.. automodule:: blocksim.dsp.NPSS
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.control.System &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">blocksim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Code du module</a> &raquo;</li>
+      <li>blocksim.control.System</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Code source de blocksim.control.System</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">ode</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">cont2discrete</span>
+<span class="kn">import</span> <span class="nn">scipy.linalg</span> <span class="k">as</span> <span class="nn">lin</span>
+
+<span class="kn">from</span> <span class="nn">..exceptions</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">vecBodyToEarth</span><span class="p">,</span> <span class="n">vecEarthToBody</span><span class="p">,</span> <span class="n">quat_to_euler</span>
+<span class="kn">from</span> <span class="nn">..core.Frame</span> <span class="kn">import</span> <span class="n">Frame</span>
+<span class="kn">from</span> <span class="nn">..core.Node</span> <span class="kn">import</span> <span class="n">AComputer</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ASystem&quot;</span><span class="p">,</span> <span class="s2">&quot;LTISystem&quot;</span><span class="p">,</span> <span class="s2">&quot;G6DOFSystem&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="ASystem"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.ASystem">[docs]</a><span class="k">class</span> <span class="nc">ASystem</span><span class="p">(</span><span class="n">AComputer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract class for a physical system</span>
+
+<span class="sd">    Implement the method **transition** to make it concrete</span>
+<span class="sd">    You can also implement the method **jacobian**</span>
+<span class="sd">    (see :class:`blocksim.control.System.ASystem.example_jacobian`)</span>
+<span class="sd">    to use the integrators that need the jacobian.</span>
+
+<span class="sd">    The input name of the computer is **command**</span>
+<span class="sd">    The output name of the computer is **state**</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name</span>
+<span class="sd">        Name of the system</span>
+<span class="sd">      shape_command</span>
+<span class="sd">        Shape of the data expected by the command</span>
+<span class="sd">      snames_state</span>
+<span class="sd">        Name of each of the scalar components of the state.</span>
+<span class="sd">        Its shape defines the shape of the data</span>
+<span class="sd">      dtype</span>
+<span class="sd">        Data type (typically np.float64 or np.complex128)</span>
+<span class="sd">      method, optional</span>
+<span class="sd">        Integrator selected for scipy.ode. Default : &#39;dop853&#39;.</span>
+<span class="sd">        See `SciPy doc`_.</span>
+
+<span class="sd">    .. _SciPy doc: https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.integrate.ode.html#scipy.integrate.ode</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;__integ&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">shape_command</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">snames_state</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;dop853&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">AComputer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defineInput</span><span class="p">(</span><span class="s2">&quot;command&quot;</span><span class="p">,</span> <span class="n">shape_command</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defineOutput</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="n">snames_state</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+
+        <span class="n">has_jacobian</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;jacobian&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">has_jacobian</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__integ</span> <span class="o">=</span> <span class="n">ode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transition</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">jacobian</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__integ</span> <span class="o">=</span> <span class="n">ode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transition</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__integ</span><span class="o">.</span><span class="n">set_integrator</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ASystem.transition"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.ASystem.transition">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">transition</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;array&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="sd">&quot;&quot;&quot;Defines the transition function f(t,x,u) :</span>
+
+<span class="sd">        x&#39; = f(t,x,u)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          t</span>
+<span class="sd">            Date of the current state</span>
+<span class="sd">          x</span>
+<span class="sd">            Current state</span>
+<span class="sd">          u</span>
+<span class="sd">            Command applied to the system</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The derivative of the state</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="ASystem.example_jacobian"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.ASystem.example_jacobian">[docs]</a>    <span class="k">def</span> <span class="nf">example_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;array&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Defines the jacobian of</span>
+<span class="sd">        the transition function f(t,x,u) with respect to x:</span>
+
+<span class="sd">        x&#39; = f(t,x,u)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          t</span>
+<span class="sd">            Date of the current state</span>
+<span class="sd">          x</span>
+<span class="sd">            Current state</span>
+<span class="sd">          u</span>
+<span class="sd">            Command applied to the system</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The jacobian of the transition function with respect to x</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="ASystem.compute_outputs"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.ASystem.compute_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">compute_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">t1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">t2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">command</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+        <span class="n">state</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__integ</span><span class="o">.</span><span class="n">set_initial_value</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">t1</span><span class="p">)</span><span class="o">.</span><span class="n">set_f_params</span><span class="p">(</span><span class="n">command</span><span class="p">)</span><span class="o">.</span><span class="n">set_jac_params</span><span class="p">(</span>
+            <span class="n">command</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">t1</span> <span class="o">!=</span> <span class="n">t2</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__integ</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="mi">72</span> <span class="o">*</span> <span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;When updating &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">getName</span><span class="p">())</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">t1</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;dx&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">command</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="mi">72</span> <span class="o">*</span> <span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div></div>
+
+
+<div class="viewcode-block" id="LTISystem"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.LTISystem">[docs]</a><span class="k">class</span> <span class="nc">LTISystem</span><span class="p">(</span><span class="n">ASystem</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Models a SISO LTI system :</span>
+
+<span class="sd">    :math:`dX/dt = A.X + B.u`</span>
+
+<span class="sd">    The input name of the element is **command**</span>
+<span class="sd">    The output name of the computer is **state**</span>
+
+<span class="sd">    The matrix A and B are parameters that must be defined by the user :</span>
+
+<span class="sd">    * matA : (n x n) State (or system) matrix</span>
+<span class="sd">    * matB : (n x m) Input matrix</span>
+
+<span class="sd">    with :</span>
+
+<span class="sd">    * n number of states (shape of snames_state in the init arguments)</span>
+<span class="sd">    * m number of commands (shape_command in the init arguments)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name</span>
+<span class="sd">        Name of the system</span>
+<span class="sd">      shape_command</span>
+<span class="sd">        Shape of the data expected by the command</span>
+<span class="sd">      snames_state</span>
+<span class="sd">        Name of each of the scalar components of the state.</span>
+<span class="sd">        Its shape defines the shape of the data</span>
+<span class="sd">      dtype</span>
+<span class="sd">        Data type (typically np.float64 or np.complex128)</span>
+<span class="sd">      method</span>
+<span class="sd">        Integrator selected for scipy.ode. Default : &#39;dop853&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">shape_command</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">snames_state</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;dop853&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">ASystem</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">shape_command</span><span class="o">=</span><span class="n">shape_command</span><span class="p">,</span>
+            <span class="n">snames_state</span><span class="o">=</span><span class="n">snames_state</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="s2">&quot;matA&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="s2">&quot;matB&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LTISystem.getDiscreteMatrices"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.LTISystem.getDiscreteMatrices">[docs]</a>    <span class="k">def</span> <span class="nf">getDiscreteMatrices</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;zoh&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          dt</span>
+<span class="sd">            The discretization time step</span>
+<span class="sd">          method</span>
+<span class="sd">            * gbt: generalized bilinear transformation</span>
+<span class="sd">            * bilinear: Tustin’s approximation (“gbt” with alpha=0.5)</span>
+<span class="sd">            * euler: Euler (or forward differencing) method (“gbt” with alpha=0)</span>
+<span class="sd">            * backward_diff: Backwards differencing (“gbt” with alpha=1.0)</span>
+<span class="sd">            * zoh: zero-order hold (default)</span>
+<span class="sd">          alpha</span>
+<span class="sd">            Within [0, 1]</span>
+<span class="sd">            The generalized bilinear transformation weighting parameter, which should only be specified with method=”gbt”, and is ignored otherwise</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          Ad</span>
+<span class="sd">            Discrete dynamics matrix</span>
+<span class="sd">          Bd</span>
+<span class="sd">            Discrete input matrix</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">          &gt;&gt;&gt; m = 1. # Mass</span>
+<span class="sd">          &gt;&gt;&gt; k = 40. # Spring rate</span>
+<span class="sd">          &gt;&gt;&gt; sys = LTISystem(&#39;sys&#39;, shape_command=1, snames_state=[&#39;x&#39;,&#39;v&#39;])</span>
+<span class="sd">          &gt;&gt;&gt; sys.matA = np.array([[0,1],[-k/m,0]])</span>
+<span class="sd">          &gt;&gt;&gt; sys.matB = np.array([[0,1/m]]).T</span>
+<span class="sd">          &gt;&gt;&gt; Kk = 1/m</span>
+<span class="sd">          &gt;&gt;&gt; Ka = np.sqrt(k/m)</span>
+<span class="sd">          &gt;&gt;&gt; def A(t1, t2):</span>
+<span class="sd">          ...    return np.array([[np.cos(Ka * (t2 - t1)), np.sin(Ka * (t2 - t1)) / Ka],</span>
+<span class="sd">          ...                     [-Ka * np.sin(Ka * (t2 - t1)), np.cos(Ka * (t2 - t1))]])</span>
+<span class="sd">          &gt;&gt;&gt; Ad,Bd = sys.getDiscreteMatrices(dt=0.1)</span>
+<span class="sd">          &gt;&gt;&gt; D = A(2, 2.1) - Ad</span>
+<span class="sd">          &gt;&gt;&gt; lin.norm(D) &lt; 1.e-14</span>
+<span class="sd">          True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getOutputByName</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">getDataShape</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getInputByName</span><span class="p">(</span><span class="s2">&quot;command&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">getDataShape</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+        <span class="n">sys</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">matA</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">matB</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">)</span>
+        <span class="n">Ad</span><span class="p">,</span> <span class="n">Bd</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cont2discrete</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Ad</span><span class="p">,</span> <span class="n">Bd</span></div>
+
+<div class="viewcode-block" id="LTISystem.transition"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.LTISystem.transition">[docs]</a>    <span class="k">def</span> <span class="nf">transition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;array&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Defines the transition function f(t,x,u) :</span>
+
+<span class="sd">        x&#39; = f(t,x,u)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          t</span>
+<span class="sd">            Date of the current state</span>
+<span class="sd">          x</span>
+<span class="sd">            Current state</span>
+<span class="sd">          u</span>
+<span class="sd">            Command applied to the system</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The derivative of the state</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matA</span> <span class="o">@</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">matB</span> <span class="o">@</span> <span class="n">u</span>
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+<div class="viewcode-block" id="LTISystem.jacobian"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.LTISystem.jacobian">[docs]</a>    <span class="k">def</span> <span class="nf">jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Defines the jacobian of</span>
+<span class="sd">        the transition function f(t,x,u) with respect to x:</span>
+
+<span class="sd">        x&#39; = f(t,x,u)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          t</span>
+<span class="sd">            Date of the current state</span>
+<span class="sd">          x</span>
+<span class="sd">            Current state</span>
+<span class="sd">          u</span>
+<span class="sd">            Command applied to the system</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The jacobian of the transition function with respect to x</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">matA</span></div></div>
+
+
+<div class="viewcode-block" id="G6DOFSystem"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.G6DOFSystem">[docs]</a><span class="k">class</span> <span class="nc">G6DOFSystem</span><span class="p">(</span><span class="n">ASystem</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generic 6 DOF rigid body</span>
+<span class="sd">    The attitude state is handled with quaternions</span>
+<span class="sd">    The integration scheme is 5-stage Crouch-Grossman method &quot;CG4&quot;,</span>
+<span class="sd">    which garantees that the attitude quaternion&#39;s norm remains equal to 1</span>
+
+<span class="sd">    http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf</span>
+
+<span class="sd">    The input of the element is **command**</span>
+<span class="sd">    The outputs name of the computer are **state** and **euler**</span>
+
+<span class="sd">    The following parameters must be defined by the user :</span>
+
+<span class="sd">    * m : Mass of the body (kg). Default : :math:`1`</span>
+<span class="sd">    * J : Inertia tensor of the body (kg.m^2). Default : :math:`10^{-3}.I_3`</span>
+<span class="sd">    * max_q_denorm : If N the square norm of the attitude quaternion is N &gt; 1+max_q_denorm or N&lt;1-max_q_denorm, raise an exception</span>
+
+<span class="sd">    command:</span>
+
+<span class="sd">    * 3D force in the fixed frame (N)</span>
+<span class="sd">    * 3D torque in the fixed frame (N.m)</span>
+
+<span class="sd">    state:</span>
+
+<span class="sd">    * px, py, pz (m)</span>
+<span class="sd">    * vx, vy, vz (m/s)</span>
+<span class="sd">    * qr, qx, qy, qz</span>
+<span class="sd">    * wx, wy, wz (rad/s)</span>
+
+<span class="sd">    euler:</span>
+
+<span class="sd">    * roll, pitch, yaw (rad)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name</span>
+<span class="sd">        Name of the system</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">ASystem</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">name</span><span class="p">,</span>
+            <span class="n">shape_command</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+            <span class="n">snames_state</span><span class="o">=</span><span class="p">[</span>
+                <span class="s2">&quot;px&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;py&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;pz&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;vx&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;vy&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;vz&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;qr&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;qx&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;qy&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;qz&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;wx&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;wy&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;wz&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s2">&quot;dop853&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defineOutput</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;euler&quot;</span><span class="p">,</span> <span class="n">snames</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;roll&quot;</span><span class="p">,</span> <span class="s2">&quot;pitch&quot;</span><span class="p">,</span> <span class="s2">&quot;yaw&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setInitialStateForOutput</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">output_name</span><span class="o">=</span><span class="s2">&quot;state&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setInitialStateForOutput</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">output_name</span><span class="o">=</span><span class="s2">&quot;euler&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="s2">&quot;J&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="s2">&quot;max_q_denorm&quot;</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
+
+<div class="viewcode-block" id="G6DOFSystem.vecBodyToEarth"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.G6DOFSystem.vecBodyToEarth">[docs]</a>    <span class="k">def</span> <span class="nf">vecBodyToEarth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n">Frame</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Expresses a vector from the body frame to the Earth&#39;s frame</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          frame</span>
+<span class="sd">            The time frame</span>
+<span class="sd">          x</span>
+<span class="sd">            Vector expressed in the body frame</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          Vector x expressed in Earth&#39;s frame</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">px</span><span class="p">,</span> <span class="n">py</span><span class="p">,</span> <span class="n">pz</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">qw</span><span class="p">,</span> <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">,</span> <span class="n">qz</span><span class="p">,</span> <span class="n">wx</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="n">wz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDataForOutput</span><span class="p">(</span>
+            <span class="n">frame</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;state&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">vecBodyToEarth</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">qw</span><span class="p">,</span> <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">,</span> <span class="n">qz</span><span class="p">]),</span> <span class="n">x</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="G6DOFSystem.vecEarthToBody"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.G6DOFSystem.vecEarthToBody">[docs]</a>    <span class="k">def</span> <span class="nf">vecEarthToBody</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n">Frame</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Expresses a vector from Earth&#39;s frame to the body&#39;s frame</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          frame</span>
+<span class="sd">            The time frame</span>
+<span class="sd">          x</span>
+<span class="sd">            Vector expressed in Earth&#39;s frame</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          Vector x expressed in the body frame</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">px</span><span class="p">,</span> <span class="n">py</span><span class="p">,</span> <span class="n">pz</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">qw</span><span class="p">,</span> <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">,</span> <span class="n">qz</span><span class="p">,</span> <span class="n">wx</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="n">wz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDataForOutput</span><span class="p">(</span>
+            <span class="n">frame</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;state&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">vecEarthToBody</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">qw</span><span class="p">,</span> <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">,</span> <span class="n">qz</span><span class="p">]),</span> <span class="n">x</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="G6DOFSystem.transition"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.G6DOFSystem.transition">[docs]</a>    <span class="k">def</span> <span class="nf">transition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Defines the transition function f(t,x,u) :</span>
+
+<span class="sd">        x&#39; = f(t,x,u)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          t</span>
+<span class="sd">            Date of the current state</span>
+<span class="sd">          x</span>
+<span class="sd">            Current state</span>
+<span class="sd">          u</span>
+<span class="sd">            Command applied to the system</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The derivative of the state</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">px</span><span class="p">,</span> <span class="n">py</span><span class="p">,</span> <span class="n">pz</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">qw</span><span class="p">,</span> <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">,</span> <span class="n">qz</span><span class="p">,</span> <span class="n">wx</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="n">wz</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">force</span> <span class="o">=</span> <span class="n">u</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">torque</span> <span class="o">=</span> <span class="n">u</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
+
+        <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">qw</span><span class="p">,</span> <span class="n">qx</span><span class="p">,</span> <span class="n">qy</span><span class="p">,</span> <span class="n">qz</span><span class="p">])</span>
+
+        <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">wx</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="n">wz</span><span class="p">])</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">wx</span><span class="p">,</span> <span class="o">-</span><span class="n">wy</span><span class="p">,</span> <span class="o">-</span><span class="n">wz</span><span class="p">],</span> <span class="p">[</span><span class="n">wx</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">wz</span><span class="p">,</span> <span class="o">-</span><span class="n">wy</span><span class="p">],</span> <span class="p">[</span><span class="n">wy</span><span class="p">,</span> <span class="o">-</span><span class="n">wz</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">wx</span><span class="p">],</span> <span class="p">[</span><span class="n">wz</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="o">-</span><span class="n">wx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+        <span class="p">)</span>
+
+        <span class="n">dvx</span><span class="p">,</span> <span class="n">dvy</span><span class="p">,</span> <span class="n">dvz</span> <span class="o">=</span> <span class="n">force</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span>
+        <span class="n">dwx</span><span class="p">,</span> <span class="n">dwy</span><span class="p">,</span> <span class="n">dwz</span> <span class="o">=</span> <span class="n">lin</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">J</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">J</span> <span class="o">@</span> <span class="n">w</span><span class="p">)</span> <span class="o">+</span> <span class="n">torque</span><span class="p">)</span>
+        <span class="n">dqw</span><span class="p">,</span> <span class="n">dqx</span><span class="p">,</span> <span class="n">dqy</span><span class="p">,</span> <span class="n">dqz</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">W</span> <span class="o">@</span> <span class="n">q</span>
+        <span class="n">dX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">dvx</span><span class="p">,</span> <span class="n">dvy</span><span class="p">,</span> <span class="n">dvz</span><span class="p">,</span> <span class="n">dqw</span><span class="p">,</span> <span class="n">dqx</span><span class="p">,</span> <span class="n">dqy</span><span class="p">,</span> <span class="n">dqz</span><span class="p">,</span> <span class="n">dwx</span><span class="p">,</span> <span class="n">dwy</span><span class="p">,</span> <span class="n">dwz</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">dX</span></div>
+
+<div class="viewcode-block" id="G6DOFSystem.compute_outputs"><a class="viewcode-back" href="../../../blocksim.control.System.html#blocksim.control.System.G6DOFSystem.compute_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">compute_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">t1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">t2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">command</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+        <span class="n">state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+        <span class="n">euler</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="c1"># Crouch-Grossman method CG4</span>
+        <span class="c1"># http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.8177227988124852</span>
+        <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.1370831520630755</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3199876375476427</span>
+        <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.0183698531564020</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0659864263556022</span>
+        <span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.7397813985370780</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.9214417194464946</span>
+        <span class="n">b</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.1907142565505889</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.4997857776773573</span>
+        <span class="n">b</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3322195591068374</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0969984448371582</span>
+        <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3552358559023322</span>
+        <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.8177227988124852</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.2390958372307326</span>
+        <span class="n">c</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3859740639032449</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.3918565724203246</span>
+        <span class="n">c</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3242290522866937</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.1092979392113565</span>
+        <span class="n">c</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.8768903263420429</span>
+
+        <span class="n">ns</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">h</span> <span class="o">=</span> <span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span>
+
+        <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ns</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">13</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+                <span class="n">dx</span> <span class="o">+=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">k</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>
+            <span class="n">k</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition</span><span class="p">(</span><span class="n">t1</span> <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">h</span><span class="p">,</span> <span class="n">state</span> <span class="o">+</span> <span class="n">dx</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+
+            <span class="n">wk</span> <span class="o">=</span> <span class="n">w</span> <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">k</span><span class="p">[</span><span class="mi">10</span><span class="p">:</span><span class="mi">13</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">Nwk</span> <span class="o">=</span> <span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">wk</span><span class="p">)</span>
+            <span class="n">wx</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="n">wz</span> <span class="o">=</span> <span class="n">wk</span>
+            <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">wx</span><span class="p">,</span> <span class="o">-</span><span class="n">wy</span><span class="p">,</span> <span class="o">-</span><span class="n">wz</span><span class="p">],</span>
+                    <span class="p">[</span><span class="n">wx</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">wz</span><span class="p">,</span> <span class="o">-</span><span class="n">wy</span><span class="p">],</span>
+                    <span class="p">[</span><span class="n">wy</span><span class="p">,</span> <span class="o">-</span><span class="n">wz</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">wx</span><span class="p">],</span>
+                    <span class="p">[</span><span class="n">wz</span><span class="p">,</span> <span class="n">wy</span><span class="p">,</span> <span class="o">-</span><span class="n">wx</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="c1"># We use the sinc function to handle the case where Nwk is close to zero</span>
+            <span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">h</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">Nwk</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="n">W</span> <span class="o">*</span> <span class="n">h</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span>
+                <span class="n">i</span>
+            <span class="p">]</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sinc</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">Nwk</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">E</span> <span class="o">@</span> <span class="n">q</span>
+
+        <span class="n">Nq2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">q</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># q = q / sqrt(Nq2)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Nq2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_q_denorm</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DenormalizedQuaternion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getName</span><span class="p">(),</span> <span class="n">q</span><span class="p">)</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="n">res</span> <span class="o">+=</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">k</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">res</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">q</span>
+
+        <span class="n">euler_att</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">quat_to_euler</span><span class="p">(</span><span class="o">*</span><span class="n">res</span><span class="p">[</span><span class="mi">6</span><span class="p">:</span><span class="mi">10</span><span class="p">]))</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;euler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">euler_att</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

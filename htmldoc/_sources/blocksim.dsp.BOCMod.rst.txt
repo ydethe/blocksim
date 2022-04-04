@@ -1,0 +1,7 @@
+blocksim.dsp.BOCMod module
+==========================
+
+.. automodule:: blocksim.dsp.BOCMod
+   :members:
+   :undoc-members:
+   :show-inheritance:

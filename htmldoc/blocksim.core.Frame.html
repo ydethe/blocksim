@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.core.Frame module &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/translations.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="blocksim.core.Generic module" href="blocksim.core.Generic.html" />
+    <link rel="prev" title="blocksim.core.ABaseNode module" href="blocksim.core.ABaseNode.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">blocksim</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="blocksim.html">blocksim package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="blocksim.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="blocksim.control.html">blocksim.control package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="blocksim.core.html">blocksim.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.dsp.html">blocksim.dsp package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.gnss.html">blocksim.gnss package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.graphics.html">blocksim.graphics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.loggers.html">blocksim.loggers package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.source.html">blocksim.source package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#module-blocksim">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">blocksim</a> &raquo;</li>
+          <li><a href="blocksim.html">blocksim package</a> &raquo;</li>
+          <li><a href="blocksim.core.html">blocksim.core package</a> &raquo;</li>
+      <li>blocksim.core.Frame module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/blocksim.core.Frame.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="module-blocksim.core.Frame">
+<span id="blocksim-core-frame-module"></span><h1>blocksim.core.Frame module<a class="headerlink" href="#module-blocksim.core.Frame" title="Lien permanent vers ce titre"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.core.Frame.Frame">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.core.Frame.</span></span><span class="sig-name descname"><span class="pre">Frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/core/Frame.html#Frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.core.Frame.Frame" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Time frame. Describes a time interval (start time and stop time)
+Contains also an UUID, which is used to determine if a <a class="reference internal" href="blocksim.core.ABaseNode.html#module-blocksim.core.ABaseNode" title="blocksim.core.ABaseNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.core.ABaseNode</span></code></a> is up to date.
+If not, the <a class="reference internal" href="blocksim.core.ABaseNode.html#module-blocksim.core.ABaseNode" title="blocksim.core.ABaseNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.core.ABaseNode</span></code></a> is update with a call to <code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.core.ABaseNode.updateAllOutput</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_timestamp</strong> – Time start of the frame</p></li>
+<li><p><strong>stop_timestamp</strong> – Time stop of the frame</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.core.Frame.Frame.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#blocksim.core.Frame.Frame" title="blocksim.core.Frame.Frame"><span class="pre">blocksim.core.Frame.Frame</span></a></span></span><a class="reference internal" href="_modules/blocksim/core/Frame.html#Frame.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.core.Frame.Frame.copy" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Copies the frame
+It creates a new instance of Frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>The duplicated frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.core.Frame.Frame.getFrameID">
+<span class="sig-name descname"><span class="pre">getFrameID</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">uuid.UUID</span></span></span><a class="reference internal" href="_modules/blocksim/core/Frame.html#Frame.getFrameID"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.core.Frame.Frame.getFrameID" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Gets the id of the frame. This elements is used to test the equality between 2 frames</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>The id of the frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.core.Frame.Frame.getStartTimeStamp">
+<span class="sig-name descname"><span class="pre">getStartTimeStamp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/blocksim/core/Frame.html#Frame.getStartTimeStamp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.core.Frame.Frame.getStartTimeStamp" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Gets the start time of the frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>Start time</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.core.Frame.Frame.getStopTimeStamp">
+<span class="sig-name descname"><span class="pre">getStopTimeStamp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/blocksim/core/Frame.html#Frame.getStopTimeStamp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.core.Frame.Frame.getStopTimeStamp" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Gets the stop time of the frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>Stop time</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.core.Frame.Frame.getTimeStep">
+<span class="sig-name descname"><span class="pre">getTimeStep</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/blocksim/core/Frame.html#Frame.getTimeStep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.core.Frame.Frame.getTimeStep" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Gets the time step of the frame :
+stop_time - start_time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>Time step</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.core.Frame.Frame.updateByStep">
+<span class="sig-name descname"><span class="pre">updateByStep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/core/Frame.html#Frame.updateByStep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.core.Frame.Frame.updateByStep" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Updates the frame by step
+This operation changes the frame’s id, so that it triggers update when used to retrieve computers” data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>step</strong> (<em>The time</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="blocksim.core.ABaseNode.html" class="btn btn-neutral float-left" title="blocksim.core.ABaseNode module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="blocksim.core.Generic.html" class="btn btn-neutral float-right" title="blocksim.core.Generic module" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

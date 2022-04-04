@@ -1,0 +1,7 @@
+blocksim.dsp.DSPAWGN module
+===========================
+
+.. automodule:: blocksim.dsp.DSPAWGN
+   :members:
+   :undoc-members:
+   :show-inheritance:

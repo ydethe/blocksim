@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.control.System module &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/translations.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="blocksim.core package" href="blocksim.core.html" />
+    <link rel="prev" title="blocksim.control.SetPoint module" href="blocksim.control.SetPoint.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">blocksim</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="blocksim.html">blocksim package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="blocksim.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="blocksim.control.html">blocksim.control package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.core.html">blocksim.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.dsp.html">blocksim.dsp package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.gnss.html">blocksim.gnss package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.graphics.html">blocksim.graphics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.loggers.html">blocksim.loggers package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.source.html">blocksim.source package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#module-blocksim">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">blocksim</a> &raquo;</li>
+          <li><a href="blocksim.html">blocksim package</a> &raquo;</li>
+          <li><a href="blocksim.control.html">blocksim.control package</a> &raquo;</li>
+      <li>blocksim.control.System module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/blocksim.control.System.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="module-blocksim.control.System">
+<span id="blocksim-control-system-module"></span><h1>blocksim.control.System module<a class="headerlink" href="#module-blocksim.control.System" title="Lien permanent vers ce titre"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.control.System.ASystem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.control.System.</span></span><span class="sig-name descname"><span class="pre">ASystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">str,</span> <span class="pre">shape_command:</span> <span class="pre">int,</span> <span class="pre">snames_state:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;,</span> <span class="pre">method:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'dop853'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/control/System.html#ASystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.ASystem" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference internal" href="blocksim.core.Node.html#blocksim.core.Node.AComputer" title="blocksim.core.Node.AComputer"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.core.Node.AComputer</span></code></a></p>
+<p>Abstract class for a physical system</p>
+<p>Implement the method <strong>transition</strong> to make it concrete
+You can also implement the method <strong>jacobian</strong>
+(see <a class="reference internal" href="#blocksim.control.System.ASystem.example_jacobian" title="blocksim.control.System.ASystem.example_jacobian"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.System.ASystem.example_jacobian</span></code></a>)
+to use the integrators that need the jacobian.</p>
+<p>The input name of the computer is <strong>command</strong>
+The output name of the computer is <strong>state</strong></p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the system</p></li>
+<li><p><strong>shape_command</strong> – Shape of the data expected by the command</p></li>
+<li><p><strong>snames_state</strong> – Name of each of the scalar components of the state.
+Its shape defines the shape of the data</p></li>
+<li><p><strong>dtype</strong> – Data type (typically np.float64 or np.complex128)</p></li>
+<li><p><strong>method</strong> – Integrator selected for scipy.ode. Default : “dop853”.
+See <a class="reference external" href="https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.integrate.ode.html#scipy.integrate.ode">SciPy doc</a>.</p></li>
+<li><p><strong>optional</strong> – Integrator selected for scipy.ode. Default : “dop853”.
+See <a class="reference external" href="https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.integrate.ode.html#scipy.integrate.ode">SciPy doc</a>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.System.ASystem.compute_outputs">
+<span class="sig-name descname"><span class="pre">compute_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/blocksim/control/System.html#ASystem.compute_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.ASystem.compute_outputs" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.System.ASystem.example_jacobian">
+<span class="sig-name descname"><span class="pre">example_jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="reference internal" href="_modules/blocksim/control/System.html#ASystem.example_jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.ASystem.example_jacobian" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Defines the jacobian of
+the transition function f(t,x,u) with respect to x:</p>
+<p>x” = f(t,x,u)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – Date of the current state</p></li>
+<li><p><strong>x</strong> – Current state</p></li>
+<li><p><strong>u</strong> – Command applied to the system</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The jacobian of the transition function with respect to x</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.System.ASystem.transition">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="reference internal" href="_modules/blocksim/control/System.html#ASystem.transition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.ASystem.transition" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Defines the transition function f(t,x,u) :</p>
+<p>x” = f(t,x,u)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – Date of the current state</p></li>
+<li><p><strong>x</strong> – Current state</p></li>
+<li><p><strong>u</strong> – Command applied to the system</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The derivative of the state</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.control.System.G6DOFSystem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.control.System.</span></span><span class="sig-name descname"><span class="pre">G6DOFSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/control/System.html#G6DOFSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.G6DOFSystem" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference internal" href="#blocksim.control.System.ASystem" title="blocksim.control.System.ASystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.System.ASystem</span></code></a></p>
+<p>Generic 6 DOF rigid body
+The attitude state is handled with quaternions
+The integration scheme is 5-stage Crouch-Grossman method « CG4 »,
+which garantees that the attitude quaternion’s norm remains equal to 1</p>
+<p><a class="reference external" href="http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf">http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf</a></p>
+<p>The input of the element is <strong>command</strong>
+The outputs name of the computer are <strong>state</strong> and <strong>euler</strong></p>
+<p>The following parameters must be defined by the user :</p>
+<ul class="simple">
+<li><p>m : Mass of the body (kg). Default : <span class="math notranslate nohighlight">\(1\)</span></p></li>
+<li><p>J : Inertia tensor of the body (kg.m^2). Default : <span class="math notranslate nohighlight">\(10^{-3}.I_3\)</span></p></li>
+<li><p>max_q_denorm : If N the square norm of the attitude quaternion is N &gt; 1+max_q_denorm or N&lt;1-max_q_denorm, raise an exception</p></li>
+</ul>
+<p>command:</p>
+<ul class="simple">
+<li><p>3D force in the fixed frame (N)</p></li>
+<li><p>3D torque in the fixed frame (N.m)</p></li>
+</ul>
+<p>state:</p>
+<ul class="simple">
+<li><p>px, py, pz (m)</p></li>
+<li><p>vx, vy, vz (m/s)</p></li>
+<li><p>qr, qx, qy, qz</p></li>
+<li><p>wx, wy, wz (rad/s)</p></li>
+</ul>
+<p>euler:</p>
+<ul class="simple">
+<li><p>roll, pitch, yaw (rad)</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>name</strong> – Name of the system</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.System.G6DOFSystem.compute_outputs">
+<span class="sig-name descname"><span class="pre">compute_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">euler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/blocksim/control/System.html#G6DOFSystem.compute_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.G6DOFSystem.compute_outputs" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.System.G6DOFSystem.transition">
+<span class="sig-name descname"><span class="pre">transition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/System.html#G6DOFSystem.transition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.G6DOFSystem.transition" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Defines the transition function f(t,x,u) :</p>
+<p>x” = f(t,x,u)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – Date of the current state</p></li>
+<li><p><strong>x</strong> – Current state</p></li>
+<li><p><strong>u</strong> – Command applied to the system</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The derivative of the state</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.System.G6DOFSystem.vecBodyToEarth">
+<span class="sig-name descname"><span class="pre">vecBodyToEarth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.core.Frame.html#blocksim.core.Frame.Frame" title="blocksim.core.Frame.Frame"><span class="pre">blocksim.core.Frame.Frame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/System.html#G6DOFSystem.vecBodyToEarth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.G6DOFSystem.vecBodyToEarth" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Expresses a vector from the body frame to the Earth’s frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> – The time frame</p></li>
+<li><p><strong>x</strong> – Vector expressed in the body frame</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Vector x expressed in Earth’s frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.System.G6DOFSystem.vecEarthToBody">
+<span class="sig-name descname"><span class="pre">vecEarthToBody</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.core.Frame.html#blocksim.core.Frame.Frame" title="blocksim.core.Frame.Frame"><span class="pre">blocksim.core.Frame.Frame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/System.html#G6DOFSystem.vecEarthToBody"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.G6DOFSystem.vecEarthToBody" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Expresses a vector from Earth’s frame to the body’s frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frame</strong> – The time frame</p></li>
+<li><p><strong>x</strong> – Vector expressed in Earth’s frame</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>Vector x expressed in the body frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.control.System.LTISystem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.control.System.</span></span><span class="sig-name descname"><span class="pre">LTISystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">str,</span> <span class="pre">shape_command:</span> <span class="pre">int,</span> <span class="pre">snames_state:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;,</span> <span class="pre">method:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'dop853'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/control/System.html#LTISystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.LTISystem" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference internal" href="#blocksim.control.System.ASystem" title="blocksim.control.System.ASystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.System.ASystem</span></code></a></p>
+<p>Models a SISO LTI system :</p>
+<p><span class="math notranslate nohighlight">\(dX/dt = A.X + B.u\)</span></p>
+<p>The input name of the element is <strong>command</strong>
+The output name of the computer is <strong>state</strong></p>
+<p>The matrix A and B are parameters that must be defined by the user :</p>
+<ul class="simple">
+<li><p>matA : (n x n) State (or system) matrix</p></li>
+<li><p>matB : (n x m) Input matrix</p></li>
+</ul>
+<p>with :</p>
+<ul class="simple">
+<li><p>n number of states (shape of snames_state in the init arguments)</p></li>
+<li><p>m number of commands (shape_command in the init arguments)</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the system</p></li>
+<li><p><strong>shape_command</strong> – Shape of the data expected by the command</p></li>
+<li><p><strong>snames_state</strong> – Name of each of the scalar components of the state.
+Its shape defines the shape of the data</p></li>
+<li><p><strong>dtype</strong> – Data type (typically np.float64 or np.complex128)</p></li>
+<li><p><strong>method</strong> – Integrator selected for scipy.ode. Default : “dop853”</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.System.LTISystem.getDiscreteMatrices">
+<span class="sig-name descname"><span class="pre">getDiscreteMatrices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'zoh'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">array</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/control/System.html#LTISystem.getDiscreteMatrices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.LTISystem.getDiscreteMatrices" title="Lien permanent vers cette définition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt</strong> – The discretization time step</p></li>
+<li><p><strong>method</strong> – <ul>
+<li><p>gbt: generalized bilinear transformation</p></li>
+<li><p>bilinear: Tustin’s approximation (“gbt” with alpha=0.5)</p></li>
+<li><p>euler: Euler (or forward differencing) method (“gbt” with alpha=0)</p></li>
+<li><p>backward_diff: Backwards differencing (“gbt” with alpha=1.0)</p></li>
+<li><p>zoh: zero-order hold (default)</p></li>
+</ul>
+</p></li>
+<li><p><strong>alpha</strong> – Within [0, 1]
+The generalized bilinear transformation weighting parameter, which should only be specified with method=”gbt”, and is ignored otherwise</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Ad</dt><dd><p>Discrete dynamics matrix</p>
+</dd>
+<dt>Bd</dt><dd><p>Discrete input matrix</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="mf">1.</span> <span class="c1"># Mass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">k</span> <span class="o">=</span> <span class="mf">40.</span> <span class="c1"># Spring rate</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sys</span> <span class="o">=</span> <span class="n">LTISystem</span><span class="p">(</span><span class="s1">&#39;sys&#39;</span><span class="p">,</span> <span class="n">shape_command</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">snames_state</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="s1">&#39;v&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sys</span><span class="o">.</span><span class="n">matA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="o">-</span><span class="n">k</span><span class="o">/</span><span class="n">m</span><span class="p">,</span><span class="mi">0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sys</span><span class="o">.</span><span class="n">matB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="o">/</span><span class="n">m</span><span class="p">]])</span><span class="o">.</span><span class="n">T</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Kk</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">m</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Ka</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">k</span><span class="o">/</span><span class="n">m</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">A</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">Ka</span> <span class="o">*</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">Ka</span> <span class="o">*</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">))</span> <span class="o">/</span> <span class="n">Ka</span><span class="p">],</span>
+<span class="gp">... </span>                    <span class="p">[</span><span class="o">-</span><span class="n">Ka</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">Ka</span> <span class="o">*</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">Ka</span> <span class="o">*</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">))]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Ad</span><span class="p">,</span><span class="n">Bd</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getDiscreteMatrices</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">D</span> <span class="o">=</span> <span class="n">A</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">2.1</span><span class="p">)</span> <span class="o">-</span> <span class="n">Ad</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lin</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.e-14</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.System.LTISystem.jacobian">
+<span class="sig-name descname"><span class="pre">jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/System.html#LTISystem.jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.LTISystem.jacobian" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Defines the jacobian of
+the transition function f(t,x,u) with respect to x:</p>
+<p>x” = f(t,x,u)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – Date of the current state</p></li>
+<li><p><strong>x</strong> – Current state</p></li>
+<li><p><strong>u</strong> – Command applied to the system</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The jacobian of the transition function with respect to x</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.System.LTISystem.transition">
+<span class="sig-name descname"><span class="pre">transition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">array</span></span></span><a class="reference internal" href="_modules/blocksim/control/System.html#LTISystem.transition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.System.LTISystem.transition" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Defines the transition function f(t,x,u) :</p>
+<p>x” = f(t,x,u)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – Date of the current state</p></li>
+<li><p><strong>x</strong> – Current state</p></li>
+<li><p><strong>u</strong> – Command applied to the system</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The derivative of the state</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="blocksim.control.SetPoint.html" class="btn btn-neutral float-left" title="blocksim.control.SetPoint module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="blocksim.core.html" class="btn btn-neutral float-right" title="blocksim.core package" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

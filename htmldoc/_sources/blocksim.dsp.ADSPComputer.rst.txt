@@ -1,0 +1,7 @@
+blocksim.dsp.ADSPComputer module
+================================
+
+.. automodule:: blocksim.dsp.ADSPComputer
+   :members:
+   :undoc-members:
+   :show-inheritance:

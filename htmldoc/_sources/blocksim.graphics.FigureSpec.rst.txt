@@ -1,0 +1,7 @@
+blocksim.graphics.FigureSpec module
+===================================
+
+.. automodule:: blocksim.graphics.FigureSpec
+   :members:
+   :undoc-members:
+   :show-inheritance:

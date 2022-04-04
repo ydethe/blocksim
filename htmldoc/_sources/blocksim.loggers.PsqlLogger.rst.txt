@@ -1,0 +1,7 @@
+blocksim.loggers.PsqlLogger module
+==================================
+
+.. automodule:: blocksim.loggers.PsqlLogger
+   :members:
+   :undoc-members:
+   :show-inheritance:

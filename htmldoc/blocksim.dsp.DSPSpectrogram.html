@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.dsp.DSPSpectrogram module &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/translations.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="blocksim.dsp.DSPSpectrum module" href="blocksim.dsp.DSPSpectrum.html" />
+    <link rel="prev" title="blocksim.dsp.DSPSignal module" href="blocksim.dsp.DSPSignal.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">blocksim</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="blocksim.html">blocksim package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="blocksim.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="blocksim.control.html">blocksim.control package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.core.html">blocksim.core package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="blocksim.dsp.html">blocksim.dsp package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.gnss.html">blocksim.gnss package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.graphics.html">blocksim.graphics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.loggers.html">blocksim.loggers package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.source.html">blocksim.source package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#module-blocksim">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">blocksim</a> &raquo;</li>
+          <li><a href="blocksim.html">blocksim package</a> &raquo;</li>
+          <li><a href="blocksim.dsp.html">blocksim.dsp package</a> &raquo;</li>
+      <li>blocksim.dsp.DSPSpectrogram module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/blocksim.dsp.DSPSpectrogram.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="module-blocksim.dsp.DSPSpectrogram">
+<span id="blocksim-dsp-dspspectrogram-module"></span><h1>blocksim.dsp.DSPSpectrogram module<a class="headerlink" href="#module-blocksim.dsp.DSPSpectrogram" title="Lien permanent vers ce titre"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.dsp.DSPSpectrogram.DSPSpectrogram">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.dsp.DSPSpectrogram.</span></span><span class="sig-name descname"><span class="pre">DSPSpectrogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samplingXStart:</span> <span class="pre">typing.Optional[float]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samplingXPeriod:</span> <span class="pre">typing.Optional[float]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samplingYStart:</span> <span class="pre">typing.Optional[float]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samplingYPeriod:</span> <span class="pre">typing.Optional[float]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img:</span> <span class="pre">typing.Optional[numpy.array]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'rectilinear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_transform=&lt;ufunc</span> <span class="pre">'absolute'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/dsp/DSPSpectrogram.html#DSPSpectrogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.dsp.DSPSpectrogram.DSPSpectrogram" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Representation of a spectrogram</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the spectrum</p></li>
+<li><p><strong>samplingXStart</strong> (<em>s</em>) – First date of the sample of the spectrogram</p></li>
+<li><p><strong>samplingXPeriod</strong> (<em>s</em>) – Time spacing of the spectrogram</p></li>
+<li><p><strong>samplingYStart</strong> (<em>Hz</em>) – First frequency of the sample of the spectrogram</p></li>
+<li><p><strong>samplingYPeriod</strong> (<em>Hz</em>) – Frequency spacing of the spectrogram</p></li>
+<li><p><strong>img</strong> – Matrix of complex samples</p></li>
+<li><p><strong>projection</strong> – Axe projection. Can be “rectilinear” or “polar”</p></li>
+<li><p><strong>default_transform</strong> – Function to apply to the samples before plotting.
+Shall be vectorized</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.dsp.DSPSpectrogram.DSPSpectrogram.findPeaksWithTransform">
+<span class="sig-name descname"><span class="pre">findPeaksWithTransform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nb_peaks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="blocksim.dsp.Peak.html#blocksim.dsp.Peak.Peak" title="blocksim.dsp.Peak.Peak"><span class="pre">blocksim.dsp.Peak.Peak</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/dsp/DSPSpectrogram.html#DSPSpectrogram.findPeaksWithTransform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.dsp.DSPSpectrogram.DSPSpectrogram.findPeaksWithTransform" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Finds the peaks
+The search is performed on the tranformed samples (with the argument <em>transform</em>, or the attribute <em>default_transform</em>)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transform</strong> – A callable applied on samples before looking for the peaks</p></li>
+<li><p><strong>nb_peaks</strong> – Max number of peaks to seach. Only the highest are kept</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The list of detected peaks, sorted by descreasing value of the peak</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.dsp.DSPSpectrogram.DSPSpectrogram.generateXSerie">
+<span class="sig-name descname"><span class="pre">generateXSerie</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/dsp/DSPSpectrogram.html#DSPSpectrogram.generateXSerie"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.dsp.DSPSpectrogram.DSPSpectrogram.generateXSerie" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Generates the x samples of the spectrogram</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>index</strong> – If given, returns only the x coord at the position given by index</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The x coordinate(s)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.dsp.DSPSpectrogram.DSPSpectrogram.generateYSerie">
+<span class="sig-name descname"><span class="pre">generateYSerie</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/dsp/DSPSpectrogram.html#DSPSpectrogram.generateYSerie"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.dsp.DSPSpectrogram.DSPSpectrogram.generateYSerie" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Generates the y samples of the spectrogram</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>index</strong> – If given, returns only the y coord at the position given by index</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The y coordinate(s)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.dsp.DSPSpectrogram.DSPSpectrogram.to_db">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_db</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/dsp/DSPSpectrogram.html#DSPSpectrogram.to_db"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.dsp.DSPSpectrogram.DSPSpectrogram.to_db" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Converts the samples into their power, in dB.
+If a sample’s power is below <em>low</em>, the dB value in clamped to <em>low</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>x</strong> – The array of samples</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The power of the serie <em>x</em> in dB</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.dsp.DSPSpectrogram.DSPSpectrogram.to_db_lim">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_db_lim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">low</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span></span></span><a class="reference internal" href="_modules/blocksim/dsp/DSPSpectrogram.html#DSPSpectrogram.to_db_lim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.dsp.DSPSpectrogram.DSPSpectrogram.to_db_lim" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Returns a function that turns a complex signal into the power serie of the signal, in dB.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>low</strong> (<em>dB</em>) – The min value to clamp to</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The function to map on a complex time serie</p>
+</dd>
+</dl>
+<p class="rubric">Exemples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">DSPLine</span><span class="o">.</span><span class="n">to_db_lim</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">80</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="go">-60.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="go">-80.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">(</span><span class="mf">1e-5</span><span class="p">)</span>
+<span class="go">-80.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="blocksim.dsp.DSPSignal.html" class="btn btn-neutral float-left" title="blocksim.dsp.DSPSignal module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="blocksim.dsp.DSPSpectrum.html" class="btn btn-neutral float-right" title="blocksim.dsp.DSPSpectrum module" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-from typing import Any, Tuple
+from typing import Any, Tuple, Iterable
 
 from parse import compile
 import numpy as np
@@ -18,6 +18,8 @@ from ..dsp.DSPSpectrogram import DSPSpectrogram
 from ..dsp import phase_unfold
 from .AxeSpec import AxeSpec
 from .FigureSpec import FigureSpec
+from .B3DPlotter import B3DPlotter
+from ..source.Trajectory import Trajectory
 
 
 def getUnitAbbrev(mult: float) -> str:
@@ -48,7 +50,7 @@ def getUnitAbbrev(mult: float) -> str:
 def format_parameter(samp: float, unit: str) -> str:
     xm = np.abs(samp)
     pm = (int(log10(xm)) // 3) * 3
-    x_unit_mult = 10**pm
+    x_unit_mult = 10 ** pm
     x_unit_lbl = getUnitAbbrev(x_unit_mult)
     txt = "%.3g %s%s" % (samp / x_unit_mult, x_unit_lbl, unit)
     return txt
@@ -240,7 +242,7 @@ def plotSpectrogram(
         x_samp = spg.generateXSerie()
         xm = np.max(np.abs(x_samp))
         pm = (int(log10(xm)) // 3) * 3
-        x_unit_mult = 10**pm
+        x_unit_mult = 10 ** pm
     x_unit_lbl = getUnitAbbrev(x_unit_mult)
 
     if "y_unit_mult" in kwargs.keys():
@@ -249,7 +251,7 @@ def plotSpectrogram(
         y_samp = spg.generateYSerie()
         ym = np.max(np.abs(y_samp))
         pm = (int(log10(ym)) // 3) * 3
-        y_unit_mult = 10**pm
+        y_unit_mult = 10 ** pm
     y_unit_lbl = getUnitAbbrev(y_unit_mult)
     # lbl = kwargs.pop("label", spg.name)
 
@@ -358,20 +360,10 @@ def plotSpectrogram(
         axe.axe_d.grid(True)
         axe.axe_v.grid(True)
         axe.axe_d.set_xlabel(
-            "%s (%s%s)"
-            % (
-                spg.name_of_x_var,
-                x_unit_lbl,
-                spg.unit_of_x_var,
-            )
+            "%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, spg.unit_of_x_var,)
         )
         axe.axe_v.set_xlabel(
-            "%s (%s%s)"
-            % (
-                spg.name_of_y_var,
-                y_unit_lbl,
-                spg.unit_of_y_var,
-            )
+            "%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, spg.unit_of_y_var,)
         )
 
         cid = axe.figure.canvas.mpl_connect("button_press_event", on_click)
@@ -486,7 +478,7 @@ def plotDSPLine(line: DSPLine, spec: "SubplotSpec" = None, **kwargs) -> "AxesSub
         ilxm = int(np.round(lxm, 0))
         ilxm3 = ilxm // 3
         pm = ilxm3 * 3
-        x_unit_mult = 10**pm
+        x_unit_mult = 10 ** pm
     axe.x_unitilxm3_mult = x_unit_mult
     x_unit_lbl = getUnitAbbrev(x_unit_mult)
     lbl = kwargs.pop("label", line.name)
@@ -562,5 +554,50 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":
 
     spec = FigureSpec({"title": fig_title}, axes=l_aspec)
     fig = createFigureFromSpec(spec, log)
+
+    return fig
+
+
+def plot3DEarth(trajectories: Iterable[Trajectory]) -> B3DPlotter:
+    app = B3DPlotter()
+
+    app.buildEarth()
+
+    for traj in trajectories:
+        app.buildTrajectory(traj)
+
+    return app
+
+
+def plotBER(fic, output=""):
+    p = compile(
+        "[{level}] - SNR = {snr} dB, it={it}, Bits Received = {bit_rx}, Bit errors = {bit_err}, BER = {ber}"
+    )
+
+    f = open(fic, "r")
+    snr = []
+    ber = []
+    for line in f:
+        dat = p.parse(line)
+        snr.append(float(dat["snr"]))
+        ber.append(float(dat["ber"]))
+
+    c_n0 = np.array(snr) + 10 * log10(180e3)
+
+    fig = plt.figure(dpi=150)
+    axe = fig.add_subplot(111)
+    axe.grid(True)
+    axe.grid(b=True, which="minor", color="#999999", linestyle="-", alpha=0.2)
+    axe.semilogy(c_n0, ber, label="Simu BER")
+    axe.legend()
+    axe.set_xlabel("$C/N_0$ (dB)")
+    axe.set_ylabel("BER")
+
+    if output == "show":
+        plt.show()
+    elif output == "":
+        pass
+    else:
+        plt.savefig(output)
 
     return fig

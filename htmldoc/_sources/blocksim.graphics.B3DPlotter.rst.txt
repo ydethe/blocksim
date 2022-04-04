@@ -1,0 +1,7 @@
+blocksim.graphics.B3DPlotter module
+===================================
+
+.. automodule:: blocksim.graphics.B3DPlotter
+   :members:
+   :undoc-members:
+   :show-inheritance:

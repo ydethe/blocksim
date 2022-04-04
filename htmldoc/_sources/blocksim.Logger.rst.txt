@@ -1,0 +1,7 @@
+blocksim.Logger module
+======================
+
+.. automodule:: blocksim.Logger
+   :members:
+   :undoc-members:
+   :show-inheritance:

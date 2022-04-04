@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.dsp.DSPFilter &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">blocksim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Code du module</a> &raquo;</li>
+          <li><a href="../dsp.html">blocksim.dsp</a> &raquo;</li>
+      <li>blocksim.dsp.DSPFilter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Code source de blocksim.dsp.DSPFilter</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log10</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">firwin2</span><span class="p">,</span> <span class="n">firwin</span><span class="p">,</span> <span class="n">lfilter_zi</span><span class="p">,</span> <span class="n">lfilter</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">..core.Frame</span> <span class="kn">import</span> <span class="n">Frame</span>
+<span class="kn">from</span> <span class="nn">..core.Node</span> <span class="kn">import</span> <span class="n">AComputer</span><span class="p">,</span> <span class="n">Input</span><span class="p">,</span> <span class="n">Output</span>
+<span class="kn">from</span> <span class="nn">.DSPSignal</span> <span class="kn">import</span> <span class="n">DSPSignal</span>
+<span class="kn">from</span> <span class="nn">.CircularBuffer</span> <span class="kn">import</span> <span class="n">CircularBuffer</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ADSPFilter&quot;</span><span class="p">,</span> <span class="s2">&quot;BandpassDSPFilter&quot;</span><span class="p">,</span> <span class="s2">&quot;DSPFilter&quot;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">WeightedOutput</span><span class="p">(</span><span class="n">Output</span><span class="p">):</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;__taps&quot;</span><span class="p">,</span> <span class="s2">&quot;__buf&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+        <span class="n">Output</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">snames</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sample&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setInitialState</span><span class="p">(</span><span class="n">initial_state</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">resetCallback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n">Frame</span><span class="p">):</span>
+        <span class="n">filt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getComputer</span><span class="p">()</span>
+        <span class="n">typ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDataType</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__taps</span> <span class="o">=</span> <span class="n">filt</span><span class="o">.</span><span class="n">generateCoefficients</span><span class="p">()</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__taps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__buf</span> <span class="o">=</span> <span class="n">CircularBuffer</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">typ</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">processSample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__buf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__buf</span><span class="o">.</span><span class="n">getAsArray</span><span class="p">()</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">buf</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">__taps</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+
+<div class="viewcode-block" id="ADSPFilter"><a class="viewcode-back" href="../../../blocksim.dsp.DSPFilter.html#blocksim.dsp.DSPFilter.ADSPFilter">[docs]</a><span class="k">class</span> <span class="nc">ADSPFilter</span><span class="p">(</span><span class="n">AComputer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A filter</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name</span>
+<span class="sd">        Name of the spectrum</span>
+<span class="sd">      samplingPeriod (s)</span>
+<span class="sd">        Time spacing of the signal</span>
+
+<span class="sd">        .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">samplingPeriod</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">AComputer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;samplingPeriod&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">samplingPeriod</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">defineInput</span><span class="p">(</span><span class="s2">&quot;unfilt&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">otp</span> <span class="o">=</span> <span class="n">WeightedOutput</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;filt&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addOutput</span><span class="p">(</span><span class="n">otp</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ADSPFilter.getTransientPhaseDuration"><a class="viewcode-back" href="../../../blocksim.dsp.DSPFilter.html#blocksim.dsp.DSPFilter.ADSPFilter.getTransientPhaseDuration">[docs]</a>    <span class="k">def</span> <span class="nf">getTransientPhaseDuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">numtaps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generateCoefficients</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">numtaps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">samplingPeriod</span> <span class="o">/</span> <span class="mi">2</span></div>
+
+<div class="viewcode-block" id="ADSPFilter.generateCoefficients"><a class="viewcode-back" href="../../../blocksim.dsp.DSPFilter.html#blocksim.dsp.DSPFilter.ADSPFilter.generateCoefficients">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">generateCoefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="ADSPFilter.compute_outputs"><a class="viewcode-back" href="../../../blocksim.dsp.DSPFilter.html#blocksim.dsp.DSPFilter.ADSPFilter.compute_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">compute_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">t1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">t2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">unfilt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+        <span class="n">filt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">otp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getOutputByName</span><span class="p">(</span><span class="s2">&quot;filt&quot;</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">unfilt</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">filt</span> <span class="o">=</span> <span class="n">otp</span><span class="o">.</span><span class="n">processSample</span><span class="p">(</span><span class="n">unfilt</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;filt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">filt</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div>
+
+<div class="viewcode-block" id="ADSPFilter.apply"><a class="viewcode-back" href="../../../blocksim.dsp.DSPFilter.html#blocksim.dsp.DSPFilter.ADSPFilter.apply">[docs]</a>    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="n">DSPSignal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DSPSignal</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Filters a :class:`blocksim.dsp.DSPSignal.DSPSignal` without having to create a blocksim.Simulation.Simulation</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          s</span>
+<span class="sd">            The :class:`blocksim.dsp.DSPSignal.DSPSignal` to filter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The filtered signal</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateCoefficients</span><span class="p">()</span>
+
+        <span class="n">zi</span> <span class="o">=</span> <span class="n">lfilter_zi</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">z</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">lfilter</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">.</span><span class="n">y_serie</span><span class="p">,</span> <span class="n">zi</span><span class="o">=</span><span class="n">zi</span> <span class="o">*</span> <span class="n">s</span><span class="o">.</span><span class="n">y_serie</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">DSPSignal</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Filtered </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">s</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">samplingStart</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">samplingStart</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">getTransientPhaseDuration</span><span class="p">(),</span>
+            <span class="n">samplingPeriod</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">samplingPeriod</span><span class="p">,</span>
+            <span class="n">y_serie</span><span class="o">=</span><span class="n">z</span><span class="p">,</span>
+            <span class="n">default_transform</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ADSPFilter.process"><a class="viewcode-back" href="../../../blocksim.dsp.DSPFilter.html#blocksim.dsp.DSPFilter.ADSPFilter.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Filters a signal without having to create a blocksim.Simulation.Simulation</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          s</span>
+<span class="sd">            The signal to filter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The filtered signal</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generateCoefficients</span><span class="p">()</span>
+
+        <span class="n">zi</span> <span class="o">=</span> <span class="n">lfilter_zi</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">z</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">lfilter</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="p">,</span> <span class="n">zi</span><span class="o">=</span><span class="n">zi</span> <span class="o">*</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">z</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">ArbitraryDSPFilter</span><span class="p">(</span><span class="n">ADSPFilter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A filter</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name</span>
+<span class="sd">        Name of the spectrum</span>
+<span class="sd">      samplingPeriod (s)</span>
+<span class="sd">        Time spacing of the signal</span>
+<span class="sd">      taps</span>
+<span class="sd">        Coefficients of the filter</span>
+
+<span class="sd">        .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">samplingPeriod</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">taps</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">ADSPFilter</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">samplingPeriod</span><span class="o">=</span><span class="n">samplingPeriod</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;samplingPeriod&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">samplingPeriod</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;taps&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">taps</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">generateCoefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">taps</span>
+
+
+<div class="viewcode-block" id="BandpassDSPFilter"><a class="viewcode-back" href="../../../blocksim.dsp.DSPFilter.html#blocksim.dsp.DSPFilter.BandpassDSPFilter">[docs]</a><span class="k">class</span> <span class="nc">BandpassDSPFilter</span><span class="p">(</span><span class="n">ADSPFilter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A filter</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name</span>
+<span class="sd">        Name of the spectrum</span>
+<span class="sd">      f_low (Hz)</span>
+<span class="sd">        Start frequency of the band pass</span>
+<span class="sd">      f_high (Hz)</span>
+<span class="sd">        End frequency of the band pass</span>
+<span class="sd">      numtaps</span>
+<span class="sd">        Number of coefficients</span>
+<span class="sd">      win</span>
+<span class="sd">        The window to be applied. Should be compatible with `get_window`_.</span>
+
+<span class="sd">        .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">f_low</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">f_high</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">numtaps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">samplingPeriod</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">win</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;hamming&quot;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">ADSPFilter</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">samplingPeriod</span><span class="o">=</span><span class="n">samplingPeriod</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;f_low&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">f_low</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;f_high&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">f_high</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;numtaps&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">numtaps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;win&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BandpassDSPFilter.generateCoefficients"><a class="viewcode-back" href="../../../blocksim.dsp.DSPFilter.html#blocksim.dsp.DSPFilter.BandpassDSPFilter.generateCoefficients">[docs]</a>    <span class="k">def</span> <span class="nf">generateCoefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;array&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Generates the filter&#39;s coefficients</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The coefficients</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fs</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">samplingPeriod</span>
+
+        <span class="c1"># https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need/31077</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="mf">10e-2</span>
+        <span class="n">nt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">log10</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">d</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">fs</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_low</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">nt</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">numtaps</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">numtaps</span><span class="p">,</span> <span class="n">nt</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_low</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">co</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_high</span>
+            <span class="n">pz</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">co</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">f_low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_high</span><span class="p">]</span>
+            <span class="n">pz</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># logger.debug(&quot;%s, %f&quot;%(str(co),1/self.samplingPeriod))</span>
+
+        <span class="n">b</span> <span class="o">=</span> <span class="n">firwin</span><span class="p">(</span>
+            <span class="n">numtaps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">numtaps</span><span class="p">,</span>
+            <span class="n">cutoff</span><span class="o">=</span><span class="n">co</span><span class="p">,</span>
+            <span class="n">pass_zero</span><span class="o">=</span><span class="n">pz</span><span class="p">,</span>
+            <span class="n">scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">window</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">win</span><span class="p">,</span>
+            <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">b</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

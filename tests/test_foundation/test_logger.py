@@ -141,7 +141,8 @@ class TestLogger(TestBase):
 
     def test_log_formatter(self):
         logger.debug("poney")
-    def test_save_load_psql(self):
+
+    def ntest_save_load_psql(self):
         pth = "postgresql+psycopg2://postgres@localhost/simulations"
 
         log = Logger()

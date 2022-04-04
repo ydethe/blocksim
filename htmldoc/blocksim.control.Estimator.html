@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.control.Estimator module &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/translations.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="blocksim.control.IMU module" href="blocksim.control.IMU.html" />
+    <link rel="prev" title="blocksim.control.Controller module" href="blocksim.control.Controller.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">blocksim</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="blocksim.html">blocksim package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="blocksim.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="blocksim.control.html">blocksim.control package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.core.html">blocksim.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.dsp.html">blocksim.dsp package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.gnss.html">blocksim.gnss package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.graphics.html">blocksim.graphics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.loggers.html">blocksim.loggers package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.source.html">blocksim.source package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#module-blocksim">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">blocksim</a> &raquo;</li>
+          <li><a href="blocksim.html">blocksim package</a> &raquo;</li>
+          <li><a href="blocksim.control.html">blocksim.control package</a> &raquo;</li>
+      <li>blocksim.control.Estimator module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/blocksim.control.Estimator.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="module-blocksim.control.Estimator">
+<span id="blocksim-control-estimator-module"></span><h1>blocksim.control.Estimator module<a class="headerlink" href="#module-blocksim.control.Estimator" title="Lien permanent vers ce titre"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.AEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.control.Estimator.</span></span><span class="sig-name descname"><span class="pre">AEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">str,</span> <span class="pre">shape_cmd:</span> <span class="pre">tuple,</span> <span class="pre">snames_state:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">snames_output:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#AEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.AEstimator" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference internal" href="blocksim.core.Node.html#blocksim.core.Node.AComputer" title="blocksim.core.Node.AComputer"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.core.Node.AComputer</span></code></a></p>
+<p>Abstract class for a state estimator</p>
+<p>Implement the method <strong>compute_outputs</strong> to make it concrete</p>
+<p>The input name of the element are <strong>command</strong> and <strong>measurement</strong>
+The outputs of the computer are <strong>state</strong> and <strong>output</strong>
+The <strong>output</strong> vector and the <strong>measurement</strong> vector shall have the same shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the element</p></li>
+<li><p><strong>shape_cmd</strong> – Shape of the command</p></li>
+<li><p><strong>snames_state</strong> – Name of each of the scalar components of the state.
+Its shape defines the shape of the data</p></li>
+<li><p><strong>snames_output</strong> – Name of each of the scalar components of the output.
+Its shape defines the shape of the data</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.AKalmanFilter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.control.Estimator.</span></span><span class="sig-name descname"><span class="pre">AKalmanFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">str,</span> <span class="pre">shape_cmd:</span> <span class="pre">tuple,</span> <span class="pre">snames_state:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">snames_output:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#AKalmanFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.AKalmanFilter" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference internal" href="#blocksim.control.Estimator.AEstimator" title="blocksim.control.Estimator.AEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.Estimator.AEstimator</span></code></a></p>
+<p>Definition of the matrices which define the filter</p>
+<p>The inputs of the element are <strong>command</strong> and <strong>measurement</strong>
+The outputs of the computer are <strong>state</strong>, <strong>output</strong>, <strong>statecov</strong> and <strong>matK</strong></p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/State-space_representation#Linear_systems">https://en.wikipedia.org/wiki/State-space_representation#Linear_systems</a></p>
+<p><span class="math notranslate nohighlight">\(X_{k+1} = A.X_k + B.u_k + N_x\)</span></p>
+<p><span class="math notranslate nohighlight">\(Y_k = C.X_k + D.u_k + N_y\)</span></p>
+<p>with :</p>
+<ul class="simple">
+<li><p>n number of states</p></li>
+<li><p>m number of commands</p></li>
+<li><p>p number of measured states</p></li>
+<li><p>X state vector (n,1)</p></li>
+<li><p>Y output vector (p,1)</p></li>
+<li><p>u input (or control) vector (m,1)</p></li>
+<li><p>A (n x n) State (or system) matrix</p></li>
+<li><p>B (n x m) Input matrix</p></li>
+<li><p>C (p x n) Output matrix</p></li>
+<li><p>D (p x m) Feedthrough (or feedforward) matrix</p></li>
+<li><p>Nx gaussian noise with covariance Q</p></li>
+<li><p>Ny gaussian noise with covariance R</p></li>
+</ul>
+<p>The matrices A, B, C, D, Q, R must be implemented for AKalmanFilter to be used</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the element</p></li>
+<li><p><strong>shape_cmd</strong> – Shape of the command</p></li>
+<li><p><strong>snames_state</strong> – Name of each of the scalar components of the state.
+Its shape defines the shape of the data</p></li>
+<li><p><strong>snames_output</strong> – Name of each of the scalar components of the output.
+Its shape defines the shape of the data</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.AKalmanFilter.A">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">A</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#AKalmanFilter.A"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.AKalmanFilter.A" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>(n x n) State (or system) matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.AKalmanFilter.B">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">B</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#AKalmanFilter.B"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.AKalmanFilter.B" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>(n x m) Input matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.AKalmanFilter.C">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">C</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#AKalmanFilter.C"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.AKalmanFilter.C" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>(p x n) Output matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.AKalmanFilter.D">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#AKalmanFilter.D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.AKalmanFilter.D" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>(p x m) Feedthrough (or feedforward) matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.AKalmanFilter.Q">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#AKalmanFilter.Q"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.AKalmanFilter.Q" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>(n x n) Gaussian noise covariance for the state vector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.AKalmanFilter.R">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">R</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#AKalmanFilter.R"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.AKalmanFilter.R" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>(n x n) Gaussian noise covariance for the measurement vector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.AKalmanFilter.compute_outputs">
+<span class="sig-name descname"><span class="pre">compute_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statecov</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matK</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#AKalmanFilter.compute_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.AKalmanFilter.compute_outputs" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.MadgwickFilter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.control.Estimator.</span></span><span class="sig-name descname"><span class="pre">MadgwickFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#MadgwickFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.MadgwickFilter" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference internal" href="blocksim.core.Node.html#blocksim.core.Node.AComputer" title="blocksim.core.Node.AComputer"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.core.Node.AComputer</span></code></a></p>
+<p>Madgwick filter</p>
+<p>Estimates roll, pitch, yaw (rad)</p>
+<p>The inputs of the element are <strong>command</strong> and <strong>measurement</strong></p>
+<p>The parameters are :</p>
+<ul class="simple">
+<li><p>beta : Proportional gain of the Madgwick algorithm</p></li>
+<li><p>mag_softiron_matrix : Soft iron error compensation matrix</p></li>
+<li><p>mag_offsets : Offsets applied to raw x/y/z values (uTesla)</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the element</p></li>
+<li><p><strong>beta</strong> – Proportional gain of the Madgwick algorithm</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.MadgwickFilter.compute_outputs">
+<span class="sig-name descname"><span class="pre">compute_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">euler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#MadgwickFilter.compute_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.MadgwickFilter.compute_outputs" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.MadgwickFilter.getMagnetometerCalibration">
+<span class="sig-name descname"><span class="pre">getMagnetometerCalibration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.array</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#MadgwickFilter.getMagnetometerCalibration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.MadgwickFilter.getMagnetometerCalibration" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Returns a copy of the elements of the magnetometer calibration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p><p>Offsets applied to raw x/y/z values (uTesla)</p>
+<p>Soft iron error compensation matrix</p>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.MadgwickFilter.setMagnetometerCalibration">
+<span class="sig-name descname"><span class="pre">setMagnetometerCalibration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">softiron_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#MadgwickFilter.setMagnetometerCalibration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.MadgwickFilter.setMagnetometerCalibration" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Sets the magnetometer calibration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>offsets</strong> – Offsets applied to raw x/y/z values (uTesla)</p></li>
+<li><p><strong>softiron_matrix</strong> – Soft iron error compensation matrix</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.MahonyFilter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.control.Estimator.</span></span><span class="sig-name descname"><span class="pre">MahonyFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kp:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ki:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#MahonyFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.MahonyFilter" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference internal" href="blocksim.core.Node.html#blocksim.core.Node.AComputer" title="blocksim.core.Node.AComputer"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.core.Node.AComputer</span></code></a></p>
+<p>Mahony filter</p>
+<p>Estimates roll, pitch, yaw (rad)</p>
+<p>The inputs of the element are <strong>command</strong> and <strong>measurement</strong></p>
+<p>The parameters are :</p>
+<ul class="simple">
+<li><p>Kp : Proportional gain of the Mahony algorithm</p></li>
+<li><p>Ki : Integral gain of the Mahony algorithm</p></li>
+<li><p>mag_softiron_matrix : Soft iron error compensation matrix</p></li>
+<li><p>mag_offsets : Offsets applied to raw x/y/z values (uTesla)</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the element</p></li>
+<li><p><strong>Kp</strong> – Proportional gain of the Mahony algorithm</p></li>
+<li><p><strong>Ki</strong> – Integral gain of the Mahony algorithm</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.MahonyFilter.compute_outputs">
+<span class="sig-name descname"><span class="pre">compute_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">euler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#MahonyFilter.compute_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.MahonyFilter.compute_outputs" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.MahonyFilter.getMagnetometerCalibration">
+<span class="sig-name descname"><span class="pre">getMagnetometerCalibration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.array</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#MahonyFilter.getMagnetometerCalibration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.MahonyFilter.getMagnetometerCalibration" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Returns a copy of the elements of the magnetometer calibration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p><p>Offsets applied to raw x/y/z values (uTesla)</p>
+<p>Soft iron error compensation matrix</p>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.MahonyFilter.setMagnetometerCalibration">
+<span class="sig-name descname"><span class="pre">setMagnetometerCalibration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">softiron_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#MahonyFilter.setMagnetometerCalibration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.MahonyFilter.setMagnetometerCalibration" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Sets the magnetometer calibration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>offsets</strong> – Offsets applied to raw x/y/z values (uTesla)</p></li>
+<li><p><strong>softiron_matrix</strong> – Soft iron error compensation matrix</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.SpectrumEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.control.Estimator.</span></span><span class="sig-name descname"><span class="pre">SpectrumEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape_cmd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snames_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snames_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tracks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#SpectrumEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.SpectrumEstimator" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference internal" href="#blocksim.control.Estimator.SteadyStateKalmanFilter" title="blocksim.control.Estimator.SteadyStateKalmanFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.Estimator.SteadyStateKalmanFilter</span></code></a></p>
+<p>Frequency tracker based on a Kalman filter.
+The number of frequencies to be tracked in <em>tracks</em> and the number of states shall be equal</p>
+<p>The inputs of the element are <strong>command</strong> and <strong>measurement</strong></p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the system</p></li>
+<li><p><strong>name_of_outputs</strong> – Names of the outputs of the element</p></li>
+<li><p><strong>name_of_states</strong> – Names of the states of the element</p></li>
+<li><p><strong>tracks</strong> (<em>Hz</em>) – List of the frequencies to be tracked</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.SpectrumEstimator.getSpectrogram">
+<span class="sig-name descname"><span class="pre">getSpectrogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="blocksim.Logger.html#blocksim.Logger.Logger" title="blocksim.Logger.Logger"><span class="pre">blocksim.Logger.Logger</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="blocksim.dsp.DSPSpectrogram.html#blocksim.dsp.DSPSpectrogram.DSPSpectrogram" title="blocksim.dsp.DSPSpectrogram.DSPSpectrogram"><span class="pre">blocksim.dsp.DSPSpectrogram.DSPSpectrogram</span></a></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#SpectrumEstimator.getSpectrogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.SpectrumEstimator.getSpectrogram" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Gets the spectrogram from the Logger after simulation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>log</strong> – The <a class="reference internal" href="blocksim.Logger.html#blocksim.Logger.Logger" title="blocksim.Logger.Logger"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.Logger.Logger</span></code></a> after simulation</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>The spectrogram</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.SteadyStateKalmanFilter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.control.Estimator.</span></span><span class="sig-name descname"><span class="pre">SteadyStateKalmanFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">str,</span> <span class="pre">dt:</span> <span class="pre">float,</span> <span class="pre">shape_cmd:</span> <span class="pre">tuple,</span> <span class="pre">snames_state:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">snames_output:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#SteadyStateKalmanFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.SteadyStateKalmanFilter" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference internal" href="#blocksim.control.Estimator.TimeInvariantKalmanFilter" title="blocksim.control.Estimator.TimeInvariantKalmanFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.Estimator.TimeInvariantKalmanFilter</span></code></a></p>
+<p>Definition of the matrices which define the filter</p>
+<p>The inputs of the element are <strong>command</strong> and <strong>measurement</strong>
+The outputs of the computer are <strong>state</strong>, <strong>output</strong>, <strong>statecov</strong> and <strong>matK</strong></p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/State-space_representation#Linear_systems">https://en.wikipedia.org/wiki/State-space_representation#Linear_systems</a></p>
+<p><span class="math notranslate nohighlight">\(X_{k+1} = A.X_k + B.u_k + N_x\)</span></p>
+<p><span class="math notranslate nohighlight">\(Y_k = C.X_k + D.u_k + N_y\)</span></p>
+<p>with :</p>
+<ul class="simple">
+<li><p>n number of states</p></li>
+<li><p>m number of commands</p></li>
+<li><p>p number of measured states</p></li>
+<li><p>X state vector (n,1)</p></li>
+<li><p>Y output vector (p,1)</p></li>
+<li><p>u input (or control) vector (m,1)</p></li>
+</ul>
+<p>The matrices A, B, C, D, Q, R are provided with attributes, and A and B matrices are those of the <em>continuous time</em> system
+SteadyStateKalmanFilter also takes dt as attribute, since the converged gain matrix depends on the time step, which shall be constant.
+After the simulation (or a call to SteadyStateKalmanFilter.reset), the attribute matK contains the gain matrix in steady state</p>
+<p><strong>The attributes are the following:</strong></p>
+<blockquote>
+<div><dl class="simple">
+<dt>dt</dt><dd><p>Time step of the discretized Kalman filter</p>
+</dd>
+<dt>matA</dt><dd><p>(n x n) Continuous state matrix</p>
+</dd>
+<dt>matB</dt><dd><p>(n x m) Continuous input matrix</p>
+</dd>
+<dt>matC</dt><dd><p>(p x n) Output matrix</p>
+</dd>
+<dt>matD</dt><dd><p>(p x m) Feedthrough (or feedforward) matrix</p>
+</dd>
+<dt>matQ</dt><dd><p>(n x n) N_x covariance</p>
+</dd>
+<dt>matR</dt><dd><p>(p x p) N_y covariance</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the element</p></li>
+<li><p><strong>dt</strong> – Time step used for solving the Discrete Algebraic Riccati Equation</p></li>
+<li><p><strong>shape_cmd</strong> – Shape of the command</p></li>
+<li><p><strong>snames_state</strong> – Name of each of the scalar components of the state.
+Its shape defines the shape of the data</p></li>
+<li><p><strong>snames_output</strong> – Name of each of the scalar components of the output.
+Its shape defines the shape of the data</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.SteadyStateKalmanFilter.compute_outputs">
+<span class="sig-name descname"><span class="pre">compute_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measurement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statecov</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matK</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#SteadyStateKalmanFilter.compute_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.SteadyStateKalmanFilter.compute_outputs" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.TimeInvariantKalmanFilter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">blocksim.control.Estimator.</span></span><span class="sig-name descname"><span class="pre">TimeInvariantKalmanFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">str,</span> <span class="pre">shape_cmd:</span> <span class="pre">tuple,</span> <span class="pre">snames_state:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">snames_output:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">dtype=&lt;class</span> <span class="pre">'numpy.float64'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#TimeInvariantKalmanFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.TimeInvariantKalmanFilter" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Bases : <a class="reference internal" href="#blocksim.control.Estimator.AKalmanFilter" title="blocksim.control.Estimator.AKalmanFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.Estimator.AKalmanFilter</span></code></a></p>
+<p>Definition of the matrices which define the filter</p>
+<p>The inputs of the element are <strong>command</strong> and <strong>measurement</strong>
+The outputs of the computer are <strong>state</strong>, <strong>output</strong>, and <strong>statecov</strong></p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/State-space_representation#Linear_systems">https://en.wikipedia.org/wiki/State-space_representation#Linear_systems</a></p>
+<p><span class="math notranslate nohighlight">\(X_{k+1} = A.X_k + B.u_k + N_x\)</span></p>
+<p><span class="math notranslate nohighlight">\(Y_k = C.X_k + D.u_k + N_y\)</span></p>
+<p>with :</p>
+<ul class="simple">
+<li><p>n number of states</p></li>
+<li><p>m number of commands</p></li>
+<li><p>p number of measured states</p></li>
+<li><p>X state vector (n,1)</p></li>
+<li><p>Y output vector (p,1)</p></li>
+<li><p>u input (or control) vector (m,1)</p></li>
+</ul>
+<p>The matrices A, B, C, D, Q, R are provided with attributes, and A and B matrices are those of the <em>continuous time</em> system</p>
+<p><strong>The attributes are the following:</strong></p>
+<blockquote>
+<div><dl class="simple">
+<dt>matA</dt><dd><p>(n x n) Continuous state matrix</p>
+</dd>
+<dt>matB</dt><dd><p>(n x m) Continuous input matrix</p>
+</dd>
+<dt>matC</dt><dd><p>(p x n) Output matrix</p>
+</dd>
+<dt>matD</dt><dd><p>(p x m) Feedthrough (or feedforward) matrix</p>
+</dd>
+<dt>matQ</dt><dd><p>(n x n) N_x covariance</p>
+</dd>
+<dt>matR</dt><dd><p>(p x p) N_y covariance</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the element</p></li>
+<li><p><strong>shape_cmd</strong> – Shape of the command</p></li>
+<li><p><strong>snames_state</strong> – Name of each of the scalar components of the state.
+Its shape defines the shape of the data</p></li>
+<li><p><strong>snames_output</strong> – Name of each of the scalar components of the output.
+Its shape defines the shape of the data</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.TimeInvariantKalmanFilter.A">
+<span class="sig-name descname"><span class="pre">A</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#TimeInvariantKalmanFilter.A"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.TimeInvariantKalmanFilter.A" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>(n x n) State (or system) matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.TimeInvariantKalmanFilter.B">
+<span class="sig-name descname"><span class="pre">B</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#TimeInvariantKalmanFilter.B"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.TimeInvariantKalmanFilter.B" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>(n x m) Input matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.TimeInvariantKalmanFilter.C">
+<span class="sig-name descname"><span class="pre">C</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#TimeInvariantKalmanFilter.C"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.TimeInvariantKalmanFilter.C" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>(p x n) Output matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.TimeInvariantKalmanFilter.D">
+<span class="sig-name descname"><span class="pre">D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_ss_kal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#TimeInvariantKalmanFilter.D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.TimeInvariantKalmanFilter.D" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>(p x m) Feedthrough (or feedforward) matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.TimeInvariantKalmanFilter.Q">
+<span class="sig-name descname"><span class="pre">Q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#TimeInvariantKalmanFilter.Q"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.TimeInvariantKalmanFilter.Q" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>(n x n) Gaussian noise covariance for the state vector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.TimeInvariantKalmanFilter.R">
+<span class="sig-name descname"><span class="pre">R</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.array</span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#TimeInvariantKalmanFilter.R"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.TimeInvariantKalmanFilter.R" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>(n x n) Gaussian noise covariance for the measurement vector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>frame</strong> – Time frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="blocksim.control.Estimator.TimeInvariantKalmanFilter.discretize">
+<span class="sig-name descname"><span class="pre">discretize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'zoh'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.array</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/blocksim/control/Estimator.html#TimeInvariantKalmanFilter.discretize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.control.Estimator.TimeInvariantKalmanFilter.discretize" title="Lien permanent vers cette définition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt</strong> – Fixed time step of the simulation</p></li>
+<li><p><strong>method</strong> – <ul>
+<li><p>gbt: generalized bilinear transformation</p></li>
+<li><p>bilinear: Tustin’s approximation (“gbt” with alpha=0.5)</p></li>
+<li><p>euler: Euler (or forward differencing) method (“gbt” with alpha=0)</p></li>
+<li><p>backward_diff: Backwards differencing (“gbt” with alpha=1.0)</p></li>
+<li><p>zoh: zero-order hold (default)</p></li>
+</ul>
+</p></li>
+<li><p><strong>alpha</strong> – Within [0, 1]
+The generalized bilinear transformation weighting parameter, which should only be specified with method=”gbt”, and is ignored otherwise</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Ad</dt><dd><p>Discrete dynamics matrix</p>
+</dd>
+<dt>Bd</dt><dd><p>Discrete input matrix</p>
+</dd>
+<dt>Cd</dt><dd><p>Discrete output matrix</p>
+</dd>
+<dt>Dd</dt><dd><p>Discrete direct term</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="blocksim.control.Controller.html" class="btn btn-neutral float-left" title="blocksim.control.Controller module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="blocksim.control.IMU.html" class="btn btn-neutral float-right" title="blocksim.control.IMU module" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

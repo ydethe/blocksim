@@ -1,0 +1,7 @@
+blocksim.exceptions module
+==========================
+
+.. automodule:: blocksim.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+blocksim.core.Generic module
+============================
+
+.. automodule:: blocksim.core.Generic
+   :members:
+   :undoc-members:
+   :show-inheritance:

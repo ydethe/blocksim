@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.dsp.DSPSpectrum &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">blocksim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Code du module</a> &raquo;</li>
+          <li><a href="../dsp.html">blocksim.dsp</a> &raquo;</li>
+      <li>blocksim.dsp.DSPSpectrum</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Code source de blocksim.dsp.DSPSpectrum</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.fft</span> <span class="kn">import</span> <span class="n">ifft</span><span class="p">,</span> <span class="n">fftshift</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">get_window</span>
+
+<span class="kn">from</span> <span class="nn">.DSPLine</span> <span class="kn">import</span> <span class="n">DSPLine</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DSPSpectrum&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="DSPSpectrum"><a class="viewcode-back" href="../../../blocksim.dsp.DSPSpectrum.html#blocksim.dsp.DSPSpectrum.DSPSpectrum">[docs]</a><span class="k">class</span> <span class="nc">DSPSpectrum</span><span class="p">(</span><span class="n">DSPLine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Spectrum of a signal</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name</span>
+<span class="sd">        Name of the spectrum</span>
+<span class="sd">      samplingStart (Hz)</span>
+<span class="sd">        First frequency of the sample of the spectrum</span>
+<span class="sd">      samplingPeriod (Hz)</span>
+<span class="sd">        Frequency spacing of the spectrum</span>
+<span class="sd">      y_serie</span>
+<span class="sd">        Complex samples of the spectrum</span>
+<span class="sd">      default_transform</span>
+<span class="sd">        Function to apply to the samples before plotting.</span>
+<span class="sd">        Shall be vectorized</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">samplingStart</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">samplingPeriod</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">y_serie</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">default_transform</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">DSPLine</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">samplingStart</span><span class="o">=</span><span class="n">samplingStart</span><span class="p">,</span>
+            <span class="n">samplingPeriod</span><span class="o">=</span><span class="n">samplingPeriod</span><span class="p">,</span>
+            <span class="n">y_serie</span><span class="o">=</span><span class="n">y_serie</span><span class="p">,</span>
+            <span class="n">default_transform</span><span class="o">=</span><span class="n">default_transform</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_of_x_var</span> <span class="o">=</span> <span class="s2">&quot;Frequency&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit_of_x_var</span> <span class="o">=</span> <span class="s2">&quot;Hz&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">energy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_serie</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_serie</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+<div class="viewcode-block" id="DSPSpectrum.ifft"><a class="viewcode-back" href="../../../blocksim.dsp.DSPSpectrum.html#blocksim.dsp.DSPSpectrum.DSPSpectrum.ifft">[docs]</a>    <span class="k">def</span> <span class="nf">ifft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">win</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ones&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DSPSignal&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Applies the inverse discrete Fourier transform</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          win</span>
+<span class="sd">            The window to be applied. Should be compatible with `get_window`_.</span>
+
+<span class="sd">            .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The resulting :class:`blocksim.dsp.DSPSignal`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">.DSPSignal</span> <span class="kn">import</span> <span class="n">DSPSignal</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">get_window</span><span class="p">(</span><span class="n">win</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">ifft</span><span class="p">(</span><span class="n">fftshift</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_serie</span> <span class="o">*</span> <span class="n">w</span><span class="p">)</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">samplingPeriod</span>
+
+        <span class="k">return</span> <span class="n">DSPSignal</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Temp. </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">samplingStart</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">samplingPeriod</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="n">n</span> <span class="o">/</span> <span class="n">df</span><span class="p">,</span>
+            <span class="n">y_serie</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

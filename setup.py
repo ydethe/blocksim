@@ -37,7 +37,7 @@ class BuildSphinxCommand(distutils.cmd.Command):
 
     def run(self):
         """Run command."""
-        # sphinx-build -T -b html -D language=fr . _build/html
+        # sphinx-build -T -b html -D language=fr . ../htmldoc
         command = ["sphinx-build"]
         command.append("-T")
         command.append("-b")
@@ -45,7 +45,7 @@ class BuildSphinxCommand(distutils.cmd.Command):
         command.append("-D")
         command.append("language=fr")
         command.append(".")
-        command.append("_build/html")
+        command.append("../htmldoc")
         self.announce("Running command: %s" % str(command), level=distutils.log.INFO)
         wd = os.getcwd()
         os.chdir("docs")
@@ -58,7 +58,5 @@ setup(
     **conf_dict["option"],
     **conf_dict["metadata"],
     install_requires=req,
-    cmdclass={
-        "doc": BuildSphinxCommand,
-    },
+    cmdclass={"doc": BuildSphinxCommand,},
 )

@@ -1,0 +1,7 @@
+blocksim.main module
+====================
+
+.. automodule:: blocksim.main
+   :members:
+   :undoc-members:
+   :show-inheritance:

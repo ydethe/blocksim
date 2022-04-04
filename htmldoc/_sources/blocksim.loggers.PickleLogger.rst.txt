@@ -1,0 +1,7 @@
+blocksim.loggers.PickleLogger module
+====================================
+
+.. automodule:: blocksim.loggers.PickleLogger
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.control.Sensors &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">blocksim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Code du module</a> &raquo;</li>
+      <li>blocksim.control.Sensors</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Code source de blocksim.control.Sensors</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span> <span class="k">as</span> <span class="n">lin</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">..exceptions</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">..core.Node</span> <span class="kn">import</span> <span class="n">AComputer</span><span class="p">,</span> <span class="n">AWGNOutput</span>
+<span class="kn">from</span> <span class="nn">..core.Frame</span> <span class="kn">import</span> <span class="n">Frame</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;ASensors&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ProportionalSensors&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LinearSensors&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;StreamSensors&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;StreamCSVSensors&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="c1"># TODO : asynchronous sensor</span>
+
+
+<div class="viewcode-block" id="ASensors"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.ASensors">[docs]</a><span class="k">class</span> <span class="nc">ASensors</span><span class="p">(</span><span class="n">AComputer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract class for a set of sensors</span>
+
+<span class="sd">    Implement the method **compute_outputs** to make it concrete</span>
+
+<span class="sd">    The input of the computer is **state**</span>
+<span class="sd">    The output of the computer is **measurement**</span>
+
+<span class="sd">    The parameters mean and cov are to be defined by the user :</span>
+
+<span class="sd">    * mean : Mean of the gaussian noise. Dimension (n,1)</span>
+<span class="sd">    * cov : Covariance of the gaussian noise. Dimension (n,n)</span>
+<span class="sd">    * cho : Cholesky decomposition of cov, computed after a first call to *updateAllOutput*. Dimension (n,n)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name</span>
+<span class="sd">        Name of the element</span>
+<span class="sd">      shape_state</span>
+<span class="sd">        Shape of the state data</span>
+<span class="sd">      snames</span>
+<span class="sd">        Name of each of the scalar components of the measurement.</span>
+<span class="sd">        Its shape defines the shape of the data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shape_state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">snames</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+    <span class="p">):</span>
+        <span class="n">AComputer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defineInput</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape_state</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">otp</span> <span class="o">=</span> <span class="n">AWGNOutput</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;measurement&quot;</span><span class="p">,</span> <span class="n">snames</span><span class="o">=</span><span class="n">snames</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">otp</span><span class="o">.</span><span class="n">setInitialState</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">otp</span><span class="o">.</span><span class="n">getDataShape</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">otp</span><span class="o">.</span><span class="n">getDataType</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addOutput</span><span class="p">(</span><span class="n">otp</span><span class="p">)</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="n">otp</span><span class="o">.</span><span class="n">getDataShape</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">otp</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">otp</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ASensors.setCovariance"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.ASensors.setCovariance">[docs]</a>    <span class="k">def</span> <span class="nf">setCovariance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cov</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">oname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;measurement&quot;</span><span class="p">):</span>
+        <span class="n">otp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getOutputByName</span><span class="p">(</span><span class="n">oname</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">otp</span><span class="o">.</span><span class="n">getDataShape</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">cov</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">cov</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+        <span class="n">otp</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="n">cov</span></div>
+
+<div class="viewcode-block" id="ASensors.setMean"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.ASensors.setMean">[docs]</a>    <span class="k">def</span> <span class="nf">setMean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">oname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;measurement&quot;</span><span class="p">):</span>
+        <span class="n">otp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getOutputByName</span><span class="p">(</span><span class="n">oname</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">otp</span><span class="o">.</span><span class="n">getDataShape</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">mean</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">mean</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">otp</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span></div>
+
+<div class="viewcode-block" id="ASensors.getCovariance"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.ASensors.getCovariance">[docs]</a>    <span class="k">def</span> <span class="nf">getCovariance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;measurement&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="n">otp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getOutputByName</span><span class="p">(</span><span class="n">oname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">otp</span><span class="o">.</span><span class="n">cov</span></div>
+
+<div class="viewcode-block" id="ASensors.getMean"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.ASensors.getMean">[docs]</a>    <span class="k">def</span> <span class="nf">getMean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;measurement&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="n">otp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getOutputByName</span><span class="p">(</span><span class="n">oname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">otp</span><span class="o">.</span><span class="n">mean</span></div></div>
+
+
+<div class="viewcode-block" id="ProportionalSensors"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.ProportionalSensors">[docs]</a><span class="k">class</span> <span class="nc">ProportionalSensors</span><span class="p">(</span><span class="n">ASensors</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Models a proportional sensor, which computes the theoritical measurement Y:</span>
+
+<span class="sd">    Y = C.X</span>
+
+<span class="sd">    with :</span>
+
+<span class="sd">    * n number of states X</span>
+<span class="sd">    * p number of measured states Y</span>
+
+<span class="sd">    The input of the computer is **state**</span>
+<span class="sd">    The output of the computer is **measurement**</span>
+
+<span class="sd">    The parameters mean and cov are to be defined by the user :</span>
+
+<span class="sd">    * mean : Mean of the gaussian noise. Dimension (n,1)</span>
+<span class="sd">    * cov : Covariance of the gaussian noise. Dimension (n,n)</span>
+<span class="sd">    * cho : Cholesky decomposition of cov, computed after a call to *updateAllOutput*. Dimension (n,n)</span>
+<span class="sd">    * matC : Matrix which turns a state into a noiseless measurement</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name</span>
+<span class="sd">        Name of the element</span>
+<span class="sd">      shape_state</span>
+<span class="sd">        Shape of the state data</span>
+<span class="sd">      snames</span>
+<span class="sd">        Name of each of the scalar components of the measurement.</span>
+<span class="sd">        Its shape defines the shape of the data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shape_state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">snames</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+    <span class="p">):</span>
+        <span class="n">ASensors</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">shape_state</span><span class="o">=</span><span class="n">shape_state</span><span class="p">,</span> <span class="n">snames</span><span class="o">=</span><span class="n">snames</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="s2">&quot;matC&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ProportionalSensors.compute_outputs"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.ProportionalSensors.compute_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">compute_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">t1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">t2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">measurement</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+        <span class="n">state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">meas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matC</span> <span class="o">@</span> <span class="n">state</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;measurement&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">meas</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div></div>
+
+
+<div class="viewcode-block" id="LinearSensors"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.LinearSensors">[docs]</a><span class="k">class</span> <span class="nc">LinearSensors</span><span class="p">(</span><span class="n">ASensors</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Models a linear sensor, which computes the theoritical measurement Y:</span>
+
+<span class="sd">    Y = C.X + D.U</span>
+
+<span class="sd">    with :</span>
+
+<span class="sd">    * n number of states X</span>
+<span class="sd">    * m number of commands U</span>
+<span class="sd">    * p number of measured states Y</span>
+
+<span class="sd">    The inputs of the element are **state** and **command**</span>
+<span class="sd">    The output of the computer is **measurement**</span>
+
+<span class="sd">    The parameters mean and cov are to be defined by the user :</span>
+
+<span class="sd">    * mean : Mean of the gaussian noise. Dimension (n,1)</span>
+<span class="sd">    * cov : Covariance of the gaussian noise. Dimension (n,n)</span>
+<span class="sd">    * cho : Cholesky decomposition of cov, computed after a call to *updateAllOutput*. Dimension (n,n)</span>
+<span class="sd">    * matC : (p x n) Output matrix</span>
+<span class="sd">    * matD : (p x m) Feedthrough (or feedforward) matrix</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name</span>
+<span class="sd">        Name of the element</span>
+<span class="sd">      shape_state</span>
+<span class="sd">        Shape of the state</span>
+<span class="sd">      shape_command</span>
+<span class="sd">        Shape of the command</span>
+<span class="sd">      snames</span>
+<span class="sd">        Name of each of the scalar components of the measurement.</span>
+<span class="sd">        Its shape defines the shape of the data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">shape_state</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span>
+        <span class="n">shape_command</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span>
+        <span class="n">snames</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">ASensors</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">shape_state</span><span class="o">=</span><span class="n">shape_state</span><span class="p">,</span> <span class="n">snames</span><span class="o">=</span><span class="n">snames</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defineInput</span><span class="p">(</span><span class="s2">&quot;command&quot;</span><span class="p">,</span> <span class="n">shape_command</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="s2">&quot;matC&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="s2">&quot;matD&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LinearSensors.compute_outputs"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.LinearSensors.compute_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">compute_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">t1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">t2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">command</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+        <span class="n">measurement</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+        <span class="n">state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">meas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matC</span> <span class="o">@</span> <span class="n">state</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">matD</span> <span class="o">@</span> <span class="n">command</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;measurement&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">meas</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div></div>
+
+
+<div class="viewcode-block" id="StreamSensors"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.StreamSensors">[docs]</a><span class="k">class</span> <span class="nc">StreamSensors</span><span class="p">(</span><span class="n">AComputer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Streams data from a table of values given at initialization</span>
+
+<span class="sd">    The element has no inputs</span>
+<span class="sd">    The output of the computer is **measurement**</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name</span>
+<span class="sd">        Name of the element</span>
+<span class="sd">      strm_data</span>
+<span class="sd">        The data. Must be a OrderDict, with a key named &#39;t&#39;, and the others determine the name of the outputs.</span>
+<span class="sd">        Each key must be a np.array with the values of the output variables</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strm_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">AComputer</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+        <span class="n">snames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">strm_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">otp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">defineOutput</span><span class="p">(</span><span class="s2">&quot;measurement&quot;</span><span class="p">,</span> <span class="n">snames</span><span class="o">=</span><span class="n">snames</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">otp</span><span class="o">.</span><span class="n">setInitialState</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">otp</span><span class="o">.</span><span class="n">getDataShape</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">otp</span><span class="o">.</span><span class="n">getDataType</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="s2">&quot;strm_data&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">strm_data</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StreamSensors.compute_outputs"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.StreamSensors.compute_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">compute_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">t1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">t2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">measurement</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="n">meas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getOutputByName</span><span class="p">(</span><span class="s2">&quot;measurement&quot;</span><span class="p">)</span>
+
+        <span class="n">val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">meas</span><span class="o">.</span><span class="n">getDataShape</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">meas</span><span class="o">.</span><span class="n">getDataType</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">kv</span><span class="p">,</span> <span class="n">kn</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">meas</span><span class="o">.</span><span class="n">getScalarNames</span><span class="p">()):</span>
+            <span class="n">val</span><span class="p">[</span><span class="n">kv</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strm_data</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">strm_data</span><span class="p">[</span><span class="n">kn</span><span class="p">])</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;measurement&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div></div>
+
+
+<div class="viewcode-block" id="StreamCSVSensors"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.StreamCSVSensors">[docs]</a><span class="k">class</span> <span class="nc">StreamCSVSensors</span><span class="p">(</span><span class="n">StreamSensors</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Streams data from a table of values read in a CSV file</span>
+
+<span class="sd">    The inputs of the element are **state** and **command**</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      name</span>
+<span class="sd">        Name of the element</span>
+<span class="sd">      pth</span>
+<span class="sd">        The path to the CSV file. The file can start with comment lines starting with &#39;#&#39;</span>
+<span class="sd">        The separator is &#39;,&#39;</span>
+<span class="sd">        The order of the columns matter to define the output vector of the element</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pth</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">pth</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;#&quot;</span><span class="p">:</span>
+            <span class="n">dat</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">elem</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="n">strm_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">kn</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>
+            <span class="n">strm_data</span><span class="p">[</span><span class="n">kn</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">StreamSensors</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">strm_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">createParameter</span><span class="p">(</span><span class="s2">&quot;pth&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">pth</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StreamCSVSensors.loadFile"><a class="viewcode-back" href="../../../blocksim.control.Sensors.html#blocksim.control.Sensors.StreamCSVSensors.loadFile">[docs]</a>    <span class="k">def</span> <span class="nf">loadFile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pth</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)):</span>
+            <span class="n">dat</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">dat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;#&quot;</span><span class="p">:</span>
+                <span class="n">nb_dat</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="k">break</span>
+
+        <span class="n">otp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getOutputByName</span><span class="p">(</span><span class="s2">&quot;measurement&quot;</span><span class="p">)</span>
+        <span class="n">dtyp</span> <span class="o">=</span> <span class="n">otp</span><span class="o">.</span><span class="n">getDataType</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strm_data</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nb_dat</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtyp</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">kn</span> <span class="ow">in</span> <span class="n">otp</span><span class="o">.</span><span class="n">getScalarNames</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">strm_data</span><span class="p">[</span><span class="n">kn</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nb_dat</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtyp</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)):</span>
+            <span class="n">dat</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">elem</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">dtyp</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">j</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">strm_data</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+            <span class="k">for</span> <span class="n">kv</span><span class="p">,</span> <span class="n">kn</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">otp</span><span class="o">.</span><span class="n">getScalarNames</span><span class="p">()):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">strm_data</span><span class="p">[</span><span class="n">kn</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">kv</span><span class="p">]</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

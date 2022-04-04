@@ -1,0 +1,21 @@
+blocksim.core package
+=====================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   blocksim.core.ABaseNode
+   blocksim.core.Frame
+   blocksim.core.Generic
+   blocksim.core.Node
+
+Module contents
+---------------
+
+.. automodule:: blocksim.core
+   :members:
+   :undoc-members:
+   :show-inheritance:

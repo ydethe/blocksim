@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.main module &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/translations.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+    <link rel="next" title="blocksim.utils module" href="blocksim.utils.html" />
+    <link rel="prev" title="blocksim.exceptions module" href="blocksim.exceptions.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">blocksim</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="blocksim.html">blocksim package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#subpackages">Subpackages</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="blocksim.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="blocksim.DatabaseModel.html">blocksim.DatabaseModel module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.LogFormatter.html">blocksim.LogFormatter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.Logger.html">blocksim.Logger module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.LoggerSpec.html">blocksim.LoggerSpec module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.Simulation.html">blocksim.Simulation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.constants.html">blocksim.constants module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.exceptions.html">blocksim.exceptions module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">blocksim.main module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="blocksim.utils.html">blocksim.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="blocksim.html#module-blocksim">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">blocksim</a> &raquo;</li>
+          <li><a href="blocksim.html">blocksim package</a> &raquo;</li>
+      <li>blocksim.main module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/blocksim.main.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="module-blocksim.main">
+<span id="blocksim-main-module"></span><h1>blocksim.main module<a class="headerlink" href="#module-blocksim.main" title="Lien permanent vers ce titre"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.main.determine_db_uri">
+<span class="sig-prename descclassname"><span class="pre">blocksim.main.</span></span><span class="sig-name descname"><span class="pre">determine_db_uri</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/blocksim/main.html#determine_db_uri"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.main.determine_db_uri" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Tries different configuration options to find the database URI.
+First, looks for a <cite>~/.blocksimrc</cite> file
+Then for <cite>BLOCKSIM_DB_URI</cite> environment variable</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>The database URI</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.main.export">
+<span class="sig-prename descclassname"><span class="pre">blocksim.main.</span></span><span class="sig-name descname"><span class="pre">export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uri:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">&lt;typer.models.OptionInfo</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simid:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">&lt;typer.models.ArgumentInfo</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pth:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">&lt;typer.models.ArgumentInfo</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">&lt;typer.models.OptionInfo</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/main.html#export"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.main.export" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Exports simulation data in a file</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.main.header">
+<span class="sig-prename descclassname"><span class="pre">blocksim.main.</span></span><span class="sig-name descname"><span class="pre">header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fic_bin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/main.html#header"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.main.header" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Visualize a binary log file’s header</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.main.init">
+<span class="sig-prename descclassname"><span class="pre">blocksim.main.</span></span><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uri:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">&lt;typer.models.OptionInfo</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/main.html#init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.main.init" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Initializes an empty db</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.main.ls">
+<span class="sig-prename descclassname"><span class="pre">blocksim.main.</span></span><span class="sig-name descname"><span class="pre">ls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uri:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">&lt;typer.models.OptionInfo</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/main.html#ls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.main.ls" title="Lien permanent vers cette définition"></a></dt>
+<dd><p>Lists simulatons in database</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="blocksim.main.main">
+<span class="sig-prename descclassname"><span class="pre">blocksim.main.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/blocksim/main.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#blocksim.main.main" title="Lien permanent vers cette définition"></a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="blocksim.exceptions.html" class="btn btn-neutral float-left" title="blocksim.exceptions module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="blocksim.utils.html" class="btn btn-neutral float-right" title="blocksim.utils module" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

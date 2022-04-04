@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.graphics &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/translations.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">blocksim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Code du module</a> &raquo;</li>
+      <li>blocksim.graphics</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Code source de blocksim.graphics</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Iterable</span>
+
+<span class="kn">from</span> <span class="nn">parse</span> <span class="kn">import</span> <span class="nb">compile</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">erfc</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp2d</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">log10</span>
+<span class="kn">from</span> <span class="nn">numpy.polynomial</span> <span class="kn">import</span> <span class="n">Polynomial</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.image</span> <span class="kn">import</span> <span class="n">AxesImage</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backend_bases</span> <span class="kn">import</span> <span class="n">Event</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">..Logger</span> <span class="kn">import</span> <span class="n">Logger</span>
+<span class="kn">from</span> <span class="nn">..dsp.DSPFilter</span> <span class="kn">import</span> <span class="n">ADSPFilter</span>
+<span class="kn">from</span> <span class="nn">..dsp.DSPLine</span> <span class="kn">import</span> <span class="n">DSPLine</span>
+<span class="kn">from</span> <span class="nn">..dsp.DSPSpectrogram</span> <span class="kn">import</span> <span class="n">DSPSpectrogram</span>
+<span class="kn">from</span> <span class="nn">..dsp</span> <span class="kn">import</span> <span class="n">phase_unfold</span>
+<span class="kn">from</span> <span class="nn">.AxeSpec</span> <span class="kn">import</span> <span class="n">AxeSpec</span>
+<span class="kn">from</span> <span class="nn">.FigureSpec</span> <span class="kn">import</span> <span class="n">FigureSpec</span>
+<span class="kn">from</span> <span class="nn">.B3DPlotter</span> <span class="kn">import</span> <span class="n">B3DPlotter</span>
+<span class="kn">from</span> <span class="nn">..source.Trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
+
+
+<div class="viewcode-block" id="getUnitAbbrev"><a class="viewcode-back" href="../../blocksim.graphics.html#blocksim.graphics.getUnitAbbrev">[docs]</a><span class="k">def</span> <span class="nf">getUnitAbbrev</span><span class="p">(</span><span class="n">mult</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Given a scale factor, gives the prefix for the unit to display</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      mult</span>
+<span class="sd">        Scale factor</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Prefix</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="mi">1000</span><span class="p">:</span> <span class="s2">&quot;k&quot;</span><span class="p">,</span>
+        <span class="mf">1e6</span><span class="p">:</span> <span class="s2">&quot;M&quot;</span><span class="p">,</span>
+        <span class="mf">1e9</span><span class="p">:</span> <span class="s2">&quot;G&quot;</span><span class="p">,</span>
+        <span class="mf">1e12</span><span class="p">:</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span>
+        <span class="mf">1e-3</span><span class="p">:</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+        <span class="mf">1e-6</span><span class="p">:</span> <span class="s2">&quot;µ&quot;</span><span class="p">,</span>
+        <span class="mf">1e-9</span><span class="p">:</span> <span class="s2">&quot;n&quot;</span><span class="p">,</span>
+        <span class="mf">1e-12</span><span class="p">:</span> <span class="s2">&quot;p&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">d</span><span class="p">[</span><span class="n">mult</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="format_parameter"><a class="viewcode-back" href="../../blocksim.graphics.html#blocksim.graphics.format_parameter">[docs]</a><span class="k">def</span> <span class="nf">format_parameter</span><span class="p">(</span><span class="n">samp</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">xm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">samp</span><span class="p">)</span>
+    <span class="n">pm</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">log10</span><span class="p">(</span><span class="n">xm</span><span class="p">))</span> <span class="o">//</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
+    <span class="n">x_unit_mult</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">pm</span>
+    <span class="n">x_unit_lbl</span> <span class="o">=</span> <span class="n">getUnitAbbrev</span><span class="p">(</span><span class="n">x_unit_mult</span><span class="p">)</span>
+    <span class="n">txt</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%.3g</span><span class="s2"> </span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">samp</span> <span class="o">/</span> <span class="n">x_unit_mult</span><span class="p">,</span> <span class="n">x_unit_lbl</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">txt</span></div>
+
+
+<div class="viewcode-block" id="plotFromLogger"><a class="viewcode-back" href="../../blocksim.graphics.html#blocksim.graphics.plotFromLogger">[docs]</a><span class="k">def</span> <span class="nf">plotFromLogger</span><span class="p">(</span>
+    <span class="n">log</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">id_x</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">id_y</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="s2">&quot;SubplotSpec&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AxesSubplot&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plots a value on a matplotlib axe</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      log</span>
+<span class="sd">        :class:`blocksim.Logger.Logger` instance</span>
+<span class="sd">      id_x</span>
+<span class="sd">        Name or expression for the X axis</span>
+<span class="sd">      id_y</span>
+<span class="sd">        Name or expression for the Y axis</span>
+<span class="sd">      spec</span>
+<span class="sd">        The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing</span>
+<span class="sd">      kwargs</span>
+<span class="sd">        matplotlib plotting options for the &#39;plot&#39; method</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      The lines drawn by matplotlib</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">gs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_gridspec</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get_gridspec</span><span class="p">()</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">figure</span>
+    <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">id_x</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="n">val_x</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getValue</span><span class="p">(</span><span class="n">id_x</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">id_x</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">):</span>
+        <span class="n">val_x</span> <span class="o">=</span> <span class="n">id_x</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemError</span><span class="p">(</span><span class="s2">&quot;[ERROR]Unacceptable argument for id_x : </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">id_x</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">id_y</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="n">val_y</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">getValue</span><span class="p">(</span><span class="n">id_y</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">id_y</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">):</span>
+        <span class="n">val_y</span> <span class="o">=</span> <span class="n">id_y</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">SystemError</span><span class="p">(</span><span class="s2">&quot;[ERROR]Unacceptable argument for id_y : </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">id_y</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;label&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">id_y</span>
+
+    <span class="p">(</span><span class="n">line</span><span class="p">,)</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">val_x</span><span class="p">,</span> <span class="n">val_y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">line</span><span class="o">.</span><span class="n">x_unit_mult</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="k">return</span> <span class="n">axe</span></div>
+
+
+<div class="viewcode-block" id="createFigureFromSpec"><a class="viewcode-back" href="../../blocksim.graphics.html#blocksim.graphics.createFigureFromSpec">[docs]</a><span class="k">def</span> <span class="nf">createFigureFromSpec</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="n">FigureSpec</span><span class="p">,</span> <span class="n">log</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Figure&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Parses a :class:`FigureSpec` to build a matplotlib figure, and returns it</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      spec</span>
+<span class="sd">        A :class:`FigureSpec` instance</span>
+<span class="sd">      log</span>
+<span class="sd">        A :class:`blocksim.Logger.Logger` to read data from</span>
+<span class="sd">      fig</span>
+<span class="sd">        A matplotlib figure. If None, the function creates ones</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      The matplotlib figure</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span>
+    <span class="n">l_axes</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">nrow</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s2">&quot;nrow&quot;</span><span class="p">]</span>
+        <span class="n">ncol</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s2">&quot;ncol&quot;</span><span class="p">]</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s2">&quot;ind&quot;</span><span class="p">]</span>
+        <span class="n">shx</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s2">&quot;sharex&quot;</span><span class="p">]</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span>
+        <span class="n">proj</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;projection&quot;</span><span class="p">,</span> <span class="s2">&quot;rectilinear&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">shx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">nrow</span><span class="p">,</span> <span class="n">ncol</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">proj</span><span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span>
+                <span class="n">nrow</span><span class="p">,</span> <span class="n">ncol</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">proj</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">l_axes</span><span class="p">[</span><span class="n">shx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">l_axes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">axe</span><span class="p">)</span>
+
+        <span class="n">spec</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="s2">&quot;_axe&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">axe</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+        <span class="n">disp_leg</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lines</span><span class="p">:</span>
+            <span class="n">lp</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">lp</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;varx&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">lp</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;vary&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">lp</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_line&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">lp</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_xdata&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">lp</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_ydata&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+            <span class="n">varx</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;varx&quot;</span><span class="p">]</span>
+            <span class="n">vary</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;vary&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;label&quot;</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">axe</span> <span class="o">=</span> <span class="n">plotFromLogger</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">varx</span><span class="p">,</span> <span class="n">vary</span><span class="p">,</span> <span class="n">axe</span><span class="p">,</span> <span class="o">**</span><span class="n">lp</span><span class="p">)</span>
+                <span class="n">disp_leg</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">vary</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+                <span class="n">axe</span> <span class="o">=</span> <span class="n">plotFromLogger</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">varx</span><span class="p">,</span> <span class="n">vary</span><span class="p">,</span> <span class="n">axe</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">vary</span><span class="p">,</span> <span class="o">**</span><span class="n">lp</span><span class="p">)</span>
+                <span class="n">disp_leg</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">axe</span> <span class="o">=</span> <span class="n">plotFromLogger</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">varx</span><span class="p">,</span> <span class="n">vary</span><span class="p">,</span> <span class="n">axe</span><span class="p">,</span> <span class="o">**</span><span class="n">lp</span><span class="p">)</span>
+
+            <span class="n">line</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">get_lines</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">d</span><span class="p">[</span><span class="s2">&quot;_line&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span>
+            <span class="n">xdata</span><span class="p">,</span> <span class="n">ydata</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+            <span class="n">d</span><span class="p">[</span><span class="s2">&quot;_xdata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xdata</span>
+            <span class="n">d</span><span class="p">[</span><span class="s2">&quot;_ydata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ydata</span>
+
+        <span class="k">if</span> <span class="n">disp_leg</span><span class="p">:</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+<div class="viewcode-block" id="plotSpectrogram"><a class="viewcode-back" href="../../blocksim.graphics.html#blocksim.graphics.plotSpectrogram">[docs]</a><span class="k">def</span> <span class="nf">plotSpectrogram</span><span class="p">(</span>
+    <span class="n">spg</span><span class="p">:</span> <span class="n">DSPSpectrogram</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="s2">&quot;SubplotSpec&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fill</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pcolormesh&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AxesSubplot&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plots a line with the following refinements :</span>
+
+<span class="sd">    * a callable *transform* is applied to all samples</span>
+<span class="sd">    * the label of the plot is the name given at instanciation</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      spg</span>
+<span class="sd">        Spectrogram to plot</span>
+<span class="sd">      spec</span>
+<span class="sd">        The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing</span>
+<span class="sd">      fill</span>
+<span class="sd">        Method to plot the DSPSpectrogram. Can be &#39;plot_surface&#39;, &#39;pcolormesh&#39;, &#39;contour&#39; or &#39;contourf&#39;</span>
+<span class="sd">      kwargs</span>
+<span class="sd">        Plotting options. The following extra keys are allowed:</span>
+<span class="sd">        * transform for a different transform from the one given at instanciation</span>
+<span class="sd">        * find_peaks to search peaks</span>
+<span class="sd">        * x_unit_mult to have a more readable unit prefix</span>
+<span class="sd">        * search_fig (bool) to generate a search figure</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      The matplotlib image generated</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">gs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_gridspec</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">fill</span> <span class="o">==</span> <span class="s2">&quot;plot_surface&quot;</span><span class="p">:</span>
+        <span class="n">proj</span> <span class="o">=</span> <span class="s2">&quot;3d&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">proj</span> <span class="o">=</span> <span class="n">spg</span><span class="o">.</span><span class="n">projection</span>
+
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get_gridspec</span><span class="p">()</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">figure</span>
+    <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">proj</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">transform</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;transform&quot;</span><span class="p">,</span> <span class="n">spg</span><span class="o">.</span><span class="n">default_transform</span><span class="p">)</span>
+    <span class="n">search_fig</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;search_fig&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">find_peaks</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;find_peaks&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;x_unit_mult&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">x_unit_mult</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;x_unit_mult&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x_samp</span> <span class="o">=</span> <span class="n">spg</span><span class="o">.</span><span class="n">generateXSerie</span><span class="p">()</span>
+        <span class="n">xm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x_samp</span><span class="p">))</span>
+        <span class="n">pm</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">log10</span><span class="p">(</span><span class="n">xm</span><span class="p">))</span> <span class="o">//</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
+        <span class="n">x_unit_mult</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">pm</span>
+    <span class="n">x_unit_lbl</span> <span class="o">=</span> <span class="n">getUnitAbbrev</span><span class="p">(</span><span class="n">x_unit_mult</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;y_unit_mult&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">y_unit_mult</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;y_unit_mult&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">y_samp</span> <span class="o">=</span> <span class="n">spg</span><span class="o">.</span><span class="n">generateYSerie</span><span class="p">()</span>
+        <span class="n">ym</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_samp</span><span class="p">))</span>
+        <span class="n">pm</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">log10</span><span class="p">(</span><span class="n">ym</span><span class="p">))</span> <span class="o">//</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">3</span>
+        <span class="n">y_unit_mult</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">pm</span>
+    <span class="n">y_unit_lbl</span> <span class="o">=</span> <span class="n">getUnitAbbrev</span><span class="p">(</span><span class="n">y_unit_mult</span><span class="p">)</span>
+    <span class="c1"># lbl = kwargs.pop(&quot;label&quot;, spg.name)</span>
+
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">spg</span><span class="o">.</span><span class="n">img</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fill</span> <span class="o">==</span> <span class="s2">&quot;plot_surface&quot;</span> <span class="ow">and</span> <span class="n">spg</span><span class="o">.</span><span class="n">projection</span> <span class="o">==</span> <span class="s2">&quot;polar&quot;</span><span class="p">:</span>
+        <span class="n">P</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span>
+            <span class="n">spg</span><span class="o">.</span><span class="n">generateXSerie</span><span class="p">()</span> <span class="o">/</span> <span class="n">x_unit_mult</span><span class="p">,</span> <span class="n">spg</span><span class="o">.</span><span class="n">generateYSerie</span><span class="p">()</span> <span class="o">/</span> <span class="n">y_unit_mult</span>
+        <span class="p">)</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">R</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">P</span><span class="p">),</span> <span class="n">R</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span>
+            <span class="n">spg</span><span class="o">.</span><span class="n">generateXSerie</span><span class="p">()</span> <span class="o">/</span> <span class="n">x_unit_mult</span><span class="p">,</span> <span class="n">spg</span><span class="o">.</span><span class="n">generateYSerie</span><span class="p">()</span> <span class="o">/</span> <span class="n">y_unit_mult</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">fill</span> <span class="o">==</span> <span class="s2">&quot;plot_surface&quot;</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;levels&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">plot_surface</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axe</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">fill</span> <span class="o">==</span> <span class="s2">&quot;pcolormesh&quot;</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;levels&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axe</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">fill</span> <span class="o">==</span> <span class="s2">&quot;contourf&quot;</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axe</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">fill</span> <span class="o">==</span> <span class="s2">&quot;contour&quot;</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">clabel</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">spg</span><span class="o">.</span><span class="n">name_of_x_var</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spg</span><span class="o">.</span><span class="n">name_of_x_var</span><span class="p">,</span> <span class="n">x_unit_lbl</span><span class="p">,</span> <span class="n">spg</span><span class="o">.</span><span class="n">unit_of_x_var</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">spg</span><span class="o">.</span><span class="n">name_of_y_var</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spg</span><span class="o">.</span><span class="n">name_of_y_var</span><span class="p">,</span> <span class="n">y_unit_lbl</span><span class="p">,</span> <span class="n">spg</span><span class="o">.</span><span class="n">unit_of_y_var</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">find_peaks</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">lpeaks</span> <span class="o">=</span> <span class="n">spg</span><span class="o">.</span><span class="n">findPeaksWithTransform</span><span class="p">(</span><span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span> <span class="n">nb_peaks</span><span class="o">=</span><span class="n">find_peaks</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">lpeaks</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">coord</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">x</span> <span class="o">/</span> <span class="n">x_unit_mult</span><span class="p">],</span>
+                <span class="p">[</span><span class="n">y</span> <span class="o">/</span> <span class="n">y_unit_mult</span><span class="p">],</span>
+                <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+                <span class="s2">&quot;(</span><span class="si">%.1f</span><span class="s2">,</span><span class="si">%.1f</span><span class="s2">,</span><span class="si">%.1f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">x_unit_mult</span><span class="p">,</span> <span class="n">y</span> <span class="o">/</span> <span class="n">y_unit_mult</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+                <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">x_unit_mult</span><span class="p">,</span> <span class="n">y</span> <span class="o">/</span> <span class="n">y_unit_mult</span><span class="p">),</span>
+                <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;x-small&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_click</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="c1"># event.name (str): the event name</span>
+        <span class="c1"># event.canvas (FigureCanvasBase): the FigureCanvas instance generating the event</span>
+        <span class="c1"># event.guiEvent: the GUI event that triggered the Matplotlib event</span>
+        <span class="c1"># event.x, event.y (int): mouse x and y position in pixels from left and bottom of canvas</span>
+        <span class="c1"># event.inaxes (Axes or None): the Axes instance over which the mouse is, if any; else None</span>
+        <span class="c1"># event.xdata, event.ydata (float or None): mouse x and y position in data coordinates, if the mouse is over an axes</span>
+        <span class="c1"># event.button (None or MouseButton or {&#39;up&#39;, &#39;down&#39;}): the button pressed: None, MouseButton, &#39;up&#39;, or &#39;down&#39; (up and down are used for scroll events)</span>
+        <span class="c1"># event.key (None or str): the key pressed: None, any character, &#39;shift&#39;, &#39;win&#39;, or &#39;control&#39;</span>
+        <span class="c1"># event.step (float): The number of scroll steps (positive for &#39;up&#39;, negative for &#39;down&#39;). This applies only to &#39;scroll_event&#39; and defaults to 0 otherwise.</span>
+        <span class="c1"># event.dblclick (bool): Whether the event is a double-click. This applies only to &#39;button_press_event&#39; and is False otherwise. In particular, it&#39;s not used in &#39;button_release_event&#39;.</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">inaxes</span> <span class="o">!=</span> <span class="n">axe</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_d</span><span class="o">.</span><span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_v</span><span class="o">.</span><span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">dval</span> <span class="o">=</span> <span class="n">spg</span><span class="o">.</span><span class="n">generateXSerie</span><span class="p">()</span> <span class="o">/</span> <span class="n">x_unit_mult</span>
+        <span class="n">vval</span> <span class="o">=</span> <span class="n">spg</span><span class="o">.</span><span class="n">generateYSerie</span><span class="p">()</span> <span class="o">/</span> <span class="n">y_unit_mult</span>
+
+        <span class="n">itp</span> <span class="o">=</span> <span class="n">interp2d</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">dval</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">vval</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">Z</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bounds_error</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_d</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%.3f</span><span class="s2"> </span><span class="si">%s%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2"> = </span><span class="si">%.3f</span><span class="s2"> </span><span class="si">%s%s</span><span class="s2">&quot;</span>
+            <span class="o">%</span> <span class="p">(</span>
+                <span class="n">spg</span><span class="o">.</span><span class="n">name_of_x_var</span><span class="p">,</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">,</span>
+                <span class="n">x_unit_lbl</span><span class="p">,</span>
+                <span class="n">spg</span><span class="o">.</span><span class="n">unit_of_x_var</span><span class="p">,</span>
+                <span class="n">spg</span><span class="o">.</span><span class="n">name_of_y_var</span><span class="p">,</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">ydata</span><span class="p">,</span>
+                <span class="n">y_unit_lbl</span><span class="p">,</span>
+                <span class="n">spg</span><span class="o">.</span><span class="n">unit_of_y_var</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">new_d</span> <span class="o">=</span> <span class="n">itp</span><span class="p">(</span><span class="n">dval</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">ydata</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dval</span><span class="p">,</span> <span class="n">new_d</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_d</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="n">dval</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">dval</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_d</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">((</span><span class="n">new_d</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">new_d</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+
+        <span class="n">new_v</span> <span class="o">=</span> <span class="n">itp</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">,</span> <span class="n">vval</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_v</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">vval</span><span class="p">,</span> <span class="n">new_v</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_v</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="n">vval</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">vval</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_v</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">((</span><span class="n">new_v</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">new_v</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+
+        <span class="n">axe</span><span class="o">.</span><span class="n">mkr</span><span class="o">.</span><span class="n">set_data</span><span class="p">([</span><span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">],</span> <span class="p">[</span><span class="n">event</span><span class="o">.</span><span class="n">ydata</span><span class="p">])</span>
+
+        <span class="n">axe</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">click_fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">search_fig</span><span class="p">:</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axe</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">click_fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_d</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">click_fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_v</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">click_fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_d</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_v</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_d</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spg</span><span class="o">.</span><span class="n">name_of_x_var</span><span class="p">,</span> <span class="n">x_unit_lbl</span><span class="p">,</span> <span class="n">spg</span><span class="o">.</span><span class="n">unit_of_x_var</span><span class="p">,)</span>
+        <span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">axe_v</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spg</span><span class="o">.</span><span class="n">name_of_y_var</span><span class="p">,</span> <span class="n">y_unit_lbl</span><span class="p">,</span> <span class="n">spg</span><span class="o">.</span><span class="n">unit_of_y_var</span><span class="p">,)</span>
+        <span class="p">)</span>
+
+        <span class="n">cid</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">mpl_connect</span><span class="p">(</span><span class="s2">&quot;button_press_event&quot;</span><span class="p">,</span> <span class="n">on_click</span><span class="p">)</span>
+
+        <span class="n">vm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+        <span class="n">kd</span><span class="p">,</span> <span class="n">kv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Z</span> <span class="o">==</span> <span class="n">vm</span><span class="p">)</span>
+
+        <span class="k">class</span> <span class="nc">TmpEvent</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="n">evt</span> <span class="o">=</span> <span class="n">TmpEvent</span><span class="p">()</span>
+        <span class="n">evt</span><span class="o">.</span><span class="n">inaxes</span> <span class="o">=</span> <span class="n">axe</span>
+        <span class="n">evt</span><span class="o">.</span><span class="n">xdata</span> <span class="o">=</span> <span class="n">spg</span><span class="o">.</span><span class="n">generateXSerie</span><span class="p">(</span><span class="n">kv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">x_unit_mult</span>
+        <span class="n">evt</span><span class="o">.</span><span class="n">ydata</span> <span class="o">=</span> <span class="n">spg</span><span class="o">.</span><span class="n">generateYSerie</span><span class="p">(</span><span class="n">kd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">y_unit_mult</span>
+
+        <span class="p">(</span><span class="n">axe</span><span class="o">.</span><span class="n">mkr</span><span class="p">,)</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">on_click</span><span class="p">(</span><span class="n">evt</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">axe</span></div>
+
+
+<div class="viewcode-block" id="plotBode"><a class="viewcode-back" href="../../blocksim.graphics.html#blocksim.graphics.plotBode">[docs]</a><span class="k">def</span> <span class="nf">plotBode</span><span class="p">(</span>
+    <span class="n">filt</span><span class="p">:</span> <span class="n">ADSPFilter</span><span class="p">,</span> <span class="n">spec_amp</span><span class="p">:</span> <span class="s2">&quot;SubplotSpec&quot;</span><span class="p">,</span> <span class="n">spec_pha</span><span class="p">:</span> <span class="s2">&quot;SubplotSpec&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;AxesSubplot&quot;</span><span class="p">,</span> <span class="s2">&quot;AxesSubplot&quot;</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Plots the bode diagram of a filter</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      filt</span>
+<span class="sd">        Filter to analyse</span>
+<span class="sd">      spec_amp</span>
+<span class="sd">        The matplotlib SubplotSpec that defines the amplitude axis to draw on. Obtained by fig.add_gridspec and slicing</span>
+<span class="sd">      spec_pha</span>
+<span class="sd">        The matplotlib SubplotSpec that defines the phase axis to draw on. Obtained by fig.add_gridspec and slicing</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">spec_amp</span><span class="o">.</span><span class="n">get_gridspec</span><span class="p">()</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">figure</span>
+    <span class="n">axe_amp</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">spec_amp</span><span class="p">)</span>
+    <span class="n">axe_amp</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">spec_pha</span><span class="o">.</span><span class="n">get_gridspec</span><span class="p">()</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">figure</span>
+    <span class="n">axe_pha</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">spec_pha</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">axe_amp</span><span class="p">)</span>
+    <span class="n">axe_pha</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">fs</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">filt</span><span class="o">.</span><span class="n">samplingPeriod</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">200</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">filt</span><span class="o">.</span><span class="n">generateCoefficients</span><span class="p">()</span>
+
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fs</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">fs</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">Polynomial</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">freq</span> <span class="o">/</span> <span class="n">fs</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">p</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+    <span class="n">axe_amp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">DSPLine</span><span class="o">.</span><span class="n">to_db</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+    <span class="n">axe_amp</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">axe_amp</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Ampliude (dB)&quot;</span><span class="p">)</span>
+
+    <span class="n">pha</span> <span class="o">=</span> <span class="n">phase_unfold</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="n">axe_pha</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">pha</span><span class="p">)</span>
+    <span class="n">axe_pha</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">axe_pha</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Frequency (Hz)&quot;</span><span class="p">)</span>
+    <span class="n">axe_pha</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Phase (deg)&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">axe_amp</span><span class="p">,</span> <span class="n">axe_pha</span></div>
+
+
+<div class="viewcode-block" id="plotDSPLine"><a class="viewcode-back" href="../../blocksim.graphics.html#blocksim.graphics.plotDSPLine">[docs]</a><span class="k">def</span> <span class="nf">plotDSPLine</span><span class="p">(</span><span class="n">line</span><span class="p">:</span> <span class="n">DSPLine</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="s2">&quot;SubplotSpec&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AxesSubplot&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plots a DSPLine with the following refinements :</span>
+
+<span class="sd">    * a callable *transform* is applied to all samples</span>
+<span class="sd">    * the X and Y axes are labeled according to *x_unit_mult*</span>
+<span class="sd">    * the X axe is labeled according to the class attributes name_of_x_var and unit_of_x_var</span>
+<span class="sd">    * the *find_peaks* highest peaks are displayed (default : 0)</span>
+<span class="sd">    * the label of the plot is the name given at instanciation</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      line</span>
+<span class="sd">        Line to be plotted</span>
+<span class="sd">      spec</span>
+<span class="sd">        The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing</span>
+<span class="sd">      kwargs</span>
+<span class="sd">        Plotting options. The following extra keys are allowed:</span>
+<span class="sd">        * transform for a different transform from the one given at instanciation</span>
+<span class="sd">        * find_peaks to search peaks</span>
+<span class="sd">        * x_unit_mult to have a more readable unit prefix</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">gs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_gridspec</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get_gridspec</span><span class="p">()</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">gs</span><span class="o">.</span><span class="n">figure</span>
+    <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">x_samp</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">generateXSerie</span><span class="p">()</span>
+    <span class="n">transform</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;transform&quot;</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">default_transform</span><span class="p">)</span>
+    <span class="n">find_peaks</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;find_peaks&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;x_unit_mult&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">x_unit_mult</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;x_unit_mult&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x_samp</span><span class="p">))</span>
+        <span class="n">lxm</span> <span class="o">=</span> <span class="n">log10</span><span class="p">(</span><span class="n">xm</span><span class="p">)</span>
+        <span class="n">ilxm</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">lxm</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">ilxm3</span> <span class="o">=</span> <span class="n">ilxm</span> <span class="o">//</span> <span class="mi">3</span>
+        <span class="n">pm</span> <span class="o">=</span> <span class="n">ilxm3</span> <span class="o">*</span> <span class="mi">3</span>
+        <span class="n">x_unit_mult</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">pm</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">x_unitilxm3_mult</span> <span class="o">=</span> <span class="n">x_unit_mult</span>
+    <span class="n">x_unit_lbl</span> <span class="o">=</span> <span class="n">getUnitAbbrev</span><span class="p">(</span><span class="n">x_unit_mult</span><span class="p">)</span>
+    <span class="n">lbl</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="p">(</span><span class="n">ret</span><span class="p">,)</span> <span class="o">=</span> <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">x_samp</span> <span class="o">/</span> <span class="n">x_unit_mult</span><span class="p">,</span> <span class="n">transform</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">y_serie</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="n">lbl</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">name_of_x_var</span><span class="p">,</span> <span class="n">x_unit_lbl</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">unit_of_x_var</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">find_peaks</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">lpeaks</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">findPeaksWithTransform</span><span class="p">(</span><span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span> <span class="n">nb_peaks</span><span class="o">=</span><span class="n">find_peaks</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">lpeaks</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">x</span><span class="p">,)</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">coord</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">x</span> <span class="o">/</span> <span class="n">x_unit_mult</span><span class="p">],</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span>
+            <span class="p">)</span>
+            <span class="n">axe</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+                <span class="s2">&quot;(</span><span class="si">%.1f</span><span class="s2"> </span><span class="si">%s%s</span><span class="s2">,</span><span class="si">%.1f</span><span class="s2">)&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">x_unit_mult</span><span class="p">,</span> <span class="n">x_unit_lbl</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">unit_of_x_var</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+                <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">x_unit_mult</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+                <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;x-small&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="n">ret</span><span class="o">.</span><span class="n">x_unit_mult</span> <span class="o">=</span> <span class="n">x_unit_mult</span>
+
+    <span class="k">return</span> <span class="n">axe</span></div>
+
+
+<div class="viewcode-block" id="plotVerif"><a class="viewcode-back" href="../../blocksim.graphics.html#blocksim.graphics.plotVerif">[docs]</a><span class="k">def</span> <span class="nf">plotVerif</span><span class="p">(</span><span class="n">log</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">fig_title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">axes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Figure&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plots a set of axes and curves on a single figure</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      log</span>
+<span class="sd">        Logger which contains the simulated values</span>
+<span class="sd">      fig_title</span>
+<span class="sd">        Title of the figure</span>
+<span class="sd">      axes:</span>
+<span class="sd">        List of lists of dicts</span>
+<span class="sd">        Each list is the description of an axe, each dict the description of a line.</span>
+<span class="sd">        Each dict has a key &quot;var&quot;, which is the name of a variable contained in *log*.</span>
+<span class="sd">        The other keys are keyword arguments for the plot method of matplotlib</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      The resulting figure</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">l_aspec</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">l_lines</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
+        <span class="n">aProp</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="n">aProp</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Axe </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ind</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">aProp</span><span class="p">[</span><span class="s2">&quot;nrow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+        <span class="n">aProp</span><span class="p">[</span><span class="s2">&quot;ncol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">aProp</span><span class="p">[</span><span class="s2">&quot;ind&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ind</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">aProp</span><span class="p">[</span><span class="s2">&quot;sharex&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ind</span> <span class="k">if</span> <span class="n">ind</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="n">lSpec</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">l_lines</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;title&quot;</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">aProp</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;Axe </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ind</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="n">aProp</span><span class="p">[</span><span class="s2">&quot;sharex&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;sharex&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">aProp</span><span class="p">[</span><span class="s2">&quot;nrow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="s2">&quot;nrow&quot;</span><span class="p">]</span>
+                <span class="n">aProp</span><span class="p">[</span><span class="s2">&quot;ncol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="s2">&quot;ncol&quot;</span><span class="p">]</span>
+                <span class="n">aProp</span><span class="p">[</span><span class="s2">&quot;ind&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="s2">&quot;ind&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">l</span><span class="p">[</span><span class="s2">&quot;vary&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;var&quot;</span><span class="p">)</span>
+                <span class="n">l</span><span class="p">[</span><span class="s2">&quot;varx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span>
+                <span class="n">lSpec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+
+        <span class="n">aSpec</span> <span class="o">=</span> <span class="n">AxeSpec</span><span class="p">(</span><span class="n">aProp</span><span class="p">,</span> <span class="n">lSpec</span><span class="p">)</span>
+
+        <span class="n">l_aspec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aSpec</span><span class="p">)</span>
+
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">FigureSpec</span><span class="p">({</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">fig_title</span><span class="p">},</span> <span class="n">axes</span><span class="o">=</span><span class="n">l_aspec</span><span class="p">)</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">createFigureFromSpec</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">log</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+<div class="viewcode-block" id="plot3DEarth"><a class="viewcode-back" href="../../blocksim.graphics.html#blocksim.graphics.plot3DEarth">[docs]</a><span class="k">def</span> <span class="nf">plot3DEarth</span><span class="p">(</span><span class="n">trajectories</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Trajectory</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">B3DPlotter</span><span class="p">:</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">B3DPlotter</span><span class="p">()</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">buildEarth</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">traj</span> <span class="ow">in</span> <span class="n">trajectories</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">buildTrajectory</span><span class="p">(</span><span class="n">traj</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">app</span></div>
+
+
+<div class="viewcode-block" id="plotBER"><a class="viewcode-back" href="../../blocksim.graphics.html#blocksim.graphics.plotBER">[docs]</a><span class="k">def</span> <span class="nf">plotBER</span><span class="p">(</span><span class="n">fic</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span>
+        <span class="s2">&quot;[</span><span class="si">{level}</span><span class="s2">] - SNR = </span><span class="si">{snr}</span><span class="s2"> dB, it=</span><span class="si">{it}</span><span class="s2">, Bits Received = </span><span class="si">{bit_rx}</span><span class="s2">, Bit errors = </span><span class="si">{bit_err}</span><span class="s2">, BER = </span><span class="si">{ber}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fic</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">snr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">ber</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="n">snr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">dat</span><span class="p">[</span><span class="s2">&quot;snr&quot;</span><span class="p">]))</span>
+        <span class="n">ber</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">dat</span><span class="p">[</span><span class="s2">&quot;ber&quot;</span><span class="p">]))</span>
+
+    <span class="n">c_n0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">snr</span><span class="p">)</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">log10</span><span class="p">(</span><span class="mf">180e3</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+    <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;minor&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#999999&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">c_n0</span><span class="p">,</span> <span class="n">ber</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Simu BER&quot;</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;$C/N_0$ (dB)&quot;</span><span class="p">)</span>
+    <span class="n">axe</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;BER&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">output</span> <span class="o">==</span> <span class="s2">&quot;show&quot;</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">output</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fig</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

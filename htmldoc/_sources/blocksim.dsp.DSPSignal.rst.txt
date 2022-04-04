@@ -1,0 +1,7 @@
+blocksim.dsp.DSPSignal module
+=============================
+
+.. automodule:: blocksim.dsp.DSPSignal
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.graphics.EarthPlotter &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">blocksim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Code du module</a> &raquo;</li>
+          <li><a href="../graphics.html">blocksim.graphics</a> &raquo;</li>
+      <li>blocksim.graphics.EarthPlotter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Code source de blocksim.graphics.EarthPlotter</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timezone</span>
+
+<span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="k">as</span> <span class="nn">ccrs</span>
+<span class="kn">from</span> <span class="nn">cartopy.geodesic</span> <span class="kn">import</span> <span class="n">Geodesic</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span>
+
+<span class="kn">from</span> <span class="nn">..constants</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">..source.Trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;EarthPlotter&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="EarthPlotter"><a class="viewcode-back" href="../../../blocksim.graphics.EarthPlotter.html#blocksim.graphics.EarthPlotter.EarthPlotter">[docs]</a><span class="k">class</span> <span class="nc">EarthPlotter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    The methods of this class assume a cartopy compatile axe.</span>
+<span class="sd">    To create such an axe, you can either use :class:`blocksim.EarthPlotter.EarthPlotter.createAxe`::</span>
+
+<span class="sd">            sp = EarthPlotter()</span>
+<span class="sd">            axe = sp.createAxe(fig, 1, 1, 1)</span>
+
+<span class="sd">        or do it manually::</span>
+
+<span class="sd">            axe = fig.add_subplot(111, projection=ccrs.PlateCarree())</span>
+<span class="sd">            axe.stock_img()</span>
+<span class="sd">            axe.gridlines(crs=ccrs.PlateCarree())</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      projection</span>
+<span class="sd">        The projection used for the map.</span>
+<span class="sd">        See https://scitools.org.uk/cartopy/docs/latest/crs/projections.html</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">()):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">projection</span>
+
+<div class="viewcode-block" id="EarthPlotter.createAxe"><a class="viewcode-back" href="../../../blocksim.graphics.EarthPlotter.html#blocksim.graphics.EarthPlotter.EarthPlotter.createAxe">[docs]</a>    <span class="k">def</span> <span class="nf">createAxe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;axe&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates an axe compatible with cartopy</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          fig</span>
+<span class="sd">            A matplotlib figure</span>
+<span class="sd">          *args</span>
+<span class="sd">            Arguments list for fig.add_subplot</span>
+<span class="sd">          **kwargs</span>
+<span class="sd">            Matplotlib options for axe.gridlines.</span>
+<span class="sd">            See https://scitools.org.uk/cartopy/docs/latest/matplotlib/geoaxes.html#cartopy.mpl.geoaxes.GeoAxes.gridlines</span>
+<span class="sd">            for the available options for gridlines</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          Axe compatible with cartopy.</span>
+<span class="sd">          See :class:`blocksim.EarthPlotter.EarthPlotter.plotGroundTrack`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="p">)</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">stock_img</span><span class="p">()</span>
+        <span class="n">axe</span><span class="o">.</span><span class="n">gridlines</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">axe</span></div>
+
+<div class="viewcode-block" id="EarthPlotter.plotPoint"><a class="viewcode-back" href="../../../blocksim.graphics.EarthPlotter.html#blocksim.graphics.EarthPlotter.EarthPlotter.plotPoint">[docs]</a>    <span class="k">def</span> <span class="nf">plotPoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axe</span><span class="p">,</span> <span class="n">coord</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draws a point on an axe compatible with cartopy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          axe</span>
+<span class="sd">            A matplotlib axe, compatible with cartopy</span>
+<span class="sd">          coord</span>
+<span class="sd">            The position of the point, in longitude/latitude (deg)</span>
+<span class="sd">          **kwargs</span>
+<span class="sd">            Matplotlib options for the plot</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">coord</span>
+        <span class="n">g_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">lon</span><span class="p">])</span>
+        <span class="n">g_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">lat</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;marker&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;marker&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;*&quot;</span>
+
+        <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">g_lon</span><span class="p">,</span> <span class="n">g_lat</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EarthPlotter.plotDeviceReach"><a class="viewcode-back" href="../../../blocksim.graphics.EarthPlotter.html#blocksim.graphics.EarthPlotter.EarthPlotter.plotDeviceReach">[docs]</a>    <span class="k">def</span> <span class="nf">plotDeviceReach</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">axe</span><span class="p">,</span> <span class="n">coord</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">elev_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sat_alt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          axe</span>
+<span class="sd">            A matplotlib axe, compatible with cartopy</span>
+<span class="sd">          coord</span>
+<span class="sd">            The position of the point, in longitude/latitude (deg)</span>
+<span class="sd">          elev_min (rad)</span>
+<span class="sd">            Minimum elevatin angle</span>
+<span class="sd">          sat_alt (m)</span>
+<span class="sd">            Satellite altitude, **assuming circular orbit**</span>
+<span class="sd">          **kwargs</span>
+<span class="sd">            Matplotlib options for the plot</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">g_lon</span><span class="p">,</span> <span class="n">g_lat</span> <span class="o">=</span> <span class="n">coord</span>
+
+        <span class="c1"># https://scitools.org.uk/cartopy/docs/v0.17/cartopy/geodesic.html#cartopy.geodesic.Geodesic.circle</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">Req</span> <span class="o">+</span> <span class="n">sat_alt</span>
+        <span class="n">d_lim</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">Req</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">elev_min</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">Req</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">elev_min</span><span class="p">)</span>
+        <span class="n">alpha_lim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">((</span><span class="n">Req</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">d_lim</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">Req</span><span class="p">))</span>
+        <span class="n">rad</span> <span class="o">=</span> <span class="n">alpha_lim</span> <span class="o">*</span> <span class="n">Req</span>
+
+        <span class="n">g</span> <span class="o">=</span> <span class="n">Geodesic</span><span class="p">()</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">g_lon</span><span class="p">,</span> <span class="n">g_lat</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="n">rad</span><span class="p">)</span>
+        <span class="n">c_lon</span> <span class="o">=</span> <span class="n">val</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">c_lat</span> <span class="o">=</span> <span class="n">val</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">c_lon</span><span class="p">,</span> <span class="n">c_lat</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EarthPlotter.plotGroundTrack"><a class="viewcode-back" href="../../../blocksim.graphics.EarthPlotter.html#blocksim.graphics.EarthPlotter.EarthPlotter.plotGroundTrack">[docs]</a>    <span class="k">def</span> <span class="nf">plotGroundTrack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axe</span><span class="p">,</span> <span class="n">lon</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span> <span class="n">lat</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draws the ground track on an axe compatible with cartopy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          axe</span>
+<span class="sd">            A matplotlib axe, compatible with cartopy</span>
+<span class="sd">          lon (deg)</span>
+<span class="sd">            Array of longitudes</span>
+<span class="sd">          lat (deg)</span>
+<span class="sd">            Array of latitudes</span>
+<span class="sd">          **kwargs</span>
+<span class="sd">            Matplotlib options for the plot</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dlon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span>
+        <span class="n">list_ilmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dlon</span> <span class="o">&gt;</span> <span class="mi">180</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span>
+
+        <span class="n">decal</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">list_ilmax</span><span class="p">)):</span>
+            <span class="n">ilmax</span> <span class="o">=</span> <span class="n">list_ilmax</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">decal</span>
+            <span class="k">if</span> <span class="n">ilmax</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">ilmax</span> <span class="o">&lt;</span> <span class="n">decal</span> <span class="o">+</span> <span class="n">ns</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">new_lat</span> <span class="o">=</span> <span class="p">(</span><span class="n">lat</span><span class="p">[</span><span class="n">ilmax</span><span class="p">]</span> <span class="o">+</span> <span class="n">lat</span><span class="p">[</span><span class="n">ilmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+                <span class="n">lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">ilmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">180</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="o">-</span><span class="mi">180</span><span class="p">])</span>
+                <span class="n">lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">ilmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="n">new_lat</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">new_lat</span><span class="p">])</span>
+                <span class="n">decal</span> <span class="o">+=</span> <span class="mi">3</span>
+        <span class="c1"># np.nan intercalés</span>
+
+        <span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EarthPlotter.plotTrajectory"><a class="viewcode-back" href="../../../blocksim.graphics.EarthPlotter.html#blocksim.graphics.EarthPlotter.EarthPlotter.plotTrajectory">[docs]</a>    <span class="k">def</span> <span class="nf">plotTrajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axe</span><span class="p">,</span> <span class="n">traj</span><span class="p">:</span> <span class="n">Trajectory</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Draws the ground track on an axe compatible with cartopy.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          axe</span>
+<span class="sd">            A matplotlib axe, compatible with cartopy</span>
+<span class="sd">          traj</span>
+<span class="sd">            A :class:`blocksim.source.Trajectory.Trajectory` instance</span>
+<span class="sd">          **kwargs</span>
+<span class="sd">            Matplotlib options for the plot</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">getGroundTrack</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;color&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;color&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">color</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">plotGroundTrack</span><span class="p">(</span><span class="n">axe</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">col</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

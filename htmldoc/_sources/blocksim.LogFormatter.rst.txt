@@ -1,0 +1,7 @@
+blocksim.LogFormatter module
+============================
+
+.. automodule:: blocksim.LogFormatter
+   :members:
+   :undoc-members:
+   :show-inheritance:

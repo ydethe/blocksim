@@ -1,0 +1,25 @@
+blocksim.control package
+========================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   blocksim.control.Controller
+   blocksim.control.Estimator
+   blocksim.control.IMU
+   blocksim.control.Network
+   blocksim.control.Route
+   blocksim.control.Sensors
+   blocksim.control.SetPoint
+   blocksim.control.System
+
+Module contents
+---------------
+
+.. automodule:: blocksim.control
+   :members:
+   :undoc-members:
+   :show-inheritance:

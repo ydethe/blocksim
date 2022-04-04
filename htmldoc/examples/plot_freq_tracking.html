@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frequency tracking &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/translations.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Recherche" href="../search.html" />
+    <link rel="next" title="Madgwick attitude estimator" href="plot_madgwick.html" />
+    <link rel="prev" title="Radar proccessing" href="plot_radar.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">blocksim</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="plot_zadoff.html">Zadoff-Chu sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_prn_processing.html">GPS PRN proccessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_satellite.html">Satellite ground track</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_qpsk.html">QPSK modulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_filtering.html">FIR filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_radar.html">Radar proccessing</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Frequency tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_madgwick.html">Madgwick attitude estimator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_kalman.html">Damped spring-mass system with kalman estimator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Examples</a> &raquo;</li>
+      <li>Frequency tracking</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/plot_freq_tracking.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-examples-plot-freq-tracking-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
+</div>
+<section class="sphx-glr-example-title" id="frequency-tracking">
+<span id="sphx-glr-examples-plot-freq-tracking-py"></span><h1>Frequency tracking<a class="headerlink" href="#frequency-tracking" title="Lien permanent vers ce titre"></a></h1>
+<p>This example shows how to use a Kalman filter to estimate the frequencies
+present in a signal.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="n">fs</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">dt</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">fs</span>
+<span class="n">f1</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">f2</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">tau</span> <span class="o">=</span> <span class="mi">12</span>
+</pre></div>
+</div>
+<p>Generation of a chirp with <a class="reference internal" href="../blocksim.dsp.DSPSignal.html#blocksim.dsp.DSPSignal.DSPSignal.fromLinearFM" title="blocksim.dsp.DSPSignal.DSPSignal.fromLinearFM"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.dsp.DSPSignal.DSPSignal.fromLinearFM</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">blocksim.dsp.DSPSignal</span> <span class="kn">import</span> <span class="n">DSPSignal</span>
+
+<span class="n">chirp</span> <span class="o">=</span> <span class="n">DSPSignal</span><span class="o">.</span><span class="n">fromLinearFM</span><span class="p">(</span>
+    <span class="s2">&quot;sig&quot;</span><span class="p">,</span> <span class="n">samplingStart</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">samplingPeriod</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">tau</span><span class="o">=</span><span class="n">tau</span><span class="p">,</span> <span class="n">fstart</span><span class="o">=</span><span class="n">f1</span><span class="p">,</span> <span class="n">fend</span><span class="o">=</span><span class="n">f2</span>
+<span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">chirp</span><span class="o">.</span><span class="n">generateXSerie</span><span class="p">()</span>
+<span class="n">fchirp</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">t</span> <span class="o">/</span> <span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="n">f1</span> <span class="o">+</span> <span class="n">t</span> <span class="o">/</span> <span class="n">tau</span> <span class="o">*</span> <span class="n">f2</span>
+</pre></div>
+</div>
+<p>Generation of a jammer after tau/2
+The jammer emits a pure sinusoid at frequency f2. So this is a special case
+of a chirp with zero bandwith</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jammer</span> <span class="o">=</span> <span class="n">DSPSignal</span><span class="o">.</span><span class="n">fromLinearFM</span><span class="p">(</span>
+    <span class="s2">&quot;jam&quot;</span><span class="p">,</span> <span class="n">samplingStart</span><span class="o">=</span><span class="n">tau</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">samplingPeriod</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">tau</span><span class="o">=</span><span class="n">tau</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">fstart</span><span class="o">=</span><span class="n">f2</span><span class="p">,</span> <span class="n">fend</span><span class="o">=</span><span class="n">f2</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The test signal is the superposition of the chirp and the jammer,
+wiht extra margins,
+and with some noise added</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sig</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="n">chirp</span> <span class="o">+</span> <span class="n">jammer</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">resample</span><span class="p">(</span>
+        <span class="n">samplingStart</span><span class="o">=</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">samplingPeriod</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span>
+        <span class="n">samplingStop</span><span class="o">=</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">zero_padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">applyGaussianNoise</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>We configure the frequency estimator <a class="reference internal" href="../blocksim.control.Estimator.html#blocksim.control.Estimator.SpectrumEstimator" title="blocksim.control.Estimator.SpectrumEstimator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.Estimator.SpectrumEstimator</span></code></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">blocksim.control.Estimator</span> <span class="kn">import</span> <span class="n">SpectrumEstimator</span>
+
+<span class="n">tracks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">fs</span>
+<span class="n">nb_tracks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tracks</span><span class="p">)</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nb_tracks</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+<span class="n">kal</span> <span class="o">=</span> <span class="n">SpectrumEstimator</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;kal&quot;</span><span class="p">,</span>
+    <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span>
+    <span class="n">shape_cmd</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">snames_output</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x_kal&quot;</span><span class="p">],</span>
+    <span class="n">snames_state</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x_</span><span class="si">%i</span><span class="s2">_est&quot;</span> <span class="o">%</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb_tracks</span><span class="p">)],</span>
+    <span class="n">tracks</span><span class="o">=</span><span class="n">tracks</span> <span class="o">*</span> <span class="n">fs</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">kal</span><span class="o">.</span><span class="n">matQ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">nb_tracks</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span>
+<span class="n">kal</span><span class="o">.</span><span class="n">matR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span>
+<span class="n">kal</span><span class="o">.</span><span class="n">setInitialStateForOutput</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="s2">&quot;state&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We define the simulation</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">blocksim.control.SetPoint</span> <span class="kn">import</span> <span class="n">Step</span>
+<span class="kn">from</span> <span class="nn">blocksim.Simulation</span> <span class="kn">import</span> <span class="n">Simulation</span>
+
+<span class="n">ctrl</span> <span class="o">=</span> <span class="n">Step</span><span class="p">(</span><span class="s2">&quot;ctrl&quot;</span><span class="p">,</span> <span class="n">snames</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">],</span> <span class="n">cons</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">()</span>
+
+<span class="n">sim</span><span class="o">.</span><span class="n">addComputer</span><span class="p">(</span><span class="n">ctrl</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">addComputer</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">addComputer</span><span class="p">(</span><span class="n">kal</span><span class="p">)</span>
+
+<span class="n">sim</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;sig.setpoint&quot;</span><span class="p">,</span> <span class="s2">&quot;kal.measurement&quot;</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;ctrl.setpoint&quot;</span><span class="p">,</span> <span class="s2">&quot;kal.command&quot;</span><span class="p">)</span>
+
+<span class="n">sim</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">generateXSerie</span><span class="p">(),</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We plot the spectrogram, which is computed by <a class="reference internal" href="../blocksim.control.Estimator.html#blocksim.control.Estimator.SpectrumEstimator.getSpectrogram" title="blocksim.control.Estimator.SpectrumEstimator.getSpectrogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.Estimator.SpectrumEstimator.getSpectrogram</span></code></a>
+The spectrogram is an instance of <a class="reference internal" href="../blocksim.dsp.DSPSpectrogram.html#blocksim.dsp.DSPSpectrogram.DSPSpectrogram" title="blocksim.dsp.DSPSpectrogram.DSPSpectrogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.dsp.DSPSpectrogram.DSPSpectrogram</span></code></a>
+It has a method plot which allows to visualize the spectrogram</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">log</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">spg</span> <span class="o">=</span> <span class="n">kal</span><span class="o">.</span><span class="n">getSpectrogram</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">blocksim.graphics</span> <span class="kn">import</span> <span class="n">plotSpectrogram</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">axe</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+<span class="n">plotSpectrogram</span><span class="p">(</span><span class="n">spg</span><span class="p">,</span> <span class="n">axe</span><span class="p">)</span>
+<span class="n">axe</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">t</span><span class="p">,</span>
+    <span class="n">fchirp</span><span class="p">,</span>
+    <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span>
+    <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">axe</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time (s)&quot;</span><span class="p">)</span>
+<span class="n">axe</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Frequency (Hz)&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_plot_freq_tracking_001.png" srcset="../_images/sphx_glr_plot_freq_tracking_001.png" alt="plot freq tracking" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.915 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-plot-freq-tracking-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/4a76d6455cfc7c1a6de85594e8bdfcca/plot_freq_tracking.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_freq_tracking.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/71ad080d06333d1be052bb37f22b45bf/plot_freq_tracking.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_freq_tracking.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="plot_radar.html" class="btn btn-neutral float-left" title="Radar proccessing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="plot_madgwick.html" class="btn btn-neutral float-right" title="Madgwick attitude estimator" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

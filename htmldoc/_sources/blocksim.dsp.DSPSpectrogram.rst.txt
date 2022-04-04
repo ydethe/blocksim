@@ -1,0 +1,7 @@
+blocksim.dsp.DSPSpectrogram module
+==================================
+
+.. automodule:: blocksim.dsp.DSPSpectrogram
+   :members:
+   :undoc-members:
+   :show-inheritance:

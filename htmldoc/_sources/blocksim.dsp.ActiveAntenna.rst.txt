@@ -1,0 +1,7 @@
+blocksim.dsp.ActiveAntenna module
+=================================
+
+.. automodule:: blocksim.dsp.ActiveAntenna
+   :members:
+   :undoc-members:
+   :show-inheritance:

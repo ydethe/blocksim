@@ -1,0 +1,7 @@
+blocksim.dsp.PSKMod module
+==========================
+
+.. automodule:: blocksim.dsp.PSKMod
+   :members:
+   :undoc-members:
+   :show-inheritance:

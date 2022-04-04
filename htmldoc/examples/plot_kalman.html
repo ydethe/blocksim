@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Damped spring-mass system with kalman estimator &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/translations.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Recherche" href="../search.html" />
+    <link rel="next" title="Indices and tables" href="../indices.html" />
+    <link rel="prev" title="Madgwick attitude estimator" href="plot_madgwick.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">blocksim</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="plot_zadoff.html">Zadoff-Chu sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_prn_processing.html">GPS PRN proccessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_satellite.html">Satellite ground track</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_qpsk.html">QPSK modulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_filtering.html">FIR filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_radar.html">Radar proccessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_freq_tracking.html">Frequency tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_madgwick.html">Madgwick attitude estimator</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Damped spring-mass system with kalman estimator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#definition-of-the-system">Definition of the system</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#definition-of-the-kalman-filter-with-converged-gain-matrix">Definition of the Kalman filter, with converged gain matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#definition-of-a-noisy-biased-sensor">Definition of a noisy biased sensor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#definition-of-a-lq-regulator">Definition of a LQ regulator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#definition-of-the-setpoint-unit-step-function">Definition of the setpoint : unit step function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#definition-of-a-splitter">Definition of a splitter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#simulation-graph-creation">Simulation graph creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-the-simulation">Running the simulation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Examples</a> &raquo;</li>
+      <li>Damped spring-mass system with kalman estimator</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/plot_kalman.rst.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-examples-plot-kalman-py"><span class="std std-ref">here</span></a>
+to download the full example code</p>
+</div>
+<section class="sphx-glr-example-title" id="damped-spring-mass-system-with-kalman-estimator">
+<span id="sphx-glr-examples-plot-kalman-py"></span><h1>Damped spring-mass system with kalman estimator<a class="headerlink" href="#damped-spring-mass-system-with-kalman-estimator" title="Lien permanent vers ce titre"></a></h1>
+<p>This case consists in :</p>
+<ul>
+<li><p>a LTI system, named <em>sys</em> <a class="reference internal" href="../blocksim.control.System.html#blocksim.control.System.LTISystem" title="blocksim.control.System.LTISystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.System.LTISystem</span></code></a></p>
+<p>This element simulates the system</p>
+</li>
+<li><p>a LQ regulator, named <em>ctl</em> <a class="reference internal" href="../blocksim.control.Controller.html#blocksim.control.Controller.LQRegulator" title="blocksim.control.Controller.LQRegulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.Controller.LQRegulator</span></code></a></p>
+<p>This element compares the estimated state of the system and compares to the setpoint.
+It controls the system so that it reaches the setpoint</p>
+</li>
+<li><p>a noisy biased sensor, named <em>cpt</em> <a class="reference internal" href="../blocksim.control.Sensors.html#blocksim.control.Sensors.LinearSensors" title="blocksim.control.Sensors.LinearSensors"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.Sensors.LinearSensors</span></code></a></p>
+<p>This element measures the position with noise and a constant bias</p>
+</li>
+<li><p>a Kalman filter , named <em>kal</em> <a class="reference internal" href="../blocksim.control.Estimator.html#blocksim.control.Estimator.TimeInvariantKalmanFilter" title="blocksim.control.Estimator.TimeInvariantKalmanFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.Estimator.TimeInvariantKalmanFilter</span></code></a></p>
+<p>This version of the Kalman filter is the steady-state version : the matrix gain and state covariance matrix are fix in time.</p>
+</li>
+<li><p>a LQ regulator, named <em>ctl</em> <a class="reference internal" href="../blocksim.control.Controller.html#blocksim.control.Controller.LQRegulator" title="blocksim.control.Controller.LQRegulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.Controller.LQRegulator</span></code></a></p>
+<p>This element compares the estimated state of the system and compares to the setpoint.
+It controls the system so that it reaches the setpoint</p>
+</li>
+<li><p>a setpoint, named <em>stp</em> <a class="reference internal" href="../blocksim.control.SetPoint.html#blocksim.control.SetPoint.Step" title="blocksim.control.SetPoint.Step"><code class="xref py py-class docutils literal notranslate"><span class="pre">blocksim.control.SetPoint.Step</span></code></a>
+This element provides a user command such as a step or a ramp or a Dirac, …
+Here, we will use a unit step function</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<section id="definition-of-the-system">
+<h2>Definition of the system<a class="headerlink" href="#definition-of-the-system" title="Lien permanent vers ce titre"></a></h2>
+<p>Mass, spring and friction</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">blocksim.control.System</span> <span class="kn">import</span> <span class="n">LTISystem</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># Mass</span>
+<span class="n">k</span> <span class="o">=</span> <span class="mf">40.0</span>  <span class="c1"># Spring rate</span>
+<span class="n">f</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="n">sys</span> <span class="o">=</span> <span class="n">LTISystem</span><span class="p">(</span><span class="s2">&quot;sys&quot;</span><span class="p">,</span> <span class="n">shape_command</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">snames_state</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">])</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">matA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="n">k</span> <span class="o">/</span> <span class="n">m</span><span class="p">,</span> <span class="o">-</span><span class="n">f</span> <span class="o">/</span> <span class="n">m</span><span class="p">]])</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">matB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">m</span><span class="p">]])</span><span class="o">.</span><span class="n">T</span>
+<span class="c1"># We set the initial position to -1, and the initial velocity to 0</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">setInitialStateForOutput</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span> <span class="s2">&quot;state&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[INFO] - Registered blocksim.loggers.CSVLogger
+[INFO] - Registered blocksim.loggers.PickleLogger
+[INFO] - Registered blocksim.loggers.PsqlLogger
+[INFO] - Registered blocksim.loggers.XlsLogger
+</pre></div>
+</div>
+</section>
+<section id="definition-of-the-kalman-filter-with-converged-gain-matrix">
+<h2>Definition of the Kalman filter, with converged gain matrix<a class="headerlink" href="#definition-of-the-kalman-filter-with-converged-gain-matrix" title="Lien permanent vers ce titre"></a></h2>
+<p>The state vector of the Kalman filter includes the bias of the position sensor</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">blocksim.control.Estimator</span> <span class="kn">import</span> <span class="n">TimeInvariantKalmanFilter</span>
+
+<span class="n">kal</span> <span class="o">=</span> <span class="n">TimeInvariantKalmanFilter</span><span class="p">(</span>
+    <span class="s2">&quot;kal&quot;</span><span class="p">,</span>
+    <span class="n">shape_cmd</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span>  <span class="c1"># Shape of the command vector</span>
+    <span class="n">snames_state</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>  <span class="c1"># Components of the state vector</span>
+    <span class="n">snames_output</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span>  <span class="c1"># Components of the output vector</span>
+<span class="p">)</span>
+<span class="n">kal</span><span class="o">.</span><span class="n">matA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">kal</span><span class="o">.</span><span class="n">matA</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">matA</span>
+<span class="n">kal</span><span class="o">.</span><span class="n">matB</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">kal</span><span class="o">.</span><span class="n">matB</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">matB</span>
+<span class="n">kal</span><span class="o">.</span><span class="n">matC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="n">kal</span><span class="o">.</span><span class="n">matD</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">kal</span><span class="o">.</span><span class="n">matQ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10000</span>
+<span class="n">kal</span><span class="o">.</span><span class="n">matR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+</pre></div>
+</div>
+</section>
+<section id="definition-of-a-noisy-biased-sensor">
+<h2>Definition of a noisy biased sensor<a class="headerlink" href="#definition-of-a-noisy-biased-sensor" title="Lien permanent vers ce titre"></a></h2>
+<p>The sensor measures the position</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">blocksim.control.Sensors</span> <span class="kn">import</span> <span class="n">LinearSensors</span>
+
+<span class="n">bias</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+<span class="n">cpt</span> <span class="o">=</span> <span class="n">LinearSensors</span><span class="p">(</span><span class="s2">&quot;cpt&quot;</span><span class="p">,</span> <span class="n">shape_state</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,),</span> <span class="n">shape_command</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">snames</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span>
+<span class="n">cpt</span><span class="o">.</span><span class="n">matC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">cpt</span><span class="o">.</span><span class="n">matD</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">cpt</span><span class="o">.</span><span class="n">setCovariance</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">200</span><span class="p">)</span>
+<span class="n">cpt</span><span class="o">.</span><span class="n">setMean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">bias</span><span class="p">]))</span>
+</pre></div>
+</div>
+</section>
+<section id="definition-of-a-lq-regulator">
+<h2>Definition of a LQ regulator<a class="headerlink" href="#definition-of-a-lq-regulator" title="Lien permanent vers ce titre"></a></h2>
+<p>The sensor measures the position</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">blocksim.control.Controller</span> <span class="kn">import</span> <span class="n">LQRegulator</span>
+
+<span class="n">ctl</span> <span class="o">=</span> <span class="n">LQRegulator</span><span class="p">(</span><span class="s2">&quot;ctl&quot;</span><span class="p">,</span> <span class="n">shape_setpoint</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">shape_estimation</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,),</span> <span class="n">snames</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">])</span>
+<span class="n">ctl</span><span class="o">.</span><span class="n">matA</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">matA</span>
+<span class="n">ctl</span><span class="o">.</span><span class="n">matB</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">matB</span>
+<span class="n">ctl</span><span class="o">.</span><span class="n">matC</span> <span class="o">=</span> <span class="n">kal</span><span class="o">.</span><span class="n">matC</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">ctl</span><span class="o">.</span><span class="n">matD</span> <span class="o">=</span> <span class="n">kal</span><span class="o">.</span><span class="n">matD</span>
+<span class="n">ctl</span><span class="o">.</span><span class="n">matQ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10000</span>
+<span class="n">ctl</span><span class="o">.</span><span class="n">matR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+<span class="n">ctl</span><span class="o">.</span><span class="n">computeGain</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="definition-of-the-setpoint-unit-step-function">
+<h2>Definition of the setpoint : unit step function<a class="headerlink" href="#definition-of-the-setpoint-unit-step-function" title="Lien permanent vers ce titre"></a></h2>
+<p>The setpoint is simple Heavyside function here</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">blocksim.control.SetPoint</span> <span class="kn">import</span> <span class="n">Step</span>
+
+<span class="n">stp</span> <span class="o">=</span> <span class="n">Step</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;stp&quot;</span><span class="p">,</span> <span class="n">snames</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">],</span> <span class="n">cons</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]))</span>
+</pre></div>
+</div>
+</section>
+<section id="definition-of-a-splitter">
+<h2>Definition of a splitter<a class="headerlink" href="#definition-of-a-splitter" title="Lien permanent vers ce titre"></a></h2>
+<p>The Kalman’s state vector is x, v, b.
+But the controller expects an estimation of the system’s state vector.
+So we need a splitter wich excludes the bias estimation</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">blocksim.control.Route</span> <span class="kn">import</span> <span class="n">Split</span>
+
+<span class="n">spt_otp</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="n">spt_otp</span><span class="p">[</span><span class="s2">&quot;split&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># We keep outputs 0 and 1 of the input vector</span>
+<span class="n">split</span> <span class="o">=</span> <span class="n">Split</span><span class="p">(</span><span class="s2">&quot;split&quot;</span><span class="p">,</span> <span class="n">signal_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="n">outputs</span><span class="o">=</span><span class="n">spt_otp</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="simulation-graph-creation">
+<h2>Simulation graph creation<a class="headerlink" href="#simulation-graph-creation" title="Lien permanent vers ce titre"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">blocksim.Simulation</span> <span class="kn">import</span> <span class="n">Simulation</span>
+
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulation</span><span class="p">()</span>
+
+<span class="n">sim</span><span class="o">.</span><span class="n">addComputer</span><span class="p">(</span><span class="n">sys</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">addComputer</span><span class="p">(</span><span class="n">ctl</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">addComputer</span><span class="p">(</span><span class="n">cpt</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">addComputer</span><span class="p">(</span><span class="n">kal</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">addComputer</span><span class="p">(</span><span class="n">split</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">addComputer</span><span class="p">(</span><span class="n">stp</span><span class="p">)</span>
+
+<span class="c1"># List of the connnections</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;stp.setpoint&quot;</span><span class="p">,</span> <span class="s2">&quot;ctl.setpoint&quot;</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;ctl.command&quot;</span><span class="p">,</span> <span class="s2">&quot;sys.command&quot;</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;sys.state&quot;</span><span class="p">,</span> <span class="s2">&quot;cpt.state&quot;</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;ctl.command&quot;</span><span class="p">,</span> <span class="s2">&quot;cpt.command&quot;</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;cpt.measurement&quot;</span><span class="p">,</span> <span class="s2">&quot;kal.measurement&quot;</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;ctl.command&quot;</span><span class="p">,</span> <span class="s2">&quot;kal.command&quot;</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;kal.state&quot;</span><span class="p">,</span> <span class="s2">&quot;split.signal&quot;</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;split.split&quot;</span><span class="p">,</span> <span class="s2">&quot;ctl.estimation&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="running-the-simulation">
+<h2>Running the simulation<a class="headerlink" href="#running-the-simulation" title="Lien permanent vers ce titre"></a></h2>
+<p>We run the simulation and plot the results</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dt</span> <span class="o">=</span> <span class="mf">0.05</span>
+
+<span class="n">tps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">tps</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">blocksim.graphics</span> <span class="kn">import</span> <span class="n">plotVerif</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="n">plotVerif</span><span class="p">(</span>
+    <span class="n">log</span><span class="p">,</span>
+    <span class="s2">&quot;test_ss_kal&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;var&quot;</span><span class="p">:</span> <span class="s2">&quot;sys_state_x&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;var&quot;</span><span class="p">:</span> <span class="s2">&quot;stp_setpoint_c&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;var&quot;</span><span class="p">:</span> <span class="s2">&quot;kal_state_x&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;var&quot;</span><span class="p">:</span> <span class="s2">&quot;cpt_measurement_x&quot;</span><span class="p">,</span> <span class="s2">&quot;linestyle&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;marker&quot;</span><span class="p">:</span> <span class="s2">&quot;+&quot;</span><span class="p">},</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_plot_kalman_001.png" srcset="../_images/sphx_glr_plot_kalman_001.png" alt="Axe 1" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.916 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-examples-plot-kalman-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/4726d1084ed70121815942ce4bad7f2a/plot_kalman.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_kalman.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/de1571d7c57d890594d1c5f5e0c4872a/plot_kalman.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_kalman.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="plot_madgwick.html" class="btn btn-neutral float-left" title="Madgwick attitude estimator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="../indices.html" class="btn btn-neutral float-right" title="Indices and tables" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

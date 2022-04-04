@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>blocksim.core.Frame &mdash; Documentation blocksim 0.1.0</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/translations.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> blocksim
+          </a>
+              <div class="version">
+                0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">blocksim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../indices.html">Indices and tables</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">blocksim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Code du module</a> &raquo;</li>
+      <li>blocksim.core.Frame</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Code source de blocksim.core.Frame</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">UUID</span><span class="p">,</span> <span class="n">uuid4</span>
+
+
+<div class="viewcode-block" id="Frame"><a class="viewcode-back" href="../../../blocksim.core.Frame.html#blocksim.core.Frame.Frame">[docs]</a><span class="k">class</span> <span class="nc">Frame</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Time frame. Describes a time interval (start time and stop time)</span>
+<span class="sd">    Contains also an UUID, which is used to determine if a :class:`blocksim.core.ABaseNode` is up to date.</span>
+<span class="sd">    If not, the :class:`blocksim.core.ABaseNode` is update with a call to :class:`blocksim.core.ABaseNode.updateAllOutput`</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      start_timestamp</span>
+<span class="sd">        Time start of the frame</span>
+<span class="sd">      stop_timestamp</span>
+<span class="sd">        Time stop of the frame</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_timestamp</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stop_timestamp</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__start_timestamp</span> <span class="o">=</span> <span class="n">start_timestamp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__stop_timestamp</span> <span class="o">=</span> <span class="n">stop_timestamp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__id</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;&lt;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&gt; start=</span><span class="si">%g</span><span class="s2">, stop=</span><span class="si">%g</span><span class="s2"> &lt;end&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getFrameID</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getStartTimeStamp</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getStopTimeStamp</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+<div class="viewcode-block" id="Frame.getStartTimeStamp"><a class="viewcode-back" href="../../../blocksim.core.Frame.html#blocksim.core.Frame.Frame.getStartTimeStamp">[docs]</a>    <span class="k">def</span> <span class="nf">getStartTimeStamp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the start time of the frame</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          Start time</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__start_timestamp</span></div>
+
+<div class="viewcode-block" id="Frame.getStopTimeStamp"><a class="viewcode-back" href="../../../blocksim.core.Frame.html#blocksim.core.Frame.Frame.getStopTimeStamp">[docs]</a>    <span class="k">def</span> <span class="nf">getStopTimeStamp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the stop time of the frame</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          Stop time</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__stop_timestamp</span></div>
+
+<div class="viewcode-block" id="Frame.getTimeStep"><a class="viewcode-back" href="../../../blocksim.core.Frame.html#blocksim.core.Frame.Frame.getTimeStep">[docs]</a>    <span class="k">def</span> <span class="nf">getTimeStep</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the time step of the frame :</span>
+<span class="sd">        stop_time - start_time</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          Time step</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__stop_timestamp</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">__start_timestamp</span></div>
+
+<div class="viewcode-block" id="Frame.getFrameID"><a class="viewcode-back" href="../../../blocksim.core.Frame.html#blocksim.core.Frame.Frame.getFrameID">[docs]</a>    <span class="k">def</span> <span class="nf">getFrameID</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">UUID</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets the id of the frame. This elements is used to test the equality between 2 frames</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The id of the frame</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__id</span></div>
+
+<div class="viewcode-block" id="Frame.updateByStep"><a class="viewcode-back" href="../../../blocksim.core.Frame.html#blocksim.core.Frame.Frame.updateByStep">[docs]</a>    <span class="k">def</span> <span class="nf">updateByStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Updates the frame by step</span>
+<span class="sd">        This operation changes the frame&#39;s id, so that it triggers update when used to retrieve computers&#39; data</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          The time step</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__start_timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__stop_timestamp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__stop_timestamp</span> <span class="o">+=</span> <span class="n">step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__id</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Frame.copy"><a class="viewcode-back" href="../../../blocksim.core.Frame.html#blocksim.core.Frame.Frame.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Frame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Copies the frame</span>
+<span class="sd">        It creates a new instance of Frame</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          The duplicated frame</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">Frame</span><span class="p">(</span>
+            <span class="n">start_timestamp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getStartTimeStamp</span><span class="p">(),</span>
+            <span class="n">stop_timestamp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getStopTimeStamp</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">__id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFrameID</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="s2">&quot;Frame&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFrameID</span><span class="p">()</span> <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">getFrameID</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFrameID</span><span class="p">()</span><span class="o">.</span><span class="n">int</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Thales.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

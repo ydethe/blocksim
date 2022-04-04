@@ -1,0 +1,7 @@
+blocksim.graphics.EarthPlotter module
+=====================================
+
+.. automodule:: blocksim.graphics.EarthPlotter
+   :members:
+   :undoc-members:
+   :show-inheritance:

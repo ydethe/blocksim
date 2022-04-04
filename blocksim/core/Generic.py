@@ -2,7 +2,7 @@ from typing import Callable
 
 import numpy as np
 
-from .core.Node import AComputer
+from .Node import AComputer
 
 
 __all__ = ["GenericComputer"]
@@ -54,11 +54,7 @@ class GenericComputer(AComputer):
         self.createParameter("callable", value=callable)
 
     def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        xin: np.array,
-        xout: np.array,
+        self, t1: float, t2: float, xin: np.array, xout: np.array,
     ) -> dict:
         outputs = {}
         outputs["xout"] = self.callable(xin)

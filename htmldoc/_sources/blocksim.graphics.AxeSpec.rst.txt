@@ -1,0 +1,7 @@
+blocksim.graphics.AxeSpec module
+================================
+
+.. automodule:: blocksim.graphics.AxeSpec
+   :members:
+   :undoc-members:
+   :show-inheritance:

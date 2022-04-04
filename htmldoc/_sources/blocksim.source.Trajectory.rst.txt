@@ -1,0 +1,7 @@
+blocksim.source.Trajectory module
+=================================
+
+.. automodule:: blocksim.source.Trajectory
+   :members:
+   :undoc-members:
+   :show-inheritance:
