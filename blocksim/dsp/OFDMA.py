@@ -2,7 +2,7 @@ import numpy as np
 from numpy import sqrt, sign, pi, exp
 from numpy.fft import fft, ifft
 
-from blocksim.dsp.ADSPComputer import ADSPComputer
+from .ADSPComputer import ADSPComputer
 
 from .. import logger
 

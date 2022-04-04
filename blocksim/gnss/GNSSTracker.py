@@ -2,8 +2,8 @@ import scipy.linalg as lin
 import numpy as np
 from numpy import pi
 
-from blocksim.control.Sensors import ASensors
-from blocksim.core.Node import AWGNOutput
+from ..control.Sensors import ASensors
+from ..core.Node import AWGNOutput
 
 from .. import logger
 from ..constants import c as clum, mu

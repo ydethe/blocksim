@@ -8,9 +8,9 @@ from scipy.interpolate import interp1d
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
-from blocksim.dsp.DSPSignal import DSPSignal
-from blocksim.dsp.DSPSpectrogram import DSPSpectrogram
-from blocksim.graphics import plotSpectrogram
+from ..dsp.DSPSignal import DSPSignal
+from ..dsp.DSPSpectrogram import DSPSpectrogram
+from ..graphics import plotSpectrogram
 
 from .. import logger
 from ..constants import Req, c, kb

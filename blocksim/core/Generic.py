@@ -2,7 +2,7 @@ from typing import Callable
 
 import numpy as np
 
-from blocksim.core.Node import AComputer
+from .core.Node import AComputer
 
 
 __all__ = ["GenericComputer"]

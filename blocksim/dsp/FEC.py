@@ -3,7 +3,7 @@ from numpy import sqrt, sign
 
 from commpy.channelcoding.convcode import Trellis, conv_encode, viterbi_decode
 
-from blocksim.dsp.ADSPComputer import ADSPComputer
+from .ADSPComputer import ADSPComputer
 
 from .. import logger
 

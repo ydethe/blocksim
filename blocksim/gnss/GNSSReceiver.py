@@ -8,8 +8,8 @@ from scipy.optimize import minimize, Bounds
 from skyfield.api import Topos, load
 from skyfield import framelib
 
-from blocksim.core.Node import AComputer, Output
-from blocksim.core.Frame import Frame
+from ..core.Node import AComputer, Output
+from ..core.Frame import Frame
 
 from .. import logger
 from ..utils import datetime_to_skyfield, skyfield_to_datetime, build_env

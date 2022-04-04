@@ -4,8 +4,7 @@ import pandas as pd
 import numpy as np
 from numpy import pi
 
-from blocksim.Logger import Logger
-
+from ..Logger import Logger
 from ..utils import itrf_to_geodetic
 
 

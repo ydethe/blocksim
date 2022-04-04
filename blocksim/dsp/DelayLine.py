@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from blocksim.dsp.CircularBuffer import CircularBuffer
+from .CircularBuffer import CircularBuffer
 
 from .. import logger
 

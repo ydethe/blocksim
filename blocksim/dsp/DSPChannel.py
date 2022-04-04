@@ -2,9 +2,9 @@ import numpy as np
 from numpy import exp, pi, sqrt, cos, sin, tan
 from scipy import linalg as lin
 
-from blocksim.core.Frame import Frame
-from blocksim.core.Node import AComputer, AWGNOutput
-from blocksim.dsp.DSPSignal import DSPSignal
+from ..core.Frame import Frame
+from ..core.Node import AComputer, AWGNOutput
+from .DSPSignal import DSPSignal
 
 from .DelayLine import FiniteDelayLine
 from ..constants import kb, c, Req

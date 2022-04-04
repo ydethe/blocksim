@@ -3,7 +3,7 @@ from numpy import sqrt, sign, pi, exp
 from numpy.fft import fft, ifft, fftshift, fftfreq
 from scipy import signal as sig
 
-from blocksim.core.Node import AComputer
+from ..core.Node import AComputer
 
 from .. import logger
 from . import zadoff_chu

@@ -141,6 +141,36 @@ class TestLogger(TestBase):
 
     def test_log_formatter(self):
         logger.debug("poney")
+    def test_save_load_psql(self):
+        pth = "postgresql+psycopg2://postgres@localhost/simulations"
+
+        log = Logger()
+
+        dt = 0.01
+        f = 11
+        ns = 1000
+
+        for i in range(ns):
+            log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
+            log.log("t", i * dt)
+            log.log("_", 0)  # Variable named '_' is not recorded
+
+        sim_id = log.export(pth)
+        del log
+
+        log2 = Logger()
+        log2.loadLogFile("%s?sim_id=%i" % (pth, sim_id))
+
+        vars = log2.getParametersName()
+        self.assertIn("t", vars)
+        self.assertIn("x", vars)
+
+        tps = np.arange(ns) * dt
+        x = exp(1j * tps * f * 2 * np.pi + 1)
+        err_t = np.max(np.abs(tps - log2.getValue("t")))
+        err_x = np.max(np.abs(x - log2.getValue("x")))
+        self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
+        self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
 
 
 if __name__ == "__main__":

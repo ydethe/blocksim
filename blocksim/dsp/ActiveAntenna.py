@@ -6,8 +6,8 @@ import numpy as np
 from numpy import arccos, arctan, exp, pi, sqrt, cos, sin, tan, log2, arcsin, arctan2
 from scipy import linalg as lin
 
-from blocksim.core.Node import AComputer
-from blocksim.dsp.DSPSpectrogram import DSPSpectrogram
+from .ActiveAntenna.core.Node import AComputer
+from .DSPSpectrogram import DSPSpectrogram
 
 from .. import logger
 from ..constants import c, Req, mu

@@ -10,7 +10,7 @@ from scipy.linalg.matfuncs import fractional_matrix_power
 from sgp4.api import Satrec, WGS84
 from sgp4.functions import days2mdhms
 
-from blocksim.core.Node import AComputer
+from ..core.Node import AComputer
 
 from .. import logger
 from ..constants import *

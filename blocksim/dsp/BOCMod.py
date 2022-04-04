@@ -1,9 +1,9 @@
 import numpy as np
 from numpy import sqrt, sign, pi, exp, cos, sin, log2
 
-from blocksim.dsp.ADSPComputer import ADSPComputer
-from blocksim.dsp.DSPSpectrum import DSPSpectrum
-from blocksim.dsp.DSPSignal import DSPSignal
+from .ADSPComputer import ADSPComputer
+from .DSPSpectrum import DSPSpectrum
+from .DSPSignal import DSPSignal
 
 from .. import logger
 
