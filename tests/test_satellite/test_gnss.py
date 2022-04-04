@@ -13,10 +13,10 @@ from blocksim.control.Route import Group
 from blocksim.Simulation import Simulation
 from blocksim.utils import rad
 
-from blocksim_sigspace.utils import geodetic_to_itrf
-from blocksim_sigspace.source.Satellite import createSatellites
-from blocksim_sigspace.gnss.GNSSTracker import GNSSTracker
-from blocksim_sigspace.gnss.GNSSReceiver import GNSSReceiver
+from blocksim.utils import geodetic_to_itrf
+from blocksim.source.Satellite import createSatellites
+from blocksim.gnss.GNSSTracker import GNSSTracker
+from blocksim.gnss.GNSSReceiver import GNSSReceiver
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

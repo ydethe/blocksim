@@ -7,7 +7,7 @@ import numpy as np
 
 from blocksim import logger
 
-from blocksim_sigspace.graphics import plotBER
+from blocksim.graphics import plotBER
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

@@ -42,4 +42,4 @@ codecov= "^2.1.11"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "tests --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim_sigspace --doctest-modules blocksim_sigspace"
+addopts = "tests --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim --doctest-modules blocksim"

@@ -14,11 +14,11 @@ from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.graphics import plotDSPLine
 from blocksim.Simulation import Simulation
 
-from blocksim_sigspace.utils import geodetic_to_itrf
-from blocksim_sigspace.constants import Req, c
-from blocksim_sigspace.dsp.DSPChannel import DSPChannel
-from blocksim_sigspace.graphics.EarthPlotter import EarthPlotter
-from blocksim_sigspace.source.Satellite import SGP4Satellite
+from blocksim.utils import geodetic_to_itrf
+from blocksim.constants import Req, c
+from blocksim.dsp.DSPChannel import DSPChannel
+from blocksim.graphics.EarthPlotter import EarthPlotter
+from blocksim.source.Satellite import SGP4Satellite
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

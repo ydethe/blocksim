@@ -9,7 +9,7 @@ Zadoff-Chu sequence
 # ---------------------------------
 
 from blocksim.dsp.DSPSignal import DSPSignal
-from blocksim_sigspace.dsp import createZadoffChu
+from blocksim.dsp import createZadoffChu
 
 s1 = createZadoffChu(name="s1", n_zc=1021, u=1, sampling_freq=1e6)
 

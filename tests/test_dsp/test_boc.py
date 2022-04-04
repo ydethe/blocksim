@@ -11,8 +11,8 @@ from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.Simulation import Simulation
 from blocksim.graphics import plotDSPLine
 
-from blocksim_sigspace.dsp.BOCMod import BOCMapping
-from blocksim_sigspace.dsp import createGoldSequence
+from blocksim.dsp.BOCMod import BOCMapping
+from blocksim.dsp import createGoldSequence
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

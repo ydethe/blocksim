@@ -12,7 +12,7 @@ from blocksim.dsp.DSPAWGN import DSPAWGN
 from blocksim.control.Route import Group
 from blocksim.Simulation import Simulation
 
-from blocksim_sigspace.dsp.PSKMod import PSKMapping, PSKDemapping
+from blocksim.dsp.PSKMod import PSKMapping, PSKDemapping
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

@@ -14,10 +14,10 @@ class TestB3DPlotter(TestBase):
         from numpy import sqrt, cos, sin, pi
         from scipy import linalg as lin
 
-        from blocksim_sigspace.constants import Req
-        from blocksim_sigspace.gnss.GNSSReceiver import GNSSReceiver
-        from blocksim_sigspace.source.Satellite import SGP4Satellite
-        from blocksim_sigspace.graphics.B3DPlotter import B3DPlotter
+        from blocksim.constants import Req
+        from blocksim.gnss.GNSSReceiver import GNSSReceiver
+        from blocksim.source.Satellite import SGP4Satellite
+        from blocksim.graphics.B3DPlotter import B3DPlotter
 
         # Parametres orbite
         t_init = datetime(

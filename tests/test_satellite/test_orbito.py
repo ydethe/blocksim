@@ -8,7 +8,7 @@ from numpy import testing
 # from matplotlib import pyplot as plt
 # import pytest
 
-from blocksim_sigspace.utils import *
+from blocksim.utils import *
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

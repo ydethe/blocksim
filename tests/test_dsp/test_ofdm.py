@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 
 from blocksim import logger
 
-from blocksim_sigspace.dsp.OFDMA import OFDMMapping, OFDMDemapping
+from blocksim.dsp.OFDMA import OFDMMapping, OFDMDemapping
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

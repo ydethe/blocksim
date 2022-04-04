@@ -31,7 +31,7 @@ from panda3d.core import (
     LVecBase3,
 )
 
-from blocksim.utils import resource_path
+from ..utils import resource_path
 
 from ..constants import Req, rf
 from ..utils import datetime_to_skyfield, geodetic_to_itrf
@@ -264,7 +264,7 @@ class B3DPlotter(ShowBase):
         return nodePath
 
     def buildEarth(self) -> NodePath:
-        tex_path = resource_path("8081_earthmap4k.jpg", package="blocksim_sigspace")
+        tex_path = resource_path("8081_earthmap4k.jpg", package="blocksim")
         return self.buildSphere(
             texture=tex_path,
             number_of_meridians=180,

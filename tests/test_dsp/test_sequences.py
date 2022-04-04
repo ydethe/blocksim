@@ -11,7 +11,7 @@ from blocksim.graphics import plotDSPLine
 from blocksim.Logger import Logger
 from blocksim.dsp.DSPSignal import DSPSignal
 
-from blocksim_sigspace.dsp import createGoldSequence, createZadoffChu
+from blocksim.dsp import createGoldSequence, createZadoffChu
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

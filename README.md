@@ -15,8 +15,6 @@ A library to simulate a closed-loop system. Includes :
 -   yaml file configuration
 -   Routing functions (group, split, \...)
 
-Free software: MIT license
-
 Development
 -----------
 

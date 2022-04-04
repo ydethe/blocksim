@@ -4,7 +4,7 @@ from pathlib import Path
 
 from numpy import pi, cos, arcsin
 
-from blocksim_sigspace.constants import c
+from blocksim.constants import c
 
 root = Path(__file__).parent
 

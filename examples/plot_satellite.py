@@ -10,9 +10,9 @@ from numpy import cos, sin, sqrt, exp, pi
 from matplotlib import pyplot as plt
 
 from blocksim.Simulation import Simulation
-from blocksim_sigspace.constants import Req, omega
-from blocksim_sigspace.source.Satellite import SGP4Satellite
-from blocksim_sigspace.graphics.EarthPlotter import EarthPlotter
+from blocksim.constants import Req, omega
+from blocksim.source.Satellite import SGP4Satellite
+from blocksim.graphics.EarthPlotter import EarthPlotter
 
 
 pt = (-74.0542275, 40.7004153)

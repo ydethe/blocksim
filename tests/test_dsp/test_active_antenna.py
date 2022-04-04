@@ -8,8 +8,8 @@ from matplotlib import pyplot as plt
 
 from blocksim.graphics import plotSpectrogram
 
-from blocksim_sigspace.utils import load_antenna_config
-from blocksim_sigspace.dsp.ActiveAntenna import ActiveAntenna
+from blocksim.utils import load_antenna_config
+from blocksim.dsp.ActiveAntenna import ActiveAntenna
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

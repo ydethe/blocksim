@@ -12,7 +12,7 @@ from numpy import log10, sqrt, pi
 from matplotlib import pyplot as plt
 
 from blocksim import logger
-from blocksim_sigspace.dsp.PSKMod import PSKMapping, PSKDemapping
+from blocksim.dsp.PSKMod import PSKMapping, PSKDemapping
 
 ###############################################################################
 # Instanciation of QPSK modulator and demodulator

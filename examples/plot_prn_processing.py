@@ -9,7 +9,7 @@ GPS PRN proccessing
 # ----------------------
 
 from blocksim.dsp.DSPSignal import DSPSignal
-from blocksim_sigspace.dsp import createGoldSequence
+from blocksim.dsp import createGoldSequence
 
 ###############################################################################
 # Reference Gold sequence. The argument sv=[2, 6] is the
