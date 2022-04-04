@@ -2,16 +2,23 @@ import os
 import glob
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Iterable, Tuple
+from typing import Iterable, Tuple, Callable
 
+from tqdm import tqdm
 from scipy import linalg as lin
+from scipy.optimize import root_scalar
+from scipy.integrate import quad
+from scipy.interpolate import interp1d
+from scipy.optimize import minimize_scalar
 import numpy as np
-from numpy import pi, arcsin, arctan, arctan2, sin, cos, sqrt
+from numpy import pi, arcsin, arctan, arctan2, tan, sin, cos, sqrt, exp
+from skyfield.api import Topos, load, utc
+from skyfield.timelib import Time
+from skyfield.sgp4lib import TEME_to_ITRF, theta_GMST1982
 
 from . import logger
 from .constants import *
 from .exceptions import *
-from . import logger
 
 
 __all__ = [
@@ -31,6 +38,28 @@ __all__ = [
     "vecBodyToEarth",
     "vecEarthToBody",
     "q_function",
+    "anomaly_mean_to_ecc",
+    "anomaly_ecc_to_mean",
+    "anomaly_ecc_to_true",
+    "anomaly_true_to_ecc",
+    "anomaly_mean_to_true",
+    "anomaly_true_to_mean",
+    "build_env",
+    "geodetic_to_itrf",
+    "orbital_to_teme",
+    "teme_to_orbital",
+    "itrf_to_geodetic",
+    "time_to_jd_fraction",
+    "rotation_matrix",
+    "teme_to_itrf",
+    "itrf_to_teme",
+    "itrf_to_azeld",
+    "datetime_to_skyfield",
+    "skyfield_to_datetime",
+    "pdot",
+    "q_function",
+    "cexp",
+    "load_antenna_config",
 ]
 
 
@@ -526,3 +555,462 @@ def q_function(x):
     https://en.wikipedia.org/wiki/Q-function
     """
     return 0.5 * np.erfc(x / np.sqrt(2))
+
+
+def anomaly_mean_to_ecc(ecc: float, M: float) -> float:
+    def _fun(E, ecc, M):
+        return E - ecc * sin(E) - M
+
+    def _dfun(E, ecc, M):
+        return 1 - ecc * cos(E)
+
+    res = root_scalar(f=_fun, args=(ecc, M), bracket=(-pi, pi), fprime=_dfun, x0=M)
+    if not res.converged:
+        raise AssertionError("%s" % res)
+
+    return res.root
+
+
+def anomaly_ecc_to_mean(ecc: float, E: float) -> float:
+    return E - ecc * sin(E)
+
+
+def anomaly_ecc_to_true(ecc: float, E: float) -> float:
+    tv2 = sqrt((1 + ecc) / (1 - ecc)) * tan(E / 2)
+    return 2 * arctan(tv2)
+
+
+def anomaly_true_to_ecc(ecc: float, v: float) -> float:
+    tE2 = sqrt((1 - ecc) / (1 + ecc)) * tan(v / 2)
+    return 2 * arctan(tE2)
+
+
+def anomaly_mean_to_true(ecc: float, M: float) -> float:
+    E = anomaly_mean_to_ecc(ecc, M)
+    v = anomaly_ecc_to_true(ecc, E)
+    return v
+
+
+def anomaly_true_to_mean(ecc: float, v: float) -> float:
+    E = anomaly_true_to_ecc(ecc, v)
+    M = anomaly_ecc_to_mean(ecc, E)
+    return M
+
+
+def build_env(pos: np.array) -> np.array:
+    """Builds a ENV frame at a given position
+
+    Args:
+      pos
+        Position (m) of a point in ITRF
+
+    Returns:
+      Matrix :
+      * Local East vector
+      * Local North vector
+      * Local Vertical vector
+
+    """
+    # Local ENV for the observer
+    vert = pos.copy()
+    vert /= lin.norm(vert)
+
+    east = np.cross(np.array([0, 0, 1]), pos)
+    east /= lin.norm(east)
+
+    north = np.cross(vert, east)
+
+    env = np.empty((3, 3))
+    env[:, 0] = east
+    env[:, 1] = north
+    env[:, 2] = vert
+
+    return env
+
+
+def geodetic_to_itrf(lon: float, lat: float, h: float) -> "array":
+    """
+    Compute the Geocentric (Cartesian) Coordinates X, Y, Z
+    given the Geodetic Coordinates lat, lon + Ellipsoid Height h
+
+    Args:
+      lon (rad)
+        L
+      lat (rad)
+        Latitude
+      h (m)
+        Altitude
+
+    Returns:
+      x, y, z (m) : geocentric position as numpy array
+
+    Examples:
+      >>> x,y,z = geodetic_to_itrf(0,0,0)
+
+    """
+    N = Req / sqrt(1 - (1 - (1 - 1 / rf) ** 2) * (sin(lat)) ** 2)
+    X = (N + h) * cos(lat) * cos(lon)
+    Y = (N + h) * cos(lat) * sin(lon)
+    Z = ((1 - 1 / rf) ** 2 * N + h) * sin(lat)
+
+    return np.array([X, Y, Z])
+
+
+def Iter_phi_h(x: float, y: float, z: float, eps: float = 1e-6) -> Tuple[float, float]:
+    r = lin.norm((x, y, z))
+    p = sqrt(x**2 + y**2)
+
+    N = Req
+    hg = r - sqrt(Req - Rpo)
+    e = sqrt(1 - Rpo**2 / Req**2)
+    phig = arctan(z * (N + hg) / (p * (N * (1 - e**2) + hg)))
+
+    cont = True
+    niter = 0
+    while cont:
+        hgp = hg
+        phigp = phig
+
+        N = Req / sqrt(1 - e**2 * sin(phigp) ** 2)
+        hg = p / cos(phigp) - N
+        phig = arctan(z * (N + hg) / (p * (N * (1 - e**2) + hg)))
+
+        if eps > max(abs(phigp - phig), abs(hgp - hg)):
+            cont = False
+
+        if niter > 50:
+            raise ValueError("Too many iterations in Iter_phi_h")
+
+        niter += 1
+
+    return phig, hgp
+
+
+def time_to_jd_fraction(t_epoch: float) -> Tuple[float, float]:
+    """
+
+    Args:
+      t_epoch (s)
+        Time since 31/12/1949 00:00 UT
+
+    """
+    epoch = t_epoch / 86400
+
+    whole, fraction = divmod(epoch, 1.0)
+    whole_jd = whole + 2433281.5
+
+    jd = whole_jd
+    fraction = fraction
+
+    return jd, fraction
+
+
+def rotation_matrix(angle: float, axis: "array"):
+    kx, ky, kz = axis / lin.norm(axis)
+    K = np.array([[0, -kz, ky], [kz, 0, -kx], [-ky, kx, 0]])
+    R = np.eye(3) + sin(angle) * K + (1 - cos(angle)) * K @ K
+    return R
+
+
+def teme_to_itrf(t_epoch: float, pv_teme: "array") -> "array":
+    jd, fraction = time_to_jd_fraction(t_epoch)
+
+    theta, theta_dot = theta_GMST1982(jd, fraction)
+    uz = np.array((0.0, 0.0, 1.0))
+    angular_velocity = -theta_dot * uz / 86400.0
+
+    R = rotation_matrix(-theta, uz)
+
+    rTEME = pv_teme[:3]
+    vTEME = pv_teme[3:]
+
+    rITRF = R @ rTEME
+    vITRF = R @ vTEME + np.cross(angular_velocity, rITRF)
+
+    pv = np.empty(6)
+    pv[:3] = rITRF
+    pv[3:] = vITRF
+
+    return pv
+
+
+def itrf_to_teme(t_epoch: float, pv_itrf: "array") -> "array":
+    jd, fraction = time_to_jd_fraction(t_epoch)
+
+    theta, theta_dot = theta_GMST1982(jd, fraction)
+    uz = np.array((0.0, 0.0, 1.0))
+    angular_velocity = -theta_dot * uz / 86400.0
+
+    R = rotation_matrix(theta, uz)
+
+    rITRF = pv_itrf[:3]
+    vITRF = pv_itrf[3:]
+
+    rTEME = R @ rITRF
+    vTEME = R @ vITRF - R @ np.cross(angular_velocity, rITRF)
+
+    return np.hstack((rTEME, vTEME))
+
+
+def teme_to_orbital(pv: "array"):
+    pos = np.array(pv[:3])
+    x, y, z = pos
+    vel = np.array(pv[3:])
+    r = lin.norm(pos)
+    v2 = vel @ vel
+    W = v2 / 2 - mu / r
+    a = -mu / (2 * W)
+    v = sqrt(v2)
+    h = np.cross(pos, vel)
+    hx, hy, hz = h
+    h2 = h @ h
+    nh = sqrt(h2)
+    p = h2 / mu
+    asqr = 1 - p / a
+    inc = arccos(hz / nh)
+    if asqr < 0:
+        e = 0
+        tano = 0
+    else:
+        e = sqrt(asqr)
+        tano = arccos(1 / e * (p / r - 1))
+    if vel @ pos < 0:
+        tano = -tano
+    node = arctan2(hx, -hy)
+    argp = (
+        arctan2(
+            (y * cos(node) - x * sin(node)) / cos(inc), x * cos(node) + y * sin(node)
+        )
+        - tano
+    )
+    mano = anomaly_true_to_mean(e, tano)
+    return a, e, argp, inc, mano, node
+
+
+def orbital_to_teme(
+    a: float,
+    ecc: float,
+    argp: float,
+    inc: float,
+    mano: float,
+    node: float,
+) -> "array":
+    """
+
+    Args:
+      a (m)
+        Semi-major axis
+      ecc
+        Eccentricity
+      argp (rad)
+        Argument of periapsis
+      inc (rad)
+        Inclination
+      mano (rad)
+        Mean anomaly
+      node (rad)
+        Longitude of the ascending node
+
+    Returns:
+      Position (m) and velocity (m/s) in TEME frame
+
+    Examples:
+      >>> pv = orbital_to_teme(7e6, 0.01, 0, 1, 1, 0)
+
+    """
+    # https://en.wikipedia.org/wiki/True_anomaly#From_the_mean_anomaly
+    p = a * (1 - ecc**2)
+    tano = anomaly_mean_to_true(ecc, mano)
+    r = p / (1 + ecc * cos(tano))
+    n = sqrt(mu / a**3)
+
+    x = r * (cos(node) * cos(argp + tano) - sin(node) * cos(inc) * sin(argp + tano))
+    y = r * (sin(node) * cos(argp + tano) + cos(node) * cos(inc) * sin(argp + tano))
+    z = r * sin(inc) * sin(argp + tano)
+
+    E = anomaly_true_to_ecc(ecc, tano)
+    # M = E - e.sin(E)
+    dE = n / (1 - cos(E) * ecc)
+    rr = sqrt((1 + ecc) / (1 - ecc))
+    dtano = dE * rr * (cos(tano / 2) / cos(E / 2)) ** 2
+    vr = ecc * p * sin(tano) * dtano / (ecc * cos(tano) + 1) ** 2
+
+    vx = r * (
+        -cos(node) * dtano * sin(tano + argp)
+        - cos(inc) * sin(node) * dtano * cos(tano + argp)
+    ) + vr * (cos(node) * cos(tano + argp) - cos(inc) * sin(node) * sin(tano + argp))
+    vy = r * (
+        cos(inc) * cos(node) * dtano * cos(tano + argp)
+        - sin(node) * dtano * sin(tano + argp)
+    ) + vr * (cos(inc) * cos(node) * sin(tano + argp) + sin(node) * cos(tano + argp))
+    vz = sin(inc) * vr * sin(tano + argp) + sin(inc) * r * dtano * cos(tano + argp)
+
+    return np.array([x, y, z, vx, vy, vz])
+
+
+def itrf_to_geodetic(position: "array") -> Tuple[float, float, float]:
+    """Converts the ITRF coordinates into latitude, longiutde, altitude (WGS84)
+
+    Args:
+      position (m)
+        x, y, z position in ITRF frame
+
+    Returns:
+      Longitude (rad)
+      Latitude (rad)
+      Altitude (m)
+
+    Examples:
+      >>> pos = geodetic_to_itrf(2,1,3)
+      >>> lon,lat,alt = itrf_to_geodetic(pos)
+      >>> lon # doctest: +ELLIPSIS
+      2.0...
+      >>> lat # doctest: +ELLIPSIS
+      1.0...
+      >>> alt # doctest: +ELLIPSIS
+      3.0...
+
+    """
+    x = position[0]
+    y = position[1]
+    z = position[2]
+    p = sqrt(x**2 + y**2)
+    cl = x / p  # cos(lambda)
+    sl = y / p  # sin(lambda)
+    lon = arctan2(sl, cl)
+    lat, alt = Iter_phi_h(x, y, z)
+
+    return lon, lat, alt
+
+
+def itrf_to_azeld(obs: "array", sat: "array") -> "array":
+    """Converts an ITRF position & velocity into
+    azimut, elevation, distance, radial velocity, slope of velocity, azimut of velocity
+
+    Args:
+      obs
+        Position (m) & velocity (m/s) of terrestrial observer in ITRF
+      sat
+        Position (m) & velocity (m/s) of the observed satellite in ITRF
+
+    Returns:
+      Azimut (deg)
+      Elevation (deg)
+      Distance (m)
+      Radial velocity (m/s)
+      Slope of velocity (deg)
+      Azimut of velocity (deg)
+
+    """
+    # Local ENV for the observer
+    obs_env = build_env(obs[:3])
+
+    deltap = sat[:3] - obs[:3]
+    deltav = sat[3:] - obs[3:]
+    x, y, z = obs_env.T @ deltap
+
+    dist = lin.norm(deltap)
+
+    if z > dist:
+        z = dist
+        logger.warning("Near zenith elevation")
+    elif z < -dist:
+        z = -dist
+        logger.warning("Near nadir elevation")
+
+    el = arcsin(z / dist) * 180 / pi
+    az = arctan2(x, y) * 180 / pi
+
+    # Local ENV for the satellite
+    sat_env = build_env(sat[:3] - obs[:3])
+    ve, vn, vr = sat_env.T @ deltav
+    nv = lin.norm(deltav)
+
+    # vr_verif = deltav @ deltap / dist
+    # assert(lin.norm(vr-vr_verif)<1e-3)
+
+    vs = arcsin(vr / nv) * 180 / pi
+    va = arctan2(ve, vn) * 180 / pi
+
+    return az, el, dist, vr, vs, va
+
+
+def datetime_to_skyfield(td: datetime) -> Time:
+    """
+    Converts a datetime struct to a skyfield Time struct
+
+    Args:
+      td : a datetime instance or array of datetime
+        Time to convert
+
+    Returns:
+      Skyfield date and time structure
+
+    Examples:
+    >>> fmt = "%Y/%m/%d %H:%M:%S.%f"
+    >>> sts = "2021/04/15 09:29:54.996640"
+    >>> tsync = datetime.strptime(sts, fmt)
+    >>> tsync = tsync.replace(tzinfo=utc)
+    >>> datetime_to_skyfield(tsync)
+    <Time tt=2459319.8965761648>
+
+    """
+    ts = load.timescale(builtin=True)
+    t = ts.utc(td)
+    return t
+
+
+def skyfield_to_datetime(t: Time) -> datetime:
+    """
+    Converts a skyfield Time struct to a datetime struct
+
+    Args:
+      t
+        Skyfield date and time structure
+
+    Returns:
+      A datetime instance
+
+    """
+    return t.utc_datetime()
+
+
+def pdot(u: np.array, v: np.array) -> float:
+    """Pseudo scalar product :
+
+    :math:`x.x'+y.y'+z.z'-t.t'`
+
+    Args:
+      u
+        First quadri-vector
+      v
+        Second quadri-vector
+
+      Returns:
+        Pseudo scalar product
+
+    """
+    return u[0] * v[0] + u[1] * v[1] + u[2] * v[2] - u[3] * v[3]
+
+
+def q_function(x):
+    """
+    https://en.wikipedia.org/wiki/Q-function
+    """
+    return 0.5 * np.erfc(x / np.sqrt(2))
+
+
+def cexp(x):
+    return exp(2 * pi * 1j * x)
+
+
+def load_antenna_config(config: str):
+    pth = os.path.abspath(config)
+
+    mod = os.path.basename(pth)[:-3]
+    spec = importlib.util.spec_from_file_location(mod, pth)
+    ac = importlib.util.module_from_spec(spec)
+    sys.modules[mod] = ac
+    spec.loader.exec_module(ac)
+
+    return ac

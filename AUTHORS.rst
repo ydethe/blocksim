@@ -5,7 +5,7 @@ Credits
 Development Lead
 ----------------
 
-* John Gray <manawenuz@johncloud.fr>
+* Y. BLAUDIN DE THE <yann.blaudin-de-the@thalesaleniaspace.com>
 
 Contributors
 ------------

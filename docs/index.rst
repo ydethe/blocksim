@@ -14,4 +14,4 @@
     examples/index
     indices
 
-.. include:: ../README.rst
+.. include:: ../README.md

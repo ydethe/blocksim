@@ -16,7 +16,7 @@ from .LogFormatter import LogFormatter
 __version__ = get_distribution(__name__).version
 
 __author__ = "Y. BLAUDIN DE THE"
-__email__ = "ydethe@gmail.com"
+__email__ = "yann.blaudin-de-the@thalesaleniaspace.com"
 
 
 # création de l'objet logger qui va nous servir à écrire dans les logs
