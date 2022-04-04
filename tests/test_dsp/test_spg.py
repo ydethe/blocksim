@@ -19,7 +19,7 @@ class TestDSPSpectrogram(TestBase):
         def f(x, y):
             x = 2 * x - 1
             y = -y + 3
-            z = -0.5 * x ** 2 - 0.2 * y ** 2
+            z = -0.5 * x**2 - 0.2 * y**2
             return z
 
         x = np.linspace(-1.5, 1.5, 100)

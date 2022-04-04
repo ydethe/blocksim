@@ -215,7 +215,7 @@ class BandpassDSPFilter(ADSPFilter):
 
         # https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need/31077
         d = 10e-2
-        nt = int(-2 / 3 * log10(10 * d ** 2) * fs / (self.f_high - self.f_low))
+        nt = int(-2 / 3 * log10(10 * d**2) * fs / (self.f_high - self.f_low))
         if nt > self.numtaps:
             raise ValueError(self.numtaps, nt)
 
