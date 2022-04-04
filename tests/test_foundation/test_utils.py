@@ -14,7 +14,7 @@ from TestBase import TestBase
 
 
 class TestUtils(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_phase_unfold(self):
         fs = 20e6
         bp = fs / 5

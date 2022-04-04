@@ -43,7 +43,7 @@ class TestOFDM(TestBase):
             - 1
         ) * inv_sq_2
 
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_ofdm_mapping(self):
         ofdm_co = OFDMMapping(
             name="map",

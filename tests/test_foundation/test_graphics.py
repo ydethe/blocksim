@@ -34,7 +34,7 @@ class TestGraphics(TestBase):
             self.log.log("t", t)
             self.log.log("x", x)
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_plot_logger(self):
         err_t = np.max(np.abs(self.tps_ref - self.log.getValue("t")))
         err_x = np.max(np.abs(self.x_ref - self.log.getValue("x")))
@@ -60,7 +60,7 @@ class TestGraphics(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_figure_from_spec(self):
         aProp = dict()
 
@@ -80,7 +80,7 @@ class TestGraphics(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_plot_verif(self):
         aProp = dict()
 
@@ -95,15 +95,7 @@ class TestGraphics(TestBase):
         fig = plotVerif(
             self.log,
             "Figure title",
-            [
-                {
-                    "title": "Axe title",
-                    "nrow": 1,
-                    "ncol": 1,
-                    "ind": 1,
-                },
-                {"var": 1 + t},
-            ],
+            [{"title": "Axe title", "nrow": 1, "ncol": 1, "ind": 1,}, {"var": 1 + t},],
         )
 
         return fig

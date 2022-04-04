@@ -33,7 +33,7 @@ class TestQPSK(TestBase):
 
         self.assertAlmostEqual(np.max(np.abs(data - data2)), 0, delta=1e-9)
 
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_qpsk_noise(self):
         mapping = np.array([pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4])
         ntot = 1023

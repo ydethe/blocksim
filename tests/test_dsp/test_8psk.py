@@ -42,7 +42,7 @@ class Test8PSK(TestBase):
 
         self.assertAlmostEqual(np.max(np.abs(data - data2)), 0, delta=1e-9)
 
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_8psk_noise(self):
         mapping = [
             0,

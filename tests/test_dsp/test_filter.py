@@ -21,7 +21,7 @@ from TestBase import TestBase
 
 
 class TestFilter(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_bode(self):
         fs = 200
         f1 = 10
@@ -42,7 +42,7 @@ class TestFilter(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_filtrage(self):
         sim = Simulation()
 
@@ -97,7 +97,7 @@ class TestFilter(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_filtrage_chirp(self):
         sim = Simulation()
 
@@ -148,7 +148,7 @@ class TestFilter(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_freq_estimator(self):
         fs = 200
         bp = 40

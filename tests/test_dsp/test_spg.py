@@ -14,12 +14,12 @@ from TestBase import TestBase, plotAnalyticsolution
 
 
 class TestDSPSpectrogram(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_2d_peak(self):
         def f(x, y):
             x = 2 * x - 1
             y = -y + 3
-            z = -0.5 * x**2 - 0.2 * y**2
+            z = -0.5 * x ** 2 - 0.2 * y ** 2
             return z
 
         x = np.linspace(-1.5, 1.5, 100)

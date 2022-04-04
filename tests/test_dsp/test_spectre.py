@@ -16,7 +16,7 @@ from TestBase import TestBase
 
 
 class TestSpectre(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_spectre(self):
         fs = 200
         f0 = 10
@@ -48,7 +48,7 @@ class TestSpectre(TestBase):
 
         self.assertAlmostEqual(np.max(np.abs(s1 - s2)), 0, delta=1e-8)
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_doppler(self):
         fs = 300
         f0 = 10

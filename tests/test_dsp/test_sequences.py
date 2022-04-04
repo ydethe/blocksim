@@ -18,7 +18,7 @@ from TestBase import TestBase
 
 
 class TestSignal(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_zadoff_chu_crosscorr(self):
         s1 = createZadoffChu(name="s1", n_zc=1021, u=1, sampling_freq=1e6)
         s2 = createZadoffChu(name="s2", n_zc=1021, u=75, sampling_freq=1e6)
@@ -32,7 +32,7 @@ class TestSignal(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_zadoff_chu_autocorr(self):
         s1 = createZadoffChu(name="s1", n_zc=1021, u=1, sampling_freq=1e6)
 
@@ -45,7 +45,7 @@ class TestSignal(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_gold_crosscorr(self):
         s1 = createGoldSequence(
             name="s1", sv=[2, 6], repeat=1, chip_rate=1.023e6, sampling_factor=10
@@ -63,7 +63,7 @@ class TestSignal(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_gold_autocorr(self):
         s1 = createGoldSequence(
             name="s1", sv=[2, 6], repeat=1, chip_rate=1.023e6, sampling_factor=10
@@ -78,7 +78,7 @@ class TestSignal(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_gold_corr_integ(self):
         # Reference Gold sequence
         y1 = createGoldSequence(

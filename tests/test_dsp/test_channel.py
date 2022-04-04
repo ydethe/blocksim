@@ -25,7 +25,7 @@ from TestBase import TestBase
 
 
 class TestChannel(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_channel(self):
         t0 = datetime(
             year=2021,
@@ -56,8 +56,8 @@ class TestChannel(TestBase):
         # Find a point with 45° elevation
         r = Req + 630e3
         elev_min = pi / 4
-        d_lim = sqrt(r**2 - Req**2 * cos(elev_min) ** 2) - Req * sin(elev_min)
-        alpha_lim = np.arccos((Req**2 + r**2 - d_lim**2) / (2 * r * Req))
+        d_lim = sqrt(r ** 2 - Req ** 2 * cos(elev_min) ** 2) - Req * sin(elev_min)
+        alpha_lim = np.arccos((Req ** 2 + r ** 2 - d_lim ** 2) / (2 * r * Req))
         rad = alpha_lim * Req
         self.assertAlmostEqual(rad, 550321.5722903715, delta=1e-3)
 

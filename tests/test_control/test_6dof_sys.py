@@ -18,7 +18,7 @@ from TestBase import TestBase
 
 
 class Test6DOFSys(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_trans(self):
         sys = G6DOFSystem("sys")
         g0 = -10
@@ -43,7 +43,7 @@ class Test6DOFSys(TestBase):
 
         pz = self.log.getValue("sys_state_pz")
         tf = tps[-1]
-        self.assertAlmostEqual(pz[-1], g0 * tf**2 / 2, delta=1e-8)
+        self.assertAlmostEqual(pz[-1], g0 * tf ** 2 / 2, delta=1e-8)
 
         return self.plotVerif(
             "Figure 1",
@@ -52,7 +52,7 @@ class Test6DOFSys(TestBase):
             [{"var": "sys_state_pz"}],
         )
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_att_cplxe(self):
         sys = G6DOFSystem("sys")
         g0 = -10
@@ -181,7 +181,7 @@ class Test6DOFSys(TestBase):
 
         r = self.log.getValue("sys_euler_roll")
         tf = tps[-1]
-        self.assertAlmostEqual(r[-1], T * tf**2 / 2 / sys.J[0, 0], delta=1e-8)
+        self.assertAlmostEqual(r[-1], T * tf ** 2 / 2 / sys.J[0, 0], delta=1e-8)
 
         frame = Frame()
         vf = np.array([1, 0, 0])

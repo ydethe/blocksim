@@ -35,7 +35,7 @@ class TestBPSK(TestBase):
 
         self.assertAlmostEqual(np.max(np.abs(data - data2)), 0, delta=1e-9)
 
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_bpsk_noise(self):
         mapping = [0, pi]
         ntot = 1023
@@ -97,7 +97,7 @@ class TestBPSK(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_bpsk_spectrum(self):
         fs = 1.023e6
         p_samp = 10

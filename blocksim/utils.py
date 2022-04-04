@@ -26,7 +26,6 @@ from .exceptions import *
 __all__ = [
     "casedpath",
     "resource_path",
-    "test_diag",
     "calc_cho",
     "deg",
     "rad",
@@ -96,7 +95,7 @@ def resource_path(resource: str, package: str = "blocksim") -> str:
     raise FileExistsError(resource)
 
 
-def test_diag(A: np.array) -> bool:
+def verif_mat_diag(A: np.array) -> bool:
     """Tests if a square matrix is diagonal
 
     Args:
@@ -133,7 +132,7 @@ def calc_cho(A: np.array) -> np.array:
     m, n = A.shape
     assert m == n
 
-    if test_diag(A):
+    if verif_mat_diag(A):
         res = np.zeros(A.shape)
         for i in range(n):
             res[i, i] = np.sqrt(A[i, i])

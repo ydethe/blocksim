@@ -58,7 +58,7 @@ class TestMadgwick(TestBase):
         self.est = est
         self.sim = sim
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_madgwick_cl(self):
         stp = Step(name="stp", snames=["u0"], cons=np.zeros(1))
 
@@ -158,7 +158,7 @@ class TestMadgwick(TestBase):
             euler=np.zeros(3),
         )
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_madgwick_pitch(self):
         angle_ini = -60 * np.pi / 180.0
         wangle = 10.0 * np.pi / 180.0
@@ -204,16 +204,11 @@ class TestMadgwick(TestBase):
                 {"var": "deg(madg_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(madg_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(madg_euler_yaw)", "label": "FilteredYaw"},
-                {
-                    "var": deg(w),
-                    "label": "Simu",
-                    "color": "black",
-                    "linestyle": "--",
-                },
+                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
             ],
         )
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_madgwick_yaw(self):
         angle_ini = -60 * np.pi / 180.0
         wangle = 10.0 * np.pi / 180.0
@@ -249,16 +244,11 @@ class TestMadgwick(TestBase):
                 {"var": "deg(madg_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(madg_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(madg_euler_yaw)", "label": "FilteredYaw"},
-                {
-                    "var": deg(w),
-                    "label": "Simu",
-                    "color": "black",
-                    "linestyle": "--",
-                },
+                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
             ],
         )
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_madgwick_all_dof(self):
         angle_ini = -60 * np.pi / 180.0
         wangle = 10.0 * np.pi / 180.0
@@ -368,7 +358,7 @@ class TestMahony(TestBase):
             euler=np.zeros(3),
         )
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_mahony_pitch(self):
         angle_ini = -60 * np.pi / 180.0
         wangle = 10.0 * np.pi / 180.0
@@ -415,16 +405,11 @@ class TestMahony(TestBase):
                 {"var": "deg(maho_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(maho_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(maho_euler_yaw)", "label": "FilteredYaw"},
-                {
-                    "var": deg(w),
-                    "label": "Simu",
-                    "color": "black",
-                    "linestyle": "--",
-                },
+                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
             ],
         )
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_mahony_yaw(self):
         angle_ini = -60 * np.pi / 180.0
         wangle = 10.0 * np.pi / 180.0
@@ -460,12 +445,7 @@ class TestMahony(TestBase):
                 {"var": "deg(maho_euler_roll)", "label": "FilteredRoll"},
                 {"var": "deg(maho_euler_pitch)", "label": "FilteredPitch"},
                 {"var": "deg(maho_euler_yaw)", "label": "FilteredYaw"},
-                {
-                    "var": deg(w),
-                    "label": "Simu",
-                    "color": "black",
-                    "linestyle": "--",
-                },
+                {"var": deg(w), "label": "Simu", "color": "black", "linestyle": "--",},
             ],
         )
 

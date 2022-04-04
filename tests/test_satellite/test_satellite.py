@@ -76,7 +76,7 @@ class TestSatellite(TestBase):
 
         testing.assert_allclose(actual=vel, desired=vel_ref, rtol=2e-5, equal_nan=True)
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_circle_satellite(self):
         fig = plt.figure()
         sp = EarthPlotter()
@@ -127,7 +127,7 @@ class TestSatellite(TestBase):
         pv0 = satellite.compute_outputs(0, 0, subpoint=None, itrf=None)["itrf"]
 
         r = satellite.orbit_periapsis
-        ws = sqrt(mu / r**3)
+        ws = sqrt(mu / r ** 3)
         t = 2 * pi / (ws - satellite.orbital_precession - omega)
         pv = satellite.compute_outputs(0, t, subpoint=None, itrf=None)["itrf"]
 
@@ -201,7 +201,7 @@ class TestSatellite(TestBase):
         )
         self.assertEqual(len(traj), 100)
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_ground_track(self):
         pt = (-74.0542275, 40.7004153)
 

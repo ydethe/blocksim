@@ -59,7 +59,7 @@ class TestTrackingSteadyState(TestBase):
 
         self.ctrl = Step("ctrl", snames=["u"], cons=np.zeros(1))
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_tracking_steadystate_cplxe(self):
         nb_tracks = len(self.tracks)
 
@@ -92,11 +92,7 @@ class TestTrackingSteadyState(TestBase):
         axe = fig.add_subplot(111)
         plotSpectrogram(spg, axe)
         axe.plot(
-            self.t,
-            self.fchirp,
-            linewidth=2,
-            color="white",
-            linestyle="--",
+            self.t, self.fchirp, linewidth=2, color="white", linestyle="--",
         )
         axe.set_xlabel("Time (s)")
         axe.set_ylabel("Frequency (Hz)")

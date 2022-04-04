@@ -16,7 +16,7 @@ from TestBase import TestBase
 
 
 class TestSignal(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_correlation(self):
         fs = 20e6
         bp = fs / 5
@@ -96,7 +96,7 @@ class TestSignal(TestBase):
 
         self.assertAlmostEqual(np.max(np.abs(z)), 0, delta=1e-10)
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_resample(self):
         fs = 200
         f0 = 10
@@ -124,7 +124,7 @@ class TestSignal(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_delay(self):
         fs = 200
         f0 = 10

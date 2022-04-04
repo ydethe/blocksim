@@ -19,7 +19,7 @@ from TestBase import TestBase
 
 
 class TestRadar(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_analyse_dv(self):
         tau = 10e-6
         bp = 5e6
@@ -87,11 +87,7 @@ class TestRadar(TestBase):
         fig = plt.figure()
         axe = fig.add_subplot(111)
         plotSpectrogram(
-            spg,
-            axe,
-            transform=trf,
-            search_fig=False,
-            find_peaks=1,
+            spg, axe, transform=trf, search_fig=False, find_peaks=1,
         )
         axe.set_title("Power (dB)")
 

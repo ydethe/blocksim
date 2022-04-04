@@ -16,7 +16,7 @@ from TestBase import TestBase
 
 
 class TestSynchro(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_synchro(self):
         # =========================
         # Definition of the system

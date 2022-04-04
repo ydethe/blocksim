@@ -14,7 +14,7 @@ from TestBase import TestBase
 
 
 class TestStreamMeas(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_stream_csv_meas(self):
         pth = Path(__file__).parent / "test_stream_meas.csv"
         cpt = StreamCSVSensors("cpt", pth=str(pth))

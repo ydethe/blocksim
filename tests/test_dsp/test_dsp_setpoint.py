@@ -37,13 +37,13 @@ class System(ASystem):
 
 
 class TestDSPSetpoint(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_dsp_setpoint(self):
         k = 10
         m = 1
         a = 8
-        P = -k + 3 * a**2 * m
-        I = a**3 * m
+        P = -k + 3 * a ** 2 * m
+        I = a ** 3 * m
         D = 3 * a * m
 
         tps = np.arange(0, 10, 0.02)
