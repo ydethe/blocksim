@@ -15,6 +15,7 @@ app = typer.Typer()
 db_app = typer.Typer()
 app.add_typer(db_app, name="db", help="Manage databases.")
 
+
 def determine_db_uri() -> str:
     """Tries different configuration options to find the database URI.
     First, looks for a `~/.blocksimrc` file
@@ -35,12 +36,14 @@ def determine_db_uri() -> str:
 
     return uri
 
+
 @app.command()
 def header(fic_bin: str):
     """
     Visualize a binary log file's header
     """
     typer.echo("Je suis un poney")
+
 
 @db_app.command()
 def init(
@@ -108,6 +111,7 @@ def export(
     logger.info("Using '%s'" % uri)
     log.loadLogFile("%s?sim_id=%i" % (uri, simid))
     log.export(pth, format)
+
 
 def main():
     app()

@@ -8,10 +8,12 @@
     :maxdepth: 2
     :hidden:
     :caption: User Manual
-    
+
     install
     modules
     examples/index
     indices
 
-.. include:: ../README.md
+.. automodapi:: blocksim
+
+.. .. mdinclude:: ../README.md
