@@ -11,7 +11,6 @@ from sgp4.api import Satrec, WGS84
 from sgp4.functions import days2mdhms
 
 from ..core.Node import AComputer
-
 from .. import logger
 from ..constants import *
 from ..utils import (
@@ -29,12 +28,19 @@ from ..utils import (
 from .Trajectory import Trajectory
 
 
-__all__ = ["ASatellite", "CircleSatellite", "SGP4Satellite"]
+__all__ = ["ASatellite", "CircleSatellite", "SGP4Satellite","createSatellites"]
 
 
 def sgp4_to_teme(satrec: Satrec, t_epoch: float) -> "array":
     """
     TEME : https://en.wikipedia.org/wiki/Earth-centered_inertial#TEME
+
+    Args:
+      satrec: a Satrec instance from sgp4.api
+      t_epoch: Time since 31/12/1949 00:00 UT (s)
+
+    Returns:
+      A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in TEME frame
 
     """
     jd, fraction = time_to_jd_fraction(t_epoch)
