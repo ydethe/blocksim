@@ -11,7 +11,6 @@ from sgp4.api import Satrec, WGS84
 from sgp4.functions import days2mdhms
 
 from ..core.Node import AComputer
-
 from .. import logger
 from ..constants import *
 from ..utils import (
@@ -29,7 +28,7 @@ from ..utils import (
 from .Trajectory import Trajectory
 
 
-__all__ = ["ASatellite", "CircleSatellite", "SGP4Satellite"]
+__all__ = ["ASatellite", "CircleSatellite", "SGP4Satellite", "createSatellites"]
 
 
 def sgp4_to_teme(satrec: Satrec, t_epoch: float) -> "array":
@@ -65,6 +64,30 @@ def sgp4_to_teme(satrec: Satrec, t_epoch: float) -> "array":
 
 
 class ASatellite(AComputer):
+    """
+    Abstract class to describe a satellite
+
+    Attributes:
+        tsync: Datetime object that gives the date and time at simulation time 0
+        orbit_mano: mean anomaly at tsync (rad)
+        orbit_eccentricity: eccentricty
+        orbit_semi_major_axis: semi major axis (m)
+        orbit_inclination: Inclination(rad)
+        orbit_argp: Argument of perigee (rad)
+        orbit_node: R.A. of ascending node (rad)
+        orbit_bstar: drag coefficient (1/earth radii)
+        orbit_ndot: ballistic coefficient (revs/day)
+        orbit_nddot: mean motion 2nd derivative (revs/day^3)
+        orbit_periapsis: perigee (m)
+        orbit_apoapsis: apogee (m)
+        orbital_precession: precessoin due to J2 (rad/s)
+        orbit_period: period (s)
+
+    Args:
+      name: Name of a satellite
+      tsync: Datetime object that gives the date and time at simulation time 0
+
+    """
 
     __slots__ = []
 
@@ -90,8 +113,8 @@ class ASatellite(AComputer):
             name="itrf", snames=["px", "py", "pz", "vx", "vy", "vz"], dtype=np.float64
         )
         self.defineOutput(name="subpoint", snames=["lon", "lat"], dtype=np.float64)
-        self.createParameter("tsync", value=tsync, read_only=True)
 
+        self.createParameter(name="tsync", value=tsync, read_only=True)
         self.createParameter(name="orbit_mano")  # (rad)
         self.createParameter(name="orbit_eccentricity")
         self.createParameter(name="orbit_semi_major_axis")  # (m)
@@ -111,10 +134,10 @@ class ASatellite(AComputer):
         Return the latitude and longitude directly beneath this position.
 
         Args:
-          ITRF position (m) and velocity (m/s)
+          itrf_pos_vel: ITRF position (m) and velocity (m/s)
 
         Returns:
-          lon, lat (rad)
+          A tuple lon, lat (rad)
 
         """
         lon, lat, _ = itrf_to_geodetic(itrf_pos_vel)
@@ -122,21 +145,19 @@ class ASatellite(AComputer):
         return lon, lat
 
     def geocentricITRFTrajectory(
-        self, number_of_position=200, number_of_periods=1, color=(1, 0, 0)
+        self, number_of_position=200, number_of_periods=1, color=(1, 0, 0, 1)
     ) -> Trajectory:
         """
         Return the geocentric ITRF positions of the trajectory
 
         Args:
-          number_of_position
-            Number of points per orbital period
-          number_of_periods
-            Number of orbit periods to plot
-          color
-            The color as a 4-elements tuple:
-            r between 0 and 1
-            g between 0 and 1
-            b between 0 and 1
+          number_of_position: Number of points per orbital period
+          number_of_periods: Number of orbit periods to plot
+          color: The color as a 4-elements tuple:
+          *  r between 0 and 1
+          *  g between 0 and 1
+          *  b between 0 and 1
+          *  alpha between 0 and 1 (use 1 for fully opaque)
 
         Returns:
           Trajectory
@@ -218,11 +239,11 @@ class SGP4Satellite(ASatellite):
         inc = self.orbit_inclination
         e = self.orbit_eccentricity
         ws = 2 * np.pi / self.orbit_period.total_seconds()
-        a = (mu / ws**2) ** (1 / 3)
+        a = (mu / ws ** 2) ** (1 / 3)
         e = self.orbit_eccentricity
         # https://en.wikipedia.org/wiki/Nodal_precession#Rate_of_precession
         self.orbital_precession = (
-            -3 / 2 * (Req / (a * (1 - e**2))) ** 2 * J2 * ws * np.cos(inc)
+            -3 / 2 * (Req / (a * (1 - e ** 2))) ** 2 * J2 * ws * np.cos(inc)
         )
         self.orbit_semi_major_axis = a
         self.orbit_apoapsis = a * (1 + e)
@@ -298,7 +319,7 @@ class SGP4Satellite(ASatellite):
         """
         t0 = cls.getInitialEpoch()
         epoch = (tsync - t0).total_seconds() / 86400
-        n = np.sqrt(mu / a**3)
+        n = np.sqrt(mu / a ** 3)
 
         # https://rhodesmill.org/skyfield/earth-satellites.html#build-a-satellite-from-orbital-elements
         satrec = Satrec()
@@ -482,7 +503,7 @@ class CircleSatellite(ASatellite):
 
         self.__R1 = pv_teme
         self.__R2 = np.hstack((np.cross(n, pos), np.cross(n, vel)))
-        self.__sat_puls = sqrt(mu / a**3)
+        self.__sat_puls = sqrt(mu / a ** 3)
 
         a, e, argp, inc, mano, node = teme_to_orbital(pv_teme)
 
@@ -494,11 +515,11 @@ class CircleSatellite(ASatellite):
         self.orbit_bstar = 0.0
         self.orbit_ndot = 0.0
         self.orbit_nddot = 0.0
-        ws = sqrt(mu / a**3)
+        ws = sqrt(mu / a ** 3)
         self.orbit_period = timedelta(seconds=2 * np.pi / ws)
         # https://en.wikipedia.org/wiki/Nodal_precession#Rate_of_precession
         self.orbital_precession = (
-            -3 / 2 * (Req / (a * (1 - e**2))) ** 2 * J2 * ws * np.cos(inc)
+            -3 / 2 * (Req / (a * (1 - e ** 2))) ** 2 * J2 * ws * np.cos(inc)
         )
         self.orbit_semi_major_axis = a
         self.orbit_apoapsis = a * (1 + e)
