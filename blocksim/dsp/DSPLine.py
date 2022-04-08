@@ -278,10 +278,19 @@ class DSPLine(object):
 
     def isInSyncWith(self, y) -> bool:
         """Tests whether the line is synced with y.
+        In the following, we note dt the sampling period (self.samplingPeriod) and t0 the initial timestamp (self.samplingStart)
         y can be either:
 
-        * a scalar (float or int). In this case, y is a samplingPeriod and the test is successful if 
-            $$ |self.samplingPeriod - y| < 10^-6 * min(self.samplingPeriod, y) $$
+        * a scalar (float or int). In this case, y is a samplingPeriod and the test is successful if:
+            $$ |dt - y| < 10^-6 * min(dt, y) $$
+        * a tuple of 2 scalars. In this case, y is noted (t0y, dty) which respectively stand for an initial time and a samplingPeriod.
+            The test is successful if:
+            $$ |dt - dty| < 10^-6 * min(dt, dty) $$
+            $$ modf((t0 - t0y) / dt) < 10^-3 $$
+        * a DSPLine. In this case, t0y is y.samplingStart and dty is y.samplingPeriod
+            The test is successful if:
+            $$ |dt - dty| < 10^-6 * min(dt, dty) $$
+            $$ modf((t0 - t0y) / dt) < 10^-3 $$
 
         Args:
             y: The description of the serie to check
