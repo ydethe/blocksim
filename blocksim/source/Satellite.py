@@ -184,7 +184,7 @@ class ASatellite(AComputer):
           *  alpha between 0 and 1 (use 1 for fully opaque)
 
         Returns:
-          Trajectory
+          source.Trajectory: The generated trajectory
 
         """
         Ts = self.orbit_period.total_seconds()
