@@ -26,25 +26,21 @@ hookimpl = pluggy.HookimplMarker("blocksim")
 class Logger(object):
     """Logger to keep track of all variables
 
-    Args:
-      fic
-         Name of a file to write
-
     Examples:
-      >>> log = Logger()
-      >>> log.log('t',0)
-      >>> log.log('t',1)
-      >>> log.getValue('t') # doctest: +ELLIPSIS
-      array([0, 1]...
-      >>> log.getValue('2*t') # doctest: +ELLIPSIS
-      array([0, 2]...
-      >>> log.export('tests/example.csv')
-      0
-      >>> del log
-      >>> log2 = Logger()
-      >>> log2.loadLogFile('tests/example.csv')
-      >>> log2.getValue('2*t') # doctest: +ELLIPSIS
-      array([0, 2]...
+        >>> log = Logger()
+        >>> log.log('t',0)
+        >>> log.log('t',1)
+        >>> log.getValue('t') # doctest: +ELLIPSIS
+        array([0, 1]...
+        >>> log.getValue('2*t') # doctest: +ELLIPSIS
+        array([0, 2]...
+        >>> log.export('tests/example.csv')
+        0
+        >>> del log
+        >>> log2 = Logger()
+        >>> log2.loadLogFile('tests/example.csv')
+        >>> log2.getValue('2*t') # doctest: +ELLIPSIS
+        array([0, 2]...
 
     """
 
@@ -61,6 +57,9 @@ class Logger(object):
         self.reset()
 
     def reset(self):
+        """Resets the logger and empties all the recorded data
+
+        """
         self.__fic = None
         self.__start_time = datetime.now(tz=timezone.utc)
         self.__data = defaultdict(list)
@@ -68,24 +67,71 @@ class Logger(object):
         self.__alloc = -1
 
     def createEmptyValue(self, name: str):
+        """Creates a new variable with no data
+        
+        Args:
+            name: The name of the variable
+
+        """
         self.__data[name] = None
 
-    def setRawData(self, data):
+    def setRawData(self, data:dict):
+        """Sets the data for the whole logger.
+        The dictionary data shall have one key per variable to create,
+        and the associated value shall be an array of values.
+        
+        Args:
+            data: Data to use
+            
+        """
         self.__data = data
 
-    def getRawData(self):
+    def getRawData(self)->dict:
+        """Gets the data for the whole logger.
+        The dictionary data has one key per variable to create,
+        and the associated value is an array of values.
+        
+        Returns:
+            The dictionary of the data
+            
+        """
         return self.__data
 
     def setStartTime(self, t: datetime):
+        """Sets the start time
+
+        Args:
+            t: the start time
+
+        """
         self.__start_time = t
 
     def getStartTime(self) -> datetime:
+        """Gets the start time
+
+        Returns:
+            the start time
+            
+        """
         return self.__start_time
 
     def getLoadedFile(self) -> str:
+        """Get the name of the file or the URI associated to the logger
+
+        Returns:
+            The path or URI
+
+        """
         return self.__fic
 
     def loadLogFile(self, fic: str):
+        """Loads a specified file or URI into the logger.
+        Looks up among all plugins which one can handle the extension of **fig**
+
+        Args:
+            fic: The file or URI to load
+
+        """
         self.__fic = str(fic)
         if self.__fic == "":
             raise (FileNotFoundError(self.__fic))
@@ -98,6 +144,12 @@ class Logger(object):
             raise IOError("Too many loggers to handle '%s'" % fic)
 
     def allocate(self, size: int):
+        """If called with a size, pre allocates the data with an array of size *size*
+
+        Args:
+            size: Size to pre allocate
+
+        """
         self.__alloc = size
 
     @classmethod
@@ -146,10 +198,8 @@ class Logger(object):
         """Log a value for a variable. If *name* is '_', nothing is logged
 
         Args:
-          name
-            Name of the parameter. Nothing is logged if *name* == '_'
-          val
-            Value to log
+            name: Name of the parameter. Nothing is logged if *name* == '_'
+            val: Value to log
 
         """
         if name == "_":
@@ -178,9 +228,22 @@ class Logger(object):
             self.__index += 1
 
     def getParametersName(self) -> Iterable[str]:
+        """Returns an iterable on all the variables of the logger
+
+        Returns:
+            An iterator over all the variables of the logger
+
+        """
         return self.__data.keys()
 
     def getDataSize(self) -> int:
+        """Returns the size of the data stored in the logger.
+        This is computed by taking the size of the value array of the first variable.
+
+        Returns:
+            The size of the data stored in the logger
+            
+        """
         lnames = list(self.getParametersName())
         if len(lnames) == 0:
             return 0
@@ -194,13 +257,11 @@ class Logger(object):
         """Gets the list of output vectors for a computer's output
 
         Args:
-          name
-            Name of an output. For example, for a sensor, *sensor_measurement*
-          dtype
-            Type of the output array
+            name: Name of an output. For example, for a sensor, *sensor_measurement*
+            dtype: Type of the output array
 
         Returns:
-          An 1D array of the output
+            An 1D array of the output
 
         """
         lname = []
@@ -220,10 +281,8 @@ class Logger(object):
         """Gets the list of output vectors for a computer's output
 
         Args:
-            comp
-                A :class:`blocksim.core.Node.AComputer` whose output are to be retrieved
-            output_name
-                Name of an output. For example, for a sensor, *measurement*
+            comp: A `core.Node.AComputer` whose output are to be retrieved
+            output_name: Name of an output. For example, for a sensor, *measurement*
 
         Returns:
             An 2D array of the output
@@ -232,15 +291,14 @@ class Logger(object):
         val = self.getMatrixOutput(name="%s_%s" % (comp.getName(), output_name))
         return val
 
-    def getMatrixOutput(self, name: str) -> np.array:
+    def getMatrixOutput(self, name: str) -> "array":
         """Gets the list of output vectors for a computer's output
 
         Args:
-          name
-            Name of an output. For example, for a sensor, *sensor_measurement*
+            name: Name of an output. For example, for a sensor, *sensor_measurement*
 
         Returns:
-          An 2D array of the output
+            An 2D array of the output
 
         """
         lname = []
@@ -267,19 +325,18 @@ class Logger(object):
         The argument *cannot* be an expression.
 
         Args:
-          name
-            Name or expression
+            name: Name or expression
 
         Returns:
-          An array of the values
+            An array of the values
 
         Examples:
-          >>> log = Logger()
-          >>> ref = np.linspace(0,2*np.pi,200)
-          >>> _ = [log.log('a',a) for a in ref]
-          >>> r = log.getRawValue('a')
-          >>> np.max(np.abs(r-ref)) < 1e-15
-          True
+            >>> log = Logger()
+            >>> ref = np.linspace(0,2*np.pi,200)
+            >>> _ = [log.log('a',a) for a in ref]
+            >>> r = log.getRawValue('a')
+            >>> np.max(np.abs(r-ref)) < 1e-15
+            True
 
         """
         lnames = self.getParametersName()
@@ -306,18 +363,17 @@ class Logger(object):
         numpy functions can be used with the module name 'np': for example : np.cos
 
         Args:
-          name
-            Name or expression
+            name: Name or expression
 
         Returns:
-          An array of the values
+            An array of the values
 
         Examples:
-          >>> log = Logger()
-          >>> _ = [log.log('a',a) for a in np.linspace(0,2*np.pi,200)]
-          >>> r = log.getValue('np.cos(a)**2 + np.sin(a)**2')
-          >>> np.max(np.abs(r-1)) < 1e-15
-          True
+            >>> log = Logger()
+            >>> _ = [log.log('a',a) for a in np.linspace(0,2*np.pi,200)]
+            >>> r = log.getValue('np.cos(a)**2 + np.sin(a)**2')
+            >>> np.max(np.abs(r-1)) < 1e-15
+            True
 
         """
         lnames = self.getParametersName()
@@ -340,18 +396,17 @@ class Logger(object):
         numpy functions can be used with the module name 'np': for example : np.cos
 
         Args:
-          name
-            Name or expression
+            name: Name or expression
 
         Returns:
-          A :class:`blocksim.dsp.DSPSignal.DSPSignal`
+            A `dsp.DSPSignal.DSPSignal`
 
         Examples:
-          >>> log = Logger()
-          >>> _ = [log.log('t',a) for a in np.linspace(0,2*np.pi,200)]
-          >>> sig = log.getSignal('np.cos(t)**2 + np.sin(t)**2')
-          >>> np.max(np.abs(sig.y_serie-1)) < 1e-15
-          True
+            >>> log = Logger()
+            >>> _ = [log.log('t',a) for a in np.linspace(0,2*np.pi,200)]
+            >>> sig = log.getSignal('np.cos(t)**2 + np.sin(t)**2')
+            >>> np.max(np.abs(sig.y_serie-1)) < 1e-15
+            True
 
         """
         tps = self.getValue("t")
@@ -367,34 +422,30 @@ class Logger(object):
         numpy functions can be used with the module name 'np': for example : np.cos
 
         Args:
-          name
-            Name or expression
-          ntaps
-            Number of coefficients of the filter
-          cutoff
-            Cutoff frequency, normalized by the Nyquist frequency
-          window
-            Window function to apply. Default : hamming
+            name: Name or expression
+            ntaps: Number of coefficients of the filter
+            cutoff: Cutoff frequency, normalized by the Nyquist frequency
+            window: Window function to apply. Default : hamming
 
         Returns:
-          An array of the values
+            An array of the values
 
         Examples:
-          >>> ns=1000;fs=100;f0=10
-          >>> log = Logger()
-          >>> _ = [(log.log('t',t),log.log('s',np.cos(np.pi*2*t*f0))) for t in np.arange(0,ns)/fs]
-          >>> s = log.getValue('s')
-          >>> e = np.sum(s**2)/ns
-          >>> e # doctest: +ELLIPSIS
-          0.5...
-          >>> sf = log.getFilteredValue('s', ntaps=64, cutoff=20*2/fs) # 20 Hz filter
-          >>> ef = np.sum(sf**2)/ns
-          >>> ef # doctest: +ELLIPSIS
-          0.498...
-          >>> sf = log.getFilteredValue('s', ntaps=64, cutoff=5*2/fs) # 5 Hz filter
-          >>> ef = np.sum(sf**2)/ns
-          >>> ef # doctest: +ELLIPSIS
-          4.6...e-05
+            >>> ns=1000;fs=100;f0=10
+            >>> log = Logger()
+            >>> _ = [(log.log('t',t),log.log('s',np.cos(np.pi*2*t*f0))) for t in np.arange(0,ns)/fs]
+            >>> s = log.getValue('s')
+            >>> e = np.sum(s**2)/ns
+            >>> e # doctest: +ELLIPSIS
+            0.5...
+            >>> sf = log.getFilteredValue('s', ntaps=64, cutoff=20*2/fs) # 20 Hz filter
+            >>> ef = np.sum(sf**2)/ns
+            >>> ef # doctest: +ELLIPSIS
+            0.498...
+            >>> sf = log.getFilteredValue('s', ntaps=64, cutoff=5*2/fs) # 5 Hz filter
+            >>> ef = np.sum(sf**2)/ns
+            >>> ef # doctest: +ELLIPSIS
+            4.6...e-05
 
         """
         sig = self.getValue(name)
@@ -402,7 +453,17 @@ class Logger(object):
         y = fftconvolve(sig, a, mode="same")
         return y
 
-    def export(self, fic: str) -> int:
+    def export(self, fic: str):
+        """Exports the logger to a specified file or URI into the logger.
+        Looks up among all plugins which one can handle the extension of **fig**
+
+        Args:
+            fic: The file or URI to write to
+
+        Raises:
+            SystemError if no handler has been identified or if too many handlers were identified
+            
+        """
         self.__fic = str(fic)
 
         lstat = plugin_manager.hook.export(log=self)
@@ -413,5 +474,4 @@ class Logger(object):
             raise SystemError("Unable to write '%s'" % fic)
         elif len(lok) > 1:
             raise SystemError("Uncoherent return '%s'" % lok)
-
-        return lok[0]
+        

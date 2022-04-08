@@ -183,6 +183,7 @@ class LTISystem(ASystem):
         Args:
             dt: The discretization time step
             method: Discretization method:
+
               * gbt: generalized bilinear transformation
               * bilinear: Tustin’s approximation (“gbt” with alpha=0.5)
               * euler: Euler (or forward differencing) method (“gbt” with alpha=0)
@@ -224,43 +225,10 @@ class LTISystem(ASystem):
         return Ad, Bd
 
     def transition(self, t: float, x: "array", u: "array") -> "array":
-        """Defines the transition function f(t,x,u) :
-
-        x' = f(t,x,u)
-
-        Args:
-          t
-            Date of the current state
-          x
-            Current state
-          u
-            Command applied to the system
-
-        Returns:
-          The derivative of the state
-
-        """
         dX = self.matA @ x + self.matB @ u
         return dX
 
     def jacobian(self, t: float, x: np.array, u: np.array) -> np.array:
-        """Defines the jacobian of
-        the transition function f(t,x,u) with respect to x:
-
-        x' = f(t,x,u)
-
-        Args:
-          t
-            Date of the current state
-          x
-            Current state
-          u
-            Command applied to the system
-
-        Returns:
-          The jacobian of the transition function with respect to x
-
-        """
         return self.matA
 
 
@@ -275,11 +243,10 @@ class G6DOFSystem(ASystem):
     The input of the element is **command**
     The outputs name of the computer are **state** and **euler**
 
-    The following parameters must be defined by the user :
-
-    * m : Mass of the body (kg). Default : :math:`1`
-    * J : Inertia tensor of the body (kg.m^2). Default : :math:`10^{-3}.I_3`
-    * max_q_denorm : If N the square norm of the attitude quaternion is N > 1+max_q_denorm or N<1-max_q_denorm, raise an exception
+    Attributes:
+        m : Mass of the body (kg). Default : :math:`1`
+        J : Inertia tensor of the body (kg.m^2). Default : :math:`10^{-3}.I_3`
+        max_q_denorm : If N the square norm of the attitude quaternion is N > 1+max_q_denorm or N<1-max_q_denorm, raise an exception
 
     command:
 
@@ -298,8 +265,7 @@ class G6DOFSystem(ASystem):
     * roll, pitch, yaw (rad)
 
     Args:
-      name
-        Name of the system
+        name: Name of the system
 
     """
 
@@ -344,13 +310,11 @@ class G6DOFSystem(ASystem):
         """Expresses a vector from the body frame to the Earth's frame
 
         Args:
-          frame
-            The time frame
-          x
-            Vector expressed in the body frame
+            frame: The time frame
+            x: Vector expressed in the body frame
 
         Returns:
-          Vector x expressed in Earth's frame
+            Vector x expressed in Earth's frame
 
         """
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = self.getDataForOutput(
@@ -362,13 +326,11 @@ class G6DOFSystem(ASystem):
         """Expresses a vector from Earth's frame to the body's frame
 
         Args:
-          frame
-            The time frame
-          x
-            Vector expressed in Earth's frame
+            frame: The time frame
+            x: Vector expressed in Earth's frame
 
         Returns:
-          Vector x expressed in the body frame
+            Vector x expressed in the body frame
 
         """
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = self.getDataForOutput(
@@ -376,23 +338,7 @@ class G6DOFSystem(ASystem):
         )
         return vecEarthToBody(np.array([qw, qx, qy, qz]), x)
 
-    def transition(self, t: float, x: np.array, u: np.array) -> np.array:
-        """Defines the transition function f(t,x,u) :
-
-        x' = f(t,x,u)
-
-        Args:
-          t
-            Date of the current state
-          x
-            Current state
-          u
-            Command applied to the system
-
-        Returns:
-          The derivative of the state
-
-        """
+    def transition(self, t: float, x: "array", u: "array") -> "array":
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = x
         force = u[:3]
         torque = u[3:6]

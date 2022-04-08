@@ -58,7 +58,6 @@ __all__ = [
     "datetime_to_skyfield",
     "skyfield_to_datetime",
     "pdot",
-    "q_function",
     "cexp",
     "load_antenna_config",
 ]
@@ -70,7 +69,14 @@ def casedpath(path):
 
 
 def resource_path(resource: str, package: str = "blocksim") -> str:
-    """
+    """Returns the full path to a resource of the package specified in argument
+
+    Args:
+        resource: Name of the resource file
+        package: Name of the package where the resource is
+
+    Returns:
+        The path to the resource
 
     Examples:
       >>> pth = resource_path('dummy.txt')
@@ -95,15 +101,14 @@ def resource_path(resource: str, package: str = "blocksim") -> str:
     raise FileExistsError(resource)
 
 
-def verif_mat_diag(A: np.array) -> bool:
+def verif_mat_diag(A: "array") -> bool:
     """Tests if a square matrix is diagonal
 
     Args:
-      A
-        Matrix to test
+        A: Matrix to test
 
     Returns:
-      The result of the test
+        The result of the test
 
     """
     m, n = A.shape
@@ -119,14 +124,13 @@ def verif_mat_diag(A: np.array) -> bool:
 def calc_cho(A: np.array) -> np.array:
     """Returns the cholesky decomposition C of a symetric matrix A:
 
-    :math:`A = C.C^T`
+    $$ A = C.C^T $$
 
     Args:
-      A
-        Matrix
+        A: Matrix
 
     Returns:
-      Cholesky decomposition C
+        Cholesky decomposition C
 
     """
     m, n = A.shape
@@ -147,11 +151,10 @@ def deg(x: float) -> float:
     """Converts from radians to degrees
 
     Args:
-      x
-        Angle in radians
+        x: Angle in radians
 
     Returns:
-      Angle in degrees
+        Angle in degrees
 
     """
     return x * 180 / np.pi
@@ -161,11 +164,10 @@ def rad(x: float) -> float:
     """Converts from degrees to radians
 
     Args:
-      x
-        Angle in degrees
+        x: Angle in degrees
 
     Returns:
-      Angle in radians
+        Angle in radians
 
     """
     return x * np.pi / 180
@@ -177,28 +179,22 @@ def assignVector(
     """
 
     Args:
-      v
-        np.array to assign
-      expected_shape
-        Expected shape for v
-      dst_name
-        Name of the element where the assignement will take place. (To allow meaningfull error messages)
-      src_name
-        Name of the source vector. (To allow meaningfull error messages)
-      dtype
-        Type of the assigned vector
+        v: np.array to assign
+        expected_shape: Expected shape for v
+        dst_name: Name of the element where the assignement will take place. (To allow meaningfull error messages)
+        src_name: Name of the source vector. (To allow meaningfull error messages)
+        dtype: Type of the assigned vector
 
     Returns:
-      Copy of the vector v if no problem encountered
+        Copy of the vector v if no problem encountered
 
     Raises:
-      ValueError
-        If the vector is not a np.array or not with the correct shape
+        ValueError: If the vector is not a np.array or not with the correct shape
 
     Examples:
-      >>> v = np.arange(5)
-      >>> assignVector(v, (5,), 'elem', 'v', np.float64)
-      array([0., 1., 2., 3., 4.])
+        >>> v = np.arange(5)
+        >>> assignVector(v, (5,), 'elem', 'v', np.float64)
+        array([0., 1., 2., 3., 4.])
 
     """
     # if np.any(np.isnan(v)):
@@ -273,22 +269,18 @@ def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> np.array:
     https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix
 
     Args:
-      qr
-        Real part of the quaternion
-      qi
-        First imaginary of the quaternion
-      qj
-        Second imaginary of the quaternion
-      qk
-        Third imaginary of the quaternion
+        qr: Real part of the quaternion
+        qi: First imaginary of the quaternion
+        qj: Second imaginary of the quaternion
+        qk: Third imaginary of the quaternion
 
     Returns:
-      Rotation matrix
+        Rotation matrix
 
     Examples:
-      >>> R = quat_to_matrix(1.,0.,0.,0.)
-      >>> lin.norm(R - np.eye(3)) # doctest: +ELLIPSIS
-      0.0...
+        >>> R = quat_to_matrix(1.,0.,0.,0.)
+        >>> lin.norm(R - np.eye(3)) # doctest: +ELLIPSIS
+        0.0...
 
     """
     res = np.empty((3, 3))
@@ -310,13 +302,13 @@ def matrix_to_quat(R: np.array) -> Iterable[float]:
     """
 
     Examples:
-      >>> q = np.array([2, -3, 4, -5])
-      >>> q = q/lin.norm(q)
-      >>> qr,qx,qy,qz = q
-      >>> R = quat_to_matrix(qr,qx,qy,qz)
-      >>> q2 = matrix_to_quat(R)
-      >>> lin.norm(q-q2) # doctest: +ELLIPSIS
-      0.0...
+        >>> q = np.array([2, -3, 4, -5])
+        >>> q = q/lin.norm(q)
+        >>> qr,qx,qy,qz = q
+        >>> R = quat_to_matrix(qr,qx,qy,qz)
+        >>> q2 = matrix_to_quat(R)
+        >>> lin.norm(q-q2) # doctest: +ELLIPSIS
+        0.0...
 
     """
     K = np.empty((4, 4))
@@ -348,19 +340,19 @@ def matrix_to_euler(R: np.array) -> Iterable[float]:
     https://www.learnopencv.com/rotation-matrix-to-euler-angles/
 
     Examples:
-      >>> q = np.array([2, -3, 4, -5])
-      >>> q = q/lin.norm(q)
-      >>> qr,qx,qy,qz = q
-      >>> R = quat_to_matrix(qr,qx,qy,qz)
-      >>> qr,qi,qj,qk = matrix_to_quat(R)
-      >>> r0,p0,y0 = quat_to_euler(qr,qi,qj,qk)
-      >>> r,p,y = matrix_to_euler(R)
-      >>> np.abs(r-r0) < 1e-10
-      True
-      >>> np.abs(p-p0) < 1e-10
-      True
-      >>> np.abs(y-y0) < 1e-10
-      True
+        >>> q = np.array([2, -3, 4, -5])
+        >>> q = q/lin.norm(q)
+        >>> qr,qx,qy,qz = q
+        >>> R = quat_to_matrix(qr,qx,qy,qz)
+        >>> qr,qi,qj,qk = matrix_to_quat(R)
+        >>> r0,p0,y0 = quat_to_euler(qr,qi,qj,qk)
+        >>> r,p,y = matrix_to_euler(R)
+        >>> np.abs(r-r0) < 1e-10
+        True
+        >>> np.abs(p-p0) < 1e-10
+        True
+        >>> np.abs(y-y0) < 1e-10
+        True
 
     """
     sy = np.sqrt(R[0, 0] * R[0, 0] + R[1, 0] * R[1, 0])
@@ -385,12 +377,12 @@ def euler_to_matrix(roll: float, pitch: float, yaw: float) -> np.array:
     https://www.learnopencv.com/rotation-matrix-to-euler-angles/
 
     Examples:
-      >>> roll = 1; pitch = -2; yaw = 3
-      >>> qr,qi,qj,qk = euler_to_quat(roll, pitch, yaw)
-      >>> R0 = quat_to_matrix(qr,qi,qj,qk)
-      >>> R = euler_to_matrix(roll, pitch, yaw)
-      >>> lin.norm(R-R0) < 1e-10
-      True
+        >>> roll = 1; pitch = -2; yaw = 3
+        >>> qr,qi,qj,qk = euler_to_quat(roll, pitch, yaw)
+        >>> R0 = quat_to_matrix(qr,qi,qj,qk)
+        >>> R = euler_to_matrix(roll, pitch, yaw)
+        >>> lin.norm(R-R0) < 1e-10
+        True
 
     """
     Ry = np.array(
@@ -417,27 +409,22 @@ def quat_to_euler(
     https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 
     Args:
-      qr
-        Real part of the quaternion
-      qi
-        First imaginary of the quaternion
-      qj
-        Second imaginary of the quaternion
-      qk
-        Third imaginary of the quaternion
-      normalize
-        Pass True to force normalization
+        qr: Real part of the quaternion
+        qi:  First imaginary of the quaternion
+        qj: Second imaginary of the quaternion
+        qk: Third imaginary of the quaternion
+        normalize: Pass True to force normalization
 
     Returns:
-      Roll angle (rad)
+        A tuple containing:
 
-      Pitch angle (rad)
-
-      Yaw angle (rad)
+        * Roll angle (rad)
+        * Pitch angle (rad)
+        * Yaw angle (rad)
 
     Examples:
-      >>> quat_to_euler(1.,0.,0.,0.)
-      (0.0, -0.0, 0.0)
+        >>> quat_to_euler(1.,0.,0.,0.)
+        (0.0, -0.0, 0.0)
 
     """
     if normalize:
@@ -461,31 +448,27 @@ def euler_to_quat(roll: float, pitch: float, yaw: float) -> Iterable[float]:
     https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 
     Args:
-      roll
-        Roll angle (rad)
-      pitch
-        Pitch angle (rad)
-      yaw
-        Yaw angle (rad)
+        roll: Roll angle (rad)
+        pitch: Pitch angle (rad)
+        yaw: Yaw angle (rad)
 
     Returns:
-      Real part of the quaternion
+        A tuple representing the quaternion:
 
-      First imaginary of the quaternion
-
-      Second imaginary of the quaternion
-
-      Third imaginary of the quaternion
+        * Real part of the quaternion
+        * First imaginary of the quaternion
+        * Second imaginary of the quaternion
+        * Third imaginary of the quaternion
 
     Examples:
-      >>> qr,qi,qj,qk = euler_to_quat(10.*np.pi/180., 20.*np.pi/180., 30.*np.pi/180.)
-      >>> r,p,y = quat_to_euler(qr,qi,qj,qk)
-      >>> r*180/np.pi # doctest: +ELLIPSIS
-      10.0...
-      >>> p*180/np.pi # doctest: +ELLIPSIS
-      20.0...
-      >>> y*180/np.pi # doctest: +ELLIPSIS
-      29.999...
+        >>> qr,qi,qj,qk = euler_to_quat(10.*np.pi/180., 20.*np.pi/180., 30.*np.pi/180.)
+        >>> r,p,y = quat_to_euler(qr,qi,qj,qk)
+        >>> r*180/np.pi # doctest: +ELLIPSIS
+        10.0...
+        >>> p*180/np.pi # doctest: +ELLIPSIS
+        20.0...
+        >>> y*180/np.pi # doctest: +ELLIPSIS
+        29.999...
 
     """
     cy = np.cos(yaw * 0.5)
@@ -507,11 +490,9 @@ def vecBodyToEarth(attitude: np.array, x: np.array) -> np.array:
     """Expresses a vector from the body frame to the Earth's frame
 
     Args:
-      attitude
-        If 3 elements array, roll, pitch, yaw (rad)
-        If 4 elements array, qw, qx, qy, qz
-      x
-        Vector expressed in the body frame
+        attitude: If 3 elements array, roll, pitch, yaw (rad)
+          If 4 elements array, qw, qx, qy, qz
+        x: Vector expressed in the body frame
 
     Returns:
         Vector x expressed in Earth's frame
@@ -531,11 +512,9 @@ def vecEarthToBody(attitude: np.array, x: np.array) -> np.array:
     """Expresses a vector from Earth's frame to the body's frame
 
     Args:
-      attitude
-        If 3 elements array, roll, pitch, yaw (rad)
-        If 4 elements array, qw, qx, qy, qz
-      x
-        Vector expressed in Earth's frame
+        attitude: If 3 elements array, roll, pitch, yaw (rad)
+                  If 4 elements array, qw, qx, qy, qz
+        x: Vector expressed in Earth's frame
 
     Returns:
         Vector x expressed in the body frame
@@ -549,13 +528,6 @@ def vecEarthToBody(attitude: np.array, x: np.array) -> np.array:
         raise ValueError
 
     return R.T @ x
-
-
-def q_function(x):
-    """
-    https://en.wikipedia.org/wiki/Q-function
-    """
-    return 0.5 * np.erfc(x / np.sqrt(2))
 
 
 def anomaly_mean_to_ecc(ecc: float, M: float) -> float:
@@ -602,14 +574,14 @@ def build_env(pos: np.array) -> np.array:
     """Builds a ENV frame at a given position
 
     Args:
-      pos
-        Position (m) of a point in ITRF
+        pos: Position (m) of a point in ITRF
 
     Returns:
-      Matrix :
-      * Local East vector
-      * Local North vector
-      * Local Vertical vector
+        Matrix whose columns are:
+
+        * Local East vector
+        * Local North vector
+        * Local Vertical vector
 
     """
     # Local ENV for the observer
@@ -635,18 +607,15 @@ def geodetic_to_itrf(lon: float, lat: float, h: float) -> "array":
     given the Geodetic Coordinates lat, lon + Ellipsoid Height h
 
     Args:
-      lon (rad)
-        L
-      lat (rad)
-        Latitude
-      h (m)
-        Altitude
+        lon: Longitude (rad)
+        lat: Latitude (rad)
+        h: Altitude (m)
 
     Returns:
-      x, y, z (m) : geocentric position as numpy array
+        A array of x, y, z coordinates (m)
 
     Examples:
-      >>> x,y,z = geodetic_to_itrf(0,0,0)
+        >>> x,y,z = geodetic_to_itrf(0,0,0)
 
     """
     N = Req / sqrt(1 - (1 - (1 - 1 / rf) ** 2) * (sin(lat)) ** 2)
@@ -657,7 +626,7 @@ def geodetic_to_itrf(lon: float, lat: float, h: float) -> "array":
     return np.array([X, Y, Z])
 
 
-def Iter_phi_h(x: float, y: float, z: float, eps: float = 1e-6) -> Tuple[float, float]:
+def __Iter_phi_h(x: float, y: float, z: float, eps: float = 1e-6) -> Tuple[float, float]:
     r = lin.norm((x, y, z))
     p = sqrt(x**2 + y**2)
 
@@ -680,7 +649,7 @@ def Iter_phi_h(x: float, y: float, z: float, eps: float = 1e-6) -> Tuple[float, 
             cont = False
 
         if niter > 50:
-            raise ValueError("Too many iterations in Iter_phi_h")
+            raise ValueError("Too many iterations in __Iter_phi_h")
 
         niter += 1
 
@@ -691,8 +660,7 @@ def time_to_jd_fraction(t_epoch: float) -> Tuple[float, float]:
     """
 
     Args:
-      t_epoch (s)
-        Time since 31/12/1949 00:00 UT
+        t_epoch: Time since 31/12/1949 00:00 UT (s)
 
     """
     epoch = t_epoch / 86400
@@ -707,6 +675,16 @@ def time_to_jd_fraction(t_epoch: float) -> Tuple[float, float]:
 
 
 def rotation_matrix(angle: float, axis: "array"):
+    """Builds the 3D rotation matrix from axis and angle
+
+    Args:
+        angle: Rotation angle (rad)
+        axis: Rotation axis
+    
+    Returns:
+        The rotation matrix
+
+    """
     kx, ky, kz = axis / lin.norm(axis)
     K = np.array([[0, -kz, ky], [kz, 0, -kx], [-ky, kx, 0]])
     R = np.eye(3) + sin(angle) * K + (1 - cos(angle)) * K @ K
@@ -799,24 +777,18 @@ def orbital_to_teme(
     """
 
     Args:
-      a (m)
-        Semi-major axis
-      ecc
-        Eccentricity
-      argp (rad)
-        Argument of periapsis
-      inc (rad)
-        Inclination
-      mano (rad)
-        Mean anomaly
-      node (rad)
-        Longitude of the ascending node
+        a: Semi-major axis (m)
+        ecc: Eccentricity
+        argp: Argument of periapsis (rad)
+        inc: Inclination (rad)
+        mano: Mean anomaly (rad)
+        node: Longitude of the ascending node (rad)
 
     Returns:
-      Position (m) and velocity (m/s) in TEME frame
+        An array with position (m) and velocity (m/s) in TEME frame
 
     Examples:
-      >>> pv = orbital_to_teme(7e6, 0.01, 0, 1, 1, 0)
+        >>> pv = orbital_to_teme(7e6, 0.01, 0, 1, 1, 0)
 
     """
     # https://en.wikipedia.org/wiki/True_anomaly#From_the_mean_anomaly
@@ -853,23 +825,24 @@ def itrf_to_geodetic(position: "array") -> Tuple[float, float, float]:
     """Converts the ITRF coordinates into latitude, longiutde, altitude (WGS84)
 
     Args:
-      position (m)
-        x, y, z position in ITRF frame
+        position: x, y, z position in ITRF frame (m)
 
     Returns:
-      Longitude (rad)
-      Latitude (rad)
-      Altitude (m)
+        A tuple containing:
+
+        * Longitude (rad)
+        * Latitude (rad)
+        * Altitude (m)
 
     Examples:
-      >>> pos = geodetic_to_itrf(2,1,3)
-      >>> lon,lat,alt = itrf_to_geodetic(pos)
-      >>> lon # doctest: +ELLIPSIS
-      2.0...
-      >>> lat # doctest: +ELLIPSIS
-      1.0...
-      >>> alt # doctest: +ELLIPSIS
-      3.0...
+        >>> pos = geodetic_to_itrf(2,1,3)
+        >>> lon,lat,alt = itrf_to_geodetic(pos)
+        >>> lon # doctest: +ELLIPSIS
+        2.0...
+        >>> lat # doctest: +ELLIPSIS
+        1.0...
+        >>> alt # doctest: +ELLIPSIS
+        3.0...
 
     """
     x = position[0]
@@ -879,7 +852,7 @@ def itrf_to_geodetic(position: "array") -> Tuple[float, float, float]:
     cl = x / p  # cos(lambda)
     sl = y / p  # sin(lambda)
     lon = arctan2(sl, cl)
-    lat, alt = Iter_phi_h(x, y, z)
+    lat, alt = __Iter_phi_h(x, y, z)
 
     return lon, lat, alt
 
@@ -889,18 +862,18 @@ def itrf_to_azeld(obs: "array", sat: "array") -> "array":
     azimut, elevation, distance, radial velocity, slope of velocity, azimut of velocity
 
     Args:
-      obs
-        Position (m) & velocity (m/s) of terrestrial observer in ITRF
-      sat
-        Position (m) & velocity (m/s) of the observed satellite in ITRF
+        obs: Position (m) & velocity (m/s) of terrestrial observer in ITRF
+        sat: Position (m) & velocity (m/s) of the observed satellite in ITRF
 
     Returns:
-      Azimut (deg)
-      Elevation (deg)
-      Distance (m)
-      Radial velocity (m/s)
-      Slope of velocity (deg)
-      Azimut of velocity (deg)
+        A tuple containing:
+          
+        * Azimut (deg)
+        * Elevation (deg)
+        * Distance (m)
+        * Radial velocity (m/s)
+        * Slope of velocity (deg)
+        * Azimut of velocity (deg)
 
     """
     # Local ENV for the observer
@@ -941,19 +914,18 @@ def datetime_to_skyfield(td: datetime) -> Time:
     Converts a datetime struct to a skyfield Time struct
 
     Args:
-      td : a datetime instance or array of datetime
-        Time to convert
+        td : a datetime instance or array of datetime to convert
 
     Returns:
-      Skyfield date and time structure
+        Skyfield date and time structure. See https://rhodesmill.org/skyfield/api-time.html#skyfield.timelib.Time
 
     Examples:
-    >>> fmt = "%Y/%m/%d %H:%M:%S.%f"
-    >>> sts = "2021/04/15 09:29:54.996640"
-    >>> tsync = datetime.strptime(sts, fmt)
-    >>> tsync = tsync.replace(tzinfo=utc)
-    >>> datetime_to_skyfield(tsync)
-    <Time tt=2459319.8965761648>
+        >>> fmt = "%Y/%m/%d %H:%M:%S.%f"
+        >>> sts = "2021/04/15 09:29:54.996640"
+        >>> tsync = datetime.strptime(sts, fmt)
+        >>> tsync = tsync.replace(tzinfo=utc)
+        >>> datetime_to_skyfield(tsync)
+        <Time tt=2459319.8965761648>
 
     """
     ts = load.timescale(builtin=True)
@@ -966,29 +938,26 @@ def skyfield_to_datetime(t: Time) -> datetime:
     Converts a skyfield Time struct to a datetime struct
 
     Args:
-      t
-        Skyfield date and time structure
+        t: Skyfield date and time structure. See https://rhodesmill.org/skyfield/api-time.html#skyfield.timelib.Time
 
     Returns:
-      A datetime instance
+        A datetime instance
 
     """
     return t.utc_datetime()
 
 
-def pdot(u: np.array, v: np.array) -> float:
+def pdot(u: "array", v: "array") -> float:
     """Pseudo scalar product :
 
-    :math:`x.x'+y.y'+z.z'-t.t'`
+    $$ x.x'+y.y'+z.z'-t.t' $$
 
     Args:
-      u
-        First quadri-vector
-      v
-        Second quadri-vector
+        u: First quadri-vector
+        v: Second quadri-vector
 
       Returns:
-        Pseudo scalar product
+          Pseudo scalar product
 
     """
     return u[0] * v[0] + u[1] * v[1] + u[2] * v[2] - u[3] * v[3]
@@ -1002,6 +971,11 @@ def q_function(x):
 
 
 def cexp(x):
+    """Function defined by:
+
+    $$ cexp(x)=exp(2.pi.i.x) $$
+
+    """
     return exp(2 * pi * 1j * x)
 
 

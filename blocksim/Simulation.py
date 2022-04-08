@@ -30,15 +30,15 @@ class Simulation(object):
         """Returns the list of all the computers of the simulation.
 
         Returns:
-          The list of all the computers in the simulation
+            The list of all the computers in the simulation
 
         Examples:
-          >>> el = DummyComputer('el')
-          >>> sim = Simulation()
-          >>> sim.addComputer(el)
-          >>> for e in sim.getComputersList():
-          ...     print(e.getName())
-          el
+            >>> el = DummyComputer('el')
+            >>> sim = Simulation()
+            >>> sim.addComputer(el)
+            >>> for e in sim.getComputersList():
+            ...     print(e.getName())
+            el
 
         """
         return self.__computers
@@ -47,12 +47,10 @@ class Simulation(object):
         """Adds a computer to the simulation
 
         Args:
-          computer
-            Computer to be added
+            computer: Computer to be added
 
         Raises:
-          DuplicateElement
-            If the computer is already in the simulation
+            DuplicateElement: If the computer is already in the simulation
 
         """
         name = computer.getName()
@@ -76,12 +74,10 @@ class Simulation(object):
         """Returns the computer named *name*
 
         Args:
-          name
-            Name of the computer. If it does not exist, raises KeyError
+            name: Name of the computer. If it does not exist, raises KeyError
 
         Raises:
-          KeyError
-            If no computer has the name *name*
+            KeyError: If no computer has the name *name*
 
         """
         for c in self.__computers:
@@ -94,15 +90,13 @@ class Simulation(object):
         """Returns the computer with given id
 
         Args:
-          cid
-            Id of the computer. If it does not exist, raises KeyError
+            cid: Id of the computer. If it does not exist, raises KeyError
 
         Returns
-          The computer with id *cid*
+            The computer with id *cid*
 
         Raises:
-          KeyError
-            If no element has the id *cid*
+            KeyError: If no element has the id *cid*
 
         """
         for c in self.__computers:
@@ -115,8 +109,7 @@ class Simulation(object):
         """Steps the simulation, and logs all the outputs of the computers
 
         Args:
-          frame
-            Time frame
+            frame: Time frame
 
         """
         # Controllers shall be updated last
@@ -147,17 +140,13 @@ class Simulation(object):
         * As much calls to update as time samples in the *tps* argument
 
         Args:
-          tps
-            Dates to be simulated (s)
-          progress_bar
-            True to display a progress bar in the terminal
-          error_on_unconnected
-            True to raise an exception is an input is not connected. If an input is not connected and error_on_unconnected is False, the input will be padded with zeros
-          fig
-            In the case of a realtime plot (use of RTPlotter for example), must be the figure that is updated in real time
+            tps: Dates to be simulated (s)
+            progress_bar: True to display a progress bar in the terminal
+            error_on_unconnected: True to raise an exception is an input is not connected. If an input is not connected and error_on_unconnected is False, the input will be padded with zeros
+            fig: In the case of a realtime plot (use of RTPlotter for example), must be the figure that is updated in real time
 
         Returns:
-          The time frame used for the simulation
+            The time frame used for the simulation
 
         """
         # self.__logger.allocate(len(tps))
@@ -201,7 +190,7 @@ class Simulation(object):
         """Gets the Logger used for the simulation
 
         Returns:
-          The logger used by the simulation
+            The logger used by the simulation
 
         """
         return self.__logger
@@ -211,10 +200,8 @@ class Simulation(object):
         Both src and dst must have been added with :class:`blocksim.Simulation.Simulation.addComputer`
 
         Args:
-          src_name
-            Source computer. Example : sys.output
-          dst_name
-            Target computer. Example : ctl.estimation
+            src_name: Source computer. Example : sys.output
+            dst_name: Target computer. Example : ctl.estimation
 
         """
         src_comp_name, src_out_name = src_name.split(".")
@@ -244,27 +231,24 @@ class Simulation(object):
         * coord is optional, and is the number of the scalar in the data vector
 
         Args:
-          frame
-            The current time frame
-          name
-            Name of the data. If it does not exist, raises KeyError
+            frame: The current time frame
+            name: Name of the data. If it does not exist, raises KeyError
 
         Returns:
-          The requested data
+            The requested data
 
         Raises:
-          KeyError
-            If the data cannot be found
+            KeyError: If the data cannot be found
 
         Examples:
-          >>> el = DummyComputer('el', with_input=False)
-          >>> sim = Simulation()
-          >>> sim.addComputer(el)
-          >>> frame = Frame()
-          >>> sim.getComputerOutputByName(frame, 'el.xout')
-          array([0]...
-          >>> sim.getComputerOutputByName(frame, 'el.xout[0]')
-          0
+            >>> el = DummyComputer('el', with_input=False)
+            >>> sim = Simulation()
+            >>> sim.addComputer(el)
+            >>> frame = Frame()
+            >>> sim.getComputerOutputByName(frame, 'el.xout')
+            array([0]...
+            >>> sim.getComputerOutputByName(frame, 'el.xout[0]')
+            0
 
         """
         comp_name, out_name = name.split(".")
