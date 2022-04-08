@@ -412,7 +412,7 @@ class AComputer(ABaseNode):
 
     def createParameter(self, name: str, value: float = None, read_only: bool = False):
         """This method creates an attribute, with getter an optional setter
-        Use :class:`printParameters` to see the list of all declared parameters
+        Use `AComputer.printParameters` to see the list of all declared parameters
 
         Args:
             name: Name of the parameter to be created
@@ -448,7 +448,7 @@ class AComputer(ABaseNode):
 
     def printParameters(self) -> str:
         """Prints the list of all declared parameters and their values
-        Paremeter declaration is made through :class:`createParameter`
+        Paremeter declaration is made through `AComputer.createParameter`
 
         Returns:
             A string containing the parameters and their value

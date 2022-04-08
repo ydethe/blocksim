@@ -78,7 +78,7 @@ class ABaseNode(metaclass=ABCMeta):
     @abstractmethod
     def updateAllOutput(self, frame: Frame):  # pragma: no cover
         """Method used to update a Node.
-        Useful only for :class:`blocksim.core.Node.AComputer` to update its outputs
+        Useful only for `Node.AComputer` to update its outputs
 
         Args:
             frame: Frame used for update
