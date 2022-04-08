@@ -101,7 +101,7 @@ class ASensors(AComputer):
 
         Returns:
             The mean vector
-            
+
         """
         otp = self.getOutputByName(oname)
         return otp.mean

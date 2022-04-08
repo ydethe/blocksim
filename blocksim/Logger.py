@@ -57,9 +57,7 @@ class Logger(object):
         self.reset()
 
     def reset(self):
-        """Resets the logger and empties all the recorded data
-
-        """
+        """Resets the logger and empties all the recorded data"""
         self.__fic = None
         self.__start_time = datetime.now(tz=timezone.utc)
         self.__data = defaultdict(list)
@@ -68,32 +66,32 @@ class Logger(object):
 
     def createEmptyValue(self, name: str):
         """Creates a new variable with no data
-        
+
         Args:
             name: The name of the variable
 
         """
         self.__data[name] = None
 
-    def setRawData(self, data:dict):
+    def setRawData(self, data: dict):
         """Sets the data for the whole logger.
         The dictionary data shall have one key per variable to create,
         and the associated value shall be an array of values.
-        
+
         Args:
             data: Data to use
-            
+
         """
         self.__data = data
 
-    def getRawData(self)->dict:
+    def getRawData(self) -> dict:
         """Gets the data for the whole logger.
         The dictionary data has one key per variable to create,
         and the associated value is an array of values.
-        
+
         Returns:
             The dictionary of the data
-            
+
         """
         return self.__data
 
@@ -111,7 +109,7 @@ class Logger(object):
 
         Returns:
             the start time
-            
+
         """
         return self.__start_time
 
@@ -242,7 +240,7 @@ class Logger(object):
 
         Returns:
             The size of the data stored in the logger
-            
+
         """
         lnames = list(self.getParametersName())
         if len(lnames) == 0:
@@ -462,7 +460,7 @@ class Logger(object):
 
         Raises:
             SystemError if no handler has been identified or if too many handlers were identified
-            
+
         """
         self.__fic = str(fic)
 
@@ -474,4 +472,3 @@ class Logger(object):
             raise SystemError("Unable to write '%s'" % fic)
         elif len(lok) > 1:
             raise SystemError("Uncoherent return '%s'" % lok)
-        

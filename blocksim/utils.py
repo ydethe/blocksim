@@ -626,7 +626,9 @@ def geodetic_to_itrf(lon: float, lat: float, h: float) -> "array":
     return np.array([X, Y, Z])
 
 
-def __Iter_phi_h(x: float, y: float, z: float, eps: float = 1e-6) -> Tuple[float, float]:
+def __Iter_phi_h(
+    x: float, y: float, z: float, eps: float = 1e-6
+) -> Tuple[float, float]:
     r = lin.norm((x, y, z))
     p = sqrt(x**2 + y**2)
 
@@ -680,7 +682,7 @@ def rotation_matrix(angle: float, axis: "array"):
     Args:
         angle: Rotation angle (rad)
         axis: Rotation axis
-    
+
     Returns:
         The rotation matrix
 
@@ -867,7 +869,7 @@ def itrf_to_azeld(obs: "array", sat: "array") -> "array":
 
     Returns:
         A tuple containing:
-          
+
         * Azimut (deg)
         * Elevation (deg)
         * Distance (m)
@@ -973,7 +975,7 @@ def q_function(x):
 def cexp(x):
     """Function defined by:
 
-    $$ cexp(x)=exp(2.\pi.i.x) $$
+    $$ cexp(x) = exp(2.\pi.i.x) $$
 
     """
     return exp(2 * pi * 1j * x)

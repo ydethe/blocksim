@@ -104,7 +104,7 @@ class InterpolatedSetPoint(ASetPoint):
 
         Args:
             t: timestamp of the interpolation
-        
+
         Returns:
             The interpolated vector
 
@@ -212,7 +212,7 @@ class Sinusoid(ASetPoint):
 
         Args:
             t: timestamp of the interpolation
-        
+
         Returns:
             The interpolated vector
 
@@ -341,7 +341,7 @@ class Rectangular(ASetPoint):
 
         Args:
             t: timestamp of the interpolation
-        
+
         Returns:
             The interpolated vector
 

@@ -11,6 +11,7 @@ class IMU(ASensors):
         name: Name of the IMU
 
     """
+
     __slots__ = []
 
     def __init__(self, name: str):

@@ -249,7 +249,7 @@ class AKalmanFilter(AEstimator):
 
         Returns:
             The input matrix
-            
+
         """
         pass
 
@@ -263,7 +263,7 @@ class AKalmanFilter(AEstimator):
 
         Returns:
             The output matrix
-            
+
         """
         pass
 
@@ -277,7 +277,7 @@ class AKalmanFilter(AEstimator):
 
         Returns:
             The feedthrough matrix
-            
+
         """
         pass
 
@@ -291,7 +291,7 @@ class AKalmanFilter(AEstimator):
 
         Returns:
             The covariance matrix for the state vector
-            
+
         """
         pass
 
@@ -305,7 +305,7 @@ class AKalmanFilter(AEstimator):
 
         Returns:
             The covariance matrix for the measurement vector
-            
+
         """
         pass
 
@@ -730,7 +730,7 @@ class MadgwickFilter(AComputer):
 
         Returns:
             A tuple containing:
-            
+
             * The offsets applied to raw x/y/z values (uTesla)
             * The soft iron error compensation matrix
 
