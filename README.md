@@ -18,6 +18,8 @@ A library to simulate a open- and closed-loop system. Includes :
 -   Advanced plotting functions
 -   DSP tools
 
+blocksim is hosted here https://git:8443/projects/DNFSND/repos/blocksim/browse
+
 ## Setup
 
 Create a virtual environment named bs_env for example. You do not have to create one env per project or per simulation.
