@@ -1,5 +1,7 @@
 # blocksim
 
+## Quick look
+
 A library to simulate a open- and closed-loop system. Includes :
 
 -   Kalman filter
@@ -27,6 +29,7 @@ To create a virtual env **bs_env** in a given root folder (typically $HOME/.venv
     python3 -m venv /path/to/root/folder/bs_env
 
 Then you need to activate the env. This can be automated with one of the following options:
+
 1. by modifying the $HOME/.bashrc file
 1. manually
 1. VSCode with the python extension can also associate a project to an env
