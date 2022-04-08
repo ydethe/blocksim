@@ -35,25 +35,28 @@ class DSPChannel(AComputer):
 
     **tx_sig** is the RX signal
 
+    Attributes:
+        wavelength: value passed to __init__
+        antenna_gain: value passed to __init__
+        antenna_temp: value passed to __init__
+        bandwidth: value passed to __init__
+        noise_factor: value passed to __init__
+        alpha: value passed to __init__
+        beta: value passed to __init__
+        nodop: value passed to __init__
+        noatm: value passed to __init__
+
     Args:
-      name
-        Name of the spectrum
-      wavelength (m)
-        Wavelength of the carrier
-      antenna_gain (dB)
-        Gain of the antenna
-      antenna_temp (K)
-        Temperature of the antenna
-      bandwidth (Hz)
-        Bandwidth of the receiver
-      noise_factor
-        Noise factor of the receiver (dB)
-      alpha
-        Alpha parameters for Klobuchar
-      beta
-        Alpha parameters for Klobuchar
-      nodop
-        Remove distance (delay) & Doppler effects
+        name: Name of the spectrum
+        wavelength: Wavelength of the carrier (m)
+        antenna_gain: Gain of the antenna (dB)
+        antenna_temp: Temperature of the antenna (K)
+        bandwidth: Bandwidth of the receiver (Hz)
+        noise_factor: Noise factor of the receiver (dB)
+        alpha: Alpha parameters for Klobuchar
+        beta: Alpha parameters for Klobuchar
+        nodop: Remove distance (delay) & Doppler effects
+        noatm: Remove atmospheric effects
 
     """
 
@@ -117,8 +120,7 @@ class DSPChannel(AComputer):
         """Sets the covariance matrix of the gaussian distribution
 
         Args:
-          cov
-            Covariance matrix
+            cov: Covariance matrix
 
         """
         otp = self.getOutputByName("rxsig")
@@ -131,8 +133,7 @@ class DSPChannel(AComputer):
         """Sets the mean vector of the gaussian distribution
 
         Args:
-          mean
-            Mean vector matrix
+            mean: Mean vector matrix
 
         """
         otp = self.getOutputByName("rxsig")
@@ -145,7 +146,7 @@ class DSPChannel(AComputer):
         """Returns the covariance matrix of the gaussian distribution
 
         Returns:
-          Covariance matrix
+            Covariance matrix
 
         """
         otp = self.getOutputByName("rxsig")
@@ -155,13 +156,30 @@ class DSPChannel(AComputer):
         """Returns the mean vector of the gaussian distribution
 
         Returns:
-          Mean vector matrix
+            Mean vector matrix
 
         """
         otp = self.getOutputByName("rxsig")
         return otp.mean
 
     def atmosphericModel(self, tx_pos: np.array, rx_pos: np.array):
+        """Computes the atmospheric contribution
+
+        Args:
+          tx_pos: Position of the emitter (ITRF, m, m/s)
+          rx_pos: Position of the receiver (ITRF, m, m/s)
+
+        Returns:
+            A tuple containing:
+
+            * dist: distance between RX and TX (m)
+            * vrad: radial velocity between  RX and TX (m/s)
+            * azim: azimut angle (deg)
+            * elev: elevation angle (deg)
+            * L_atm: atmospheric attenuation (lin)
+            * dt_atm: atmospheric delay (s)
+
+        """
         azim, elev, dist, vrad, _, _ = itrf_to_azeld(rx_pos, tx_pos)
         z = pi / 2 - elev * pi / 180
         lon, lat, h = itrf_to_geodetic(rx_pos)
