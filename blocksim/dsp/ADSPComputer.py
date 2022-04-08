@@ -3,25 +3,26 @@ import numpy as np
 from ..core.Node import AComputer
 
 
+__all__=["ADSPComputer"]
+
 class ADSPComputer(AComputer):
     """Generic DSP Computer. It processes one input into one output.
     Adds a helper method process, that batch computes a set of input
 
+    Attributes:
+        input_size: the value passed to __init__
+        output_size: the value passed to __init__
+        input_name: the value passed to __init__
+        output_name: the value passed to __init__
+        
     Args:
-      name
-        Name of the computer
-      input_name
-        Name of the input
-      input_size
-        Size of the input vector
-      input_dtype
-        Type of the input vector
-      output_name
-        Name of the output
-      output_size
-        Size of the output vector
-      output_dtype
-        Type of the output vector
+        name: Name of the computer
+        input_name: Name of the input
+        input_size: Size of the input vector
+        input_dtype: Type of the input vector (e.g. np.float64 or np.complex128)
+        output_name: Name of the output
+        output_size: Size of the output vector
+        output_dtype: Type of the output vector (e.g. np.float64 or np.complex128)
 
     """
 
@@ -55,21 +56,19 @@ class ADSPComputer(AComputer):
         """Batch processes an input stream by calling compute_outputs.
 
         Args:
-          data
-            A stream of input data
+            data: A stream of input data
 
-        Returns:
-          An stream of output data
+        Returns:: An stream of output data
 
         Examples:
-          >>> a = DummyDSPComputer()
-          >>> data = np.arange(6)
-          >>> a.process(data) # doctest: +ELLIPSIS
-          array([[0, 3],
-                 [0, 0],
-                 [1, 4],
-                 [0, 0],
-                 [2, 5]]...
+            >>> a = DummyDSPComputer()
+            >>> data = np.arange(6)
+            >>> a.process(data) # doctest: +ELLIPSIS
+            array([[0, 3],
+                  [0, 0],
+                  [1, 4],
+                  [0, 0],
+                  [2, 5]]...
 
         """
         if len(data.shape) == 1:
@@ -96,21 +95,20 @@ class ADSPComputer(AComputer):
         The first column of the block is copied, then the second and so on
 
         Args:
-          data
-            The block of data
+            data: The block of data
 
         Returns:
-          The 1D copy
+            The 1D copy
 
         Examples:
-          >>> a = DummyDSPComputer()
-          >>> data = np.arange(6).reshape((3, 2))
-          >>> data
-          array([[0, 1],
-                 [2, 3],
-                 [4, 5]])
-          >>> a.flatten(data)
-          array([0, 2, 4, 1, 3, 5])
+            >>> a = DummyDSPComputer()
+            >>> data = np.arange(6).reshape((3, 2))
+            >>> data
+            array([[0, 1],
+                  [2, 3],
+                  [4, 5]])
+            >>> a.flatten(data)
+            array([0, 2, 4, 1, 3, 5])
 
         """
         if len(data.shape) == 1:
@@ -128,21 +126,20 @@ class ADSPComputer(AComputer):
         The attribute *output_size* gives the size of the columns
 
         Args:
-          strm
-            The 1D stream of data
+            strm: The 1D stream of data
 
         Returns:
-          The data block
+            The data block
 
         Examples:
-          >>> a = DummyDSPComputer()
-          >>> strm = np.arange(10)
-          >>> a.unflatten(strm)
-          array([[0, 5],
-                 [1, 6],
-                 [2, 7],
-                 [3, 8],
-                 [4, 9]])
+            >>> a = DummyDSPComputer()
+            >>> strm = np.arange(10)
+            >>> a.unflatten(strm)
+            array([[0, 5],
+                  [1, 6],
+                  [2, 7],
+                  [3, 8],
+                  [4, 9]])
 
         """
         ny = self.output_size

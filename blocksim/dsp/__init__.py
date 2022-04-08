@@ -13,11 +13,12 @@ def derivative_coeff(rank: int = 1, order: int = None) -> "array":
     """Computes the coefficients of a derivaive estimator
 
     Args:
-        rank
-            Rank of the derivative
-        order
-            Order of the Taylor serie used to estimate the derivative. Shall be >= rank
+        rank: Rank of the derivative
+        order: Order of the Taylor serie used to estimate the derivative. Shall be >= rank
             The default value is *rank*
+
+    Returns:
+        Taps of a derivating filter
 
     """
     if order is None:
@@ -43,7 +44,20 @@ def derivative_coeff(rank: int = 1, order: int = None) -> "array":
     return coeffs
 
 
-def get_window(win, n: int) -> np.array:
+def get_window(win, n: int) -> "array":
+    """Creates the samples of a window.
+    The resulting window guarantees that a CW with amplitude A will keep its amplitude after windowing
+
+    See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html for the list of available windows
+
+    Args:
+        win: The window to use
+        n: Number of samples
+
+    Returns:
+        The array of coefficients
+
+    """
     from scipy.signal import get_window
 
     w = get_window(win, n)
@@ -52,7 +66,17 @@ def get_window(win, n: int) -> np.array:
     return w / nrm
 
 
-def phase_unfold(sig: np.array, eps: float = 1e-9) -> np.array:
+def phase_unfold(sig: "array", eps: float = 1e-9) -> "array":
+    """Unfolds the phase law of the given complex signal
+
+    Args:
+        sig: The array of complex samples
+        eps: The threshold to test equality
+    
+    Returns:
+        The unfolded phase law (rad)
+
+    """
     n = len(sig)
     pha = np.zeros(n)
     pha[0] = np.angle(sig[0])
@@ -106,33 +130,22 @@ def analyse_DV(
     """Distance / velocity analysis for acquisition
 
     Args:
-      wavelength (m)
-        Wavelength of the carrier
-      period (s)
-        Window length
-      dist0 (m)
-        Center of the distance research domain
-      damb (m)
-        Width of the distance research domain
-      vrad0 (m/s)
-        Center of the velocity research domain
-      vamb (m/s)
-        Width of the velocity research domain
-      n_integration
-        Number of period to sum. A value of -1 means to sum everything
-      seq
-        Local replica of the signal
-      rxsig
-        Received signal to be analysed
-      nv
-        Number of velocity hypothesis to be tested
-      progress_bar
-        To turn on the display of a progress bar
-      corr_window
-        Window to be used for correlation
+        wavelength: Wavelength of the carrier (m)
+        period: Window length (s)
+        dist0: Center of the distance research domain (m)
+        damb: Width of the distance research domain (m)
+        vrad0: Center of the velocity research domain (m/s)
+        vamb: Width of the velocity research domain (m/s)
+        seq: Local replica of the signal
+        rxsig: Received signal to be analysed
+        nv: Number of velocity hypothesis to be tested
+        n_integration: Number of period to sum. A value of -1 means to sum everything
+        coherent: To use coherent integration. Non coherent otherwise
+        progress_bar: To turn on the display of a progress bar
+        corr_window: Window to be used for correlation
 
     Returns:
-      The spectrogram of the analysis
+        The DSPSpectrogram of the analysis
 
     """
     from ..constants import c
@@ -202,23 +215,25 @@ def analyse_DV(
     return spg
 
 
-def shift(register, feedback, output):
+def shift(register:list, feedback:list, output:list):
     """GPS Shift Register
 
-    :param list feedback: which positions to use as feedback (1 indexed)
-    :param list output: which positions are output (1 indexed)
-    :returns output of shift register:
+    Args:
+        feedback: which positions to use as feedback (0 indexed)
+        output: which positions are output (0 indexed)
+
+    Returns
+        Output of shift register
 
     Examples:
-    >>> G1 = [1,1,1,1,1,1,1,1,1,1]
-    >>> out = shift(G1, [3,10], [10])
-    >>> G1
-    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    >>> out
-    1
+        >>> G1 = [1,1,1,1,1,1,1,1,1,1]
+        >>> out = shift(G1, [3,10], [10])
+        >>> G1
+        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        >>> out
+        1
 
     """
-
     # calculate output
     out = [register[i - 1] for i in output]
     if len(out) > 1:
@@ -251,23 +266,16 @@ def createGoldSequence(
     """Builds Gold sequence
 
     Args:
-        name
-            Name of the signal
-        repeat
-            Number of copies of a 1023 Gold sequence
-        sv
-            Identifier of the SV. Can be either the PRN number (int), or the code tap selection (list of 2 int)
-        samplingStart (s)
-            First date of the sample of the signal
-        chip_rate (Hz)
-            Sampling frequency of the signal
-        sampling_factor
-            Factor so that fs = sampling_factor*chip_rate
-        bitmap
-            List of 2 values to map the bits on. [0, 1] returns a sequence with 0 and 1
+        name: Name of the signal
+        sv: Identifier of the SV. Can be either the PRN number (int), or the code tap selection (list of 2 int)
+        repeat: Number of copies of a 1023 Gold sequence
+        chip_rate: Sampling frequency of the signal (Hz)
+        sampling_factor: Factor so that fs = sampling_factor*chip_rate
+        samplingStart: First date of the sample of the signal (s)
+        bitmap: List of 2 values to map the bits on. [0, 1] returns a sequence with 0 and 1
 
     Returns:
-        The :class:`blocksim.dsp.DSPSignal`. All the samples are +1 or -1
+        The DSPSignal. All the samples are in the given bitmap
 
     """
     from .DSPSignal import DSPSignal
@@ -336,6 +344,18 @@ def createGoldSequence(
 
 
 def zadoff_chu(u, n):
+    """Create a Zadoff-Chu sequence.
+
+    See https://en.wikipedia.org/wiki/Zadoff-Chu_sequence
+
+    Args:
+        u: Root of the sequence
+        n: Length of the sequence
+    
+    Returns:
+        The array of complex samples
+
+    """
     k = np.arange(n)
     return exp(-1j * pi * u * k * (k + 1) / n)
 
@@ -347,18 +367,15 @@ def createZadoffChu(
     sampling_freq: float,
     samplingStart: float = 0,
 ) -> "DSPSignal":
-    """Builds Zadoff-Chu sequence
+    """Builds DSPSignal defined by a Zadoff-Chu sequence
 
     Args:
-        name
-        Name of the signal
-        n_zc
-        Length of the Zadoff-Chu sequence
-        u
-        Index of the Zadoff-Chu sequence
+        name: Name of the signal
+        n_zc: Length of the Zadoff-Chu sequence
+        u: Index of the Zadoff-Chu sequence
 
     Returns:
-        The :class:`blocksim.dsp.DSPSignal`
+        The DSPSignal
 
     """
     from .DSPSignal import DSPSignal
