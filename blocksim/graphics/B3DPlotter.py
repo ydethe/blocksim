@@ -111,7 +111,7 @@ class B3DPlotter(ShowBase):
         """Plots a Trajectory around the 3D Earth
 
         Args:
-          traj: The Trajectory to plot
+            traj: The Trajectory to plot
 
         """
         self.plotCube(
@@ -128,16 +128,16 @@ class B3DPlotter(ShowBase):
         """Plots a custom 3D line
 
         Args:
-          color: The color as a 4-elements tuple:
+            color: The color as a 4-elements tuple:
 
-            * r between 0 and 1
-            * g between 0 and 1
-            * b between 0 and 1
-            * alpha between 0 and 1
-          itrf_positions: A list of (x,y,z) positions in the geocentric ITRF coordinate system
+                * r between 0 and 1
+                * g between 0 and 1
+                * b between 0 and 1
+                * alpha between 0 and 1
+            itrf_positions: A list of (x,y,z) positions in the geocentric ITRF coordinate system
 
         Returns:
-          A panda3d NodePath
+            A panda3d NodePath
 
         """
         format = GeomVertexFormat.get_v3c4()
@@ -182,17 +182,17 @@ class B3DPlotter(ShowBase):
         Plots a cube
 
         Args:
-          itrf_position: A (x,y,z) positions in the geocentric ITRF coordinate system (m)
-          size: The cube's size (m)
-          color: The color as a 4-elements tuple
+            itrf_position: A (x,y,z) positions in the geocentric ITRF coordinate system (m)
+            size: The cube's size (m)
+            color: The color as a 4-elements tuple
 
-            * r between 0 and 1
-            * g between 0 and 1
-            * b between 0 and 1
-            * alpha between 0 and 1
+                * r between 0 and 1
+                * g between 0 and 1
+                * b between 0 and 1
+                * alpha between 0 and 1
 
         Returns:
-          A panda3d NodePath
+            A panda3d NodePath
 
         """
         format = GeomVertexFormat.get_v3c4()
@@ -281,12 +281,12 @@ class B3DPlotter(ShowBase):
         Plots a textured sphere
 
         Args:
-          texture: The texture file to apply
-          number_of_meridians: Number of meridians in the mesh
-          number_of_latcircles: Number of latitude circles in the mesh
+            texture: The texture file to apply
+            number_of_meridians: Number of meridians in the mesh
+            number_of_latcircles: Number of latitude circles in the mesh
 
         Returns:
-          A panda3d NodePath
+            A panda3d NodePath
 
         """
         format = GeomVertexFormat.get_v3n3t2()

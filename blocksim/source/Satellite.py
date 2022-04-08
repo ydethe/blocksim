@@ -36,11 +36,11 @@ def sgp4_to_teme(satrec: Satrec, t_epoch: float) -> "array":
     TEME : https://en.wikipedia.org/wiki/Earth-centered_inertial#TEME
 
     Args:
-      satrec: a Satrec instance from sgp4.api
-      t_epoch: Time since 31/12/1949 00:00 UT (s)
+        satrec: a Satrec instance from sgp4.api
+        t_epoch: Time since 31/12/1949 00:00 UT (s)
 
     Returns:
-      A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in TEME frame
+        A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in TEME frame
 
     """
     jd, fraction = time_to_jd_fraction(t_epoch)
@@ -91,24 +91,24 @@ class ASatellite(AComputer):
     * lat: Latitude (rad)
 
     Attributes:
-      tsync: Datetime object that gives the date and time at simulation time 0
-      orbit_mano: mean anomaly at tsync (rad)
-      orbit_eccentricity: eccentricty
-      orbit_semi_major_axis: semi major axis (m)
-      orbit_inclination: Inclination(rad)
-      orbit_argp: Argument of perigee (rad)
-      orbit_node: R.A. of ascending node (rad)
-      orbit_bstar: drag coefficient (1/earth radii)
-      orbit_ndot: ballistic coefficient (revs/day)
-      orbit_nddot: mean motion 2nd derivative (revs/day^3)
-      orbit_periapsis: perigee (m)
-      orbit_apoapsis: apogee (m)
-      orbital_precession: precessoin due to J2 (rad/s)
-      orbit_period: period (s)
+        tsync: Datetime object that gives the date and time at simulation time 0
+        orbit_mano: mean anomaly at tsync (rad)
+        orbit_eccentricity: eccentricty
+        orbit_semi_major_axis: semi major axis (m)
+        orbit_inclination: Inclination(rad)
+        orbit_argp: Argument of perigee (rad)
+        orbit_node: R.A. of ascending node (rad)
+        orbit_bstar: drag coefficient (1/earth radii)
+        orbit_ndot: ballistic coefficient (revs/day)
+        orbit_nddot: mean motion 2nd derivative (revs/day^3)
+        orbit_periapsis: perigee (m)
+        orbit_apoapsis: apogee (m)
+        orbital_precession: precessoin due to J2 (rad/s)
+        orbit_period: period (s)
 
     Args:
-      name: Name of a satellite
-      tsync: Datetime object that gives the date and time at simulation time 0
+        name: Name of a satellite
+        tsync: Datetime object that gives the date and time at simulation time 0
 
     """
 
@@ -119,7 +119,7 @@ class ASatellite(AComputer):
         """Return the inital epoch of TLEs : 1949 December 31 00:00 UT
 
         Returns:
-          float: Inital epoch of TLEs (s)
+            float: Inital epoch of TLEs (s)
 
         """
         t0 = datetime(
@@ -155,10 +155,10 @@ class ASatellite(AComputer):
         Return the latitude and longitude directly beneath this position.
 
         Args:
-          itrf_pos_vel: ITRF position (m) and velocity (m/s)
+            itrf_pos_vel: ITRF position (m) and velocity (m/s)
 
         Returns:
-          A tuple lon, lat (rad)
+            A tuple lon, lat (rad)
 
         """
         lon, lat, _ = itrf_to_geodetic(itrf_pos_vel)
@@ -175,16 +175,17 @@ class ASatellite(AComputer):
         Return the geocentric ITRF positions of the trajectory
 
         Args:
-          number_of_position: Number of points per orbital period
-          number_of_periods: Number of orbit periods to plot
-          color: The color as a 4-elements tuple:
-          *  r between 0 and 1
-          *  g between 0 and 1
-          *  b between 0 and 1
-          *  alpha between 0 and 1 (use 1 for fully opaque)
+            number_of_position: Number of points per orbital period
+            number_of_periods: Number of orbit periods to plot
+            color: The color as a 4-elements tuple:
+
+            *  r between 0 and 1
+            *  g between 0 and 1
+            *  b between 0 and 1
+            *  alpha between 0 and 1 (use 1 for fully opaque)
 
         Returns:
-          blocksim.source.Trajectory: The generated trajectory
+            blocksim.source.Trajectory: The generated trajectory
 
         """
         Ts = self.orbit_period.total_seconds()
@@ -218,10 +219,10 @@ class ASatellite(AComputer):
         an array with 3 cartesian position (m) and 3 cartesian velocity (m/s) in ITRF frame
 
         Args:
-          td: Simulation time (s)
+            td: Simulation time (s)
 
         Returns:
-          array: A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in ITRF frame
+            array: A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in ITRF frame
 
         """
         pass
@@ -247,7 +248,7 @@ class SGP4Satellite(ASatellite):
     * lat: Latitude (rad)
 
     Args:
-      name: Name of the element
+        name: Name of the element
 
     """
 
@@ -314,20 +315,20 @@ class SGP4Satellite(ASatellite):
         See https://rhodesmill.org/skyfield/earth-satellites.html#build-a-satellite-from-orbital-elements
 
         Args:
-          name: Name of the element
-          t: The time of the orbit description
-          a: Semi-major axis (m)
-          ecc: Eccentricity
-          argp: Argument of perigee (rad)
-          inc: Inclination (rad)
-          mano: Mean anomaly (rad)
-          node: Right ascension of ascending node (rad)
-          bstar: Drag Term aka Radiation Pressure Coefficient
-          ndot: First Derivative of Mean Motion aka the Ballistic Coefficient
-          nddot: Second Derivative of Mean Motion
+            name: Name of the element
+            t: The time of the orbit description
+            a: Semi-major axis (m)
+            ecc: Eccentricity
+            argp: Argument of perigee (rad)
+            inc: Inclination (rad)
+            mano: Mean anomaly (rad)
+            node: Right ascension of ascending node (rad)
+            bstar: Drag Term aka Radiation Pressure Coefficient
+            ndot: First Derivative of Mean Motion aka the Ballistic Coefficient
+            nddot: Second Derivative of Mean Motion
 
         Returns:
-          A SGP4Satellite instance
+            A SGP4Satellite instance
 
         """
         t0 = cls.getInitialEpoch()
@@ -363,12 +364,12 @@ class SGP4Satellite(ASatellite):
         See https://en.wikipedia.org/wiki/Two-line_element_set
 
         Args:
-          tsync: Time that corresponds to the simulation time zero
-          tle_file: TLE file path or URL
-          iline: Number of the object in the TLE (in case of a multi object TLE file)
+            tsync: Time that corresponds to the simulation time zero
+            tle_file: TLE file path or URL
+            iline: Number of the object in the TLE (in case of a multi object TLE file)
 
         Returns:
-          A SGP4Satellite instance
+            A SGP4Satellite instance
 
         """
         # ISS (ZARYA)
@@ -438,7 +439,7 @@ class SGP4Satellite(ASatellite):
         See https://www.orekit.org/static/apidocs/org/orekit/orbits/EquinoctialOrbit.html
 
         Returns:
-          A SGP4Satellite instance
+            A SGP4Satellite instance
 
         """
         ecc = lin.norm([ex, ey])
@@ -486,8 +487,8 @@ class CircleSatellite(ASatellite):
     * lat: Latitude (rad)
 
     Args:
-      name: Name of the element
-      tsync: Datetime object that gives the date and time at simulation time 0
+        name: Name of the element
+        tsync: Datetime object that gives the date and time at simulation time 0
 
     """
 
@@ -501,8 +502,8 @@ class CircleSatellite(ASatellite):
         Also sets the attributes of the class
 
         Args:
-          t_epoch: Time since 31/12/1949 00:00 UT (s)
-          pv: A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in ITRF frame
+            t_epoch: Time since 31/12/1949 00:00 UT (s)
+            pv: A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in ITRF frame
 
         """
         pv_teme = itrf_to_teme(t_epoch=t_epoch, pv_itrf=pv)
@@ -557,16 +558,16 @@ class CircleSatellite(ASatellite):
     ) -> "CircleSatellite":
         """
         Args:
-          name: Name of the satellite
-          tsync: Date that corresponds to simulation time = 0
-          a: Semi-major axis (m)
-          inc: Inclination (rad)
-          argp: Argument of periapsis (rad)
-          mano: Mean anomaly (rad)
-          node: Longitude of the ascending node (rad)
+            name: Name of the satellite
+            tsync: Date that corresponds to simulation time = 0
+            a: Semi-major axis (m)
+            inc: Inclination (rad)
+            argp: Argument of periapsis (rad)
+            mano: Mean anomaly (rad)
+            node: Longitude of the ascending node (rad)
 
         Returns:
-          A CircleSatellite instance
+            A CircleSatellite instance
 
         """
         t_epoch = (tsync - ASatellite.getInitialEpoch()).total_seconds()
@@ -591,11 +592,11 @@ class CircleSatellite(ASatellite):
         Also sets the attributes of the class
 
         Args:
-          tsync: Time that corresponds to the simulation time zero
-          pv_itrf: A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in ITRF frame
+            tsync: Time that corresponds to the simulation time zero
+            pv_itrf: A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in ITRF frame
 
         Returns:
-          A CircleSatellite instance
+            A CircleSatellite instance
 
         """
         sat = cls(name, tsync)
@@ -614,12 +615,12 @@ class CircleSatellite(ASatellite):
         See https://en.wikipedia.org/wiki/Two-line_element_set
 
         Args:
-          tsync: Time that corresponds to the simulation time zero
-          tle_file: TLE file path or URL
-          iline: Number of the object in the TLE (in case of a multi object TLE file)
+            tsync: Time that corresponds to the simulation time zero
+            tle_file: TLE file path or URL
+            iline: Number of the object in the TLE (in case of a multi object TLE file)
 
         Returns:
-          A CircleSatellite instance
+            A CircleSatellite instance
 
         """
         # ISS (ZARYA)
@@ -687,13 +688,13 @@ def createSatellites(
     """Creates a list of satellites from a TLE file, using the specified subclass of ASatellite
 
     Args:
-      tle_file: TLE file path or URL
-      tsync: Time that corresponds to the simulation time zero
-      prop: Propagator to use, as a subclass of ASatellite
+        tle_file: TLE file path or URL
+        tsync: Time that corresponds to the simulation time zero
+        prop: Propagator to use, as a subclass of ASatellite
 
     Returns:
-      A list of instances of ASatellite (following prop argument),
-        one per object described in tle_file
+        A list of instances of ASatellite (following prop argument),
+            one per object described in tle_file
 
     """
     iline = 0

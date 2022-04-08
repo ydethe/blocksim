@@ -47,20 +47,19 @@ class GNSSTracker(ASensors):
     * pseudorange for the satellite (m) in meas[8*k+6]
     * radial velocity for the satellite (m/s) in meas[8*k+7]
 
-    The following parameters are to be defined by the user :
+    The attributes are to be defined by the user :
 
-    * mean : Mean of the gaussian noise. Dimension (n,1)
-    * cov : Covariance of the gaussian noise. Dimension (n,n)
-    * cho : Cholesky decomposition of cov, computed after a first call to *updateAllOutput*. Dimension (n,n)
-    * elev_mask (deg) : Elevation mask to determine if a satellite is visible
-    * dp (m) : Systematic error on the ranging measurement
-    * dv (m/s) : Systematic error on the radial velocity measurement
+    Attributes:
+        mean: Mean of the gaussian noise. Dimension (n,1)
+        cov: Covariance of the gaussian noise. Dimension (n,n)
+        cho: Cholesky decomposition of cov, computed after a first call to *updateAllOutput*. Dimension (n,n)
+        elev_mask: Elevation mask to determine if a satellite is visible (deg)
+        dp: Systematic error on the ranging measurement (m)
+        dv: Systematic error on the radial velocity measurement (m/s)
 
     Args:
-      name
-        Name of the element
-      nsat
-        Number of satellites flollowed by the tracker
+        name: Name of the element
+        nsat: Number of satellites flollowed by the tracker
 
     """
 

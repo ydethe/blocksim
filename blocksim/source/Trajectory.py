@@ -12,16 +12,16 @@ class Trajectory(object):
     """Trajectory with a name and a color
 
     Args:
-      name: Name of the trajectory
-      color: The color as a 4-elements tuple:
-          *  r between 0 and 1
-          *  g between 0 and 1
-          *  b between 0 and 1
-          *  alpha between 0 and 1 (use 1 for fully opaque)
-      t: array of time stamps
-      x: array of ITRF X position
-      y: array of ITRF Y position
-      z: array of ITRF Z position
+        name: Name of the trajectory
+        color: The color as a 4-elements tuple:
+            *  r between 0 and 1
+            *  g between 0 and 1
+            *  b between 0 and 1
+            *  alpha between 0 and 1 (use 1 for fully opaque)
+        t: array of time stamps
+        x: array of ITRF X position
+        y: array of ITRF Y position
+        z: array of ITRF Z position
 
     """
 
@@ -45,7 +45,7 @@ class Trajectory(object):
         """Converts the Trajectory into a pandas.DataFrame
 
         Returns:
-          A DataFrame containing the time stamp, x, y, and z data (m)
+            A DataFrame containing the time stamp, x, y, and z data (m)
 
         """
         df = pd.DataFrame(
@@ -57,7 +57,7 @@ class Trajectory(object):
         """Converts the Trajectory into a pandas.DataFrame
 
         Returns:
-          A DataFrame containing the time stamp, longitude, latitude and altitude data (deg and m)
+            A DataFrame containing the time stamp, longitude, latitude and altitude data (deg and m)
 
         """
         ns = len(self)
@@ -94,19 +94,20 @@ class Trajectory(object):
         """Instanciates a Trajectory from a Logger
 
         Args:
-          log: The Logger that contains the information
-          name: Name of the Trajectory
-          npoint: Number of samples to read. The npoint first samples are read
-          params: A tuple with the 3 names of values (X, Y, Z) to read in log. These values shall be ITRF meter coordinates
-          color: The color as a 4-elements tuple:
-          *  r between 0 and 1
-          *  g between 0 and 1
-          *  b between 0 and 1
-          *  alpha between 0 and 1 (use 1 for fully opaque)
-          raw_value: True to use log.getRawValue. Otherwise, log.getValue is used (much slower)
+            log: The Logger that contains the information
+            name: Name of the Trajectory
+            npoint: Number of samples to read. The npoint first samples are read
+            params: A tuple with the 3 names of values (X, Y, Z) to read in log. These values shall be ITRF meter coordinates
+            color: The color as a 4-elements tuple:
+
+            *  r between 0 and 1
+            *  g between 0 and 1
+            *  b between 0 and 1
+            *  alpha between 0 and 1 (use 1 for fully opaque)
+            raw_value: True to use log.getRawValue. Otherwise, log.getValue is used (much slower)
 
         Returns:
-          The Trajectory instance
+            The Trajectory instance
 
         """
         xname, yname, zname = params
@@ -136,10 +137,10 @@ class Trajectory(object):
         """Extends x, y and z arrays with one position
 
         Args:
-          t: timestamp (s)
-          x: X coordinate in ITRF (m)
-          y: Y coordinate in ITRF (m)
-          z: Z coordinate in ITRF (m)
+            t: timestamp (s)
+            x: X coordinate in ITRF (m)
+            y: Y coordinate in ITRF (m)
+            z: Z coordinate in ITRF (m)
 
         """
         self.x = np.hstack((self.x, np.array([x])))
@@ -151,7 +152,7 @@ class Trajectory(object):
         Each element of the iterator is a numpy array with elements (t,x,y,z)
 
         Yields:
-          array: The next (t,x,y,z) array
+            array: The next (t,x,y,z) array
 
         """
         for t,x, y, z in zip(self.t,self.x, self.y, self.z):
@@ -161,7 +162,7 @@ class Trajectory(object):
         """Returns latitude and longitude array
 
         Returns:
-          A tuple of longitude and latitude array in deg
+            A tuple of longitude and latitude array in deg
 
         """
         df = self.GeodesicToDataFrame()

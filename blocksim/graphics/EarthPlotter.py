@@ -19,18 +19,18 @@ class EarthPlotter(object):
     The methods of this class assume a cartopy compatile axe.
     To create such an axe, you can either use blocksim.EarthPlotter.EarthPlotter.createAxe::
 
-            sp = EarthPlotter()
-            axe = sp.createAxe(fig, 1, 1, 1)
+        sp = EarthPlotter()
+        axe = sp.createAxe(fig, 1, 1, 1)
 
     or do it manually::
 
-            axe = fig.add_subplot(111, projection=ccrs.PlateCarree())
-            axe.stock_img()
-            axe.gridlines(crs=ccrs.PlateCarree())
+        axe = fig.add_subplot(111, projection=ccrs.PlateCarree())
+        axe.stock_img()
+        axe.gridlines(crs=ccrs.PlateCarree())
 
     Args:
-      projection: The projection used for the map.
-        See https://scitools.org.uk/cartopy/docs/latest/crs/projections.html
+        projection: The projection used for the map.
+          See https://scitools.org.uk/cartopy/docs/latest/crs/projections.html
 
     """
 
@@ -41,15 +41,15 @@ class EarthPlotter(object):
         """Creates an axe compatible with cartopy
 
         Args:
-          fig: A matplotlib figure
-          *args: Arguments list for fig.add_subplot
-          **kwargs: Matplotlib options for axe.gridlines.
-            See https://scitools.org.uk/cartopy/docs/latest/matplotlib/geoaxes.html#cartopy.mpl.geoaxes.GeoAxes.gridlines
-            for the available options for gridlines
+            fig: A matplotlib figure
+            *args: Arguments list for fig.add_subplot
+            **kwargs: Matplotlib options for axe.gridlines.
+              See https://scitools.org.uk/cartopy/docs/latest/matplotlib/geoaxes.html#cartopy.mpl.geoaxes.GeoAxes.gridlines
+              for the available options for gridlines
 
         Returns:
-          Axe compatible with cartopy.
-          See blocksim.EarthPlotter.EarthPlotter.plotGroundTrack
+            Axe compatible with cartopy.
+            See blocksim.EarthPlotter.EarthPlotter.plotGroundTrack
 
         """
         axe = fig.add_subplot(*args, projection=self.proj)
@@ -63,9 +63,9 @@ class EarthPlotter(object):
         See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
 
         Args:
-          axe: A matplotlib axe, compatible with cartopy
-          coord: The position of the point, in longitude/latitude (deg)
-          **kwargs: Matplotlib options for the plot
+            axe: A matplotlib axe, compatible with cartopy
+            coord: The position of the point, in longitude/latitude (deg)
+            **kwargs: Matplotlib options for the plot
 
         """
         lon, lat = coord
@@ -85,11 +85,11 @@ class EarthPlotter(object):
         See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
 
         Args:
-          axe: A matplotlib axe, compatible with cartopy
-          coord: The position of the point, in longitude/latitude (deg)
-          elev_min: Minimum elevation angle (rad)
-          sat_alt: Satellite altitude, **assuming circular orbit** (m)
-          **kwargs: Matplotlib options for the plot
+            axe: A matplotlib axe, compatible with cartopy
+            coord: The position of the point, in longitude/latitude (deg)
+            elev_min: Minimum elevation angle (rad)
+            sat_alt: Satellite altitude, **assuming circular orbit** (m)
+            **kwargs: Matplotlib options for the plot
 
         """
 
@@ -114,10 +114,10 @@ class EarthPlotter(object):
         See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
 
         Args:
-          axe: A matplotlib axe, compatible with cartopy
-          lon: Array of longitudes (deg)
-          lat: Array of latitudes (deg)
-          **kwargs: Matplotlib options for the plot
+            axe: A matplotlib axe, compatible with cartopy
+            lon: Array of longitudes (deg)
+            lat: Array of latitudes (deg)
+            **kwargs: Matplotlib options for the plot
 
         """
         dlon = np.abs(np.diff(lon))
@@ -142,9 +142,9 @@ class EarthPlotter(object):
         See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
 
         Args:
-          axe: A matplotlib axe, compatible with cartopy
-          traj: Trajectory instance
-          **kwargs: Matplotlib options for the plot
+            axe: A matplotlib axe, compatible with cartopy
+            traj: Trajectory instance
+            **kwargs: Matplotlib options for the plot
 
         """
         lon, lat = traj.getGroundTrack()

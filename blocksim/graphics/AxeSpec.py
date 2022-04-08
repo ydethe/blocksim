@@ -4,19 +4,19 @@ class AxeSpec(object):
     (with the name of the variables instead of a concrete set of data)
 
     Args:
-      props: A dictionary. Supported keys :
+        props: A dictionary. Supported keys :
 
-        * nrow for the number of rows subdivisions
-        * ncol for the number of columns subdivisions
-        * ind for the number of axe (1 is the first one in the layout)
-        * sharex is the numer of an axe whose X axe will be shared with the instance of :class:`AxeSpec`
-        * title for the title of the axe
-        * projection for the axe projection. Can be 'rectilinear' or 'polar'
-      lines: List of dict to specify the lines' spec. Supported keys :
+            * nrow for the number of rows subdivisions
+            * ncol for the number of columns subdivisions
+            * ind for the number of axe (1 is the first one in the layout)
+            * sharex is the numer of an axe whose X axe will be shared with the instance of :class:`AxeSpec`
+            * title for the title of the axe
+            * projection for the axe projection. Can be 'rectilinear' or 'polar'
+        lines: List of dict to specify the lines' spec. Supported keys :
 
-        * the matplotlib keyword arguments of the funcion *plot*
-        * varx for the name of the X variable
-        * vary for the name of the y variable
+            * the matplotlib keyword arguments of the funcion *plot*
+            * varx for the name of the X variable
+            * vary for the name of the y variable
 
     """
 

@@ -34,15 +34,13 @@ class UEPositionOutput(Output):
         return self.__tsync
 
     def getGeocentricITRFPositionAt(self, t_calc: datetime) -> np.array:
-        """
-        Return the geocentric ITRF position of the satellite at a given time
+        """Return the geocentric ITRF position of the satellite at a given time
 
         Args:
-          td
-            Time of the position
+            td: Time of the position
 
         Returns:
-          x, y, z (m)
+            A tuple of x, y, z ITRF coordinates (m)
 
         """
         t = datetime_to_skyfield(t_calc)
@@ -56,7 +54,8 @@ class UEPositionOutput(Output):
         return np.hstack((ps, vs))
 
     def resetCallback(self, frame: Frame):
-        """Resets the element internal state to zero."""
+        """Resets the element internal state to zero.
+        """
         dt = timedelta(seconds=frame.getStartTimeStamp())
         td = self.__tsync + dt
         state = self.getGeocentricITRFPositionAt(td)
@@ -71,21 +70,17 @@ class GNSSReceiver(AComputer):
 
     The following parameters are to be defined by the user :
 
-    * algo : Type of algorihtm to use. Can be 'ranging' or 'doppler'
+    Attributes:
+        algo: Type of algorithm to use. Can be 'ranging' or 'doppler'
+        optim: Defaults to "trust-constr"
 
     Args:
-      name
-        Name of the element
-      nsat
-        Number of satellites flollowed by the tracker
-      lon (deg)
-        True longitude of the receiver
-      lat (deg)
-        True latitude of the receiver
-      alt (m)
-        True altitude of the receiver
-      tsync
-        Date where the calculation takes place
+        name: Name of the element
+        nsat: Number of satellites flollowed by the tracker
+        lon: True longitude of the receiver (deg)
+        lat: True latitude of the receiver (deg)
+        alt: True altitude of the receiver (m)
+        tsync: Date where the calculation takes place
 
     """
 
@@ -115,32 +110,76 @@ class GNSSReceiver(AComputer):
         return otp.getTsync()
 
     def getSatellitePositionFromEphem(self, ephem: np.array, isat: int) -> np.array:
+        """Given the array of all satellites ephemeris,
+        returns the position for satellite number isat
+
+        Args:
+            ephem: The array of all satellites ephemeris
+            isat: The number of the considered satellite
+
+        Returns:
+            The position of the considered satellite (ITRF, m)
+
+        """
         return ephem[6 * isat : 6 * isat + 3]
 
     def getSatelliteVelocityFromEphem(self, ephem: np.array, isat: int) -> np.array:
+        """Given the array of all satellites ephemeris,
+        returns the velocity for satellite number isat
+
+        Args:
+            ephem: The array of all satellites ephemeris
+            isat: The number of the considered satellite
+
+        Returns:
+            The velocity of the considered satellite (ITRF, m/s)
+
+        """
         return ephem[6 * isat + 3 : 6 * isat + 6]
 
-    def getPseudorangeFromMeas(self, meas: np.array, isat: int) -> np.array:
+    def getPseudorangeFromMeas(self, meas: np.array, isat: int) -> float:
+        """Given the array of all measurements,
+        returns the pseudo-range for satellite number isat
+
+        Args:
+            meas: The array of all measurements
+            isat: The number of the considered satellite
+
+        Returns:
+            The pseudo-range for the considered satellite (m)
+
+        """
         return meas[2 * isat]
 
-    def getRadialVelocityFromMeas(self, meas: np.array, isat: int) -> np.array:
+    def getRadialVelocityFromMeas(self, meas: np.array, isat: int) -> float:
+        """Given the array of all measurements,
+        returns the pseudo-range rate for satellite number isat
+
+        Args:
+            meas: The array of all measurements
+            isat: The number of the considered satellite
+
+        Returns:
+            The pseudo-range rate for the considered satellite (m/s)
+
+        """
         return meas[2 * isat + 1]
 
     def getDOP(self, ephem: np.array, pv_ue: np.array) -> Tuple[float]:
         """Computes the DOPs
 
         Args:
-          ephem
-            Ephemeris vector
-          pv_ue (m)
-            UE 3D position/velocity (ITRF) without velocity
+            ephem: Ephemeris vector
+            pv_ue: UE 3D position/velocity (ITRF) without velocity (m)
 
         Returns:
-          DOP for X axis (ENV)
-          DOP for Y axis (ENV)
-          DOP for Z axis (ENV)
-          DOP for distance error
-          DOP for velocity error
+            A tuple containing: 
+
+            * DOP for X axis (ENV)
+            * DOP for Y axis (ENV)
+            * DOP for Z axis (ENV)
+            * DOP for distance error
+            * DOP for velocity error
 
         """
         pos = pv_ue[:3]
@@ -205,6 +244,19 @@ class GNSSReceiver(AComputer):
     def computeFromRadialVelocities(
         self, ephem: np.array, meas: np.array
     ) -> Tuple[np.array, float]:
+        """Runs a PVT algorithm that uses only pseudo-range rate
+
+        Args:
+            ephem: Array of all ephemeris
+            meas: Array of all measurements
+        
+        Returns:
+            A tuple with:
+
+            * an array of 6 scalar, 3 position (m) and 3 velocity (m/s). Velocities are set to 0
+            * range rate bias (m/s)
+
+        """
         nsat = len(meas) // 2
 
         # On initialise avec la position au nadir du premier satellite visible (ITRF)
@@ -291,6 +343,20 @@ class GNSSReceiver(AComputer):
     def computeFromPRandVR(
         self, ephem: np.array, meas: np.array
     ) -> Tuple[np.array, float]:
+        """Runs a PVT algorithm that uses peudo-range and pseudo-range rate
+
+        Args:
+            ephem: Array of all ephemeris
+            meas: Array of all measurements
+        
+        Returns:
+            A tuple with:
+
+            * an array of 6 scalar, 3 position (m) and 3 velocity (m/s). Velocities are set to 0
+            * range bias (m)
+            * range rate bias (m/s)
+
+        """
         nsat = len(meas) // 2
 
         # On initialise avec la position au nadir du premier satellite visible (ITRF)
@@ -389,6 +455,19 @@ class GNSSReceiver(AComputer):
     def computeFromPseudoRanges(
         self, ephem: np.array, meas: np.array
     ) -> Tuple[np.array, float]:
+        """Runs a PVT algorithm that uses only peudo-range
+
+        Args:
+            ephem: Array of all ephemeris
+            meas: Array of all measurements
+        
+        Returns:
+            A tuple with:
+
+            * an array of 6 scalar, 3 position (m) and 3 velocity (m/s). Velocities are set to 0
+            * range bias (m)
+
+        """
         nsat = len(meas) // 2
 
         # On initialise avec la position au nadir du premier satellite visible (ITRF)
@@ -528,17 +607,15 @@ class GNSSReceiver(AComputer):
 
         return np.hstack((pos, np.zeros(3))), dv
 
-    def getGeocentricITRFPositionAt(self, t_calc: datetime) -> np.array:
+    def getGeocentricITRFPositionAt(self, t_calc: datetime) -> "array":
         """
         Return the geocentric ITRF position of the satellite at a given time
 
         Args:
-          td
-            Time of the position
+            td: Time of the position
 
         Returns:
-          x, y, z (m)
-          vx, vy, vz (m/s)
+            An array with x, y, z (m) and vx, vy, vz (m/s)
 
         """
         otp = self.getOutputByName("realpos")
@@ -549,11 +626,10 @@ class GNSSReceiver(AComputer):
         """Converts a simulation time into absolute time
 
         Args:
-          t
-            Simulation time
+            t: Simulation time (s)
 
         Returns:
-          Absolute time in UTC
+            Absolute time in UTC
 
         """
         otp = self.getOutputByName("realpos")

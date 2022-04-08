@@ -9,12 +9,10 @@ class RTPlotter(AComputer):
     """Plots the inputs in real time
 
     Args:
-        name
-            Name of the element
-        axe
-            Matplotlib axe to draw on
-        input_map
-            Ordered dictionary of inputs :
+        name: Name of the element
+        axe: Matplotlib axe to draw on
+        input_map: Ordered dictionary of inputs:
+
             * the keys are the names of the inputs
             * the values are a tuple (indices of the chosen salars in the input vector, kwargs passed to plot)
 

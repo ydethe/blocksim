@@ -26,10 +26,10 @@ def getUnitAbbrev(mult: float) -> str:
     """Given a scale factor, gives the prefix for the unit to display
 
     Args:
-      mult: Scale factor
+        mult: Scale factor
 
     Returns:
-      str: Prefix
+        str: Prefix
 
     """
     d = {
@@ -51,15 +51,15 @@ def format_parameter(samp: float, unit: str) -> str:
     with appropriate unit and muyliplier
 
     Args:
-      samp: The scalar value
-      unit: The associated unit
+        samp: The scalar value
+        unit: The associated unit
 
     Returns:
-      str: The text to display
+        str: The text to display
     
     Examples:
-      >>> format_parameter(1.5e-3, 'm')
-      1.5 mm
+        >>> format_parameter(1.5e-3, 'm')
+        1.5 mm
 
     """
     xm = np.abs(samp)
@@ -76,14 +76,14 @@ def plotFromLogger(
     """Plots a value on a matplotlib axe
 
     Args:
-      log: The Logger to read into
-      id_x: Name or expression for the X axis
-      id_y: Name or expression for the Y axis
-      spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
-      kwargs: matplotlib plotting options for the 'plot' method
+        log: The Logger to read into
+        id_x: Name or expression for the X axis
+        id_y: Name or expression for the Y axis
+        spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
+        kwargs: matplotlib plotting options for the 'plot' method
 
     Returns:
-      The Axes used by matplotlib
+        The Axes used by matplotlib
 
     """
     if spec is None:
@@ -124,12 +124,12 @@ def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
     """Parses a FigureSpec to build a matplotlib figure, and returns it
 
     Args:
-      spec: A FigureSpec instance
-      log: The Logger to read into
-      fig: A matplotlib figure. If None, the function creates ones
+        spec: A FigureSpec instance
+        log: The Logger to read into
+        fig: A matplotlib figure. If None, the function creates ones
 
     Returns:
-      The matplotlib figure
+        The matplotlib figure
 
     """
     n = len(spec.axes)
@@ -207,18 +207,18 @@ def plotSpectrogram(
 
     See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
     Args:
-      spg: DSPSpectrogram to plot
-      spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
-      fill: Method to plot the DSPSpectrogram. Can be 'plot_surface', 'pcolormesh', 'contour' or 'contourf'
-      kwargs: Plotting options. The following extra keys are allowed:
+        spg: DSPSpectrogram to plot
+        spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
+        fill: Method to plot the DSPSpectrogram. Can be 'plot_surface', 'pcolormesh', 'contour' or 'contourf'
+        kwargs: Plotting options. The following extra keys are allowed:
 
-        * transform for a different transform from the one given at instanciation
-        * find_peaks to search peaks
-        * x_unit_mult to have a more readable unit prefix
-        * search_fig (bool) to generate a search figure
+            * transform for a different transform from the one given at instanciation
+            * find_peaks to search peaks
+            * x_unit_mult to have a more readable unit prefix
+            * search_fig (bool) to generate a search figure
 
     Returns:
-      The matplotlib image generated
+        The matplotlib image generated
 
     """
     if spec is None:
@@ -406,15 +406,15 @@ def plotBode(
     """Plots the bode diagram of a filter
 
     Args:
-      filt: Filter to analyse
-      spec_amp: The matplotlib SubplotSpec that defines the amplitude axis to draw on. Obtained by fig.add_gridspec and slicing
-      spec_pha: The matplotlib SubplotSpec that defines the phase axis to draw on. Obtained by fig.add_gridspec and slicing
+        filt: Filter to analyse
+        spec_amp: The matplotlib SubplotSpec that defines the amplitude axis to draw on. Obtained by fig.add_gridspec and slicing
+        spec_pha: The matplotlib SubplotSpec that defines the phase axis to draw on. Obtained by fig.add_gridspec and slicing
 
     Examples:
-      >>> f = ArbitraryDSPFilter(name="MTI", samplingPeriod=1e6, taps=[1, -1])
-      >>> fig = plt.figure()
-      >>> gs = fig.add_gridspec(2, 1)
-      >>> plotBode(f, spec_amp=gs[0, 0], spec_pha=gs[1, 0])
+        >>> f = ArbitraryDSPFilter(name="MTI", samplingPeriod=1e6, taps=[1, -1])
+        >>> fig = plt.figure()
+        >>> gs = fig.add_gridspec(2, 1)
+        >>> plotBode(f, spec_amp=gs[0, 0], spec_pha=gs[1, 0])
 
     """
     gs = spec_amp.get_gridspec()
@@ -464,13 +464,13 @@ def plotDSPLine(line: DSPLine, spec: "SubplotSpec" = None, **kwargs) -> "AxesSub
     See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
 
     Args:
-      line: DSPLine to be plotted
-      spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
-      kwargs: Plotting options. The following extra keys are allowed:
+        line: DSPLine to be plotted
+        spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
+        kwargs: Plotting options. The following extra keys are allowed:
 
-        * transform for a different transform from the one given at instanciation
-        * find_peaks to search peaks
-        * x_unit_mult to have a more readable unit prefix
+            * transform for a different transform from the one given at instanciation
+            * find_peaks to search peaks
+            * x_unit_mult to have a more readable unit prefix
 
     """
     if spec is None:
@@ -528,15 +528,15 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":
     """Plots a set of axes and curves on a single figure
 
     Args:
-      log: Logger which contains the simulated values
-      fig_title: Title of the figure
-      axes: List of lists of dicts
-        Each list is the description of an axe, each dict the description of a line.
-        Each dict has a key "var", which is the name of a variable contained in *log*.
-        The other keys are keyword arguments for the plot method of matplotlib
+        log: Logger which contains the simulated values
+        fig_title: Title of the figure
+        axes: List of lists of dicts
+            Each list is the description of an axe, each dict the description of a line.
+            Each dict has a key "var", which is the name of a variable contained in *log*.
+            The other keys are keyword arguments for the plot method of matplotlib
 
     Returns:
-      The resulting figure
+        The resulting figure
 
     """
     l_aspec = []
@@ -576,10 +576,10 @@ def plot3DEarth(trajectories: Iterable[Trajectory]) -> B3DPlotter:
     """Shows a 3D tracetory around a 3D Earth
 
     Args:
-      trajectories: list of Trajectory objects to plot
+        trajectories: list of Trajectory objects to plot
     
     Returns:
-      A B3DPlotter instance. Call app.run() to show the window
+        A B3DPlotter instance. Call app.run() to show the window
 
     """
     app = B3DPlotter()
@@ -598,8 +598,8 @@ def plotBER(fic, output=""):
     "[{level}] - SNR = {snr} dB, it={it}, Bits Received = {bit_rx}, Bit errors = {bit_err}, BER = {ber}"
 
     Args:
-      fic: ASCII file to read
-      output: 'show' to display an interactive figure, name of a file to save the figure without displaying it
+        fic: ASCII file to read
+        output: 'show' to display an interactive figure, name of a file to save the figure without displaying it
 
     """
     p = compile(
