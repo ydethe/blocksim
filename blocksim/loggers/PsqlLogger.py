@@ -11,6 +11,7 @@ from singleton3 import Singleton
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from ..Logger import Logger
 from ..exceptions import *
 from ..DatabaseModel import (
     Base,
@@ -36,7 +37,7 @@ class Logger(object, metaclass=Singleton):
         return istat
 
     @hookimpl
-    def loadLogFile(self, log: "Logger"):
+    def loadLogFile(self, log: "Logger", fic:str):
         """Loads the content of an existing log file
 
         Args:
@@ -44,7 +45,7 @@ class Logger(object, metaclass=Singleton):
             Path of a log file
 
         """
-        uri = log.getLoadedFile()
+        uri=fic
         if not self.test_suitable(uri):
             return False
 
@@ -75,10 +76,10 @@ class Logger(object, metaclass=Singleton):
         return data
 
     @hookimpl
-    def export(self, log: "Logger") -> int:
+    def export(self, log: "Logger", fic:str) -> int:
         from .. import logger
 
-        uri = log.getLoadedFile()
+        uri=fic
         if not self.test_suitable(uri):
             return -1
 

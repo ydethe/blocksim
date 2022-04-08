@@ -26,8 +26,7 @@ class Logger(object, metaclass=Singleton):
         return istat
 
     @hookimpl
-    def loadLogFile(self, log: Logger) -> bool:
-        fic = log.getLoadedFile()
+    def loadLogFile(self, log: "Logger", fic:str) -> bool:
         if not self.test_suitable(fic):
             return False
 
@@ -39,7 +38,7 @@ class Logger(object, metaclass=Singleton):
         return True
 
     @hookimpl
-    def getRawValue(self, log: Logger, name: str) -> "array":
+    def getRawValue(self, log: "Logger", name: str) -> "array":
         """Loads the content of an existing log file
 
         Args:
@@ -50,8 +49,7 @@ class Logger(object, metaclass=Singleton):
         return
 
     @hookimpl
-    def export(self, log: Logger) -> int:
-        fic = log.getLoadedFile()
+    def export(self, log: "Logger", fic:str) -> int:
         if not self.test_suitable(fic):
             return -1
 

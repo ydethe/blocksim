@@ -134,7 +134,7 @@ class Logger(object):
         if self.__fic == "":
             raise (FileNotFoundError(self.__fic))
 
-        ldata = plugin_manager.hook.loadLogFile(log=self)
+        ldata = plugin_manager.hook.loadLogFile(log=self, file=fic)
         lok = [x for x in ldata if x]
         if len(lok) == 0:
             raise IOError("No logger to handle '%s'" % fic)
@@ -464,7 +464,7 @@ class Logger(object):
         """
         self.__fic = str(fic)
 
-        lstat = plugin_manager.hook.export(log=self)
+        lstat = plugin_manager.hook.export(log=self, file=fic)
 
         lok = [x for x in lstat if x >= 0]
 
