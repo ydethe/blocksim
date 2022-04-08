@@ -2,6 +2,26 @@
 
 .. include:: ../README.md
 
+## CLI Usage
+
+blocksim comes with some CLI utilities.
+
+    blocksim --help
+
+    Usage: blocksim [OPTIONS] COMMAND [ARGS]...
+
+    Options:
+    --install-completion [bash|zsh|fish|powershell|pwsh]
+                                    Install completion for the specified shell.
+    --show-completion [bash|zsh|fish|powershell|pwsh]
+                                    Show completion for the specified shell, to
+                                    copy it or customize the installation.
+    --help                          Show this message and exit.
+
+    Commands:
+    db      Manage databases.
+    header  Visualize a binary log file's header
+
 """
 
 # __init__.py
