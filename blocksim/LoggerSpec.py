@@ -6,6 +6,9 @@ hookspec = pluggy.HookspecMarker("blocksim")
 
 
 class LoggerSpec(object):
+    """Specification for all lpugins that extend the `Logger.Logger` capacities
+
+    """
     @hookspec
     def test_suitable(self, fic: str) -> bool:
         """Tests weeather a log:'Logger' can handle a fic"""
