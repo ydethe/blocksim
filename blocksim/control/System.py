@@ -67,18 +67,15 @@ class ASystem(AComputer):
     ) -> "array":  # pragma: no cover
         """Defines the transition function f(t,x,u) :
 
-        x' = f(t,x,u)
+        $$ x' = f(t,x,u) $$
 
         Args:
-          t
-            Date of the current state
-          x
-            Current state
-          u
-            Command applied to the system
+            t: Date of the current state
+            x: Current state
+            u: Command applied to the system
 
         Returns:
-          The derivative of the state
+            The derivative of the state
 
         """
         pass
