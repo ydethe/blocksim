@@ -973,7 +973,7 @@ def q_function(x):
 def cexp(x):
     """Function defined by:
 
-    $$ cexp(x)=exp(2.pi.i.x) $$
+    $$ cexp(x)=exp(2.\pi.i.x) $$
 
     """
     return exp(2 * pi * 1j * x)
