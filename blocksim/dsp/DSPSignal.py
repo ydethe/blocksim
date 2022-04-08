@@ -384,7 +384,7 @@ class DSPSignal(DSPLine, ASetPoint):
         """Autocorrelation of the signal
 
         Args:
-            win: The type of window to create. See `correlate` for more details.
+            win: The type of window to create. See `DSPSignal.correlate` for more details.
 
         Returns:
             The resulting DSPSignal
