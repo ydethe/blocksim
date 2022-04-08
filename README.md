@@ -65,3 +65,10 @@ Once the tests are run, the code coverage is available. To have a html version i
 If needed (for example, a new test with its associated baseline image), we might have to regenerate the baseline images. In this case, run:
 
     python3 -m pytest --mpl-generate-path=tests/baseline tests
+
+## Build the doc
+
+Just run:
+
+    pdoc --html --force -o htmldoc --config latex_math=True blocksim
+    

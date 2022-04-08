@@ -13,7 +13,7 @@ import typer
 app = typer.Typer()
 
 db_app = typer.Typer()
-app.add_typer(db_app, name="db", help="Manage databases.")
+app.add_typer(db_app, name="db", help="Manage databases")
 
 
 def determine_db_uri() -> str:
