@@ -121,7 +121,7 @@ def plotFromLogger(
 
 
 def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
-    """Parses a :class:`FigureSpec` to build a matplotlib figure, and returns it
+    """Parses a FigureSpec to build a matplotlib figure, and returns it
 
     Args:
       spec: A FigureSpec instance
@@ -600,7 +600,7 @@ def plotBER(fic, output=""):
     Args:
       fic: ASCII file to read
       output: 'show' to display an interactive figure, name of a file to save the figure without displaying it
-      
+
     """
     p = compile(
         "[{level}] - SNR = {snr} dB, it={it}, Bits Received = {bit_rx}, Bit errors = {bit_err}, BER = {ber}"

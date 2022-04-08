@@ -9,10 +9,8 @@ class FigureSpec(object):
     (with the name of the variables instead of a concrete set of data)
 
     Args:
-      props
-        A dictionary. Only key supported : title for the figure title
-      axes
-        List of :class:`AxeSpec` to specify the axes' spec
+      props: A dictionary. Only key supported : title for the figure title
+      axes: List of blocksim.graphics.AxeSpec to specify the axes' spec
 
     Examples:
       >>> fs = FigureSpec.specForOneAxeMultiLines([{'var':'th_mes','linestyle':'', 'marker':'+'}])
@@ -43,22 +41,20 @@ class FigureSpec(object):
 
     @classmethod
     def specForOneAxeMultiLines(cls, line_list: Iterable[dict]) -> "FigureSpec":
-        """Returns a :class:`FigureSpec` to draw all the given variables on one same axe
+        """Returns a FigureSpec to draw all the given variables on one same axe
 
         Args:
-          line_list
-            List of dictionary, whose keys are :
+          line_list: List of dictionary, whose keys are :
 
             * the matplotlib keyword arguments of the funcion *plot*
             * varx for the name of the X variable. If not specified, varx will be assumed to be the time variable 't'
             * var or vary for the name of the y variable
 
         Returns
-          A :class:`FigureSpec` that describes the layout
+          A FigureSpec that describes the layout
 
         """
         lines = []
-        n = len(line_list)
         for var in line_list:
             line = var.copy()
             if not "varx" in line.keys():

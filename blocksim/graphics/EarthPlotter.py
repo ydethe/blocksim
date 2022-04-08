@@ -49,7 +49,7 @@ class EarthPlotter(object):
 
         Returns:
           Axe compatible with cartopy.
-          See :class:`blocksim.EarthPlotter.EarthPlotter.plotGroundTrack`
+          See blocksim.EarthPlotter.EarthPlotter.plotGroundTrack
 
         """
         axe = fig.add_subplot(*args, projection=self.proj)
@@ -58,16 +58,14 @@ class EarthPlotter(object):
         return axe
 
     def plotPoint(self, axe, coord: tuple, **kwargs):
-        """
-        Draws a point on an axe compatible with cartopy.
+        """Draws a point on an axe compatible with cartopy.
+
+        See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
 
         Args:
-          axe
-            A matplotlib axe, compatible with cartopy
-          coord
-            The position of the point, in longitude/latitude (deg)
-          **kwargs
-            Matplotlib options for the plot
+          axe: A matplotlib axe, compatible with cartopy
+          coord: The position of the point, in longitude/latitude (deg)
+          **kwargs: Matplotlib options for the plot
 
         """
         lon, lat = coord
@@ -82,19 +80,16 @@ class EarthPlotter(object):
     def plotDeviceReach(
         self, axe, coord: tuple, elev_min: float, sat_alt: float, **kwargs
     ):
-        """
+        """Plots a line that represents the device reach
+
+        See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
 
         Args:
-          axe
-            A matplotlib axe, compatible with cartopy
-          coord
-            The position of the point, in longitude/latitude (deg)
-          elev_min (rad)
-            Minimum elevatin angle
-          sat_alt (m)
-            Satellite altitude, **assuming circular orbit**
-          **kwargs
-            Matplotlib options for the plot
+          axe: A matplotlib axe, compatible with cartopy
+          coord: The position of the point, in longitude/latitude (deg)
+          elev_min: Minimum elevation angle (rad)
+          sat_alt: Satellite altitude, **assuming circular orbit** (m)
+          **kwargs: Matplotlib options for the plot
 
         """
 
@@ -114,18 +109,15 @@ class EarthPlotter(object):
         axe.plot(c_lon, c_lat, **kwargs)
 
     def plotGroundTrack(self, axe, lon: "array", lat: "array", **kwargs):
-        """
-        Draws the ground track on an axe compatible with cartopy.
+        """Draws the ground track on an axe compatible with cartopy.
+
+        See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
 
         Args:
-          axe
-            A matplotlib axe, compatible with cartopy
-          lon (deg)
-            Array of longitudes
-          lat (deg)
-            Array of latitudes
-          **kwargs
-            Matplotlib options for the plot
+          axe: A matplotlib axe, compatible with cartopy
+          lon: Array of longitudes (deg)
+          lat: Array of latitudes (deg)
+          **kwargs: Matplotlib options for the plot
 
         """
         dlon = np.abs(np.diff(lon))
@@ -145,16 +137,14 @@ class EarthPlotter(object):
         axe.plot(lon, lat, **kwargs)
 
     def plotTrajectory(self, axe, traj: Trajectory, **kwargs):
-        """
-        Draws the ground track on an axe compatible with cartopy.
+        """Draws the ground track on an axe compatible with cartopy.
+
+        See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
 
         Args:
-          axe
-            A matplotlib axe, compatible with cartopy
-          traj
-            A :class:`blocksim.source.Trajectory.Trajectory` instance
-          **kwargs
-            Matplotlib options for the plot
+          axe: A matplotlib axe, compatible with cartopy
+          traj: Trajectory instance
+          **kwargs: Matplotlib options for the plot
 
         """
         lon, lat = traj.getGroundTrack()
