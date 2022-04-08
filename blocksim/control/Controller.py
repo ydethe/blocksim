@@ -117,7 +117,7 @@ class AntiWindupPIDController(AController):
     The inputs of the computer are **estimation** and **setpoint**
     The outputs of the computer are **command** and **integral**
 
-    The **estimation** $$ \hat{X} $$ must contain the state you want to control $$ X $$ and its derivative $$ \dot{X} $$:
+    The **estimation** $ \hat{X} $ must contain the state you want to control $ X $ and its derivative $ \dot{X} $:
 
     $$ \hat{X} = (X, \dot{X}, ...)^T $$
 
