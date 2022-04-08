@@ -13,19 +13,20 @@ class BOCMapping(ADSPComputer):
     Returns a BOC sequence that, once convoluted with a PRN, gives the modulated signal
     Sub carrier frequency and chip frequency are given as multiples of f_ref = 1.023 MHz
 
+    Attributes:
+        f_ref: the value passed to __init__
+        m: the value passed to __init__
+        n: the value passed to __init__
+        p_samp: the value passed to __init__
+        boc_seq (DSPSignal): The unitary BOC sequence
+
     Args:
-      name
-        Name of the computer
-      f_ref (Hz)
-        Chip rate of the modulation
-      m
-        Sub-carrier frequency multiplier : f_s = m.f_ref
-      n
-        Chip frequency multiplier : f_s = m.f_ref
-      p_samp
-        Muliplier so that the sequence is sampled at f_samp = p_samp*f_s
-      input_size
-        Number of bits modulated in parallel.
+        name: Name of the computer
+        f_ref: Chip rate of the modulation (Hz)
+        m: Sub-carrier frequency multiplier : f_s = m.f_ref
+        n: Chip frequency multiplier : f_s = m.f_ref
+        p_samp: Muliplier so that the sequence is sampled at f_samp = p_samp*f_s
+        input_size: Number of bits modulated in parallel.
 
     """
 
@@ -51,7 +52,7 @@ class BOCMapping(ADSPComputer):
             output_dtype=np.complex128,
         )
 
-        self.createParameter(name="f_ref", value=1.023e6, read_only=True)
+        self.createParameter(name="f_ref", value=f_ref, read_only=True)
         self.createParameter(name="m", value=m, read_only=True)
         self.createParameter(name="n", value=n, read_only=True)
         self.createParameter(name="p_samp", value=p_samp, read_only=True)
