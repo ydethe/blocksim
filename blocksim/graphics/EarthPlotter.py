@@ -14,7 +14,7 @@ __all__ = ["EarthPlotter"]
 
 
 class EarthPlotter(object):
-    """
+    """Helper object to plot on a 2D Earth projection
 
     The methods of this class assume a cartopy compatile axe.
     To create such an axe, you can either use blocksim.EarthPlotter.EarthPlotter.createAxe::
@@ -29,8 +29,7 @@ class EarthPlotter(object):
             axe.gridlines(crs=ccrs.PlateCarree())
 
     Args:
-      projection
-        The projection used for the map.
+      projection: The projection used for the map.
         See https://scitools.org.uk/cartopy/docs/latest/crs/projections.html
 
     """
@@ -39,16 +38,12 @@ class EarthPlotter(object):
         self.proj = projection
 
     def createAxe(self, fig, *args, **kwargs) -> "axe":
-        """
-        Creates an axe compatible with cartopy
+        """Creates an axe compatible with cartopy
 
         Args:
-          fig
-            A matplotlib figure
-          *args
-            Arguments list for fig.add_subplot
-          **kwargs
-            Matplotlib options for axe.gridlines.
+          fig: A matplotlib figure
+          *args: Arguments list for fig.add_subplot
+          **kwargs: Matplotlib options for axe.gridlines.
             See https://scitools.org.uk/cartopy/docs/latest/matplotlib/geoaxes.html#cartopy.mpl.geoaxes.GeoAxes.gridlines
             for the available options for gridlines
 
