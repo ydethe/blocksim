@@ -18,7 +18,7 @@ class BOCMapping(ADSPComputer):
         m: the value passed to __init__
         n: the value passed to __init__
         p_samp: the value passed to __init__
-        boc_seq (DSPSignal): The unitary BOC sequence
+        boc_seq (blocksim.dsp.DSPSignal): The unitary BOC sequence
 
     Args:
         name: Name of the computer
@@ -60,6 +60,12 @@ class BOCMapping(ADSPComputer):
         self.createParameter(name="boc_seq", value=s_boc, read_only=True)
 
     def createSequence(self) -> DSPSignal:
+        """Creates the unitary BOC sequence
+
+        Returns:
+            The sequence, sampled at fs = p_samp * m * f_ref
+
+        """
         Nb = (2 * self.m) // self.n
         f_c = self.n * self.f_ref
         f_s = self.m * self.f_ref

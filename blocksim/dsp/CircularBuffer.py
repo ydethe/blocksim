@@ -10,10 +10,8 @@ class CircularBuffer(object):
     """Circular buffer. Initially filled with 0
 
     Args:
-      size
-        Number of elements
-      dtype
-        Type of the elements to. Ex. : np.float64
+        size: Number of elements
+        dtype: Type of the elements to. Ex. : np.float64
 
     """
 
@@ -47,17 +45,17 @@ class CircularBuffer(object):
         return self.__buffer.copy()
 
     def doubleBufferSize(self):
-        """
+        """Doubles the size of the buffer
 
         Examples:
-          >>> a = CircularBuffer(size=5, dtype=np.int64, fill_with=99)
-          >>> for k in range(9):
-          ...    a.append(k)
-          >>> a.getAsArray() # doctest: +ELLIPSIS
-          array([4, 5, 6, 7, 8]...
-          >>> a.doubleBufferSize()
-          >>> a.getAsArray() # doctest: +ELLIPSIS
-          array([99, 99, 99, 99, 99,  4,  5,  6,  7,  8]...
+            >>> a = CircularBuffer(size=5, dtype=np.int64, fill_with=99)
+            >>> for k in range(9):
+            ...    a.append(k)
+            >>> a.getAsArray() # doctest: +ELLIPSIS
+            array([4, 5, 6, 7, 8]...
+            >>> a.doubleBufferSize()
+            >>> a.getAsArray() # doctest: +ELLIPSIS
+            array([99, 99, 99, 99, 99,  4,  5,  6,  7,  8]...
 
         """
         # logger = logging.getLogger("blocksim_logger")
@@ -81,30 +79,37 @@ class CircularBuffer(object):
         self.__buffer = new_buf
 
     def search(self, value) -> int:
-        """
+        """Searches a value in the buffer
+
+        Args:
+            The value to search
+
+        Returns:
+            The index i such that a[i] <= value < a[i+1].
+            Returns -99 if the value is not in the range of the buffer
 
         Examples:
-          >>> a = CircularBuffer(size=5, dtype=np.int64, fill_with=99)
-          >>> for k in range(9):
-          ...    a.append(k)
-          >>> a.getAsArray() # doctest: +ELLIPSIS
-          array([4, 5, 6, 7, 8]...
-          >>> a.search(5.1)
-          1
-          >>> a.search(5.1)
-          1
-          >>> a.search(3.9)
-          -99
-          >>> a.search(4)
-          0
-          >>> a.search(4.1)
-          0
-          >>> a.search(7.9)
-          3
-          >>> a.search(8)
-          3
-          >>> a.search(8.1)
-          -99
+            >>> a = CircularBuffer(size=5, dtype=np.int64, fill_with=99)
+            >>> for k in range(9):
+            ...    a.append(k)
+            >>> a.getAsArray() # doctest: +ELLIPSIS
+            array([4, 5, 6, 7, 8]...
+            >>> a.search(5.1)
+            1
+            >>> a.search(5.1)
+            1
+            >>> a.search(3.9)
+            -99
+            >>> a.search(4)
+            0
+            >>> a.search(4.1)
+            0
+            >>> a.search(7.9)
+            3
+            >>> a.search(8)
+            3
+            >>> a.search(8.1)
+            -99
 
         """
         if self.inserted_elements == 0:
@@ -188,6 +193,12 @@ class CircularBuffer(object):
         return self.__nb_inserted_element
 
     def append(self, val):
+        """Appends an element in the buffer
+
+        Args:
+            val: The element to be inserted
+
+        """
         self.__nb_inserted_element += 1
         self.__buffer[self.__offset] = val
         self.__offset = (self.__offset + 1) % self.__size
@@ -199,16 +210,16 @@ class CircularBuffer(object):
         """Returns the content of the buffer in chronological order
 
         Returns:
-          An iterator over the elements
+            An iterator over the elements
 
         Examples:
-          >>> a = CircularBuffer(size=5, dtype=np.int64)
-          >>> a.append(1)
-          >>> a.append(2)
-          >>> a[-2:]
-          [1, 2]
-          >>> a[2]
-          0
+            >>> a = CircularBuffer(size=5, dtype=np.int64)
+            >>> a.append(1)
+            >>> a.append(2)
+            >>> a[-2:]
+            [1, 2]
+            >>> a[2]
+            0
 
         """
         if isinstance(idx, slice):
@@ -225,19 +236,19 @@ class CircularBuffer(object):
         """Returns the content of the buffer in chronological order
 
         Returns:
-          An iterator over the elements
+            An iterator over the elements
 
         Examples:
-          >>> a = CircularBuffer(size=5, dtype=np.int64)
-          >>> a.append(1)
-          >>> a.append(2)
-          >>> for x in a:
-          ...     print(x)
-          0
-          0
-          0
-          1
-          2
+            >>> a = CircularBuffer(size=5, dtype=np.int64)
+            >>> a.append(1)
+            >>> a.append(2)
+            >>> for x in a:
+            ...     print(x)
+            0
+            0
+            0
+            1
+            2
 
         """
         for k in range(self.__size):
@@ -246,23 +257,16 @@ class CircularBuffer(object):
     def getAsArray(self) -> np.array:
         """Returns the content of the buffer in chronological order
 
-        Args:
-
         Returns:
-          A numpy array of the elements
+            A numpy array of the elements
 
         Examples:
-          >>> a = CircularBuffer(size=5, dtype=np.int64)
-          >>> a.append(1)
-          >>> a.append(2)
-          >>> a.getAsArray() # doctest: +ELLIPSIS
-          array([0, 0, 0, 1, 2]...
+            >>> a = CircularBuffer(size=5, dtype=np.int64)
+            >>> a.append(1)
+            >>> a.append(2)
+            >>> a.getAsArray() # doctest: +ELLIPSIS
+            array([0, 0, 0, 1, 2]...
 
         """
         return np.roll(self.__buffer, -self.__offset)
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()
+        

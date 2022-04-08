@@ -15,12 +15,10 @@ class DSPAWGN(AComputer):
     If dtype is complex, the generated noise will be complex.
 
     Args:
-      name
-        Name of the spectrum
-      mean
-        Mean of the gaussian law (biais)
-      cov
-        Covariance matrix of the gaussian law
+        name: Name of the spectrum
+        mean: Mean of the gaussian law (biais)
+        cov: Covariance matrix of the gaussian law
+        dtype: Type of the generated samples (e.g. np.float64 or np.complex128)
 
     """
 
@@ -54,8 +52,7 @@ class DSPAWGN(AComputer):
         """Sets the covariance matrix of the gaussian distribution
 
         Args:
-          cov
-            Covariance matrix
+            cov: Covariance matrix
 
         """
         otp = self.getOutputByName("noisy")
@@ -68,8 +65,7 @@ class DSPAWGN(AComputer):
         """Sets the mean vector of the gaussian distribution
 
         Args:
-          mean
-            Mean vector matrix
+            mean: Mean vector matrix
 
         """
         otp = self.getOutputByName("noisy")
@@ -82,7 +78,7 @@ class DSPAWGN(AComputer):
         """Returns the covariance matrix of the gaussian distribution
 
         Returns:
-          Covariance matrix
+            Covariance matrix
 
         """
         otp = self.getOutputByName("noisy")
@@ -92,7 +88,7 @@ class DSPAWGN(AComputer):
         """Returns the mean vector of the gaussian distribution
 
         Returns:
-          Mean vector matrix
+            Mean vector matrix
 
         """
         otp = self.getOutputByName("noisy")

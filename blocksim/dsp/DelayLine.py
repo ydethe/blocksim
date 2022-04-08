@@ -13,14 +13,33 @@ class ADelayLine(metaclass=ABCMeta):
 
     @abstractmethod
     def addSample(self, t: float, sample: np.complex128):
+        """Adds a sample in the delay line
+
+        Args:
+            t: timestamp of the sample (s)
+            sample: complex sample to store
+
+        """
         pass
 
     @abstractmethod
     def getDelayedSample(self, delay: float) -> np.complex128:
+        """Interpolates at time delay in the delay line
+
+        Args:
+            delay: timestamp for interpolation (s)
+        
+        Returns:
+            The interpolated complex sample
+
+        """
         pass
 
 
 class InfiniteDelayLine(ADelayLine):
+    """Delay line that indefinitely grows as samples are added
+
+    """
 
     __slots__ = ["_l_time", "_l_xsamples", "_l_ysamples"]
 
@@ -51,6 +70,12 @@ class InfiniteDelayLine(ADelayLine):
 
 
 class FiniteDelayLine(ADelayLine):
+    """Delay line that grows as samples are added up to a predefined size
+
+    Args:
+        size: Maximum size allowed for the delay line
+
+    """
 
     __slots__ = ["_l_time", "_l_samples", "__size"]
 
