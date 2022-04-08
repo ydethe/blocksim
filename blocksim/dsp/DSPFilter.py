@@ -38,15 +38,14 @@ class WeightedOutput(Output):
 
 
 class ADSPFilter(AComputer):
-    """A filter
+    """A generic abstract filter
+
+    Attributes:
+        samplingPeriod: the sampling period (s)
 
     Args:
-      name
-        Name of the spectrum
-      samplingPeriod (s)
-        Time spacing of the signal
-
-        .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html
+        name: Name of the spectrum
+        samplingPeriod: Time spacing of the signal (s)
 
     """
 
@@ -67,6 +66,12 @@ class ADSPFilter(AComputer):
         self.addOutput(otp)
 
     def getTransientPhaseDuration(self) -> float:
+        """Returns the duration of the transcient phase of the filter
+
+        Returns:
+            Transcient duration (s)
+
+        """
         numtaps = len(self.generateCoefficients())
         return numtaps * self.samplingPeriod / 2
 
@@ -91,14 +96,13 @@ class ADSPFilter(AComputer):
         return outputs
 
     def apply(self, s: DSPSignal) -> DSPSignal:
-        """Filters a :class:`blocksim.dsp.DSPSignal.DSPSignal` without having to create a blocksim.Simulation.Simulation
+        """Filters a DSPSignal without having to create a blocksim.Simulation.Simulation
 
         Args:
-          s
-            The :class:`blocksim.dsp.DSPSignal.DSPSignal` to filter
+            s: The DSPSignal to filter
 
         Returns:
-          The filtered signal
+            The filtered signal
 
         """
         b = self.generateCoefficients()
@@ -114,15 +118,14 @@ class ADSPFilter(AComputer):
             default_transform=np.real,
         )
 
-    def process(self, s: np.array) -> np.array:
+    def process(self, s: "array") -> "array":
         """Filters a signal without having to create a blocksim.Simulation.Simulation
 
         Args:
-          s
-            The signal to filter
+            s: The signal to filter
 
         Returns:
-          The filtered signal
+            The filtered signal
 
         """
         b = self.generateCoefficients()
@@ -134,17 +137,12 @@ class ADSPFilter(AComputer):
 
 
 class ArbitraryDSPFilter(ADSPFilter):
-    """A filter
+    """A filter with custom taps
 
     Args:
-      name
-        Name of the spectrum
-      samplingPeriod (s)
-        Time spacing of the signal
-      taps
-        Coefficients of the filter
-
-        .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html
+        name: Name of the filter
+        samplingPeriod: Time spacing of the signal (s)
+        taps: Coefficients of the filter
 
     """
 
@@ -167,21 +165,14 @@ class ArbitraryDSPFilter(ADSPFilter):
 
 
 class BandpassDSPFilter(ADSPFilter):
-    """A filter
+    """A bandpass filter, generated with https://docs.scipy.org/doc/scipy-1.8.0/html-scipyorg/reference/generated/scipy.signal.firwin.html
 
     Args:
-      name
-        Name of the spectrum
-      f_low (Hz)
-        Start frequency of the band pass
-      f_high (Hz)
-        End frequency of the band pass
-      numtaps
-        Number of coefficients
-      win
-        The window to be applied. Should be compatible with `get_window`_.
-
-        .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html
+        name: Name of the spectrum
+        f_low: Start frequency of the band pass (Hz)
+        f_high: End frequency of the band pass (Hz)
+        numtaps: Number of coefficients
+        win: The window to be applied. See blocksim.dsp.get_window
 
     """
 
