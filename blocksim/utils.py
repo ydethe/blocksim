@@ -981,14 +981,14 @@ def cexp(x):
 
 def load_antenna_config(config: str):
     """Loads a module located at the given path
-    Used in `dsp.AntennaNetwork.AntennaNetwork`
+    Used in `dsp.AntennaNetwork`
 
     Args:
         config: path to a python file
 
     Returns:
         A loaded python module
-        
+
     """
     pth = os.path.abspath(config)
 
