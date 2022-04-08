@@ -24,17 +24,12 @@ class DSPSignal(DSPLine, ASetPoint):
     The output name of the computer is **setpoint**
 
     Args:
-      name
-        Name of the signal
-      samplingStart (s)
-        First date of the sample of the signal
-      samplingPeriod (s)
-        Time spacing of the signal
-      y_serie
-        Complex samples of the signal
-      default_transform
-        Function to apply to the samples before plotting.
-        Shall be vectorized
+        name: Name of the signal
+        samplingStart: First date of the sample of the signal (s)
+        samplingPeriod: Time spacing of the signal (s)
+        y_serie: Complex samples of the signal
+        default_transform: Function to apply to the samples before plotting.
+            Shall be vectorized
 
     """
 
@@ -88,14 +83,10 @@ class DSPSignal(DSPLine, ASetPoint):
         following a uniform law in the set {0,1}
 
         Args:
-          name
-            Name of the signal
-          samplingPeriod (s)
-            Sampling period of the signal
-          size
-            Number of samples
-          seed
-            Random seed
+            name: Name of the signal
+            samplingPeriod: Sampling period of the signal (s)
+            size: Number of samples
+            seed: Random seed
 
         """
         if not seed is None:
@@ -129,21 +120,15 @@ class DSPSignal(DSPLine, ASetPoint):
         """Builds a signal from a linear frequency modulation (chirp)
 
         Args:
-          name
-            Name of the signal
-          samplingStart (s)
-            First date of the sample of the signal
-          samplingPeriod (s)
-            Sampling period of the signal
-          tau (s)
-            Duration of the signal
-          fstart (Hz)
-            Frequency at the beginning of the modulation
-          fend (Hz)
-            Frequency at the end of the modulation
+            name: Name of the signal
+            samplingStart: First date of the sample of the signal (s)
+            samplingPeriod: Sampling period of the signal (s)
+            tau: Duration of the signal (s)
+            fstart: Frequency at the beginning of the modulation (Hz)
+            fend: Frequency at the end of the modulation (Hz)
 
         Returns:
-          The :class:`blocksim.dsp.DSPSignal`
+            The DSPSignal
 
         """
         fs = 1 / samplingPeriod
@@ -163,15 +148,12 @@ class DSPSignal(DSPLine, ASetPoint):
         """Builds a signal from a :class:`blocksim.Logger.Logger`
 
         Args:
-          name
-            Name of the signal
-          log
-            :class:`blocksim.Logger.Logger` to use
-          param
-            Name of the parameter to use to build the :class:`blocksim.dsp.DSPSignal`
+            name: Name of the signal
+            log: Logger to use
+            param: Name of the parameter to use to build the DSPSignal
 
         Returns:
-          The :class:`blocksim.dsp.DSPSignal`
+            The DSPSignal
 
         """
         tps = log.getValue("t")
@@ -185,15 +167,12 @@ class DSPSignal(DSPLine, ASetPoint):
         """Builds a signal from 2 time and samples series
 
         Args:
-          name
-            Name of the signal
-          tps (s)
-            Dates of the samples
-          y_serie
-            Complex samples
+            name: Name of the signal
+            tps: Dates of the samples (s)
+            y_serie: Complex samples
 
         Returns:
-          The :class:`blocksim.dsp.DSPSignal`
+            The DSPSignal
 
         """
         t0 = tps[0]
@@ -216,19 +195,16 @@ class DSPSignal(DSPLine, ASetPoint):
         )
 
     @classmethod
-    def fromPhaseLaw(cls, name: str, sampling_freq: float, pha: np.array):
+    def fromPhaseLaw(cls, name: str, sampling_freq: float, pha: np.array)->"DSPSignal":
         """Builds a signal from a phase law
 
         Args:
-          name
-            Name of the signal
-          sampling_freq (Hz)
-            Sampling frequency of the phase law
-          pha
-            The phase law
+            name: Name of the signal
+            sampling_freq: Sampling frequency of the phase law (Hz)
+            pha: The phase law
 
         Returns:
-          The :class:`blocksim.dsp.DSPSignal`
+          The DSPSignal
 
         """
         y = np.exp(1j * pha)
@@ -241,14 +217,14 @@ class DSPSignal(DSPLine, ASetPoint):
         )
 
     def delay(self, tau: float) -> "DSPSignal":
-        """Builds a delayed :class:`blocksim.dsp.DSPSignal`
+        """Builds a delayed DSPSignal
 
         Args:
           tau (s)
             The delay. Positive if the signal starts later after delay.
 
         Returns:
-          The :class:`blocksim.dsp.DSPSignal`
+          The DSPSignal
 
         """
         return DSPSignal(
@@ -260,14 +236,13 @@ class DSPSignal(DSPLine, ASetPoint):
         )
 
     def applyDopplerFrequency(self, fdop: float) -> "DSPSignal":
-        """Builds a :class:`blocksim.dsp.DSPSignal` with a Doppler effet applied
+        """Builds a DSPSignal with a Doppler effet applied
 
         Args:
-          fdop (Hz)
-            The Doppler frequency to apply
+            fdop: The Doppler frequency to apply (Hz)
 
         Returns:
-          The :class:`blocksim.dsp.DSPSignal`
+          The DSPSignal
 
         """
         return DSPSignal(

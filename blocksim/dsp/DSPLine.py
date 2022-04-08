@@ -329,14 +329,10 @@ class DSPLine(object):
         The resulting signal keeps the timestamp of samples
 
         Args:
-          samplingStart
-            First x-coord of the sample of the line after resampling
-          samplingPeriod
-            x-coord spacing of the line after resampling
-          samplingStop
-            Last x-coord (included) of the sample of the line after resampling
-          complex_output
-            True if we interpolate both real part and imag part
+            samplingStart: First x-coord of the sample of the line after resampling
+            samplingPeriod: x-coord spacing of the line after resampling
+            samplingStop: Last x-coord (included) of the sample of the line after resampling
+            complex_output: True if we interpolate both real part and imag part
 
         """
         if complex_output is None:
@@ -392,20 +388,19 @@ class DSPLine(object):
         """Returns a function that turns a complex signal into the power serie of the signal, in dB.
 
         Args:
-          low (dB)
-            The min value to clamp to
+            low: The min value to clamp to (dB)
 
         Returns:
-          The function to map on a complex time serie
+            The function to map on a complex time serie
 
         Examples:
-          >>> f = DSPLine.to_db_lim(low=-80)
-          >>> f(1e-3)
-          -60.0
-          >>> f(1e-4)
-          -80.0
-          >>> f(1e-5)
-          -80.0
+            >>> f = DSPLine.to_db_lim(low=-80)
+            >>> f(1e-3)
+            -60.0
+            >>> f(1e-4)
+            -80.0
+            >>> f(1e-5)
+            -80.0
 
         """
 
@@ -423,11 +418,10 @@ class DSPLine(object):
         If a sample's power is below *low*, the dB value in clamped to *low*.
 
         Args:
-          x
-            The array of samples
+            x: The array of samples
 
         Returns:
-          The power of the serie *x* in dB
+            The power of the serie *x* (dB)
 
         """
         pwr = np.real(np.conj(x) * x)
@@ -454,10 +448,8 @@ class DSPLine(object):
         """Performs numerical derivation if the line
 
         Args:
-            rank
-                Rank of the derivative
-            order
-                Order of the Taylor serie used to estimate the derivative. Shall be >= rank
+            rank: Rank of the derivative
+            order: Order of the Taylor serie used to estimate the derivative. Shall be >= rank
                 The default value is *rank*
 
         """
@@ -566,9 +558,4 @@ class DSPLine(object):
             y_serie=y_serie,
             default_transform=self.default_transform,
         )
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()
+        
