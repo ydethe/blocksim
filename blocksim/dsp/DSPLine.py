@@ -19,19 +19,13 @@ class DSPLine(object):
     """Generic DSP line
 
     Args:
-      name
-        Name of the line
-      samplingStart
-        First x coord of the sample of the line
-      samplingPeriod (Hz)
-        x coord spacing of the line
-      y_serie
-        Complex samples of the line
-      projection
-        Axe projection. Can be 'rectilinear' or 'polar'
-      default_transform
-        Function to apply to the samples before plotting.
-        Shall be vectorized
+        name: Name of the line
+        samplingStart: First x coord of the sample of the line
+        samplingPeriod: x coord spacing of the line
+        y_serie: Complex samples of the line
+        projection: Axe projection. Can be 'rectilinear' or 'polar'
+        default_transform: Function to apply to the samples before plotting.
+            Shall be vectorized
 
     """
 
@@ -134,11 +128,10 @@ class DSPLine(object):
         """Generates the x samples of the line
 
         Args:
-          index
-            If given, returns only the x coord at the position given by index
+            index: If given, returns only the x coord at the position given by index
 
         Returns:
-          The x coordinate(s)
+            The x coordinate(s)
 
         """
         n = len(self)
@@ -158,13 +151,11 @@ class DSPLine(object):
         The search is performed on the tranformed samples (with the argument *transform*, or the attribute *default_transform*)
 
         Args:
-          transform
-            A callable applied on samples before looking for the peaks
-          nb_peaks
-            Max number of peaks to seach. Only the highest are kept
+            transform: A callable applied on samples before looking for the peaks
+            nb_peaks: Max number of peaks to seach. Only the highest are kept
 
         Returns:
-          The list of detected peaks, sorted by descreasing value of the peak
+            The list of detected peaks, sorted by descreasing value of the peak
 
         """
         if transform is None:
@@ -212,13 +203,11 @@ class DSPLine(object):
         """Gets the sample at x-coord x. A cubic interpolation is used.
 
         Args:
-          x
-            The x-coord of the sample to retrieve
-          complex_output
-            True if we interpolate both real part and imag part
+            x: The x-coord of the sample to retrieve
+            complex_output: True if we interpolate both real part and imag part
 
         Returns:
-          The real (resp. complex) sample if complex_output is False (resp. True)
+            The real (resp. complex) sample if complex_output is False (resp. True)
 
         """
         res = self.__interpolate(x, complex_output=complex_output)
@@ -230,7 +219,7 @@ class DSPLine(object):
         """Gets the last x-coord of the line
 
         Returns:
-          Last x-coord of the line
+            Last x-coord of the line
 
         """
         return self.samplingStart + (len(self) - 1) * self.samplingPeriod
@@ -244,15 +233,12 @@ class DSPLine(object):
         """Truncates a line between x=samplingStart and x=samplingStop.
 
         Args:
-          samplingStart
-            Beginning abscissa of the new line
-          samplingStop
-            End abscissa of the new line (included)
-          zero_padding
-            Add zero padding if samplingStart or samplingStop are beyond the bounds of the signal
+            samplingStart: Beginning abscissa of the new line
+            samplingStop: End abscissa of the new line (included)
+            zero_padding: Add zero padding if samplingStart or samplingStop are beyond the bounds of the signal
 
         Returns:
-          A truncated new line with the same spacing
+            A truncated new line with the same spacing
 
         """
         if samplingStart is None:
@@ -291,6 +277,19 @@ class DSPLine(object):
         )
 
     def isInSyncWith(self, y) -> bool:
+        """Tests whether the line is synced with y.
+        y can be either:
+
+        * a scalar (float or int). In this case, y is a samplingPeriod and the test is successful if 
+            $$ |self.samplingPeriod - y| < 10^-6 * min(self.samplingPeriod, y) $$
+
+        Args:
+            y: The description of the serie to check
+        
+        Returns:
+            The result of the test
+
+        """
         if isinstance(y, float) or isinstance(y, int):
             dty = y
             t0y = self.generateXSerie(0)

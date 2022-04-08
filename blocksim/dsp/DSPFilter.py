@@ -199,7 +199,7 @@ class BandpassDSPFilter(ADSPFilter):
         """Generates the filter's coefficients
 
         Returns:
-          The coefficients
+            The coefficients
 
         """
         fs = 1 / self.samplingPeriod
