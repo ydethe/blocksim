@@ -220,11 +220,11 @@ class DSPSignal(DSPLine, ASetPoint):
         """Builds a delayed DSPSignal
 
         Args:
-          tau (s)
-            The delay. Positive if the signal starts later after delay.
+            tau: The delay (s)
+              Positive if the signal starts later after delay
 
         Returns:
-          The DSPSignal
+            The DSPSignal
 
         """
         return DSPSignal(
@@ -242,7 +242,7 @@ class DSPSignal(DSPLine, ASetPoint):
             fdop: The Doppler frequency to apply (Hz)
 
         Returns:
-          The DSPSignal
+            The DSPSignal
 
         """
         return DSPSignal(
@@ -255,14 +255,13 @@ class DSPSignal(DSPLine, ASetPoint):
         )
 
     def applyGaussianNoise(self, pwr: float) -> "DSPSignal":
-        """Builds a :class:`blocksim.dsp.DSPSignal` with a complex gaussian noise added
+        """Builds a DSPSignal with a complex gaussian noise added
 
         Args:
-          pwr
-            Power of the complex gaussian noise
+            pwr: Power of the complex gaussian noise
 
         Returns:
-          The :class:`blocksim.dsp.DSPSignal`
+            The DSPSignal
 
         """
         n = len(self)
@@ -285,13 +284,10 @@ class DSPSignal(DSPLine, ASetPoint):
         """Applies the discrete Fourier transform
 
         Args:
-          win
-            The window to be applied. Should be compatible with `get_window`_.
-
-        .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html
+            win: The window to be applied. See `dsp.get_window`
 
         Returns:
-          The resulting :class:`blocksim.dsp.DSPSpectrum`
+            The resulting `dsp.DSPSpectrum`
 
         """
         from .DSPSpectrum import DSPSpectrum
@@ -311,10 +307,10 @@ class DSPSignal(DSPLine, ASetPoint):
         """Gets the phase law from the signal
 
         Args:
-          eps: If :math:`|z_k|<\epsilon` for a sample :math:`z_k`, then the samle if considered null
-
+            eps: Threshold to test equality
+            
         Returns:
-          The unfolded phase law
+            The unfolded phase law
 
         """
         return phase_unfold(self.y_serie, eps=eps)
@@ -335,39 +331,11 @@ class DSPSignal(DSPLine, ASetPoint):
         """Correlates the signal with another signal
 
         Args:
-          y
-            The :class:`blocksim.dsp.DSPSignal` to correlate with
-          win : string, float, or tuple
-            The type of window to create. See below for more details.
+            y: The DSPSignal to correlate with
+            win : The type of window to create. See `dsp.get_window` for more details.
 
         Returns:
-          The resulting :class:`blocksim.dsp.DSPSignal`
-
-        Notes:
-          Window types:
-            - boxcar
-            - triang
-            - blackman
-            - hamming
-            - hann
-            - bartlett
-            - flattop
-            - parzen
-            - bohman
-            - blackmanharris
-            - nuttall
-            - barthann
-            - cosine
-            - exponential
-            - tukey
-            - taylor
-            - kaiser (needs beta)
-            - gaussian (needs standard deviation)
-            - general_cosine (needs weighting coefficients)
-            - general_gaussian (needs power, width)
-            - general_hamming (needs window coefficient)
-            - dpss (needs normalized half-bandwidth)
-            - chebwin (needs attenuation)
+            The resulting DSPSignal
 
         """
         n = min(len(self), len(y))
@@ -416,11 +384,10 @@ class DSPSignal(DSPLine, ASetPoint):
         """Autocorrelation of the signal
 
         Args:
-          win : string, float, or tuple
-            The type of window to create. See :class:`blocksim.dsp.DSPSignal.DSPSignal.correlate` for more details.
+            win: The type of window to create. See `correlate` for more details.
 
         Returns:
-          The resulting :class:`blocksim.dsp.DSPSignal`
+            The resulting DSPSignal
 
         """
         ac = self.correlate(self)
