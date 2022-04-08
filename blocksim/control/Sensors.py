@@ -23,25 +23,17 @@ __all__ = [
 class ASensors(AComputer):
     """Abstract class for a set of sensors
 
-    Implement the method **compute_outputs** to make it concrete
+    Implement the method **compute_outputs** to make it concrete,
+    and call `ASensors.setCovariance` and `ASensors.setMean`
 
     The input of the computer is **state**
     The output of the computer is **measurement**
 
-    The parameters mean and cov are to be defined by the user :
-
-    * mean : Mean of the gaussian noise. Dimension (n,1)
-    * cov : Covariance of the gaussian noise. Dimension (n,n)
-    * cho : Cholesky decomposition of cov, computed after a first call to *updateAllOutput*. Dimension (n,n)
-
     Args:
-      name
-        Name of the element
-      shape_state
-        Shape of the state data
-      snames
-        Name of each of the scalar components of the measurement.
-        Its shape defines the shape of the data
+        name: Name of the element
+        shape_state: Shape of the state data
+        snames: Name of each of the scalar components of the measurement.
+          Its shape defines the shape of the data
 
     """
 
@@ -60,25 +52,57 @@ class ASensors(AComputer):
         otp.cov = np.eye(n)
         otp.mean = np.zeros(n)
 
-    def setCovariance(self, cov: np.array, oname: str = "measurement"):
+    def setCovariance(self, cov: "array", oname: str = "measurement"):
+        """Defines the covariance matrix of the gaussian noise on the output
+
+        Args:
+            cov: The covariance matrix
+            oname: The name of the noisy output concerned by the call
+
+        """
         otp = self.getOutputByName(oname)
         n = otp.getDataShape()[0]
         if cov.shape != (n, n):
             raise ValueError(cov.shape, (n, n))
         otp.cov = cov
 
-    def setMean(self, mean: np.array, oname: str = "measurement"):
+    def setMean(self, mean: "array", oname: str = "measurement"):
+        """Defines the mean vector of the gaussian noise on the output
+
+        Args:
+            mean: The mean vector
+            oname: The name of the noisy output concerned by the call
+
+        """
         otp = self.getOutputByName(oname)
         n = otp.getDataShape()[0]
         if mean.shape[0] != n:
             raise ValueError(mean.shape[0], n)
         otp.mean = mean
 
-    def getCovariance(self, oname: str = "measurement") -> np.array:
+    def getCovariance(self, oname: str = "measurement") -> "array":
+        """Gets the covariance matrix of the gaussian noise on the output
+
+        Args:
+            oname: The name of the noisy output concerned by the call
+
+        Returns:
+            The covariance matrix
+
+        """
         otp = self.getOutputByName(oname)
         return otp.cov
 
-    def getMean(self, oname: str = "measurement") -> np.array:
+    def getMean(self, oname: str = "measurement") -> "array":
+        """Gets the mean vector of the gaussian noise on the output
+
+        Args:
+            oname: The name of the noisy output concerned by the call
+
+        Returns:
+            The mean vector
+            
+        """
         otp = self.getOutputByName(oname)
         return otp.mean
 
@@ -96,21 +120,14 @@ class ProportionalSensors(ASensors):
     The input of the computer is **state**
     The output of the computer is **measurement**
 
-    The parameters mean and cov are to be defined by the user :
-
-    * mean : Mean of the gaussian noise. Dimension (n,1)
-    * cov : Covariance of the gaussian noise. Dimension (n,n)
-    * cho : Cholesky decomposition of cov, computed after a call to *updateAllOutput*. Dimension (n,n)
-    * matC : Matrix which turns a state into a noiseless measurement
+    Attributes:
+        matC: Matrix which turns a state into a noiseless measurement
 
     Args:
-      name
-        Name of the element
-      shape_state
-        Shape of the state data
-      snames
-        Name of each of the scalar components of the measurement.
-        Its shape defines the shape of the data
+        name: Name of the element
+        shape_state: Shape of the state data
+        snames: Name of each of the scalar components of the measurement.
+            Its shape defines the shape of the data
 
     """
 
@@ -153,24 +170,16 @@ class LinearSensors(ASensors):
     The inputs of the element are **state** and **command**
     The output of the computer is **measurement**
 
-    The parameters mean and cov are to be defined by the user :
-
-    * mean : Mean of the gaussian noise. Dimension (n,1)
-    * cov : Covariance of the gaussian noise. Dimension (n,n)
-    * cho : Cholesky decomposition of cov, computed after a call to *updateAllOutput*. Dimension (n,n)
-    * matC : (p x n) Output matrix
-    * matD : (p x m) Feedthrough (or feedforward) matrix
+    Attributes:
+        matC: (p x n) Output matrix
+        matD: (p x m) Feedthrough (or feedforward) matrix
 
     Args:
-      name
-        Name of the element
-      shape_state
-        Shape of the state
-      shape_command
-        Shape of the command
-      snames
-        Name of each of the scalar components of the measurement.
-        Its shape defines the shape of the data
+        name: Name of the element
+        shape_state: Shape of the state
+        shape_command: Shape of the command
+        snames: Name of each of the scalar components of the measurement.
+            Its shape defines the shape of the data
 
     """
 
@@ -214,11 +223,9 @@ class StreamSensors(AComputer):
     The output of the computer is **measurement**
 
     Args:
-      name
-        Name of the element
-      strm_data
-        The data. Must be a OrderDict, with a key named 't', and the others determine the name of the outputs.
-        Each key must be a np.array with the values of the output variables
+        name: Name of the element
+        strm_data: The data. Must be a dict, with a key named 't', and the others determine the name of the outputs.
+            Each key must be a np.array with the values of the output variables
 
     """
 
@@ -256,12 +263,10 @@ class StreamCSVSensors(StreamSensors):
     The inputs of the element are **state** and **command**
 
     Args:
-      name
-        Name of the element
-      pth
-        The path to the CSV file. The file can start with comment lines starting with '#'
-        The separator is ','
-        The order of the columns matter to define the output vector of the element
+        name: Name of the element
+        pth: The path to the CSV file. The file can start with comment lines starting with '#'
+            The separator is ','
+            The order of the columns matter to define the output vector of the element
 
     """
 

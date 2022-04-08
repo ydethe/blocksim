@@ -54,10 +54,14 @@ class PIDController(AController):
     The inputs of the computer are **estimation** and **setpoint**
     The outputs of the computer are **command** and **integral**
 
-    The **estimation** is an estimation of the system, with the following constraints:
+    The **estimation** \\( \hat{X} \\) must contain the state you want to control \\( X \\) and its derivative \\( \dot{X} \\) in this order:
 
-    * the first value of **estimation** is the position
-    * the second value of **estimation** is the velocity
+    $$ \hat{X} = (X, \dot{X}, ...)^T $$
+
+    Attributes:
+        P: Proportinnal gain
+        I: Integral gain
+        D: Derivative gain
 
     Args:
         name: Name of the element
@@ -117,7 +121,7 @@ class AntiWindupPIDController(AController):
     The inputs of the computer are **estimation** and **setpoint**
     The outputs of the computer are **command** and **integral**
 
-    The **estimation** \\( \hat{X} \\) must contain the state you want to control \\( X \\) and its derivative \\( \dot{X} \\):
+    The **estimation** \\( \hat{X} \\) must contain the state you want to control \\( X \\) and its derivative \\( \dot{X} \\) in this order:
 
     $$ \hat{X} = (X, \dot{X}, ...)^T $$
 

@@ -115,16 +115,12 @@ class AEstimator(AComputer):
     The **output** vector and the **measurement** vector shall have the same shape.
 
     Args:
-      name
-        Name of the element
-      shape_cmd
-        Shape of the command
-      snames_state
-        Name of each of the scalar components of the state.
-        Its shape defines the shape of the data
-      snames_output
-        Name of each of the scalar components of the output.
-        Its shape defines the shape of the data
+        name: Name of the element
+        shape_cmd: Shape of the command
+        snames_state: Name of each of the scalar components of the state.
+          Its shape defines the shape of the data
+        snames_output: Name of each of the scalar components of the output.
+          Its shape defines the shape of the data
 
     """
 
@@ -154,9 +150,8 @@ class AKalmanFilter(AEstimator):
 
     https://en.wikipedia.org/wiki/State-space_representation#Linear_systems
 
-    :math:`X_{k+1} = A.X_k + B.u_k + N_x`
-
-    :math:`Y_k = C.X_k + D.u_k + N_y`
+    $$ X_{k+1} = A.X_k + B.u_k + N_x $$
+    $$ Y_k = C.X_k + D.u_k + N_y $$
 
     with :
 
@@ -178,16 +173,12 @@ class AKalmanFilter(AEstimator):
     The matrices A, B, C, D, Q, R must be implemented for AKalmanFilter to be used
 
     Args:
-      name
-        Name of the element
-      shape_cmd
-        Shape of the command
-      snames_state
-        Name of each of the scalar components of the state.
-        Its shape defines the shape of the data
-      snames_output
-        Name of each of the scalar components of the output.
-        Its shape defines the shape of the data
+        name: Name of the element
+        shape_cmd: Shape of the command
+        snames_state: Name of each of the scalar components of the state.
+          Its shape defines the shape of the data
+        snames_output: Name of each of the scalar components of the output.
+          Its shape defines the shape of the data
 
     """
 
@@ -239,8 +230,11 @@ class AKalmanFilter(AEstimator):
         """(n x n) State (or system) matrix
 
         Args:
-          frame
-            Time frame
+            t1: Timestamp of the begining of the simulation step (s)
+            t2: Timestamp of the end of the simulation step (s)
+
+        Returns:
+            The state matrix
 
         """
         pass
@@ -250,9 +244,12 @@ class AKalmanFilter(AEstimator):
         """(n x m) Input matrix
 
         Args:
-          frame
-            Time frame
+            t1: Timestamp of the begining of the simulation step (s)
+            t2: Timestamp of the end of the simulation step (s)
 
+        Returns:
+            The input matrix
+            
         """
         pass
 
@@ -261,9 +258,12 @@ class AKalmanFilter(AEstimator):
         """(p x n) Output matrix
 
         Args:
-          frame
-            Time frame
+            t1: Timestamp of the begining of the simulation step (s)
+            t2: Timestamp of the end of the simulation step (s)
 
+        Returns:
+            The output matrix
+            
         """
         pass
 
@@ -272,9 +272,12 @@ class AKalmanFilter(AEstimator):
         """(p x m) Feedthrough (or feedforward) matrix
 
         Args:
-          frame
-            Time frame
+            t1: Timestamp of the begining of the simulation step (s)
+            t2: Timestamp of the end of the simulation step (s)
 
+        Returns:
+            The feedthrough matrix
+            
         """
         pass
 
@@ -283,9 +286,12 @@ class AKalmanFilter(AEstimator):
         """(n x n) Gaussian noise covariance for the state vector
 
         Args:
-          frame
-            Time frame
+            t1: Timestamp of the begining of the simulation step (s)
+            t2: Timestamp of the end of the simulation step (s)
 
+        Returns:
+            The covariance matrix for the state vector
+            
         """
         pass
 
@@ -294,9 +300,12 @@ class AKalmanFilter(AEstimator):
         """(n x n) Gaussian noise covariance for the measurement vector
 
         Args:
-          frame
-            Time frame
+            t1: Timestamp of the begining of the simulation step (s)
+            t2: Timestamp of the end of the simulation step (s)
 
+        Returns:
+            The covariance matrix for the measurement vector
+            
         """
         pass
 
@@ -358,9 +367,8 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
 
     https://en.wikipedia.org/wiki/State-space_representation#Linear_systems
 
-    :math:`X_{k+1} = A.X_k + B.u_k + N_x`
-
-    :math:`Y_k = C.X_k + D.u_k + N_y`
+    $$ X_{k+1} = A.X_k + B.u_k + N_x $$
+    $$ Y_k = C.X_k + D.u_k + N_y $$
 
     with :
 
@@ -372,34 +380,24 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
     * Y output vector (p,1)
     * u input (or control) vector (m,1)
 
-    The matrices A, B, C, D, Q, R are provided with attributes, and A and B matrices are those of the *continuous time* system
+    The matrices A, B, C, D, Q, R are provided with attributes,
+    and A and B matrices are those of the *continuous time* system
 
-    **The attributes are the following:**
-
-      matA
-        (n x n) Continuous state matrix
-      matB
-        (n x m) Continuous input matrix
-      matC
-        (p x n) Output matrix
-      matD
-        (p x m) Feedthrough (or feedforward) matrix
-      matQ
-        (n x n) N_x covariance
-      matR
-        (p x p) N_y covariance
+    Attributes:
+        matA: (n x n) Continuous state matrix
+        matB:  (n x m) Continuous input matrix
+        matC: (p x n) Output matrix
+        matD: (p x m) Feedthrough (or feedforward) matrix
+        matQ: (n x n) N_x covariance
+        matR: (p x p) N_y covariance
 
     Args:
-      name
-        Name of the element
-      shape_cmd
-        Shape of the command
-      snames_state
-        Name of each of the scalar components of the state.
-        Its shape defines the shape of the data
-      snames_output
-        Name of each of the scalar components of the output.
-        Its shape defines the shape of the data
+        name: Name of the element
+        shape_cmd: Shape of the command
+        snames_state: Name of each of the scalar components of the state.
+          Its shape defines the shape of the data
+        snames_output: Name of each of the scalar components of the output.
+          Its shape defines the shape of the data
 
     """
 
@@ -432,30 +430,25 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
     def discretize(
         self, dt: float, method: str = "zoh", alpha: float = None
     ) -> Iterable[np.array]:
-        """
+        """Turns the continous system into a discrete one
 
         Args:
-          dt
-            Fixed time step of the simulation
-          method
-            * gbt: generalized bilinear transformation
-            * bilinear: Tustin’s approximation (“gbt” with alpha=0.5)
-            * euler: Euler (or forward differencing) method (“gbt” with alpha=0)
-            * backward_diff: Backwards differencing (“gbt” with alpha=1.0)
-            * zoh: zero-order hold (default)
-          alpha
-            Within [0, 1]
-            The generalized bilinear transformation weighting parameter, which should only be specified with method=”gbt”, and is ignored otherwise
+            dt: Fixed time step of the simulation
+            method: Discretization method:
+
+              * gbt: generalized bilinear transformation
+              * bilinear: Tustin’s approximation (“gbt” with alpha=0.5)
+              * euler: Euler (or forward differencing) method (“gbt” with alpha=0)
+              * backward_diff: Backwards differencing (“gbt” with alpha=1.0)
+              * zoh: zero-order hold (default)
+            alpha: Parameter for the gbt method, within [0, 1]
+              The generalized bilinear transformation weighting parameter, which should only be specified with method=”gbt”, and is ignored otherwise
 
         Returns:
-          Ad
-            Discrete dynamics matrix
-          Bd
-            Discrete input matrix
-          Cd
-            Discrete output matrix
-          Dd
-            Discrete direct term
+            Ad: Discrete state matrix
+            Bd: Discrete input matrix
+            Cd: Discrete output matrix
+            Dd: Discrete direct term
 
         """
         sys = (self.matA, self.matB, self.matC, self.matD)
@@ -463,67 +456,25 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         return Ad, Bd, Cd, Dd
 
     def A(self, t1: float, t2: float) -> np.array:
-        """(n x n) State (or system) matrix
-
-        Args:
-          frame
-            Time frame
-
-        """
         dt = t2 - t1
         Ad, Bd, Cd, Dd = self.discretize(dt)
         return Ad
 
     def B(self, t1: float, t2: float) -> np.array:
-        """(n x m) Input matrix
-
-        Args:
-          frame
-            Time frame
-
-        """
         dt = t2 - t1
         Ad, Bd, Cd, Dd = self.discretize(dt)
         return Bd
 
     def C(self, t: float) -> np.array:
-        """(p x n) Output matrix
-
-        Args:
-          frame
-            Time frame
-
-        """
         return self.matC
 
     def D(self, test_ss_kal: float) -> np.array:
-        """(p x m) Feedthrough (or feedforward) matrix
-
-        Args:
-          frame
-            Time frame
-
-        """
         return self.matD
 
     def Q(self, t: float) -> np.array:
-        """(n x n) Gaussian noise covariance for the state vector
-
-        Args:
-          frame
-            Time frame
-
-        """
         return self.matQ
 
     def R(self, t: float) -> np.array:
-        """(n x n) Gaussian noise covariance for the measurement vector
-
-        Args:
-          frame
-            Time frame
-
-        """
         return self.matR
 
 
@@ -535,9 +486,8 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
 
     https://en.wikipedia.org/wiki/State-space_representation#Linear_systems
 
-    :math:`X_{k+1} = A.X_k + B.u_k + N_x`
-
-    :math:`Y_k = C.X_k + D.u_k + N_y`
+    $$ X_{k+1} = A.X_k + B.u_k + N_x $$
+    $$ Y_k = C.X_k + D.u_k + N_y $$
 
     with :
 
@@ -549,40 +499,30 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
     * Y output vector (p,1)
     * u input (or control) vector (m,1)
 
-    The matrices A, B, C, D, Q, R are provided with attributes, and A and B matrices are those of the *continuous time* system
-    SteadyStateKalmanFilter also takes dt as attribute, since the converged gain matrix depends on the time step, which shall be constant.
-    After the simulation (or a call to SteadyStateKalmanFilter.reset), the attribute matK contains the gain matrix in steady state
+    The matrices A, B, C, D, Q, R are provided with attributes,
+    and A and B matrices are those of the *continuous time* system
+    SteadyStateKalmanFilter also takes dt as attribute, since the converged gain matrix depends on
+    the time step, which shall be constant.
+    After the simulation (or a call to SteadyStateKalmanFilter.reset),
+    the attribute matK contains the gain matrix in steady state
 
-    **The attributes are the following:**
-
-      dt
-        Time step of the discretized Kalman filter
-      matA
-        (n x n) Continuous state matrix
-      matB
-        (n x m) Continuous input matrix
-      matC
-        (p x n) Output matrix
-      matD
-        (p x m) Feedthrough (or feedforward) matrix
-      matQ
-        (n x n) N_x covariance
-      matR
-        (p x p) N_y covariance
+    Attributes:
+        dt: Time step of the discretized Kalman filter
+        matA: (n x n) Continuous state matrix
+        matB: (n x m) Continuous input matrix
+        matC: (p x n) Output matrix
+        matD: (p x m) Feedthrough (or feedforward) matrix
+        matQ: (n x n) N_x covariance
+        matR: (p x p) N_y covariance
 
     Args:
-      name
-        Name of the element
-      dt
-        Time step used for solving the Discrete Algebraic Riccati Equation
-      shape_cmd
-        Shape of the command
-      snames_state
-        Name of each of the scalar components of the state.
-        Its shape defines the shape of the data
-      snames_output
-        Name of each of the scalar components of the output.
-        Its shape defines the shape of the data
+        name: Name of the element
+        dt: Time step used for solving the Discrete Algebraic Riccati Equation
+        shape_cmd: Shape of the command
+        snames_state: Name of each of the scalar components of the state.
+          Its shape defines the shape of the data
+        snames_output: Name of each of the scalar components of the output.
+          Its shape defines the shape of the data
 
     """
 
@@ -657,14 +597,10 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
     The inputs of the element are **command** and **measurement**
 
     Args:
-      name
-        Name of the system
-      name_of_outputs
-        Names of the outputs of the element
-      name_of_states
-        Names of the states of the element
-      tracks (Hz)
-        List of the frequencies to be tracked
+        name: Name of the system
+        name_of_outputs: Names of the outputs of the element
+        name_of_states: Names of the states of the element
+        tracks: List of the frequencies to be tracked (Hz)
 
     """
 
@@ -701,11 +637,10 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         """Gets the spectrogram from the Logger after simulation
 
         Args:
-          log
-            The :class:`blocksim.Logger.Logger` after simulation
+            log: The Logger after simulation
 
         Returns:
-          The spectrogram
+            The spectrogram
 
         """
         nb_tracks = len(self.tracks)
@@ -742,17 +677,14 @@ class MadgwickFilter(AComputer):
 
     The inputs of the element are **command** and **measurement**
 
-    The parameters are :
-
-    * beta : Proportional gain of the Madgwick algorithm
-    * mag_softiron_matrix : Soft iron error compensation matrix
-    * mag_offsets : Offsets applied to raw x/y/z values (uTesla)
+    Attributes:
+        beta: Proportional gain of the Madgwick algorithm
+        mag_softiron_matrix: Soft iron error compensation matrix
+        mag_offsets: Offsets applied to raw x/y/z values (uTesla)
 
     Args:
-      name
-        Name of the element
-      beta
-        Proportional gain of the Madgwick algorithm
+        name: Name of the element
+        beta: Proportional gain of the Madgwick algorithm
 
     """
 
@@ -774,11 +706,8 @@ class MadgwickFilter(AComputer):
         """Sets the magnetometer calibration
 
         Args:
-          offsets
-            Offsets applied to raw x/y/z values (uTesla)
-
-          softiron_matrix
-            Soft iron error compensation matrix
+            offsets: Offsets applied to raw x/y/z values (uTesla)
+            softiron_matrix: Soft iron error compensation matrix
 
         """
         self.mag_offsets = assignVector(
@@ -800,9 +729,10 @@ class MadgwickFilter(AComputer):
         """Returns a copy of the elements of the magnetometer calibration
 
         Returns:
-          Offsets applied to raw x/y/z values (uTesla)
-
-          Soft iron error compensation matrix
+            A tuple containing:
+            
+            * The offsets applied to raw x/y/z values (uTesla)
+            * The soft iron error compensation matrix
 
         """
         return self.mag_offsets.copy(), self.mag_softiron_matrix.copy()
@@ -1007,20 +937,16 @@ class MahonyFilter(AComputer):
 
     The inputs of the element are **command** and **measurement**
 
-    The parameters are :
-
-    * Kp : Proportional gain of the Mahony algorithm
-    * Ki : Integral gain of the Mahony algorithm
-    * mag_softiron_matrix : Soft iron error compensation matrix
-    * mag_offsets : Offsets applied to raw x/y/z values (uTesla)
+    Attributes:
+        Kp: Proportional gain of the Mahony algorithm
+        Ki: Integral gain of the Mahony algorithm
+        mag_softiron_matrix: Soft iron error compensation matrix
+        mag_offsets: Offsets applied to raw x/y/z values (uTesla)
 
     Args:
-      name
-        Name of the element
-      Kp
-        Proportional gain of the Mahony algorithm
-      Ki
-        Integral gain of the Mahony algorithm
+        name: Name of the element
+        Kp: Proportional gain of the Mahony algorithm
+        Ki: Integral gain of the Mahony algorithm
 
     """
 
@@ -1048,11 +974,8 @@ class MahonyFilter(AComputer):
         """Sets the magnetometer calibration
 
         Args:
-          offsets
-            Offsets applied to raw x/y/z values (uTesla)
-
-          softiron_matrix
-            Soft iron error compensation matrix
+            offsets: Offsets applied to raw x/y/z values (uTesla)
+            softiron_matrix: Soft iron error compensation matrix
 
         """
         self.mag_offsets = assignVector(
@@ -1074,9 +997,10 @@ class MahonyFilter(AComputer):
         """Returns a copy of the elements of the magnetometer calibration
 
         Returns:
-          Offsets applied to raw x/y/z values (uTesla)
+            A tuple containing:
 
-          Soft iron error compensation matrix
+            * Offsets applied to raw x/y/z values (uTesla)
+            * Soft iron error compensation matrix
 
         """
         return self.mag_offsets.copy(), self.mag_softiron_matrix.copy()

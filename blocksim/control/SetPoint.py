@@ -27,13 +27,10 @@ class ASetPoint(AComputer):
     The output name of the computer is **setpoint**
 
     Args:
-      name
-        Name of the element
-      snames
-        Name of each of the scalar components of the setpoint.
-        Its shape defines the shape of the data
-      dtype
-        Data type (typically np.float64 or np.complex128)
+        name: Name of the element
+        snames: Name of each of the scalar components of the setpoint.
+            Its shape defines the shape of the data
+        dtype: Data type (typically np.float64 or np.complex128)
 
     """
 
@@ -51,13 +48,10 @@ class Step(ASetPoint):
     The output name of the computer is **setpoint**
 
     Args:
-      name
-        Name of the element
-      snames
-        Name of each of the scalar components of the setpoint.
-        Its shape defines the shape of the data
-      cons
-        Amplitude of the steps
+        name: Name of the element
+        snames: Name of each of the scalar components of the setpoint.
+            Its shape defines the shape of the data
+        cons: Amplitude of the steps
 
     """
 
@@ -87,16 +81,13 @@ class InterpolatedSetPoint(ASetPoint):
     This element has no input
     The output name of the computer is **setpoint**
 
-    The parameters are :
-
-    * interpolators : Dictionary of the interpolators
+    Attributes:
+        interpolators: Dictionary of the interpolators
 
     Args:
-      name
-        Name of the element
-      snames
-        Name of each of the scalar components of the setpoint.
-        Its shape defines the shape of the data
+        name: Name of the element
+        snames: Name of each of the scalar components of the setpoint.
+            Its shape defines the shape of the data
 
     """
 
@@ -108,7 +99,16 @@ class InterpolatedSetPoint(ASetPoint):
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=dtype))
         self.createParameter("interpolators", value=dict())
 
-    def evalState(self, t: float) -> np.array:
+    def evalState(self, t: float) -> "array":
+        """Perform interpolation at simulation time t
+
+        Args:
+            t: timestamp of the interpolation
+        
+        Returns:
+            The interpolated vector
+
+        """
         otp = self.getOutputByName("setpoint")
         ns = otp.getDataShape()
         x0 = np.empty(ns, dtype=otp.getDataType())
@@ -133,24 +133,22 @@ class InterpolatedSetPoint(ASetPoint):
         sp_interp: np.array,
         kind: str = "linear",
     ):
-        """
+        """Sets the interpolator for the scalar iscal
 
         Args:
-          iscal
-            Index in the output's state vector whose interpolation function is beeing set
-          t_interp
-            Array of dates (s)
-          sp_interp
-            Array of set points (s)
-          kind
-            * linear
-            * nearest
-            * zero
-            * slinear
-            * quadratic
-            * cubic
-            * previous
-            * next
+            iscal: Index in the output's state vector whose interpolation function is beeing set
+            t_interp: Array of dates (s)
+            sp_interp: Array of set points (s)
+            kind: Interpolation method
+
+                * linear
+                * nearest
+                * zero
+                * slinear
+                * quadratic
+                * cubic
+                * previous
+                * next
 
         """
         f = interp1d(
@@ -181,23 +179,20 @@ class InterpolatedSetPoint(ASetPoint):
 class Sinusoid(ASetPoint):
     """Sinusoid set point : for each output
 
-    :math:`A.sin(2.\pi.f+\phi)`
+    $$ A.sin(2.\pi.f+\phi) $$
 
     This element has no input
     The output name of the computer is **setpoint**
 
-    The parameters are :
-
-    * amp : Amplitude A
-    * freq : Frequency f
-    * pha : Initial phase phi
+    Attributes:
+        amp: Amplitude A
+        freq: Frequency f (Hz)
+        pha: Initial phase phi (rad)
 
     Args:
-      name
-        Name of the element
-      snames
-        Name of each of the scalar components of the setpoint.
-        Its shape defines the shape of the data
+        name: Name of the element
+        snames: Name of each of the scalar components of the setpoint.
+            Its shape defines the shape of the data
 
     """
 
@@ -212,7 +207,16 @@ class Sinusoid(ASetPoint):
         self.createParameter("freq", value=np.empty(shape))
         self.createParameter("pha", value=np.empty(shape))
 
-    def evalState(self, t: float) -> np.array:
+    def evalState(self, t: float) -> "array":
+        """Computes the output at simulation time t
+
+        Args:
+            t: timestamp of the interpolation
+        
+        Returns:
+            The interpolated vector
+
+        """
         otp = self.getOutputByName("setpoint")
         ns = otp.getDataShape()
         x0 = np.empty(ns, dtype=otp.getDataType())
@@ -251,18 +255,14 @@ class Ramp(ASetPoint):
     This element has no input
     The output name of the computer is **setpoint**
 
-    The parameters are :
-
-    * slopes : Gradients of the slopes
+    Attributes:
+        slopes: Gradients of the slopes
 
     Args:
-      name
-        Name of the element
-      snames
-        Name of each of the scalar components of the setpoint.
-        Its shape defines the shape of the data
-      slopes
-        Gradients of the slopes
+        name: Name of the element
+        snames: Name of each of the scalar components of the setpoint.
+            Its shape defines the shape of the data
+        slopes: Gradients of the slopes
 
     """
 
@@ -308,23 +308,20 @@ class Rectangular(ASetPoint):
     This element has no input
     The output name of the computer is **setpoint**
 
-    The parameters are :
+    Attributes:
+        doors : Doors descriptions
+            Each key of doors is a the coordinate in the data vector
+            Each value of doors is a tuple :
 
-    * doors : Doors descriptions
-        Each key of doors is a the coordinate in the data vector
-        Each value of doors is a tuple :
-
-        * tdeb : date of the beginning of the door
-        * xon : value of the door inside [tdeb,tfin[
-        * xoff : value of the door outside [tdeb,tfin[
-        * tfin : date of the end of the door
+            * tdeb : date of the beginning of the door
+            * xon : value of the door inside [tdeb,tfin[
+            * xoff : value of the door outside [tdeb,tfin[
+            * tfin : date of the end of the door
 
     Args:
-      name
-        Name of the element
-      snames
-        Name of each of the scalar components of the setpoint.
-        Its shape defines the shape of the data
+        name: Name of the element
+        snames: Name of each of the scalar components of the setpoint.
+            Its shape defines the shape of the data
 
     """
 
@@ -339,7 +336,16 @@ class Rectangular(ASetPoint):
         ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
         self.createParameter("doors", value=[])
 
-    def evalState(self, t: float) -> np.array:
+    def evalState(self, t: float) -> "array":
+        """Computes the output at simulation time t
+
+        Args:
+            t: timestamp of the interpolation
+        
+        Returns:
+            The interpolated vector
+
+        """
         otp = self.getOutputByName("setpoint")
         ns = otp.getDataShape()
         res = np.empty(ns, dtype=otp.getDataType())

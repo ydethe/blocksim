@@ -20,14 +20,13 @@ class IQExtract(AComputer):
     The output of the computer is *iq*
 
     Args:
-      name
-        Name of the element
+        name: Name of the element
 
     Examples:
-      >>> iqe=IQExtract('iqe')
-      >>> out = iqe.compute_outputs(t1=0,t2=1,signal=np.array([1-2*1j]),iq=np.array([0]))
-      >>> out['iq']
-      array([ 1., -2.]...
+        >>> iqe=IQExtract('iqe')
+        >>> out = iqe.compute_outputs(t1=0,t2=1,signal=np.array([1-2*1j]),iq=np.array([0]))
+        >>> out['iq']
+        array([ 1., -2.]...
 
     """
 
@@ -55,27 +54,24 @@ class Clip(AComputer):
     The input of the element is *signal*
     The output of the computer is *clipped*
 
-    Args:
-      name
-        Name of the element
-      signal_shape
-        Shape of the input data
-      snames
-        Name of each of the scalar components of the clipped data.
-        Its shape defines the shape of the data
-      clipping_values
-        Dictionary of the clipping values :
+    Attributes:
+        clipping_values: Dictionary of the clipping values
 
-        * keys : number of the input parameters that is clipped
-        * values : tuple of min and max value. None means no limit
-      name_of_outputs
-        Names of the outputs of the element
+    Args:
+        name: Name of the element
+        signal_shape: Shape of the input data
+        snames: Name of each of the scalar components of the clipped data.
+          Its shape defines the shape of the data
+        clipping_values: Dictionary of the clipping values:
+
+          * keys: number of the input parameters that is clipped
+          * values: tuple of min and max value. None means no limit
 
     Examples:
-      >>> clp = Clip("clp", signal_shape=(1,), clipping_values={(1,): (None, 1)}, snames=["c0", "c1"])
-      >>> out = clp.compute_outputs(t1=0, t2=1, signal=np.array([3, 3]), clipped=np.zeros(2))
-      >>> out["clipped"]
-      array([3., 1.]...
+        >>> clp = Clip("clp", signal_shape=(1,), clipping_values={(1,): (None, 1)}, snames=["c0", "c1"])
+        >>> out = clp.compute_outputs(t1=0, t2=1, signal=np.array([3, 3]), clipped=np.zeros(2))
+        >>> out["clipped"]
+        array([3., 1.]...
 
     """
 
@@ -132,22 +128,20 @@ class Split(AComputer):
     In each output, the scalar names are spt{i}
 
     Args:
-      name
-        Name of the element
-      signal_shape
-        Shape of the input data
-      outputs
-        Dictionary of outputs :
-         * the keys are the names of the outputs
-         * the values are the indices in the input vector of the chosen salars
+        name: Name of the element
+        signal_shape: Shape of the input data
+        outputs: Dictionary of outputs:
+
+          * the keys are the names of the outputs
+          * the values are the indices in the input vector of the chosen salars
 
     Examples:
-      >>> out = dict()
-      >>> out['split'] = [0, 2]
-      >>> spt = Split("spt", signal_shape=(5,), outputs=out)
-      >>> out = spt.compute_outputs(t1=0, t2=1, signal=np.arange(5), split=np.zeros(2))
-      >>> out["split"]
-      array([0., 2.]...
+        >>> out = dict()
+        >>> out['split'] = [0, 2]
+        >>> spt = Split("spt", signal_shape=(5,), outputs=out)
+        >>> out = spt.compute_outputs(t1=0, t2=1, signal=np.arange(5), split=np.zeros(2))
+        >>> out["split"]
+        array([0., 2.]...
 
     """
 
@@ -192,23 +186,21 @@ class Group(AComputer):
     Groups n signals into one
 
     Args:
-      name
-        Name of the element
-      inputs
-        Ordered dictionary of inputs :
-         * the keys are the names of the inputs
-         * the values are the corresponding shape
-      snames
-        Name of each of the scalar components of the setpoint.
-        Its shape defines the shape of the data
+        name: Name of the element
+        inputs: Ordered dictionary of inputs:
+
+          * the keys are the names of the inputs
+          * the values are the corresponding shape
+        snames: Name of each of the scalar components of the setpoint.
+          Its shape defines the shape of the data
 
     Examples:
-      >>> inp = dict()
-      >>> inp["s1"]=(1,); inp["s2"]=(1,)
-      >>> grp = Group("grp", snames=["gs1", "gs2"], inputs=inp)
-      >>> out = grp.compute_outputs(t1=0, t2=1, grouped=np.zeros(2), s1=np.array([2]), s2=np.array([-1]))
-      >>> out["grouped"]
-      array([ 2., -1.]...
+        >>> inp = dict()
+        >>> inp["s1"]=(1,); inp["s2"]=(1,)
+        >>> grp = Group("grp", snames=["gs1", "gs2"], inputs=inp)
+        >>> out = grp.compute_outputs(t1=0, t2=1, grouped=np.zeros(2), s1=np.array([2]), s2=np.array([-1]))
+        >>> out["grouped"]
+        array([ 2., -1.]...
 
     """
 
@@ -253,17 +245,15 @@ class Multiplier(AComputer):
     The output of the element is *multiplied*
 
     Args:
-      name
-        Name of the element
-      coeff
-        Coefficient
+        name: Name of the element
+        coeff: Coefficient
 
     Examples:
-      >>> mul = Multiplier("mul", coeff=2 * np.ones((2, 2)))
-      >>> out = mul.compute_outputs(t1=0, t2=1, multiplied=np.ones((2, 2)), signal=np.ones(2))
-      >>> out["multiplied"]
-      array([[2., 2.],
-             [2., 2.]]...
+        >>> mul = Multiplier("mul", coeff=2 * np.ones((2, 2)))
+        >>> out = mul.compute_outputs(t1=0, t2=1, multiplied=np.ones((2, 2)), signal=np.ones(2))
+        >>> out["multiplied"]
+        array([[2., 2.],
+              [2., 2.]]...
 
     """
 

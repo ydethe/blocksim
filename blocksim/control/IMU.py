@@ -5,6 +5,12 @@ from ..utils import quat_to_matrix, quat_to_euler
 
 
 class IMU(ASensors):
+    """Implementation of noisy IMU model
+
+    Args:
+        name: Name of the IMU
+
+    """
     __slots__ = []
 
     def __init__(self, name: str):
