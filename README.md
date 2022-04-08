@@ -49,3 +49,17 @@ In your virtual env:
 
 That's it ! You are now ready to use blocksim library.
 In the folder tests and examples are a lot of examples that can be used as a starting point.
+
+## Run tests
+
+To run tests, just run:
+
+    python3 -m pytest --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
+
+Once the tests are run, the code coverage is available. To have a html version in the htmlcov folder, run:
+
+    coverage html
+
+If needed (for example, a new test with its associated baseline image), we might have to regenerate the baseline images. In this case, run:
+
+    python3 -m pytest --mpl-generate-path=tests/baseline tests
