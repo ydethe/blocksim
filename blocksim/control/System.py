@@ -21,27 +21,20 @@ class ASystem(AComputer):
 
     Implement the method **transition** to make it concrete
     You can also implement the method **jacobian**
-    (see :class:`blocksim.control.System.ASystem.example_jacobian`)
+    (see `ASystem.example_jacobian`)
     to use the integrators that need the jacobian.
 
     The input name of the computer is **command**
     The output name of the computer is **state**
 
     Args:
-      name
-        Name of the system
-      shape_command
-        Shape of the data expected by the command
-      snames_state
-        Name of each of the scalar components of the state.
-        Its shape defines the shape of the data
-      dtype
-        Data type (typically np.float64 or np.complex128)
-      method, optional
-        Integrator selected for scipy.ode. Default : 'dop853'.
-        See `SciPy doc`_.
-
-    .. _SciPy doc: https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.integrate.ode.html#scipy.integrate.ode
+        name: Name of the system
+        shape_command: Shape of the data expected by the command
+        snames_state: Name of each of the scalar components of the state.
+          Its shape defines the shape of the data
+        dtype: Data type (typically np.float64 or np.complex128)
+        method (optional): Integrator selected for scipy.ode. Default : 'dop853'.
+          See https://docs.scipy.org/doc/scipy-0.18.1/reference/generated/scipy.integrate.ode.html#scipy.integrate.ode
 
     """
 
