@@ -463,6 +463,7 @@ def plotDSPLine(line: DSPLine, spec: "SubplotSpec" = None, **kwargs) -> "AxesSub
       line: DSPLine to be plotted
       spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
       kwargs: Plotting options. The following extra keys are allowed:
+      
         * transform for a different transform from the one given at instanciation
         * find_peaks to search peaks
         * x_unit_mult to have a more readable unit prefix
