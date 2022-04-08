@@ -47,6 +47,21 @@ def getUnitAbbrev(mult: float) -> str:
 
 
 def format_parameter(samp: float, unit: str) -> str:
+    """Given a scalar value and a unit, returns the txt to display
+    with appropriate unit and muyliplier
+
+    Args:
+      samp: The scalar value
+      unit: The associated unit
+
+    Returns:
+      str: The text to display
+    
+    Examples:
+      >>> format_parameter(1.5e-3, 'm')
+      1.5 mm
+
+    """
     xm = np.abs(samp)
     pm = (int(log10(xm)) // 3) * 3
     x_unit_mult = 10**pm
