@@ -25,15 +25,11 @@ class AController(AComputer):
     The output of the computer is **command**
 
     Args:
-      name
-        Name of the element
-      shape_setpoint
-        Shape of the setpoint data
-      shape_estimation
-        Shape of the estimation data
-      snames
-        Name of each of the scalar components of the estimation.
-        Its shape defines the shape of the data
+        name: Name of the element
+        shape_setpoint: Shape of the setpoint data
+        shape_estimation: Shape of the estimation data
+        snames: Name of each of the scalar components of the estimation.
+          Its shape defines the shape of the data
 
     """
 
@@ -59,16 +55,14 @@ class PIDController(AController):
     The outputs of the computer are **command** and **integral**
 
     The **estimation** is an estimation of the system, with the following constraints:
+
     * the first value of **estimation** is the position
     * the second value of **estimation** is the velocity
 
     Args:
-      name
-        Name of the element
-      shape_estimation
-        Shape of the data expected by the estimation (> 2)
-      coeffs
-        Coefficients of the retroaction (P, I, D)
+        name: Name of the element
+        shape_estimation: Shape of the data expected by the estimation (> 2)
+        coeffs: Coefficients of the retroaction (P, I, D)
 
     """
 
@@ -123,26 +117,22 @@ class AntiWindupPIDController(AController):
     The inputs of the computer are **estimation** and **setpoint**
     The outputs of the computer are **command** and **integral**
 
-    The **estimation** :math:`\hat{X}` must contain the state you want to control :math:`X` and its derivative :math:`\dot{X}`.:
+    The **estimation** $$ \hat{X} $$ must contain the state you want to control $$ X $$ and its derivative $$ \dot{X} $$:
 
-    :math:`\hat{X} = (X, \dot{X}, ...)^T`
+    $$ \hat{X} = (X, \dot{X}, ...)^T $$
 
-    The parameters P ,I and D are to be defined by the user :
-
-    * P : Proportinnal gain
-    * I : Integral gain
-    * D : Derivative gain
-    * Umin : if the command u is < Umin, then u = Umin
-    * Umax : if the command u is > Umax, then u = Umax
-    * Ks : gain of the anti-windup effect
+    Attributes:
+        P: Proportinnal gain
+        I: Integral gain
+        D: Derivative gain
+        Umin: if the command u is < Umin, then u = Umin
+        Umax: if the command u is > Umax, then u = Umax
+        Ks: gain of the anti-windup effect
 
     Args:
-      name
-        Name of the element
-      shape_estimation
-        Shape of the data expected by the estimation (> 2)
-      coeffs
-        Coefficients of the retroaction (P, I, D, Umin, Umax, Ks)
+        name: Name of the element
+        shape_estimation: Shape of the data expected by the estimation (> 2)
+        coeffs: Coefficients of the retroaction (P, I, D, Umin, Umax, Ks)
 
     """
 
@@ -206,25 +196,24 @@ class LQRegulator(AController):
     The outputs of the computer are **command**
     The size of the setpoint vector must be the same as the command vector
 
-    The parameters Q and R are to be defined by the user :
+    The following attributes are to be defined by the user:
 
-    * Q : State weight matrices
-    * R : Input weight matrices
+    Attributes:
+        Q: State weight matrices
+        R: Input weight matrices
 
-    The parameters K, S, E and N are computed thanks to the method LQRegulator.computeGain
+    The following attributes are computed thanks to the method `LQRegulator.computeGain`
 
-    * K : State feedback gains
-    * S : Solution to Riccati equation
-    * E : Eigenvalues of the closed loop system
-    * N : Precompensation gain
+    Attributes:
+        K: State feedback gains
+        S: Solution to Riccati equation
+        E: Eigenvalues of the closed loop system
+        N: Precompensation gain
 
     Args:
-      name
-        Name of the element
-      shape_setpoint
-        Shape of the setpoint data
-      shape_estimation
-        Shape of the data expected by the estimation (> 2)
+        name: Name of the element
+        shape_setpoint:  Shape of the setpoint data
+        shape_estimation: Shape of the data expected by the estimation (> 2)
 
     """
 
