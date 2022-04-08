@@ -1,3 +1,9 @@
+"""
+
+.. include:: ../README.md
+
+"""
+
 # __init__.py
 from pkg_resources import get_distribution
 import logging
