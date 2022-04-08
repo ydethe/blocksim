@@ -172,7 +172,7 @@ class BandpassDSPFilter(ADSPFilter):
         f_low: Start frequency of the band pass (Hz)
         f_high: End frequency of the band pass (Hz)
         numtaps: Number of coefficients
-        win: The window to be applied. See blocksim.dsp.get_window
+        win: The window to be applied. See `blocksim.dsp.get_window`
 
     """
 
