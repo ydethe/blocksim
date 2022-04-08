@@ -84,18 +84,15 @@ class ASystem(AComputer):
         """Defines the jacobian of
         the transition function f(t,x,u) with respect to x:
 
-        x' = f(t,x,u)
+        $$ x' = f(t,x,u) $$
 
         Args:
-          t
-            Date of the current state
-          x
-            Current state
-          u
-            Command applied to the system
+            t: Date of the current state
+            x: Current state
+            u: Command applied to the system
 
         Returns:
-          The jacobian of the transition function with respect to x
+            The jacobian of the transition function with respect to x
 
         """
         return
@@ -133,15 +130,14 @@ class ASystem(AComputer):
 class LTISystem(ASystem):
     """Models a SISO LTI system :
 
-    :math:`dX/dt = A.X + B.u`
+    $$ dX/dt = A.X + B.u $$
 
     The input name of the element is **command**
     The output name of the computer is **state**
 
-    The matrix A and B are parameters that must be defined by the user :
-
-    * matA : (n x n) State (or system) matrix
-    * matB : (n x m) Input matrix
+    Attributes:
+        matA : (n x n) State (or system) matrix
+        matB : (n x m) Input matrix
 
     with :
 
@@ -149,17 +145,12 @@ class LTISystem(ASystem):
     * m number of commands (shape_command in the init arguments)
 
     Args:
-      name
-        Name of the system
-      shape_command
-        Shape of the data expected by the command
-      snames_state
-        Name of each of the scalar components of the state.
-        Its shape defines the shape of the data
-      dtype
-        Data type (typically np.float64 or np.complex128)
-      method
-        Integrator selected for scipy.ode. Default : 'dop853'
+        name: Name of the system
+        shape_command: Shape of the data expected by the command
+        snames_state: Name of each of the scalar components of the state.
+          Its shape defines the shape of the data
+        dtype (optional): Data type (typically np.float64 or np.complex128)
+        method (optional): Integrator selected for scipy.ode. Default : 'dop853'
 
     """
 
@@ -190,39 +181,38 @@ class LTISystem(ASystem):
         """
 
         Args:
-          dt
-            The discretization time step
-          method
-            * gbt: generalized bilinear transformation
-            * bilinear: Tustin’s approximation (“gbt” with alpha=0.5)
-            * euler: Euler (or forward differencing) method (“gbt” with alpha=0)
-            * backward_diff: Backwards differencing (“gbt” with alpha=1.0)
-            * zoh: zero-order hold (default)
-          alpha
-            Within [0, 1]
-            The generalized bilinear transformation weighting parameter, which should only be specified with method=”gbt”, and is ignored otherwise
+            dt: The discretization time step
+            method: Discretization method:
+
+              * gbt: generalized bilinear transformation
+              * bilinear: Tustin’s approximation (“gbt” with alpha=0.5)
+              * euler: Euler (or forward differencing) method (“gbt” with alpha=0)
+              * backward_diff: Backwards differencing (“gbt” with alpha=1.0)
+              * zoh: zero-order hold (default)
+            alpha: Parameter for the gbt method, within [0, 1]
+              The generalized bilinear transformation weighting parameter, which should only be specified with method=”gbt”, and is ignored otherwise
 
         Returns:
-          Ad
-            Discrete dynamics matrix
-          Bd
-            Discrete input matrix
+            A tuple containing:
+
+            * The discrete dynamics matrix
+            * The discrete input matrix
 
         Examples:
-          >>> m = 1. # Mass
-          >>> k = 40. # Spring rate
-          >>> sys = LTISystem('sys', shape_command=1, snames_state=['x','v'])
-          >>> sys.matA = np.array([[0,1],[-k/m,0]])
-          >>> sys.matB = np.array([[0,1/m]]).T
-          >>> Kk = 1/m
-          >>> Ka = np.sqrt(k/m)
-          >>> def A(t1, t2):
-          ...    return np.array([[np.cos(Ka * (t2 - t1)), np.sin(Ka * (t2 - t1)) / Ka],
-          ...                     [-Ka * np.sin(Ka * (t2 - t1)), np.cos(Ka * (t2 - t1))]])
-          >>> Ad,Bd = sys.getDiscreteMatrices(dt=0.1)
-          >>> D = A(2, 2.1) - Ad
-          >>> lin.norm(D) < 1.e-14
-          True
+            >>> m = 1. # Mass
+            >>> k = 40. # Spring rate
+            >>> sys = LTISystem('sys', shape_command=1, snames_state=['x','v'])
+            >>> sys.matA = np.array([[0,1],[-k/m,0]])
+            >>> sys.matB = np.array([[0,1/m]]).T
+            >>> Kk = 1/m
+            >>> Ka = np.sqrt(k/m)
+            >>> def A(t1, t2):
+            ...    return np.array([[np.cos(Ka * (t2 - t1)), np.sin(Ka * (t2 - t1)) / Ka],
+            ...                     [-Ka * np.sin(Ka * (t2 - t1)), np.cos(Ka * (t2 - t1))]])
+            >>> Ad,Bd = sys.getDiscreteMatrices(dt=0.1)
+            >>> D = A(2, 2.1) - Ad
+            >>> lin.norm(D) < 1.e-14
+            True
 
         """
         n = self.getOutputByName("state").getDataShape()[0]
