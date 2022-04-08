@@ -22,6 +22,10 @@ blocksim comes with some CLI utilities.
     db      Manage databases.
     header  Visualize a binary log file's header
 
+# Class diagram
+
+![classes](./classes.png "Class diagram")
+
 """
 
 # __init__.py
