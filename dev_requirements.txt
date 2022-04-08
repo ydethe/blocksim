@@ -35,3 +35,4 @@ pytest-cov==3.0.0
 pytest-mpl==0.14.0
 pre-commit==2.18.1
 pylint==2.13.5
+sphinx-markdown-builder==0.5.5

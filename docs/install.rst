@@ -1,7 +1,5 @@
 .. Licensed under the MIT Licensed
 
-.. _install:
-
 ============
 Installation
 ============
