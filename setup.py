@@ -58,5 +58,7 @@ setup(
     **conf_dict["option"],
     **conf_dict["metadata"],
     install_requires=req,
-    cmdclass={"doc": BuildSphinxCommand,},
+    cmdclass={
+        "doc": BuildSphinxCommand,
+    },
 )

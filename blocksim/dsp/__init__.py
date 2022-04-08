@@ -341,7 +341,11 @@ def zadoff_chu(u, n):
 
 
 def createZadoffChu(
-    name: str, n_zc: int, u: int, sampling_freq: float, samplingStart: float = 0,
+    name: str,
+    n_zc: int,
+    u: int,
+    sampling_freq: float,
+    samplingStart: float = 0,
 ) -> "DSPSignal":
     """Builds Zadoff-Chu sequence
 

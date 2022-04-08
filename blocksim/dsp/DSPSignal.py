@@ -336,8 +336,7 @@ class DSPSignal(DSPLine, ASetPoint):
         """Gets the phase law from the signal
 
         Args:
-          eps
-            If :math:`|z_k|<\epsilon` for a sample :math:`z_k`, then the samle if considered null
+          eps: If :math:`|z_k|<\epsilon` for a sample :math:`z_k`, then the samle if considered null
 
         Returns:
           The unfolded phase law

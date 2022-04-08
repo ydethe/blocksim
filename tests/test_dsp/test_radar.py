@@ -87,7 +87,11 @@ class TestRadar(TestBase):
         fig = plt.figure()
         axe = fig.add_subplot(111)
         plotSpectrogram(
-            spg, axe, transform=trf, search_fig=False, find_peaks=1,
+            spg,
+            axe,
+            transform=trf,
+            search_fig=False,
+            find_peaks=1,
         )
         axe.set_title("Power (dB)")
 

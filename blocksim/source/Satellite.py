@@ -166,7 +166,10 @@ class ASatellite(AComputer):
         return lon, lat
 
     def geocentricITRFTrajectory(
-        self, number_of_position:int=200, number_of_periods:int=1, color=(1, 0, 0, 1)
+        self,
+        number_of_position: int = 200,
+        number_of_periods: int = 1,
+        color=(1, 0, 0, 1),
     ) -> Trajectory:
         """
         Return the geocentric ITRF positions of the trajectory
@@ -215,7 +218,7 @@ class ASatellite(AComputer):
         an array with 3 cartesian position (m) and 3 cartesian velocity (m/s) in ITRF frame
 
         Args:
-          td: Simulatoin time (s)
+          td: Simulation time (s)
 
         Returns:
           A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in ITRF frame
@@ -254,7 +257,7 @@ class SGP4Satellite(ASatellite):
         ASatellite.__init__(self, name, tsync)
         self.__sgp4 = None
 
-    def setSGP4(self, sgp4):
+    def __setSGP4(self, sgp4):
         self.__sgp4 = sgp4
         self.orbit_mano = sgp4.mo
         self.orbit_eccentricity = sgp4.ecco
@@ -269,11 +272,11 @@ class SGP4Satellite(ASatellite):
         inc = self.orbit_inclination
         e = self.orbit_eccentricity
         ws = 2 * np.pi / self.orbit_period.total_seconds()
-        a = (mu / ws ** 2) ** (1 / 3)
+        a = (mu / ws**2) ** (1 / 3)
         e = self.orbit_eccentricity
         # https://en.wikipedia.org/wiki/Nodal_precession#Rate_of_precession
         self.orbital_precession = (
-            -3 / 2 * (Req / (a * (1 - e ** 2))) ** 2 * J2 * ws * np.cos(inc)
+            -3 / 2 * (Req / (a * (1 - e**2))) ** 2 * J2 * ws * np.cos(inc)
         )
         self.orbit_semi_major_axis = a
         self.orbit_apoapsis = a * (1 + e)
@@ -329,7 +332,7 @@ class SGP4Satellite(ASatellite):
         """
         t0 = cls.getInitialEpoch()
         epoch = (tsync - t0).total_seconds() / 86400
-        n = np.sqrt(mu / a ** 3)
+        n = np.sqrt(mu / a**3)
 
         # https://rhodesmill.org/skyfield/earth-satellites.html#build-a-satellite-from-orbital-elements
         satrec = Satrec()
@@ -349,7 +352,7 @@ class SGP4Satellite(ASatellite):
             node,  # nodeo: right ascension of ascending node (radians)
         )
         sat = cls(name, tsync)
-        sat.setSGP4(satrec)
+        sat.__setSGP4(satrec)
 
         return sat
 
@@ -361,7 +364,7 @@ class SGP4Satellite(ASatellite):
 
         Args:
           tsync: Time that corresponds to the simulation time zero
-          tle_file: TLE file path
+          tle_file: TLE file path or URL
           iline: Number of the object in the TLE (in case of a multi object TLE file)
 
         Returns:
@@ -399,7 +402,7 @@ class SGP4Satellite(ASatellite):
         satrec = Satrec.twoline2rv(line1, line2)
 
         sat = cls(name, tsync)
-        sat.setSGP4(satrec)
+        sat.__setSGP4(satrec)
 
         return sat
 
@@ -515,7 +518,7 @@ class CircleSatellite(ASatellite):
 
         self.__R1 = pv_teme
         self.__R2 = np.hstack((np.cross(n, pos), np.cross(n, vel)))
-        self.__sat_puls = sqrt(mu / a ** 3)
+        self.__sat_puls = sqrt(mu / a**3)
 
         a, e, argp, inc, mano, node = teme_to_orbital(pv_teme)
 
@@ -527,11 +530,11 @@ class CircleSatellite(ASatellite):
         self.orbit_bstar = 0.0
         self.orbit_ndot = 0.0
         self.orbit_nddot = 0.0
-        ws = sqrt(mu / a ** 3)
+        ws = sqrt(mu / a**3)
         self.orbit_period = timedelta(seconds=2 * np.pi / ws)
         # https://en.wikipedia.org/wiki/Nodal_precession#Rate_of_precession
         self.orbital_precession = (
-            -3 / 2 * (Req / (a * (1 - e ** 2))) ** 2 * J2 * ws * np.cos(inc)
+            -3 / 2 * (Req / (a * (1 - e**2))) ** 2 * J2 * ws * np.cos(inc)
         )
         self.orbit_semi_major_axis = a
         self.orbit_apoapsis = a * (1 + e)
@@ -612,7 +615,7 @@ class CircleSatellite(ASatellite):
 
         Args:
           tsync: Time that corresponds to the simulation time zero
-          tle_file: TLE file path
+          tle_file: TLE file path or URL
           iline: Number of the object in the TLE (in case of a multi object TLE file)
 
         Returns:
@@ -684,7 +687,7 @@ def createSatellites(
     """Creates a list of satellites from a TLE file, using the specified subclass of ASatellite
 
     Args:
-      tle_file: TLE file path
+      tle_file: TLE file path or URL
       tsync: Time that corresponds to the simulation time zero
       prop: Propagator to use, as a subclass of ASatellite
 

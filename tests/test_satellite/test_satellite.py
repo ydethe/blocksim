@@ -127,7 +127,7 @@ class TestSatellite(TestBase):
         pv0 = satellite.compute_outputs(0, 0, subpoint=None, itrf=None)["itrf"]
 
         r = satellite.orbit_periapsis
-        ws = sqrt(mu / r ** 3)
+        ws = sqrt(mu / r**3)
         t = 2 * pi / (ws - satellite.orbital_precession - omega)
         pv = satellite.compute_outputs(0, t, subpoint=None, itrf=None)["itrf"]
 

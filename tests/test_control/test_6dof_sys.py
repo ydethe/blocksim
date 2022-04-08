@@ -43,7 +43,7 @@ class Test6DOFSys(TestBase):
 
         pz = self.log.getValue("sys_state_pz")
         tf = tps[-1]
-        self.assertAlmostEqual(pz[-1], g0 * tf ** 2 / 2, delta=1e-8)
+        self.assertAlmostEqual(pz[-1], g0 * tf**2 / 2, delta=1e-8)
 
         return self.plotVerif(
             "Figure 1",
@@ -181,7 +181,7 @@ class Test6DOFSys(TestBase):
 
         r = self.log.getValue("sys_euler_roll")
         tf = tps[-1]
-        self.assertAlmostEqual(r[-1], T * tf ** 2 / 2 / sys.J[0, 0], delta=1e-8)
+        self.assertAlmostEqual(r[-1], T * tf**2 / 2 / sys.J[0, 0], delta=1e-8)
 
         frame = Frame()
         vf = np.array([1, 0, 0])

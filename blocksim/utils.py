@@ -248,7 +248,10 @@ def assignVector(
     ):
         txt = (
             "Element '%s' : Argument '%s' - trying to affect a complex vector into a real or integer vector"
-            % (dst_name, src_name,)
+            % (
+                dst_name,
+                src_name,
+            )
         )
         raise WrongDataType(txt)
 
@@ -290,9 +293,9 @@ def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> np.array:
     """
     res = np.empty((3, 3))
 
-    res[0, 0] = qr ** 2 + qi ** 2 - qj ** 2 - qk ** 2
-    res[1, 1] = qr ** 2 - qi ** 2 + qj ** 2 - qk ** 2
-    res[2, 2] = qr ** 2 - qi ** 2 - qj ** 2 + qk ** 2
+    res[0, 0] = qr**2 + qi**2 - qj**2 - qk**2
+    res[1, 1] = qr**2 - qi**2 + qj**2 - qk**2
+    res[2, 2] = qr**2 - qi**2 - qj**2 + qk**2
     res[0, 1] = 2 * (qi * qj - qk * qr)
     res[0, 2] = 2 * (qi * qk + qj * qr)
     res[1, 0] = 2 * (qi * qj + qk * qr)
@@ -656,12 +659,12 @@ def geodetic_to_itrf(lon: float, lat: float, h: float) -> "array":
 
 def Iter_phi_h(x: float, y: float, z: float, eps: float = 1e-6) -> Tuple[float, float]:
     r = lin.norm((x, y, z))
-    p = sqrt(x ** 2 + y ** 2)
+    p = sqrt(x**2 + y**2)
 
     N = Req
     hg = r - sqrt(Req - Rpo)
-    e = sqrt(1 - Rpo ** 2 / Req ** 2)
-    phig = arctan(z * (N + hg) / (p * (N * (1 - e ** 2) + hg)))
+    e = sqrt(1 - Rpo**2 / Req**2)
+    phig = arctan(z * (N + hg) / (p * (N * (1 - e**2) + hg)))
 
     cont = True
     niter = 0
@@ -669,9 +672,9 @@ def Iter_phi_h(x: float, y: float, z: float, eps: float = 1e-6) -> Tuple[float, 
         hgp = hg
         phigp = phig
 
-        N = Req / sqrt(1 - e ** 2 * sin(phigp) ** 2)
+        N = Req / sqrt(1 - e**2 * sin(phigp) ** 2)
         hg = p / cos(phigp) - N
-        phig = arctan(z * (N + hg) / (p * (N * (1 - e ** 2) + hg)))
+        phig = arctan(z * (N + hg) / (p * (N * (1 - e**2) + hg)))
 
         if eps > max(abs(phigp - phig), abs(hgp - hg)):
             cont = False
@@ -786,7 +789,12 @@ def teme_to_orbital(pv: "array"):
 
 
 def orbital_to_teme(
-    a: float, ecc: float, argp: float, inc: float, mano: float, node: float,
+    a: float,
+    ecc: float,
+    argp: float,
+    inc: float,
+    mano: float,
+    node: float,
 ) -> "array":
     """
 
@@ -812,10 +820,10 @@ def orbital_to_teme(
 
     """
     # https://en.wikipedia.org/wiki/True_anomaly#From_the_mean_anomaly
-    p = a * (1 - ecc ** 2)
+    p = a * (1 - ecc**2)
     tano = anomaly_mean_to_true(ecc, mano)
     r = p / (1 + ecc * cos(tano))
-    n = sqrt(mu / a ** 3)
+    n = sqrt(mu / a**3)
 
     x = r * (cos(node) * cos(argp + tano) - sin(node) * cos(inc) * sin(argp + tano))
     y = r * (sin(node) * cos(argp + tano) + cos(node) * cos(inc) * sin(argp + tano))
@@ -867,7 +875,7 @@ def itrf_to_geodetic(position: "array") -> Tuple[float, float, float]:
     x = position[0]
     y = position[1]
     z = position[2]
-    p = sqrt(x ** 2 + y ** 2)
+    p = sqrt(x**2 + y**2)
     cl = x / p  # cos(lambda)
     sl = y / p  # sin(lambda)
     lon = arctan2(sl, cl)

@@ -54,7 +54,11 @@ class GenericComputer(AComputer):
         self.createParameter("callable", value=callable)
 
     def compute_outputs(
-        self, t1: float, t2: float, xin: np.array, xout: np.array,
+        self,
+        t1: float,
+        t2: float,
+        xin: np.array,
+        xout: np.array,
     ) -> dict:
         outputs = {}
         outputs["xout"] = self.callable(xin)
