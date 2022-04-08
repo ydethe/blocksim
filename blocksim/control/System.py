@@ -183,7 +183,6 @@ class LTISystem(ASystem):
         Args:
             dt: The discretization time step
             method: Discretization method:
-
               * gbt: generalized bilinear transformation
               * bilinear: Tustin’s approximation (“gbt” with alpha=0.5)
               * euler: Euler (or forward differencing) method (“gbt” with alpha=0)
