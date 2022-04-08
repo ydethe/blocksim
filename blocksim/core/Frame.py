@@ -3,8 +3,8 @@ from uuid import UUID, uuid4
 
 class Frame(object):
     """Time frame. Describes a time interval (start time and stop time)
-    Contains also an UUID, which is used to determine if a :class:`blocksim.core.ABaseNode` is up to date.
-    If not, the :class:`blocksim.core.ABaseNode` is update with a call to :class:`blocksim.core.ABaseNode.updateAllOutput`
+    Contains also an UUID, which is used to determine if a `ABaseNode` is up to date.
+    If not, the `ABaseNode` is update with a call to `ABaseNode.updateAllOutput`
 
     Args:
         start_timestamp: Time start of the frame

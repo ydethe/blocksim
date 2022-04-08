@@ -9,7 +9,7 @@ class AxeSpec(object):
             * nrow for the number of rows subdivisions
             * ncol for the number of columns subdivisions
             * ind for the number of axe (1 is the first one in the layout)
-            * sharex is the numer of an axe whose X axe will be shared with the instance of :class:`AxeSpec`
+            * sharex is the numer of an axe whose X axe will be shared with the instance of AxeSpec
             * title for the title of the axe
             * projection for the axe projection. Can be 'rectilinear' or 'polar'
         lines: List of dict to specify the lines' spec. Supported keys :

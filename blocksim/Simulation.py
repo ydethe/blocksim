@@ -197,7 +197,7 @@ class Simulation(object):
 
     def connect(self, src_name: str, dst_name: str):
         """Links an computer with another, so that the state of the source is connected to the input of the destination.
-        Both src and dst must have been added with :class:`blocksim.Simulation.Simulation.addComputer`
+        Both src and dst must have been added with `Simulation.addComputer`
 
         Args:
             src_name: Source computer. Example : sys.output

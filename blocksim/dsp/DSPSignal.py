@@ -435,7 +435,7 @@ class DSPSignal(DSPLine, ASetPoint):
         return self.convolve(y)
 
     def convolve(self, y: "DSPSignal") -> "DSPSignal":
-        """Returns the convolution with another :class:`blocksim.dsp.DSPSignal`
+        """Returns the convolution with another DSPSignal
 
         Args:
             y: The DSPSignal to convolve with

@@ -3,29 +3,29 @@ Damped spring-mass system with kalman estimator
 ===============================================
 This case consists in :
 
-* a LTI system, named *sys* :class:`blocksim.control.System.LTISystem`
+* a LTI system, named *sys* `blocksim.control.System.LTISystem`
 
   This element simulates the system
 
-* a LQ regulator, named *ctl* :class:`blocksim.control.Controller.LQRegulator`
+* a LQ regulator, named *ctl* `blocksim.control.Controller.LQRegulator`
 
   This element compares the estimated state of the system and compares to the setpoint.
   It controls the system so that it reaches the setpoint
 
-* a noisy biased sensor, named *cpt* :class:`blocksim.control.Sensors.LinearSensors`
+* a noisy biased sensor, named *cpt* `blocksim.control.Sensors.LinearSensors`
 
   This element measures the position with noise and a constant bias
 
-* a Kalman filter , named *kal* :class:`blocksim.control.Estimator.TimeInvariantKalmanFilter`
+* a Kalman filter , named *kal* `blocksim.control.Estimator.TimeInvariantKalmanFilter`
 
   This version of the Kalman filter is the steady-state version : the matrix gain and state covariance matrix are fix in time.
 
-* a LQ regulator, named *ctl* :class:`blocksim.control.Controller.LQRegulator`
+* a LQ regulator, named *ctl* `blocksim.control.Controller.LQRegulator`
 
   This element compares the estimated state of the system and compares to the setpoint.
   It controls the system so that it reaches the setpoint
 
-* a setpoint, named *stp* :class:`blocksim.control.SetPoint.Step`
+* a setpoint, named *stp* `blocksim.control.SetPoint.Step`
   This element provides a user command such as a step or a ramp or a Dirac, ...
   Here, we will use a unit step function
 

@@ -15,7 +15,7 @@ f2 = 10
 tau = 12
 
 ###############################################################################
-# Generation of a chirp with :class:`blocksim.dsp.DSPSignal.DSPSignal.fromLinearFM`
+# Generation of a chirp with `blocksim.dsp.DSPSignal.DSPSignal.fromLinearFM`
 
 from blocksim.dsp.DSPSignal import DSPSignal
 
@@ -49,7 +49,7 @@ sig = (
 )
 
 ###############################################################################
-# We configure the frequency estimator :class:`blocksim.control.Estimator.SpectrumEstimator`
+# We configure the frequency estimator `blocksim.control.Estimator.SpectrumEstimator`
 
 from blocksim.control.Estimator import SpectrumEstimator
 
@@ -89,8 +89,8 @@ sim.connect("ctrl.setpoint", "kal.command")
 sim.simulate(sig.generateXSerie(), progress_bar=False)
 
 ###############################################################################
-# We plot the spectrogram, which is computed by :class:`blocksim.control.Estimator.SpectrumEstimator.getSpectrogram`
-# The spectrogram is an instance of :class:`blocksim.dsp.DSPSpectrogram.DSPSpectrogram`
+# We plot the spectrogram, which is computed by `blocksim.control.Estimator.SpectrumEstimator.getSpectrogram`
+# The spectrogram is an instance of `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`
 # It has a method plot which allows to visualize the spectrogram
 
 log = sim.getLogger()
