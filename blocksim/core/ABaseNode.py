@@ -9,13 +9,12 @@ from .Frame import Frame
 class ABaseNode(metaclass=ABCMeta):
     """This base class is the parent class for :
 
-    * :class:`blocksim.core.Node.Input`
-    * :class:`blocksim.core.Node.Output`
-    * :class:`blocksim.core.Node.AComputer`
+    * `Node.Input`
+    * `Node.Output`
+    * `Node.AComputer`
 
     Args:
-      name
-        The name of the node
+        name: The name of the node
 
     """
 

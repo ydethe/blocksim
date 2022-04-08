@@ -18,14 +18,10 @@ class PSKMapping(ADSPComputer):
     Then the following mu-1 samples are memorised and the last symbol is repeated on the output mu-1 times.
 
     Args:
-      name
-        Name of the computer
-      mapping
-        List of phase values. For example, in QPSK, [pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4]
-      output_size
-        Number of symbols computed in parallel. The size of the input vector shall therefore be output_size*mu
-      p_samp
-        For one input bit, the PSK symbol is repeated p_samp times
+        name: Name of the computer
+        mapping: List of phase values. For example, in QPSK, [pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4]
+        output_size: Number of symbols computed in parallel. The size of the input vector shall therefore be output_size*mu
+        p_samp: For one input bit, the PSK symbol is repeated p_samp times
 
     """
 
@@ -87,8 +83,7 @@ class PSKMapping(ADSPComputer):
         """Plots the PSK constellation on a matplotlib axe
 
         Args:
-          axe
-            The axe to draw on
+            axe: The axe to draw on
 
         """
         theta = np.linspace(0, 2 * pi, 100)
@@ -118,12 +113,9 @@ class PSKDemapping(ADSPComputer):
     The symbols on the input are not supposed to change during this period
 
     Args:
-      name
-        Name of the computer
-      mapping
-        List of phase values. For example, in QPSK, [pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4]
-      output_size
-        Number of bits computed in parallel. The size of the input vector shall therefore be output_size//mu
+        name: Name of the computer
+        mapping: List of phase values. For example, in QPSK, [pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4]
+        output_size: Number of bits computed in parallel. The size of the input vector shall therefore be output_size//mu
 
     """
 
