@@ -12,7 +12,7 @@ from matplotlib.backend_bases import Event
 
 from .. import logger
 from ..Logger import Logger
-from ..dsp.DSPFilter import ADSPFilter
+from ..dsp.DSPFilter import ADSPFilter, ArbitraryDSPFilter
 from ..dsp.DSPLine import DSPLine
 from ..dsp.DSPSpectrogram import DSPSpectrogram
 from ..dsp import phase_unfold
@@ -206,7 +206,7 @@ def plotSpectrogram(
     * the label of the plot is the name given at instanciation
 
     Args:
-      spg: Spectrogram to plot
+      spg: DSPSpectrogram to plot
       spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
       fill: Method to plot the DSPSpectrogram. Can be 'plot_surface', 'pcolormesh', 'contour' or 'contourf'
       kwargs: Plotting options. The following extra keys are allowed:
@@ -404,12 +404,15 @@ def plotBode(
     """Plots the bode diagram of a filter
 
     Args:
-      filt
-        Filter to analyse
-      spec_amp
-        The matplotlib SubplotSpec that defines the amplitude axis to draw on. Obtained by fig.add_gridspec and slicing
-      spec_pha
-        The matplotlib SubplotSpec that defines the phase axis to draw on. Obtained by fig.add_gridspec and slicing
+      filt: Filter to analyse
+      spec_amp: The matplotlib SubplotSpec that defines the amplitude axis to draw on. Obtained by fig.add_gridspec and slicing
+      spec_pha: The matplotlib SubplotSpec that defines the phase axis to draw on. Obtained by fig.add_gridspec and slicing
+
+    Examples:
+      >>> f = ArbitraryDSPFilter(name="MTI", samplingPeriod=1e6, taps=[1, -1])
+      >>> fig = plt.figure()
+      >>> gs = fig.add_gridspec(2, 1)
+      >>> plotBode(f, spec_amp=gs[0, 0], spec_pha=gs[1, 0])
 
     """
     gs = spec_amp.get_gridspec()
@@ -457,12 +460,9 @@ def plotDSPLine(line: DSPLine, spec: "SubplotSpec" = None, **kwargs) -> "AxesSub
     * the label of the plot is the name given at instanciation
 
     Args:
-      line
-        Line to be plotted
-      spec
-        The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
-      kwargs
-        Plotting options. The following extra keys are allowed:
+      line: DSPLine to be plotted
+      spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
+      kwargs: Plotting options. The following extra keys are allowed:
         * transform for a different transform from the one given at instanciation
         * find_peaks to search peaks
         * x_unit_mult to have a more readable unit prefix
