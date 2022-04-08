@@ -76,19 +76,14 @@ def plotFromLogger(
     """Plots a value on a matplotlib axe
 
     Args:
-      log
-        :class:`blocksim.Logger.Logger` instance
-      id_x
-        Name or expression for the X axis
-      id_y
-        Name or expression for the Y axis
-      spec
-        The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
-      kwargs
-        matplotlib plotting options for the 'plot' method
+      log: The Logger to read into
+      id_x: Name or expression for the X axis
+      id_y: Name or expression for the Y axis
+      spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
+      kwargs: matplotlib plotting options for the 'plot' method
 
     Returns:
-      The lines drawn by matplotlib
+      The Axes used by matplotlib
 
     """
     if spec is None:
@@ -129,12 +124,9 @@ def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
     """Parses a :class:`FigureSpec` to build a matplotlib figure, and returns it
 
     Args:
-      spec
-        A :class:`FigureSpec` instance
-      log
-        A :class:`blocksim.Logger.Logger` to read data from
-      fig
-        A matplotlib figure. If None, the function creates ones
+      spec: A FigureSpec instance
+      log: The Logger to read into
+      fig: A matplotlib figure. If None, the function creates ones
 
     Returns:
       The matplotlib figure
@@ -214,14 +206,10 @@ def plotSpectrogram(
     * the label of the plot is the name given at instanciation
 
     Args:
-      spg
-        Spectrogram to plot
-      spec
-        The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
-      fill
-        Method to plot the DSPSpectrogram. Can be 'plot_surface', 'pcolormesh', 'contour' or 'contourf'
-      kwargs
-        Plotting options. The following extra keys are allowed:
+      spg: Spectrogram to plot
+      spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
+      fill: Method to plot the DSPSpectrogram. Can be 'plot_surface', 'pcolormesh', 'contour' or 'contourf'
+      kwargs: Plotting options. The following extra keys are allowed:
         * transform for a different transform from the one given at instanciation
         * find_peaks to search peaks
         * x_unit_mult to have a more readable unit prefix
