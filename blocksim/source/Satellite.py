@@ -119,7 +119,7 @@ class ASatellite(AComputer):
         """Return the inital epoch of TLEs : 1949 December 31 00:00 UT
 
         Returns:
-          Inital epoch of TLEs (s)
+          float: Inital epoch of TLEs (s)
 
         """
         t0 = datetime(
@@ -221,7 +221,7 @@ class ASatellite(AComputer):
           td: Simulation time (s)
 
         Returns:
-          A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in ITRF frame
+          array: A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in ITRF frame
 
         """
         pass

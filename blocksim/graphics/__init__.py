@@ -26,11 +26,10 @@ def getUnitAbbrev(mult: float) -> str:
     """Given a scale factor, gives the prefix for the unit to display
 
     Args:
-      mult
-        Scale factor
+      mult: Scale factor
 
     Returns:
-      Prefix
+      str: Prefix
 
     """
     d = {

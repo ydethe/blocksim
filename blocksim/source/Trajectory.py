@@ -148,11 +148,14 @@ class Trajectory(object):
 
     def iterPosition(self):
         """Iterator through the positions.
-        Each element of the iterator is a numpy array with elements (x,y,z)
+        Each element of the iterator is a numpy array with elements (t,x,y,z)
+
+        Yields:
+          array: The next (t,x,y,z) array
 
         """
-        for x, y, z in zip(self.x, self.y, self.z):
-            yield np.array([x, y, z])
+        for t,x, y, z in zip(self.t,self.x, self.y, self.z):
+            yield np.array([t,x, y, z])
 
     def getGroundTrack(self) -> Tuple["array", "array"]:
         """Returns latitude and longitude array
