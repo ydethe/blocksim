@@ -269,4 +269,3 @@ class CircularBuffer(object):
 
         """
         return np.roll(self.__buffer, -self.__offset)
-        

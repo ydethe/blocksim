@@ -3,7 +3,8 @@ import numpy as np
 from ..core.Node import AComputer
 
 
-__all__=["ADSPComputer"]
+__all__ = ["ADSPComputer"]
+
 
 class ADSPComputer(AComputer):
     """Generic DSP Computer. It processes one input into one output.
@@ -14,7 +15,7 @@ class ADSPComputer(AComputer):
         output_size: the value passed to __init__
         input_name: the value passed to __init__
         output_name: the value passed to __init__
-        
+
     Args:
         name: Name of the computer
         input_name: Name of the input

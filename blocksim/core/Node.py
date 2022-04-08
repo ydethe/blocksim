@@ -13,21 +13,21 @@ from .. import logger
 from ..utils import assignVector, calc_cho
 
 
+__all__ = ["Input", "Output", "AWGNOutput", "AComputer"]
+
+
 class Input(ABaseNode):
     """Input node
 
     The extra attributes  are:
-    * __output, which links the :class:`blocksim.core.Node.Input` with an :class:`blocksim.core.Node.Output`
+    * __output, which links the `Node.Input` with an `Node.Output`
     * __shape, which is the number of scalars in the data expected by the input
     * __dtype, which is the data type
 
     Args:
-      name
-        Name of the Input
-      shape
-        Shape of the data expected by the input
-      dtype
-        Data type (typically np.float64 or np.complex128)
+        name: Name of the Input
+        shape: Shape of the data expected by the input
+        dtype: Data type (typically np.float64 or np.complex128)
 
     """
 
@@ -50,8 +50,7 @@ class Input(ABaseNode):
         """Sets the output connected to the Input
 
         Args:
-          output
-            The connected output
+            output: The connected output
 
         """
         self.__output = output
@@ -77,10 +76,8 @@ class Input(ABaseNode):
         """Gets the data for the given time frame
 
         Args:
-          frame
-            Time frame of the simulation
-          error_on_unconnected
-            Wether to raise an exception if an unconnected inuput is detected
+            frame: Time frame of the simulation
+            error_on_unconnected: Wether to raise an exception if an unconnected inuput is detected
 
         Returns:
             The data coming from the connected output
@@ -116,23 +113,11 @@ class Input(ABaseNode):
 class Output(ABaseNode):
     """Output node
 
-    The extra attribute are :
-
-    * __computer, which contains the output
-    * __data, which contains the data communicated to the connected Inputs
-    * __shape, which is the number of scalars in the data expected by the input
-    * __dtype, which is the data type
-    * __initial_state, which is the state used to reinitialize the Output
-    * __snames, which is the name of the scalars
-
     Args:
-      name
-        Name of the Output
-      snames
-        Name of each of the scalar components of the data.
-        Its shape defines the shap of the data
-      dtype
-        Data type (typically np.float64 or np.complex128)
+        name: Name of the Output
+        snames: Name of each of the scalar components of the data.
+            Its shape defines the shap of the data
+        dtype: Data type (typically np.float64 or np.complex128)
 
     """
 
@@ -161,8 +146,7 @@ class Output(ABaseNode):
         """Sets the element's initial state vector
 
         Args:
-          initial_state
-            The element's initial state vector
+            initial_state: The element's initial state vector
 
         """
         valid_data = assignVector(
@@ -178,7 +162,7 @@ class Output(ABaseNode):
         """Gets the name of each of the scalar components of the data
 
         Returns:
-          The name of each of the scalar components of the data
+            The name of each of the scalar components of the data
 
         """
         return self.__snames
@@ -186,7 +170,12 @@ class Output(ABaseNode):
     def iterScalarNameValue(
         self, frame: Frame, error_on_unconnected: bool = True
     ) -> Iterator:
-        """Iterate through all the data, and yield the name and the value of the scalar"""
+        """Iterate through all the data, and yield the name and the value of the scalar
+
+        Yields:
+            The next tuple of name and the value of the scalar
+
+        """
         ns = self.getDataShape()
         dat = self.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
 
@@ -204,7 +193,7 @@ class Output(ABaseNode):
         """Gets the element's initial state vector
 
         Returns:
-          The element's initial state vector
+            The element's initial state vector
 
         """
         return self.__initial_state
@@ -219,8 +208,7 @@ class Output(ABaseNode):
         """Sets the computer containing the Output
 
         Args:
-          computer
-            The computer to be set
+            computer: The computer to be set
 
         """
         self.__computer = computer
@@ -238,8 +226,7 @@ class Output(ABaseNode):
         """Sets the data for the Output
 
         Args:
-          data
-            The data for the output
+            data: The data for the output
 
         """
         comp = self.getComputer()
@@ -258,10 +245,8 @@ class Output(ABaseNode):
         the update of the simulation is triggered.
 
         Args:
-          frame
-            The time frame
-          error_on_unconnected
-            Wether to raise an exception if an unconnected inuput is detected
+            frame: The time frame
+            error_on_unconnected: Wether to raise an exception if an unconnected inuput is detected
 
         """
         if self.getCurrentFrame() != frame:
@@ -308,11 +293,10 @@ class AWGNOutput(Output):
         """Adds a gaussian noise to a state vector
 
         Args:
-          state
-            State vector without noise
+            state: State vector without noise
 
         Returns:
-          Vector of noisy measurements
+            Vector of noisy measurements
 
         """
         if self.cplxe:
@@ -344,19 +328,17 @@ class AWGNOutput(Output):
 
 class AComputer(ABaseNode):
     """Abstract class for all the computers of the control chain.
-    A AComputer contains a list of :class:`blocksim.core.Node.Input`
-    and a list of :class:`blocksim.core.Node.Output`
+    A AComputer contains a list of `Node.Input`
+    and a list of `Node.Output`
 
     Implement **compute_outputs** to make it concrete
 
     Args:
-      name
-        Name of the element
-      logged
-        True to log the computer in the Simulation's log
+        name: Name of the element
+        logged: True to log the computer in the Simulation's log
 
     Examples:
-      >>> e = DummyComputer(name='tst')
+        >>> e = DummyComputer(name='tst')
 
     """
 
@@ -433,24 +415,21 @@ class AComputer(ABaseNode):
         Use :class:`printParameters` to see the list of all declared parameters
 
         Args:
-          name
-            Name of the parameter to be created
-          value
-            Value of the parameter to be created
-          read_only
-            If True, the value cannot be modified (no setter defined)
+            name: Name of the parameter to be created
+            value: Value of the parameter to be created
+            read_only: If True, the value cannot be modified (no setter defined)
 
         Examples:
-          >>> e = DummyComputer('el')
-          >>> e.createParameter('val', 0)
-          >>> e.val
-          0
-          >>> e.val = 2
-          >>> e.val
-          2
-          >>> e.createParameter('ro_val', 1, read_only=True)
-          >>> e.ro_val
-          1
+            >>> e = DummyComputer('el')
+            >>> e.createParameter('val', 0)
+            >>> e.val
+            0
+            >>> e.val = 2
+            >>> e.val
+            2
+            >>> e.createParameter('ro_val', 1, read_only=True)
+            >>> e.ro_val
+            1
 
         """
         self.__parameters[name] = value
@@ -519,8 +498,7 @@ class AComputer(ABaseNode):
         """Gets the list of output vectors for a computer's output
 
         Args:
-            logger
-                A :class:`blocksim.Logger.Logger` that contains the values
+            logger: A `Logger.Logger` that contains the values
             output_name
                 Name of an output. For example, for a sensor, *measurement*
             dtype
@@ -537,7 +515,7 @@ class AComputer(ABaseNode):
 
     def isController(self) -> bool:
         """Checks if the element is derived from AController
-        See :class:`blocksim.control.Controller.AController`
+        See `control.Controller.AController`
 
         Returns:
           True if the element is derived from AController
@@ -551,10 +529,8 @@ class AComputer(ABaseNode):
         """Sets the initial state vector for a given output
 
         Args:
-          initial_state
-            The initial state vector
-          output_name
-            The output's initial state vector
+            initial_state: The initial state vector
+            output_name: The output's initial state vector
 
         """
         otp = self.getOutputByName(output_name)
@@ -564,11 +540,10 @@ class AComputer(ABaseNode):
         """Sets the initial state vector for a given output
 
         Args:
-          output_name
-            The output's initial state vector
+            output_name: The output's initial state vector
 
         Returns:
-          The initial state vector
+            The initial state vector
 
         """
         otp = self.getOutputByName(output_name)
@@ -578,7 +553,7 @@ class AComputer(ABaseNode):
         """Gets the list of the outputs
 
         Returns:
-          The list of outputs
+            The list of outputs
 
         """
         return self.__outputs.values()
@@ -587,7 +562,7 @@ class AComputer(ABaseNode):
         """Gets the list of the outputs' ids
 
         Returns:
-          The list of UUID
+            The list of UUID
 
         """
         return self.__outputs.keys()
@@ -596,7 +571,7 @@ class AComputer(ABaseNode):
         """Gets the list of the outputs' names
 
         Returns:
-          The list of names
+            The list of names
 
         """
         for oid in self.getListOutputsIds():
@@ -607,7 +582,7 @@ class AComputer(ABaseNode):
         """Gets the list of the inputs
 
         Returns:
-          The list of inputs
+            The list of inputs
 
         """
         return self.__inputs.values()
@@ -616,7 +591,7 @@ class AComputer(ABaseNode):
         """Gets the list of the inputs' ids
 
         Returns:
-          The list of UUID
+            The list of UUID
 
         """
         return self.__inputs.keys()
@@ -625,7 +600,7 @@ class AComputer(ABaseNode):
         """Gets the list of the inputs' names
 
         Returns:
-          The list of names
+            The list of names
 
         """
         for iid in self.getListInputsIds():
@@ -636,16 +611,13 @@ class AComputer(ABaseNode):
         """Creates an output for the computer
 
         Args:
-          name
-            Name of the output
-          snames
-            Name of each of the scalar components of the data.
-            Its shape defines the shap of the data
-          dtype
-            Data type (typically np.float64 or np.complex128)
+            name: Name of the output
+            snames: Name of each of the scalar components of the data.
+                Its shape defines the shap of the data
+            dtype: Data type (typically np.float64 or np.complex128)
 
         Returns:
-          The created output
+            The created output
 
         """
         otp = Output(name=name, snames=snames, dtype=dtype)
@@ -655,6 +627,12 @@ class AComputer(ABaseNode):
         return otp
 
     def addOutput(self, otp: Output):
+        """Adds an output for the computer
+
+        Args:
+            otp: Output to add
+
+        """
         if otp.getName() in self.getListOutputsNames():
             raise DuplicateOutput(self.getName(), otp.getName())
 
@@ -662,6 +640,13 @@ class AComputer(ABaseNode):
         self.__outputs[otp.getID()] = otp
 
     def replaceOutput(self, old_name: str, new_output: Output):
+        """Replaces an output for the computer
+
+        Args:
+            old_name: Name of the output te replace
+            new_output: new output that replaces the old one
+
+        """
         otp = self.getOutputByName(old_name)
         oid = otp.getID()
         del self.__outputs[oid]
@@ -671,15 +656,12 @@ class AComputer(ABaseNode):
         """Creates an input for the computer
 
         Args:
-          name
-            Name of the input
-          shape
-            Shape of the data expected by the input
-          dtype
-            Data type (typically np.float64 or np.complex128)
+            name: Name of the input
+            shape: Shape of the data expected by the input
+            dtype: Data type (typically np.float64 or np.complex128)
 
         Returns:
-          The created input
+            The created input
 
         """
         inp = Input(name, shape=shape, dtype=dtype)
@@ -687,12 +669,25 @@ class AComputer(ABaseNode):
         return inp
 
     def addInput(self, inp: Input):
+        """Adds an input for the computer
+
+        Args:
+            inp: Input to add
+
+        """
         if inp.getName() in self.getListInputsNames():
             raise DuplicateInput(self.getName(), inp.getName())
 
         self.__inputs[inp.getID()] = inp
 
     def replaceInput(self, old_name: str, new_input: Input):
+        """Replaces an input for the computer
+
+        Args:
+            old_name: Name of the input te replace
+            new_input: new input that replaces the old one
+
+        """
         inp = self.getInputByName(old_name)
         iid = inp.getID()
         del self.__inputs[iid]
@@ -702,11 +697,10 @@ class AComputer(ABaseNode):
         """Get an output with its id
 
         Args:
-          output_id
-            Id of the output to retreive
+            output_id: Id of the output to retreive
 
         Returns:
-          The Output
+            The Output
 
         """
         if not output_id in self.__outputs.keys():
@@ -718,11 +712,10 @@ class AComputer(ABaseNode):
         """Get an output with its name
 
         Args:
-          name
-            Name of the output to retreive
+            name: Name of the output to retreive
 
         Returns:
-          The Output
+            The Output
 
         """
         for oid in self.getListOutputsIds():
@@ -737,11 +730,10 @@ class AComputer(ABaseNode):
         """Get an input with its id
 
         Args:
-          input_id
-            Id of the input to retreive
+            input_id: Id of the input to retreive
 
         Returns:
-          The Input
+            The Input
 
         """
         if not input_id in self.__inputs.keys():
@@ -753,11 +745,10 @@ class AComputer(ABaseNode):
         """Get an input with its name
 
         Args:
-          name
-            Name of the input to retreive
+            name: Name of the input to retreive
 
         Returns:
-          The Input
+            The Input
 
         """
         for iid in self.getListInputsIds():
@@ -779,15 +770,12 @@ class AComputer(ABaseNode):
         One and only one of uid and name shall be given
 
         Args:
-          frame
-            The time frame
-          uid
-            The id of the input
-          name
-            The name of the input
+            frame: The time frame
+            uid: The id of the input
+            name: The name of the input
 
         Returns:
-          The data
+            The data
 
         """
         if uid is None and name is None:
@@ -819,17 +807,13 @@ class AComputer(ABaseNode):
         One and only one of uid and name shall be given
 
         Args:
-          frame
-            The time frame
-          uid
-            The id of the output
-          name
-            The name of the output
-          error_on_unconnected
-            Wether to raise an exception if an unconnected inuput is detected
+            frame: The time frame
+            uid: The id of the output
+            name: The name of the output
+            error_on_unconnected: Wether to raise an exception if an unconnected inuput is detected
 
         Returns:
-          The data
+            The data
 
         """
         if self.getCurrentFrame() != frame:
@@ -857,7 +841,7 @@ class AComputer(ABaseNode):
         """Returns the parent computers
 
         Returns:
-          An iterator on the computers' parents
+            An iterator on the computers' parents
 
         """
         for iid in self.getListInputsIds():
@@ -874,10 +858,8 @@ class AComputer(ABaseNode):
         """Updates all the outputs of the Computer
 
         Args:
-          frame
-            The time frame
-          error_on_unconnected
-            Wether to raise an exception if an unconnected inuput is detected
+            frame: The time frame
+            error_on_unconnected: Wether to raise an exception if an unconnected inuput is detected
 
         """
         inputs = {}

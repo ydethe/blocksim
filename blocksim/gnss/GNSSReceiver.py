@@ -54,8 +54,7 @@ class UEPositionOutput(Output):
         return np.hstack((ps, vs))
 
     def resetCallback(self, frame: Frame):
-        """Resets the element internal state to zero.
-        """
+        """Resets the element internal state to zero."""
         dt = timedelta(seconds=frame.getStartTimeStamp())
         td = self.__tsync + dt
         state = self.getGeocentricITRFPositionAt(td)
@@ -173,7 +172,7 @@ class GNSSReceiver(AComputer):
             pv_ue: UE 3D position/velocity (ITRF) without velocity (m)
 
         Returns:
-            A tuple containing: 
+            A tuple containing:
 
             * DOP for X axis (ENV)
             * DOP for Y axis (ENV)
@@ -249,7 +248,7 @@ class GNSSReceiver(AComputer):
         Args:
             ephem: Array of all ephemeris
             meas: Array of all measurements
-        
+
         Returns:
             A tuple with:
 
@@ -348,7 +347,7 @@ class GNSSReceiver(AComputer):
         Args:
             ephem: Array of all ephemeris
             meas: Array of all measurements
-        
+
         Returns:
             A tuple with:
 
@@ -460,7 +459,7 @@ class GNSSReceiver(AComputer):
         Args:
             ephem: Array of all ephemeris
             meas: Array of all measurements
-        
+
         Returns:
             A tuple with:
 

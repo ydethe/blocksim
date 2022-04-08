@@ -195,7 +195,9 @@ class DSPSignal(DSPLine, ASetPoint):
         )
 
     @classmethod
-    def fromPhaseLaw(cls, name: str, sampling_freq: float, pha: np.array)->"DSPSignal":
+    def fromPhaseLaw(
+        cls, name: str, sampling_freq: float, pha: np.array
+    ) -> "DSPSignal":
         """Builds a signal from a phase law
 
         Args:
@@ -308,7 +310,7 @@ class DSPSignal(DSPLine, ASetPoint):
 
         Args:
             eps: Threshold to test equality
-            
+
         Returns:
             The unfolded phase law
 

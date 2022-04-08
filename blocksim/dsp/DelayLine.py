@@ -28,7 +28,7 @@ class ADelayLine(metaclass=ABCMeta):
 
         Args:
             delay: timestamp for interpolation (s)
-        
+
         Returns:
             The interpolated complex sample
 
@@ -37,9 +37,7 @@ class ADelayLine(metaclass=ABCMeta):
 
 
 class InfiniteDelayLine(ADelayLine):
-    """Delay line that indefinitely grows as samples are added
-
-    """
+    """Delay line that indefinitely grows as samples are added"""
 
     __slots__ = ["_l_time", "_l_xsamples", "_l_ysamples"]
 

@@ -155,8 +155,8 @@ class Trajectory(object):
             array: The next (t,x,y,z) array
 
         """
-        for t,x, y, z in zip(self.t,self.x, self.y, self.z):
-            yield np.array([t,x, y, z])
+        for t, x, y, z in zip(self.t, self.x, self.y, self.z):
+            yield np.array([t, x, y, z])
 
     def getGroundTrack(self) -> Tuple["array", "array"]:
         """Returns latitude and longitude array

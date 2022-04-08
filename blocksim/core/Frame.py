@@ -7,10 +7,8 @@ class Frame(object):
     If not, the :class:`blocksim.core.ABaseNode` is update with a call to :class:`blocksim.core.ABaseNode.updateAllOutput`
 
     Args:
-      start_timestamp
-        Time start of the frame
-      stop_timestamp
-        Time stop of the frame
+        start_timestamp: Time start of the frame
+        stop_timestamp: Time stop of the frame
 
     """
 
@@ -32,7 +30,7 @@ class Frame(object):
         """Gets the start time of the frame
 
         Returns:
-          Start time
+            Start time
 
         """
         return self.__start_timestamp
@@ -41,7 +39,7 @@ class Frame(object):
         """Gets the stop time of the frame
 
         Returns:
-          Stop time
+            Stop time
 
         """
         return self.__stop_timestamp
@@ -51,7 +49,7 @@ class Frame(object):
         stop_time - start_time
 
         Returns:
-          Time step
+            Time step
 
         """
         return self.__stop_timestamp - self.__start_timestamp
@@ -60,7 +58,7 @@ class Frame(object):
         """Gets the id of the frame. This elements is used to test the equality between 2 frames
 
         Returns:
-          The id of the frame
+            The id of the frame
 
         """
         return self.__id
@@ -70,7 +68,7 @@ class Frame(object):
         This operation changes the frame's id, so that it triggers update when used to retrieve computers' data
 
         Args:
-          The time step
+            The time step
 
         """
         if step == 0:
@@ -85,7 +83,7 @@ class Frame(object):
         It creates a new instance of Frame
 
         Returns:
-          The duplicated frame
+            The duplicated frame
 
         """
         res = Frame(

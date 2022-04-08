@@ -56,7 +56,7 @@ def format_parameter(samp: float, unit: str) -> str:
 
     Returns:
         str: The text to display
-    
+
     Examples:
         >>> format_parameter(1.5e-3, 'm')
         1.5 mm
@@ -577,7 +577,7 @@ def plot3DEarth(trajectories: Iterable[Trajectory]) -> B3DPlotter:
 
     Args:
         trajectories: list of Trajectory objects to plot
-    
+
     Returns:
         A B3DPlotter instance. Call app.run() to show the window
 

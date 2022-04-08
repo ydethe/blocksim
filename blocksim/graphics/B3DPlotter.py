@@ -264,9 +264,7 @@ class B3DPlotter(ShowBase):
         return nodePath
 
     def plotEarth(self) -> NodePath:
-        """Plots a 3D Earth
-
-        """
+        """Plots a 3D Earth"""
         tex_path = resource_path("8081_earthmap4k.jpg", package="blocksim")
         return self.plotSphere(
             texture=tex_path,

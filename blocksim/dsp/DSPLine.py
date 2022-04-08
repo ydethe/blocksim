@@ -294,7 +294,7 @@ class DSPLine(object):
 
         Args:
             y: The description of the serie to check
-        
+
         Returns:
             The result of the test
 
@@ -558,4 +558,3 @@ class DSPLine(object):
             y_serie=y_serie,
             default_transform=self.default_transform,
         )
-        

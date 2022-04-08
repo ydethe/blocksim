@@ -32,7 +32,7 @@ class ABaseNode(metaclass=ABCMeta):
         """Checks if the element is derived from AController
 
         Returns:
-          True if the element is derived from AController
+            True if the element is derived from AController
 
         """
         from .Node import AController
@@ -43,7 +43,7 @@ class ABaseNode(metaclass=ABCMeta):
         """Gets the name of the node
 
         Returns:
-          The name of the node
+            The name of the node
 
         """
         return self.__name
@@ -52,7 +52,7 @@ class ABaseNode(metaclass=ABCMeta):
         """Gets the id of the node
 
         Returns:
-          The id of the node
+            The id of the node
 
         """
         return self.__id
@@ -61,7 +61,7 @@ class ABaseNode(metaclass=ABCMeta):
         """Gets the last frame used for update
 
         Returns:
-          Last frame used for update
+            Last frame used for update
 
         """
         return self.__current_frame
@@ -70,8 +70,7 @@ class ABaseNode(metaclass=ABCMeta):
         """Sets the last frame used for update. The frame is duplicated with frame.copy()
 
         Args:
-          frame
-            Last frame used for update
+            frame: Last frame used for update
 
         """
         self.__current_frame = frame.copy()
@@ -82,8 +81,7 @@ class ABaseNode(metaclass=ABCMeta):
         Useful only for :class:`blocksim.core.Node.AComputer` to update its outputs
 
         Args:
-          frame
-            Frame used for update
+            frame: Frame used for update
 
         """
         pass

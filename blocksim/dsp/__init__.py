@@ -72,7 +72,7 @@ def phase_unfold(sig: "array", eps: float = 1e-9) -> "array":
     Args:
         sig: The array of complex samples
         eps: The threshold to test equality
-    
+
     Returns:
         The unfolded phase law (rad)
 
@@ -215,7 +215,7 @@ def analyse_DV(
     return spg
 
 
-def shift(register:list, feedback:list, output:list):
+def shift(register: list, feedback: list, output: list):
     """GPS Shift Register
 
     Args:
@@ -351,7 +351,7 @@ def zadoff_chu(u, n):
     Args:
         u: Root of the sequence
         n: Length of the sequence
-    
+
     Returns:
         The array of complex samples
 
