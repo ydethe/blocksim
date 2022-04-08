@@ -32,15 +32,13 @@ from panda3d.core import (
 )
 
 from ..utils import resource_path
-
 from ..constants import Req, rf
 from ..utils import datetime_to_skyfield, geodetic_to_itrf
 from ..source.Trajectory import Trajectory
 
 
 class B3DPlotter(ShowBase):
-    """
-    Panda3d application that shows the Earth with trajectories
+    """Panda3d application that shows the Earth with trajectories
 
     Usage::
 
@@ -58,9 +56,9 @@ class B3DPlotter(ShowBase):
         traj = sat.geocentricITRFTrajectory()
 
         app = B3DPlotter()
-        app.buildEarth()
-        app.buildLine(color=(1, 0, 0, 1), itrf_positions=list(zip(*traj)))
-        app.buildTrajectory(traj)
+        app.plotEarth()
+        app.plotLine(color=(1, 0, 0, 1), itrf_positions=list(zip(*traj)))
+        app.plotTrajectory(traj)
 
         app.run()
 
@@ -109,30 +107,34 @@ class B3DPlotter(ShowBase):
         self.sun_light.setPos(pos)
         self.render.setLight(self.sun_light)
 
-    def buildTrajectory(self, traj: Trajectory):
-        self.buildCube(
+    def plotTrajectory(self, traj: Trajectory):
+        """Plots a Trajectory around the 3D Earth
+
+        Args:
+          traj: The Trajectory to plot
+
+        """
+        self.plotCube(
             itrf_position=(traj.x[0], traj.y[0], traj.z[0]),
             size=100000,
             color=traj.color,
         )
         if len(traj) > 1:
-            self.buildLine(
+            self.plotLine(
                 color=traj.color, itrf_positions=list(zip(traj.x, traj.y, traj.z))
             )
 
-    def buildLine(self, color: list, itrf_positions: list) -> NodePath:
-        """
-        Plots a line
+    def plotLine(self, color: list, itrf_positions: list) -> NodePath:
+        """Plots a custom 3D line
 
         Args:
-          color
-            The color as a 4-elements tuple:
-            r between 0 and 1
-            g between 0 and 1
-            b between 0 and 1
-            alpha between 0 and 1
-          itrf_positions
-            A list of (x,y,z) positions in the geocentric ITRF coordinate system
+          color: The color as a 4-elements tuple:
+
+            * r between 0 and 1
+            * g between 0 and 1
+            * b between 0 and 1
+            * alpha between 0 and 1
+          itrf_positions: A list of (x,y,z) positions in the geocentric ITRF coordinate system
 
         Returns:
           A panda3d NodePath
@@ -173,23 +175,21 @@ class B3DPlotter(ShowBase):
 
         return nodePath
 
-    def buildCube(
+    def plotCube(
         self, itrf_position: list, size: float, color: list = None
     ) -> NodePath:
         """
         Plots a cube
 
         Args:
-          itrf_position
-            A (x,y,z) positions in the geocentric ITRF coordinate system
-          size (m)
-            The cube's size
-          color
-            The color as a 4-elements tuple:
-            r between 0 and 1
-            g between 0 and 1
-            b between 0 and 1
-            alpha between 0 and 1
+          itrf_position: A (x,y,z) positions in the geocentric ITRF coordinate system (m)
+          size: The cube's size (m)
+          color: The color as a 4-elements tuple
+
+            * r between 0 and 1
+            * g between 0 and 1
+            * b between 0 and 1
+            * alpha between 0 and 1
 
         Returns:
           A panda3d NodePath
@@ -263,27 +263,27 @@ class B3DPlotter(ShowBase):
 
         return nodePath
 
-    def buildEarth(self) -> NodePath:
+    def plotEarth(self) -> NodePath:
+        """Plots a 3D Earth
+
+        """
         tex_path = resource_path("8081_earthmap4k.jpg", package="blocksim")
-        return self.buildSphere(
+        return self.plotSphere(
             texture=tex_path,
             number_of_meridians=180,
             number_of_latcircles=45,
         )
 
-    def buildSphere(
+    def plotSphere(
         self, texture: str, number_of_meridians, number_of_latcircles
     ) -> NodePath:
         """
         Plots a textured sphere
 
         Args:
-          texture
-            The texture file to apply
-          number_of_meridians
-            Number of meridians in the mesh
-          number_of_latcircles
-            Number of latitude circles in the mesh
+          texture: The texture file to apply
+          number_of_meridians: Number of meridians in the mesh
+          number_of_latcircles: Number of latitude circles in the mesh
 
         Returns:
           A panda3d NodePath

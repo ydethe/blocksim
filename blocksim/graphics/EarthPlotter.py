@@ -17,12 +17,12 @@ class EarthPlotter(object):
     """
 
     The methods of this class assume a cartopy compatile axe.
-    To create such an axe, you can either use :class:`blocksim.EarthPlotter.EarthPlotter.createAxe`::
+    To create such an axe, you can either use blocksim.EarthPlotter.EarthPlotter.createAxe::
 
             sp = EarthPlotter()
             axe = sp.createAxe(fig, 1, 1, 1)
 
-        or do it manually::
+    or do it manually::
 
             axe = fig.add_subplot(111, projection=ccrs.PlateCarree())
             axe.stock_img()

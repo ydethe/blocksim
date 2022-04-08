@@ -205,11 +205,13 @@ def plotSpectrogram(
     * a callable *transform* is applied to all samples
     * the label of the plot is the name given at instanciation
 
+    See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
     Args:
       spg: DSPSpectrogram to plot
       spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
       fill: Method to plot the DSPSpectrogram. Can be 'plot_surface', 'pcolormesh', 'contour' or 'contourf'
       kwargs: Plotting options. The following extra keys are allowed:
+
         * transform for a different transform from the one given at instanciation
         * find_peaks to search peaks
         * x_unit_mult to have a more readable unit prefix
@@ -459,11 +461,13 @@ def plotDSPLine(line: DSPLine, spec: "SubplotSpec" = None, **kwargs) -> "AxesSub
     * the *find_peaks* highest peaks are displayed (default : 0)
     * the label of the plot is the name given at instanciation
 
+    See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
+
     Args:
       line: DSPLine to be plotted
       spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
       kwargs: Plotting options. The following extra keys are allowed:
-      
+
         * transform for a different transform from the one given at instanciation
         * find_peaks to search peaks
         * x_unit_mult to have a more readable unit prefix
@@ -524,12 +528,9 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":
     """Plots a set of axes and curves on a single figure
 
     Args:
-      log
-        Logger which contains the simulated values
-      fig_title
-        Title of the figure
-      axes:
-        List of lists of dicts
+      log: Logger which contains the simulated values
+      fig_title: Title of the figure
+      axes: List of lists of dicts
         Each list is the description of an axe, each dict the description of a line.
         Each dict has a key "var", which is the name of a variable contained in *log*.
         The other keys are keyword arguments for the plot method of matplotlib
@@ -572,6 +573,15 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":
 
 
 def plot3DEarth(trajectories: Iterable[Trajectory]) -> B3DPlotter:
+    """Shows a 3D tracetory around a 3D Earth
+
+    Args:
+      trajectories: list of Trajectory objects to plot
+    
+    Returns:
+      A B3DPlotter instance. Call app.run() to show the window
+
+    """
     app = B3DPlotter()
 
     app.buildEarth()
@@ -583,6 +593,15 @@ def plot3DEarth(trajectories: Iterable[Trajectory]) -> B3DPlotter:
 
 
 def plotBER(fic, output=""):
+    """Helper function that plots a BER curve from a log file where the lines are :
+
+    "[{level}] - SNR = {snr} dB, it={it}, Bits Received = {bit_rx}, Bit errors = {bit_err}, BER = {ber}"
+
+    Args:
+      fic: ASCII file to read
+      output: 'show' to display an interactive figure, name of a file to save the figure without displaying it
+      
+    """
     p = compile(
         "[{level}] - SNR = {snr} dB, it={it}, Bits Received = {bit_rx}, Bit errors = {bit_err}, BER = {ber}"
     )
