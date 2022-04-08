@@ -8,47 +8,40 @@ def klobuchar(phi, lbd, elev, azimuth, tow, alpha, beta) -> float:
     GPS L1 frequency from the parameters broadcasted in the GPS Navigation Message.
 
     References:
-    Klobuchar, J.A., (1996) "Ionosphercic Effects on GPS", in
-      Parkinson, Spilker (ed), "Global Positioning System Theory and
-      Applications, pp.513-514.
-    ICD-GPS-200, Rev. C, (1997), pp. 125-128
-    NATO, (1991), "Technical Characteristics of the NAVSTAR GPS",
-      pp. A-6-31   -   A-6-33
+      Klobuchar, J.A., (1996) "Ionosphercic Effects on GPS", in
+        Parkinson, Spilker (ed), "Global Positioning System Theory and
+        Applications, pp.513-514.
+      ICD-GPS-200, Rev. C, (1997), pp. 125-128
+      NATO, (1991), "Technical Characteristics of the NAVSTAR GPS",
+        pp. A-6-31   -   A-6-33
 
     Args:
-      phi (rad)
-        Geodetic latitude of receiver
-      lbd (rad)
-        Geodetic longitude of receiver
-      elev (rad)
-        Elevation angle of satellite
-      azimuth (rad)
-        Geodetic azimuth of satellite
-      tow (s)
-        Time of Week
-      alpha[3]
-        The coefficients of a cubic equation
-        representing the amplitude of the vertical
-        delay (4 coefficients)
-      beta[3]
-        The coefficients of a cubic equation
-        representing the period of the model
-        (4 coefficients)
+        phi: Geodetic latitude of receiver (rad)
+        lbd: Geodetic longitude of receiver (rad)
+        elev: Elevation angle of satellite (rad)
+        azimuth: Geodetic azimuth of satellite (rad)
+        tow: Time of Week (s)
+        alpha[3]: The coefficients of a cubic equation
+          representing the amplitude of the vertical
+          delay (4 coefficients)
+        beta[3]: The coefficients of a cubic equation
+          representing the period of the model
+          (4 coefficients)
 
     Returns:
-      Ionospheric delay for the L1 frequency (sec)
+        Ionospheric delay for the L1 frequency (sec)
 
     Examples:
-      >>> alpha = np.array([0.3820e-7, 0.1490e-7, -0.1790e-6, 0.0000])
-      >>> beta = np.array([0.1430e6, 0.0000, -0.3280e6, 0.1130e6])
-      >>> elev = 20*pi/180
-      >>> azimuth = 210*pi/180
-      >>> phi = 40*pi/180
-      >>> lbd = 260*pi/180
-      >>> tow = 0.0
-      >>> dIon1 = klobuchar(phi, lbd, elev, azimuth, tow, alpha, beta)
-      >>> dIon1 # doctest: +ELLIPSIS
-      6.93560658...e-08
+        >>> alpha = np.array([0.3820e-7, 0.1490e-7, -0.1790e-6, 0.0000])
+        >>> beta = np.array([0.1430e6, 0.0000, -0.3280e6, 0.1130e6])
+        >>> elev = 20*pi/180
+        >>> azimuth = 210*pi/180
+        >>> phi = 40*pi/180
+        >>> lbd = 260*pi/180
+        >>> tow = 0.0
+        >>> dIon1 = klobuchar(phi, lbd, elev, azimuth, tow, alpha, beta)
+        >>> dIon1 # doctest: +ELLIPSIS
+        6.93560658...e-08
 
     """
     rad2semi = 1.0 / pi  # radians to semisircles

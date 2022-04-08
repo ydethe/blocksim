@@ -397,11 +397,10 @@ class DSPSignal(DSPLine, ASetPoint):
         """Applies a function to all the samples
 
         Args:
-          fct
-            A callable to apply to all samples
+            fct: A callable to apply to all samples
 
         Returns:
-          The resulting :class:`blocksim.dsp.DSPSignal`
+            The resulting DSPSignal
 
         """
         return DSPSignal(
@@ -416,7 +415,7 @@ class DSPSignal(DSPLine, ASetPoint):
         """Returns the conjugated signal
 
         Returns:
-          The resulting :class:`blocksim.dsp.DSPSignal`
+            The resulting DSPSignal
 
         """
         return self.applyFunction(np.conj)
@@ -425,7 +424,7 @@ class DSPSignal(DSPLine, ASetPoint):
         """Returns the reversed signal
 
         Returns:
-          The resulting :class:`blocksim.dsp.DSPSignal`
+            The resulting DSPSignal
 
         """
         return self.applyFunction(lambda x: x[::-1])
@@ -437,17 +436,26 @@ class DSPSignal(DSPLine, ASetPoint):
         """Returns the convolution with another :class:`blocksim.dsp.DSPSignal`
 
         Args:
-          y
-            The :class:`blocksim.dsp.DSPSignal` to convolve with
+            y: The DSPSignal to convolve with
 
         Returns:
-          The resulting :class:`blocksim.dsp.DSPSignal`
+            The resulting DSPSignal
 
         """
         z = y.reverse().conj()
         return self.correlate(z)
 
     def forceSamplingStart(self, samplingStart: float) -> "DSPSignal":
+        """Moves the first sample timestamp to the spec ified value.
+        All the other samples are shifted by the same value.
+
+        Args:
+            samplingStart: The new samplingStart (s)
+
+        Returns:
+            A new DSPSignal instance
+
+        """
         res = DSPSignal(
             name=self.name,
             samplingStart=samplingStart,
@@ -458,6 +466,16 @@ class DSPSignal(DSPLine, ASetPoint):
         return res
 
     def superheterodyneIQ(self, carrier_freq: float, bandwidth: float) -> "DSPSignal":
+        """Use Single-Sideband Modulation to down convert the signal in baseband
+
+        Args:
+            carrier_freq: the frequency of the carrier (Hz)
+            bandwidth: the bandwidth of the signal (Hz)
+
+        Returns:
+            The new DSPSignal
+
+        """
         tps = self.generateXSerie()
         lo = exp(-1j * 2 * pi * carrier_freq * tps)
         y_mix = self.y_serie * lo
@@ -502,21 +520,18 @@ class DSPSignal(DSPLine, ASetPoint):
         coherent: bool = True,
         window_duration: float = -1,
     ) -> "DSPSignal":
-        """
+        """Coeherent integration of the signal
 
         Args:
-          period (s)
-            Size of the window in the time domain
-          n_integration
-            Number of period to sum. A value of -1 means to sum everything
-          offset (s)
-            Time of the beginning of the first window.
-            Zero means that the first window starts when the signal starts
-          window_duration (s)
-            Duration of the windows. -1 means that *window_duration* equals *period*
+            period: Size of the window in the time domain (s)
+            n_integration: Number of period to sum. A value of -1 means to sum everything
+            offset: Time of the beginning of the first window (s)
+              Zero means that the first window starts when the signal starts
+            window_duration: Duration of the windows (s)
+              -1 means that *window_duration* equals *period*
 
         Returns:
-          Integrated signal
+            Integrated signal
 
         """
         if window_duration == -1:

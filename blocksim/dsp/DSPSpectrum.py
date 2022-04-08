@@ -12,17 +12,12 @@ class DSPSpectrum(DSPLine):
     """Spectrum of a signal
 
     Args:
-      name
-        Name of the spectrum
-      samplingStart (Hz)
-        First frequency of the sample of the spectrum
-      samplingPeriod (Hz)
-        Frequency spacing of the spectrum
-      y_serie
-        Complex samples of the spectrum
-      default_transform
-        Function to apply to the samples before plotting.
-        Shall be vectorized
+        name: Name of the spectrum
+        samplingStart: First frequency of the sample of the spectrum (Hz)
+        samplingPeriod: Frequency spacing of the spectrum (Hz)
+        y_serie: Complex samples of the spectrum
+        default_transform: Function to apply to the samples before plotting.
+          Shall be vectorized
 
     """
 
@@ -54,13 +49,10 @@ class DSPSpectrum(DSPLine):
         """Applies the inverse discrete Fourier transform
 
         Args:
-          win
-            The window to be applied. Should be compatible with `get_window`_.
-
-            .. _get_window: https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html
+            win: The window to be applied. See `dsp.get_window`
 
         Returns:
-          The resulting :class:`blocksim.dsp.DSPSignal`
+          The resulting DSPSignal
 
         """
         from .DSPSignal import DSPSignal

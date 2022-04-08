@@ -14,23 +14,15 @@ class DSPSpectrogram(object):
     """Representation of a spectrogram
 
     Args:
-      name
-        Name of the spectrum
-      samplingXStart (s)
-        First date of the sample of the spectrogram
-      samplingXPeriod (s)
-        Time spacing of the spectrogram
-      samplingYStart (Hz)
-        First frequency of the sample of the spectrogram
-      samplingYPeriod (Hz)
-        Frequency spacing of the spectrogram
-      img
-        Matrix of complex samples
-      projection
-        Axe projection. Can be 'rectilinear' or 'polar'
-      default_transform
-        Function to apply to the samples before plotting.
-        Shall be vectorized
+        name: Name of the spectrum
+        samplingXStart: First date of the sample of the spectrogram
+        samplingXPeriod: Time spacing of the spectrogram
+        samplingYStart: First frequency of the sample of the spectrogram
+        samplingYPeriod: Frequency spacing of the spectrogram
+        img: Matrix of complex samples
+        projection: Axe projection. Can be 'rectilinear' or 'polar'
+        default_transform: Function to apply to the samples before plotting.
+          Shall be vectorized
 
     """
 
@@ -62,11 +54,10 @@ class DSPSpectrogram(object):
         """Generates the x samples of the spectrogram
 
         Args:
-          index
-            If given, returns only the x coord at the position given by index
+            index: If given, returns only the x coord at the position given by index
 
         Returns:
-          The x coordinate(s)
+            The x coordinate(s)
 
         """
         n = self.img.shape[1]
@@ -81,11 +72,10 @@ class DSPSpectrogram(object):
         """Generates the y samples of the spectrogram
 
         Args:
-          index
-            If given, returns only the y coord at the position given by index
+            index: If given, returns only the y coord at the position given by index
 
         Returns:
-          The y coordinate(s)
+            The y coordinate(s)
 
         """
         n = self.img.shape[0]
@@ -103,13 +93,11 @@ class DSPSpectrogram(object):
         The search is performed on the tranformed samples (with the argument *transform*, or the attribute *default_transform*)
 
         Args:
-          transform
-            A callable applied on samples before looking for the peaks
-          nb_peaks
-            Max number of peaks to seach. Only the highest are kept
+            transform: A callable applied on samples before looking for the peaks
+            nb_peaks: Max number of peaks to seach. Only the highest are kept
 
         Returns:
-          The list of detected peaks, sorted by descreasing value of the peak
+            The list of detected peaks, sorted by descreasing value of the peak
 
         """
         if transform is None:
@@ -178,20 +166,19 @@ class DSPSpectrogram(object):
         """Returns a function that turns a complex signal into the power serie of the signal, in dB.
 
         Args:
-          low (dB)
-            The min value to clamp to
+            low: The min value to clamp to (dB)
 
         Returns:
-          The function to map on a complex time serie
+            The function to map on a complex time serie
 
         Examples:
-          >>> f = DSPLine.to_db_lim(low=-80)
-          >>> f(1e-3)
-          -60.0
-          >>> f(1e-4)
-          -80.0
-          >>> f(1e-5)
-          -80.0
+            >>> f = DSPLine.to_db_lim(low=-80)
+            >>> f(1e-3)
+            -60.0
+            >>> f(1e-4)
+            -80.0
+            >>> f(1e-5)
+            -80.0
 
         """
 
@@ -209,11 +196,10 @@ class DSPSpectrogram(object):
         If a sample's power is below *low*, the dB value in clamped to *low*.
 
         Args:
-          x
-            The array of samples
+            x: The array of samples
 
         Returns:
-          The power of the serie *x* in dB
+            The power of the serie *x* in dB
 
         """
         pwr = np.real(np.conj(x) * x)

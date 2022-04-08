@@ -13,10 +13,8 @@ class FECCoder(ADSPComputer):
     For an input vector of n bits, this computer will generate an output vector of 3*n bits
 
     Args:
-      name
-        Name of the computer
-      output_size
-        Number of scalar in the output vector. Shall be divisible by 3.
+        name: Name of the computer
+        output_size: Number of scalar in the output vector. Shall be divisible by 3.
 
     """
 
@@ -76,10 +74,8 @@ class FECDecoder(ADSPComputer):
     For an input vector of n bits, this computer will generate an output vector of n//3 bits
 
     Args:
-      name
-        Name of the computer
-      output_size
-        Number of scalar in the output vector.
+        name: Name of the computer
+        output_size: Number of scalar in the output vector.
 
     """
 
