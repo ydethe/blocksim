@@ -1,6 +1,4 @@
-# blocksim
-
-## Quick look
+# Quick look
 
 A library to simulate a open- and closed-loop system. Includes :
 
@@ -20,7 +18,7 @@ A library to simulate a open- and closed-loop system. Includes :
 
 blocksim is hosted here https://git:8443/projects/DNFSND/repos/blocksim/browse
 
-## Setup
+# Setup
 
 Create a virtual environment named bs_env for example. You do not have to create one env per project or per simulation.
 But you need one where blocksim will be installed.
@@ -52,7 +50,7 @@ In your virtual env:
 That's it ! You are now ready to use blocksim library.
 In the folder tests and examples are a lot of examples that can be used as a starting point.
 
-## Run tests
+# Run tests
 
 To run tests, just run:
 
@@ -66,11 +64,11 @@ If needed (for example, a new test with its associated baseline image), we might
 
     python3 -m pytest --mpl-generate-path=tests/baseline tests
 
-## Build the doc
+# Build the doc
 
 Just run:
 
-    pdoc --html --force -o htmldoc --config latex_math=True blocksim
+    pdoc --html --force -o htmldoc --config latex_math=True blocksim examples
 
 A few guidelines for updating the doc
 https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html

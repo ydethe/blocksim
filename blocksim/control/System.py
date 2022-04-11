@@ -244,8 +244,8 @@ class G6DOFSystem(ASystem):
     The outputs name of the computer are **state** and **euler**
 
     Attributes:
-        m : Mass of the body (kg). Default : :math:`1`
-        J : Inertia tensor of the body (kg.m^2). Default : :math:`10^{-3}.I_3`
+        m : Mass of the body (kg). Default 1
+        J : Inertia tensor of the body (kg.m^2). Default : \(( 10^{-3}.I_3 \))
         max_q_denorm : If N the square norm of the attitude quaternion is N > 1+max_q_denorm or N<1-max_q_denorm, raise an exception
 
     command:

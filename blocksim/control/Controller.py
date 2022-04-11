@@ -255,8 +255,9 @@ class LQRegulator(AController):
     ):
         """Computes the optimal gain K, and the correct precompensation gain N
 
-        K minimizes the quadratic cost
-        :math:`J = \\int_0^\\infty (x' Q x + u' R u + 2 x' N u) dt`
+        K minimizes the quadratic cost:
+
+        $$ J = \\int_0^\\infty (x' Q x + u' R u + 2 x' N u) dt $$
 
         and N is such that the steady-state error is 0
 
