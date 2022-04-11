@@ -1,5 +1,7 @@
 """
 
+[Package Documentation](../blocksim/index.html)
+
 .. include:: README.md
 
 """

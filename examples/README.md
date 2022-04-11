@@ -1,1 +1,4 @@
-[Package Documentation](../blocksim/index.html)
+# blocksim examples
+
+This page lists some examples of possible usage of blocksim
+

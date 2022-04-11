@@ -24,7 +24,7 @@ blocksim comes with some CLI utilities.
 
 # Examples
 
-[Package Documentation](../examples/index.html)
+[See examples](../examples/index.html)
 
 # Class diagram
 
