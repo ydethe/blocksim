@@ -22,7 +22,7 @@ def convert_nb(pth, exporter):
         f.write(body)
     
     for pth_img in resources['outputs'].keys():
-        f = open(pth_img,'wb')
+        f = open(os.path.join("htmldoc","examples",pth_img),'wb')
         f.write(resources['outputs'][pth_img])
         f.close()
 
