@@ -7,22 +7,20 @@ from nbconvert import MarkdownExporter
 
 exporter=MarkdownExporter()
 
-for dirpath,dirnames,filenames in os.walk('examples'):
-    for fic in filenames:
-        if not fic.endswith('.ipynb'):
-            continue
+files_with_full_path = [f.path for f in os.scandir(dir) if f.is_file()]
 
-        print(os.path.join(dirpath,fic))
-        with open(os.path.join(dirpath,fic),'r') as f:
-            nb = nbformat.reads(f.read(), as_version=4)
+for fic in files_with_full_path:
+    print(fic)
+    with open(fic,'r') as f:
+        nb = nbformat.reads(f.read(), as_version=4)
 
-        (body, resources) = exporter.from_notebook_node(nb)
+    (body, resources) = exporter.from_notebook_node(nb)
 
-        pth_dst=fic.replace('.ipynb','.md')
-        with open(os.path.join(dirpath,pth_dst),'w') as f:
-            f.write(body)
-        
-        for pth_img in resources['outputs'].keys():
-            f = open(os.path.join("htmldoc","examples",pth_img),'wb')
-            f.write(resources['outputs'][pth_img])
-            f.close()
+    pth_dst=fic.replace('.ipynb','.md')
+    with open(pth_dst,'w') as f:
+        f.write(body)
+    
+    for pth_img in resources['outputs'].keys():
+        f = open(os.path.join("htmldoc","examples",pth_img),'wb')
+        f.write(resources['outputs'][pth_img])
+        f.close()
