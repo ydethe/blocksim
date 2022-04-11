@@ -27,8 +27,8 @@ for fic in files_with_full_path:
     rt = os.path.basename(fic).replace(".ipynb", "")
     odir = Path("build") / "htmldoc" / rt
     odir.mkdir(parents=True, exist_ok=True)
-    # c.NbConvertApp.output_base = str(odir)
-    # c.FilesWriter.build_directory = str(odir)
+    c.NbConvertApp.output_base = str(odir)
+    c.FilesWriter.build_directory = str(odir)
     exporter = MarkdownExporter(config=c)
 
     (body, resources) = exporter.from_notebook_node(nb)
