@@ -2,7 +2,7 @@ setuptools==61.3.1
 numpy==1.22.3
 scipy==1.8.0
 matplotlib==3.5.1
-sgp4==2.21
+sgp4==2.20
 skyfield==1.39
 requests==2.27.1
 psycopg2-binary==2.9.3
