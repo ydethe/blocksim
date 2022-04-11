@@ -1,4 +1,4 @@
 """
-.. include:: example_kalman.md
+.. include:: ../build/htmldoc/example_kalman.md
 
 """

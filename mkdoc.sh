@@ -1,4 +1,5 @@
 # https://pypi.org/project/eastereig/
+mkdir -p build/
 mkdir -p htmldoc/examples
 python3 examples/__init__.py
 pdoc --html --force --config latex_math=True -o htmldoc blocksim examples

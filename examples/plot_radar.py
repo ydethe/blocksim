@@ -1,4 +1,4 @@
 """
-.. include:: example_radar.md
+.. include:: ../build/htmldoc/example_radar.md
 
 """

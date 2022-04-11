@@ -1,4 +1,4 @@
 """
-.. include:: example_prn_processing.md
+.. include:: ../build/htmldoc/example_prn_processing.md
 
 """

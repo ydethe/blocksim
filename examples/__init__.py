@@ -24,7 +24,7 @@ for fic in files_with_full_path:
     with open(fic, "r") as f:
         nb = nbformat.reads(f.read(), as_version=4)
 
-    odir = Path("htmldoc") / "examples" / os.path.basename(fic)[:-6]
+    odir = Path("build") / "htmldoc"
     print(odir)
     # c.NbConvertApp.output_base = str(odir)
     # c.FilesWriter.build_directory = str(odir)
@@ -32,7 +32,7 @@ for fic in files_with_full_path:
 
     (body, resources) = exporter.from_notebook_node(nb)
 
-    pth_dst = fic.replace(".ipynb", ".md")
+    pth_dst = odir / os.path.basename(fic).replace(".ipynb", ".md")
     with open(pth_dst, "w") as f:
         f.write(body)
 

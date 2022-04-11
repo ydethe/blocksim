@@ -1,4 +1,4 @@
 """
-.. include:: example_qpsk.md
+.. include:: ../build/htmldoc/example_qpsk.md
 
 """

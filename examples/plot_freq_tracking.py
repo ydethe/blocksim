@@ -1,4 +1,4 @@
 """
-.. include:: example_freq_tracking.md
+.. include:: ../build/htmldoc/example_freq_tracking.md
 
 """
