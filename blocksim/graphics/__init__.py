@@ -192,7 +192,7 @@ def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
         if disp_leg:
             axe.legend()
 
-    # fig.tight_layout()
+    fig.tight_layout()
 
     return fig
 
