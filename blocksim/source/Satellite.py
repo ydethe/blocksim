@@ -6,7 +6,6 @@ import requests
 import numpy as np
 from numpy import cos, sin, tan, sqrt, pi
 import scipy.linalg as lin
-from scipy.linalg.matfuncs import fractional_matrix_power
 from sgp4.api import Satrec, WGS84
 from sgp4.functions import days2mdhms
 

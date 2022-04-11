@@ -1,7 +1,6 @@
 """
 
 .. include:: ../README.md
-# .. include:: ../examples/example_filtering.md
 
 ## CLI usage
 
