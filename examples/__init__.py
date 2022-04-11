@@ -11,6 +11,8 @@ from traitlets.config import Config
 
 
 c = Config()
+c.MarkdownExporter.preprocessors = ['nbconvert.preprocessors.ExtractOutputPreprocessor']
+exporter = MarkdownExporter(config=c)
 
 # https://nbconvert.readthedocs.io/en/latest/nbconvert_library.html
 
@@ -26,10 +28,6 @@ for fic in files_with_full_path:
 
     odir = Path("build") / "htmldoc"
     odir.mkdir(parents=True, exist_ok=True)
-    c.MarkdownExporter.preprocessors = ['nbconvert.preprocessors.ExtractOutputPreprocessor']
-    # c.NbConvertApp.output_base = str(odir)
-    # c.FilesWriter.build_directory = str(odir)
-    exporter = MarkdownExporter(config=c)
 
     (body, resources) = exporter.from_notebook_node(nb)
 
@@ -45,5 +43,4 @@ for fic in files_with_full_path:
         f = open(odir / pth_img, "wb")
         f.write(resources["outputs"][pth_img])
         f.close()
-
-    del exporter, nb
+        
