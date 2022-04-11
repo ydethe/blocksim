@@ -34,8 +34,9 @@ for fic in files_with_full_path:
 
     pth_dst = odir / os.path.basename(fic).replace(".ipynb", ".md")
     with open(pth_dst, "w") as f:
-        f.write(body)
+        f.write(
 
+    odir = Path("htmldoc") / "examples")
     for pth_img in resources["outputs"].keys():
         odir.mkdir(parents=True, exist_ok=True)
         print("   ", odir / pth_img)
