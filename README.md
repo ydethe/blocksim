@@ -68,7 +68,7 @@ If needed (for example, a new test with its associated baseline image), we might
 
 Just run:
 
-    pdoc --html --force -o htmldoc --config latex_math=True blocksim examples
+    ./mkdoc.sh
 
 A few guidelines for updating the doc
 https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
