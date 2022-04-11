@@ -27,5 +27,5 @@ def convert_nb(pth, exporter):
         f.close()
 
 exporter=MarkdownExporter()
-convert_nb(Path('example_filtering.ipynb'), exporter)
+convert_nb('example_filtering.ipynb', exporter)
 
