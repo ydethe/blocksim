@@ -22,6 +22,10 @@ blocksim comes with some CLI utilities.
     db      Manage databases.
     header  Visualize a binary log file's header
 
+# Examples
+
+[Package Documentation](../examples/index.html)
+
 # Class diagram
 
 ![classes](./classes.png "Class diagram")

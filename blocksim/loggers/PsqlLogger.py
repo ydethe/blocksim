@@ -37,7 +37,7 @@ class Logger(object, metaclass=Singleton):
         return istat
 
     @hookimpl
-    def loadLogFile(self, log: "Logger", fic:str):
+    def loadLogFile(self, log: "Logger", fic: str):
         """Loads the content of an existing log file
 
         Args:
@@ -45,7 +45,7 @@ class Logger(object, metaclass=Singleton):
             Path of a log file
 
         """
-        uri=fic
+        uri = fic
         if not self.test_suitable(uri):
             return False
 
@@ -76,10 +76,10 @@ class Logger(object, metaclass=Singleton):
         return data
 
     @hookimpl
-    def export(self, log: "Logger", fic:str) -> int:
+    def export(self, log: "Logger", fic: str) -> int:
         from .. import logger
 
-        uri=fic
+        uri = fic
         if not self.test_suitable(uri):
             return -1
 

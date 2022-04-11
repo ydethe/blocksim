@@ -1,26 +1,46 @@
+"""
+
+.. include:: README.md
+
+"""
 import os
+from pathlib import Path
 import nbformat
 from nbconvert import MarkdownExporter
+from traitlets.config import Config
 
+
+c = Config()
 
 # https://nbconvert.readthedocs.io/en/latest/nbconvert_library.html
 
-exporter=MarkdownExporter()
 
-files_with_full_path = [f.path for f in os.scandir("examples") if f.is_file() and f.path.endswith('.ipynb')]
+files_with_full_path = [
+    f.path for f in os.scandir("examples") if f.is_file() and f.path.endswith(".ipynb")
+]
 
 for fic in files_with_full_path:
     print(fic)
-    with open(fic,'r') as f:
+    with open(fic, "r") as f:
         nb = nbformat.reads(f.read(), as_version=4)
+
+    odir = Path("htmldoc") / "examples" / os.path.basename(fic)[:-6]
+    print(odir)
+    # c.NbConvertApp.output_base = str(odir)
+    # c.FilesWriter.build_directory = str(odir)
+    exporter = MarkdownExporter(config=c)
 
     (body, resources) = exporter.from_notebook_node(nb)
 
-    pth_dst=fic.replace('.ipynb','.md')
-    with open(pth_dst,'w') as f:
+    pth_dst = fic.replace(".ipynb", ".md")
+    with open(pth_dst, "w") as f:
         f.write(body)
-    
-    for pth_img in resources['outputs'].keys():
-        f = open(os.path.join("htmldoc","examples",pth_img),'wb')
-        f.write(resources['outputs'][pth_img])
+
+    for pth_img in resources["outputs"].keys():
+        odir.mkdir(parents=True, exist_ok=True)
+        print("   ", odir / pth_img)
+        f = open(odir / pth_img, "wb")
+        f.write(resources["outputs"][pth_img])
         f.close()
+
+    del exporter, nb

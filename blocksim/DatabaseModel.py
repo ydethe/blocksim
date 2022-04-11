@@ -25,9 +25,8 @@ Base = declarative_base()
 
 
 class Simulation(Base):
-    """Simulation parameters in the database
+    """Simulation parameters in the database"""
 
-    """
     __tablename__ = "simulation"
     # Here we define columns for the table person
     # Notice that each column is also a normal Python instance attribute.
@@ -123,9 +122,8 @@ class Simulation(Base):
 
 
 class IntegerSerie(Base):
-    """Integer serie in the database
-    
-    """
+    """Integer serie in the database"""
+
     __tablename__ = "integer_serie"
     # Here we define columns for the table address.
     # Notice that each column is also a normal Python instance attribute.
@@ -146,9 +144,8 @@ class IntegerSerie(Base):
 
 
 class FloatSerie(Base):
-    """Float serie in the database
-    
-    """
+    """Float serie in the database"""
+
     __tablename__ = "float_serie"
     # Here we define columns for the table address.
     # Notice that each column is also a normal Python instance attribute.
@@ -169,9 +166,8 @@ class FloatSerie(Base):
 
 
 class ComplexSerie(Base):
-    """Complex serie in the database
-    
-    """
+    """Complex serie in the database"""
+
     __tablename__ = "complex_serie"
     # Here we define columns for the table address.
     # Notice that each column is also a normal Python instance attribute.
@@ -193,9 +189,8 @@ class ComplexSerie(Base):
 
 
 class BoolSerie(Base):
-    """Boolean serie in the database
-    
-    """
+    """Boolean serie in the database"""
+
     __tablename__ = "bool_serie"
     # Here we define columns for the table address.
     # Notice that each column is also a normal Python instance attribute.

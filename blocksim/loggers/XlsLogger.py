@@ -25,7 +25,7 @@ class Logger(object, metaclass=Singleton):
         return istat
 
     @hookimpl
-    def loadLogFile(self, log: "Logger", fic:str):
+    def loadLogFile(self, log: "Logger", fic: str):
         if not self.test_suitable(fic):
             return False
 
@@ -49,7 +49,7 @@ class Logger(object, metaclass=Singleton):
         return
 
     @hookimpl
-    def export(self, log: "Logger", fic:str) -> int:
+    def export(self, log: "Logger", fic: str) -> int:
         if not self.test_suitable(fic):
             return -1
 
