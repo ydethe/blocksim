@@ -18,10 +18,6 @@ from matplotlib import pyplot as plt
 # A Chebychev window is applied to lower the side-lobes
 
 from blocksim.dsp.DSPFilter import BandpassDSPFilter
-from blocksim.graphics import plotBode
-from blocksim.Simulation import Simulation
-
-sim = Simulation()
 
 fs = 200
 f1 = 10
@@ -34,10 +30,11 @@ filt = BandpassDSPFilter(
     numtaps=256,
     win=("chebwin", -60),
 )
-sim.addComputer(filt)
 
 ###############################################################################
 # We plot the Bode diagram
+
+from blocksim.graphics import plotBode
 
 fig = plt.figure()
 axe_amp = fig.add_subplot(211)
@@ -58,7 +55,6 @@ ns = 200
 t1 = np.arange(ns) / fs
 x1 = exp(1j * 2 * pi * f0 * t1) + exp(1j * 2 * pi * 3 * f0 * t1)
 s1 = DSPSignal(name="s1", samplingStart=0, samplingPeriod=1 / fs, y_serie=x1)
-sim.addComputer(s1)
 
 ###############################################################################
 # s2 is the expected signal at the output of the filter
@@ -68,7 +64,12 @@ s2 = DSPSignal(name="s2", samplingStart=0, samplingPeriod=1 / fs, y_serie=x2)
 
 ###############################################################################
 # We simulate the setup
+from blocksim.Simulation import Simulation
 
+sim = Simulation()
+
+sim.addComputer(filt)
+sim.addComputer(s1)
 sim.connect("s1.setpoint", "filter.unfilt")
 
 tps = s1.generateXSerie()
