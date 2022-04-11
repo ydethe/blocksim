@@ -37,3 +37,4 @@ pre-commit==2.18.1
 pylint==2.13.5
 sphinx-markdown-builder==0.5.5
 nbconvert==6.4.5
+pdoc3==0.10.0
