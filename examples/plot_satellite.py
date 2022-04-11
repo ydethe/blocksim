@@ -1,4 +1,4 @@
 """
-.. include:: ../build/htmldoc/example_satellite.md
+.. include:: ../build/htmldoc/example_satellite/example_satellite.md
 
 """

@@ -1,4 +1,4 @@
 """
-.. include:: ../build/htmldoc/example_zadoff.md
+.. include:: ../build/htmldoc/example_zadoff/example_zadoff.md
 
 """
