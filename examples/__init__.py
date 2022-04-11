@@ -7,7 +7,7 @@ from nbconvert import MarkdownExporter
 
 exporter=MarkdownExporter()
 
-files_with_full_path = [f.path for f in os.scandir("examples") if f.is_file()]
+files_with_full_path = [f.path for f in os.scandir("examples") if f.is_file() and f.path.endswith('.ipynb')]
 
 for fic in files_with_full_path:
     print(fic)
