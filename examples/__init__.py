@@ -5,13 +5,15 @@
 """
 import os
 from pathlib import Path
+from uuid import uuid4
+
 import nbformat
 from nbconvert import MarkdownExporter
 from traitlets.config import Config
 
 
 c = Config()
-c.MarkdownExporter.preprocessors = ['nbconvert.preprocessors.ExtractOutputPreprocessor']
+c.MarkdownExporter.preprocessors = ["nbconvert.preprocessors.ExtractOutputPreprocessor"]
 exporter = MarkdownExporter(config=c)
 
 # https://nbconvert.readthedocs.io/en/latest/nbconvert_library.html
@@ -29,6 +31,11 @@ for fic in files_with_full_path:
     odir = Path("build") / "htmldoc"
     odir.mkdir(parents=True, exist_ok=True)
 
+    rt = os.path.basename(fic).replace(".ipynb", "")
+    c.ExtractOutputPreprocessor.output_filename_template = (
+        rt + "_{cell_index}_{index}{extension}"
+    )
+    exporter = MarkdownExporter(config=c)
     (body, resources) = exporter.from_notebook_node(nb)
 
     pth_dst = odir / os.path.basename(fic).replace(".ipynb", ".md")
@@ -43,4 +50,3 @@ for fic in files_with_full_path:
         f = open(odir / pth_img, "wb")
         f.write(resources["outputs"][pth_img])
         f.close()
-        
