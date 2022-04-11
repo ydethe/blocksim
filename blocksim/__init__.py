@@ -2,7 +2,7 @@
 
 .. include:: ../README.md
 
-## CLI usage
+# CLI usage
 
 blocksim comes with some CLI utilities.
 
