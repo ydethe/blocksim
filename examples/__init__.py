@@ -24,21 +24,22 @@ for fic in files_with_full_path:
     with open(fic, "r") as f:
         nb = nbformat.reads(f.read(), as_version=4)
 
-    odir = Path("build") / "htmldoc"
-    print(odir)
+    rt = os.path.basename(fic).replace(".ipynb", "")
+    odir = Path("build") / "htmldoc" / rt
+    odir.mkdir(parents=True, exist_ok=True)
     # c.NbConvertApp.output_base = str(odir)
     # c.FilesWriter.build_directory = str(odir)
     exporter = MarkdownExporter(config=c)
 
     (body, resources) = exporter.from_notebook_node(nb)
 
-    pth_dst = odir / os.path.basename(fic).replace(".ipynb", ".md")
+    pth_dst = odir / (rt + ".md")
     with open(pth_dst, "w") as f:
         f.write(body)
 
-    odir = Path("htmldoc") / "examples"
+    odir = Path("htmldoc") / "examples" / rt
+    odir.mkdir(parents=True, exist_ok=True)
     for pth_img in resources["outputs"].keys():
-        odir.mkdir(parents=True, exist_ok=True)
         print("   ", odir / pth_img)
         f = open(odir / pth_img, "wb")
         f.write(resources["outputs"][pth_img])
