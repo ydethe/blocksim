@@ -14,6 +14,8 @@ from nbconvert import MarkdownExporter
 
 
 def __f1_newer_than_f2(f1, f2):
+    if not os.path.exists(f2):
+        return True
     f1time = os.path.getmtime(f1)
     f2time = os.path.getmtime(f2)
 

@@ -1,4 +1,5 @@
 # https://pypi.org/project/eastereig/
+rm -rf htmldoc build examples/example_*.py
 mkdir -p build/htmldoc
 mkdir -p htmldoc/examples
 python3 examples/__init__.py
