@@ -212,7 +212,7 @@ class TestCmdAtt(TestBase):
                 (-1, A0, A0, 71),
             ]
         )
-        ctl = AttPilot("ctlatt", sys, mot0)
+        ctl = AttPilot("ctlatt", sys)
 
         spt_otp = OrderedDict()
         spt_otp["u0"] = (0,)

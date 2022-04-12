@@ -6,7 +6,21 @@ from blocksim.control.System import ASystem
 
 # name_of_outputs=['s%i' % num,'ds%i' % num]
 class Motor(ASystem):
-    """"""
+    """Motor with its propeller
+
+    Attributes:
+        num: the 0-based index of the motor
+        km: TODO
+        Jr: TODO
+        R: TODO
+        kgb: TODO
+        k: TODO
+        Umax: TODO
+
+    Args:
+        num: Index of the motor (starting at 0)
+
+    """
 
     __slots__ = []
 

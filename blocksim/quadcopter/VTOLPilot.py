@@ -2,15 +2,25 @@ import numpy as np
 import scipy.linalg as lin
 
 from blocksim.control.Controller import AController
+from blocksim.control.System import ASystem
 
 
 class VTOLPilot(AController):
-    def __init__(self, sys, lqr, complex_quad):
-        if complex_quad:
-            noo = ["roll", "pitch", "yaw", "A"]
-        else:
-            noo = ["fx", "fy", "fz"]
+    """Outter loop position / velocity controller
 
+    Attributes:
+        sys: `control.System.ASystem` instance to be controlled
+        lqr: `control.Controller.AController` to use for the control
+        pitch_d_max: Pitch security : the controller forbids a pitch setpoint of more than pitch_d_max (rad)
+        roll_d_max: Roll security : the controller forbids a roll setpoint of more than roll_d_max (rad)
+
+    Args:
+        sys: `control.System.ASystem` instance to be controlled
+        lqr:`control.Controller.AController` to use for the control
+
+    """
+
+    def __init__(self, sys: ASystem, lqr: AController):
         AController.__init__(
             self,
             name="ctlvtol",
@@ -28,7 +38,6 @@ class VTOLPilot(AController):
         )
         self.createParameter(name="sys", value=sys)
         self.createParameter(name="lqr", value=lqr)
-        self.createParameter(name="complex_quad", value=complex_quad)
         self.createParameter(name="pitch_d_max", value=np.pi / 180 * 45)
         self.createParameter(name="roll_d_max", value=np.pi / 180 * 45)
 

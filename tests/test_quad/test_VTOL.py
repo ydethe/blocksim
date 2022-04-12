@@ -67,7 +67,7 @@ class TestPVTOL(TestBase):
         self.lqr.matR = np.eye(3) * 5
         self.lqr.computeGain()
 
-        self.ctl = VTOLPilot(self.sys, self.lqr, complex_quad=False)
+        self.ctl = VTOLPilot(self.sys, self.lqr)
 
         self.stp = Step(
             "stp",
@@ -156,7 +156,7 @@ class TestPVTOLComplex(TestBase):
         ctl_mot3.Umin = -mot0.Umax
         ctl_mot3.Umax = mot0.Umax
 
-        grp_inp = OrderedDict()
+        grp_inp = {}
         grp_inp["in0"] = (1,)
         grp_inp["in1"] = (1,)
         grp_inp["in2"] = (1,)
@@ -210,7 +210,7 @@ class TestPVTOLComplex(TestBase):
             cons=np.array([0, 0, 0, 0]),
             snames=["x_cons", "y_cons", "z_cons", "psi_cons"],
         )
-        ctlatt = AttPilot("ctlatt", att_sys, mot0)
+        ctlatt = AttPilot("ctlatt", att_sys)
         ctlvtol = VTOLPilot(vtol_sys, lqr, complex_quad=True)
 
         spt_otp = OrderedDict()

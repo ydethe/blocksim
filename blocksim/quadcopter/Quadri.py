@@ -12,6 +12,16 @@ from blocksim.utils import vecBodyToEarth, vecEarthToBody
 class Quadri(G6DOFSystem):
     """
 
+    Attributes:
+        mot: `Motor.Motor` instance to use to control the Quadri
+        b: TODO
+        g: gravitation. For Earth, 9.81 m/s²
+        l: TODO
+        Jr: TODO
+
+    Args:
+        mot: `Motor.Motor` instance to use to control the Quadri
+
     http://www.gipsa-lab.grenoble-inp.fr/~nicolas.marchand/teaching/Nonlinear_PSPI.pdf
 
     """
@@ -33,7 +43,18 @@ class Quadri(G6DOFSystem):
         self.createParameter("l", 22.5e-2)
         self.createParameter("Jr", 3.4e-5)
 
-    def getActions(self, x: np.array, u: np.array) -> Iterable[np.array]:
+    def getActions(self, x: "array", u: "array") -> Iterable["array"]:
+        """From the state vector and the motors speed setpoints,
+        derives force and torque applied on the system
+
+        Args:
+            x: state vector
+            u: motors speed setpoints
+
+        Returns:
+            A tuple force (N), torque (N.m)
+
+        """
         s1, s2, s3, s4 = u
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = x
         att = np.array([qw, qx, qy, qz])
@@ -51,13 +72,19 @@ class Quadri(G6DOFSystem):
 
         return force, torque
 
-    def transition(self, t: float, x: np.array, u: np.array) -> np.array:
+    def transition(self, t: float, x: "array", u: "array") -> "array":
         force, torque = self.getActions(x, u)
 
         a = np.hstack((force, torque))
 
         return G6DOFSystem.transition(self, t, x, a)
 
-    def getEquilibriumSpeed(self):
+    def getEquilibriumSpeed(self) -> float:
+        """Computes the motors speed setpoints to have 0 force applied to the quadri
+
+        Returns:
+            Speed setpoints to apply to each motor
+
+        """
         s_eq = np.sqrt(self.m * self.g / 4 / self.b)
         return s_eq

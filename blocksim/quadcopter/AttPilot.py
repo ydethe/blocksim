@@ -3,11 +3,67 @@ import scipy.linalg as lin
 
 from blocksim.control.Controller import AController
 
+__all__ = ["AttPilot"]
+
 
 class AttPilot(AController):
+    """Inner loop attitude controller
+
+    The input are **setpoint**, **estimation** and **euler**
+
+    **setpoint** has the following parameters:
+
+    * roll (rad)
+    * pitch (rad)
+    * yaw (rad)
+    * A
+
+    **estimation** has the following parameters:
+
+    * px: X coordinate (m)
+    * py: Y coordinate (m)
+    * pz: Z coordinate (m)
+    * vx: X velocity (m/s)
+    * vy: Y velocity (m/s)
+    * vz: Z velocity (m/s)
+    * qw: attitude quaternion real part
+    * qx: attitude quaternion x part
+    * qy: attitude quaternion y part
+    * qz: attitude quaternion z part
+    * wx: angular velocity X (rad/s)
+    * wy: angular velocity Y (rad/s)
+    * wz: angular velocity Z (rad/s)
+
+    **euler** has the following parameters:
+
+    * roll (rad)
+    * pitch (rad)
+    * yaw (rad)
+
+    The output is **command**
+
+    **command** has the following parameters:
+
+    * s1: velocity setpoint for the motor 1 (rad/s)
+    * s2: velocity setpoint for the motor 2 (rad/s)
+    * s3: velocity setpoint for the motor 3 (rad/s)
+    * s4: velocity setpoint for the motor 4 (rad/s)
+    * Gr: TODO
+    * Gp: TODO
+    * Gy: TODO
+
+    Attributes:
+        sys: `Quadri.Quadri` instance to be controlled
+
+    Args:
+        name: Name of the controller
+        sys: `Quadri.Quadri` instance to be controlled
+
+    """
+
     __slots__ = []
 
-    def __init__(self, name, sys, mot):
+    def __init__(self, name, sys):
         AController.__init__(
             self,
             name,
@@ -17,7 +73,10 @@ class AttPilot(AController):
         )
         self.defineInput("euler", shape=(3,), dtype=np.float64)
         self.createParameter("sys", sys)
-        self.createParameter("mot", mot)
+
+    @property
+    def mot(self):
+        return self.sys.mot
 
     def compute_outputs(
         self,
