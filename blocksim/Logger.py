@@ -473,3 +473,4 @@ class Logger(object):
             raise SystemError("Unable to write '%s'" % self.__uri)
         elif len(lok) > 1:
             raise SystemError("Uncoherent return '%s'" % lok)
+        

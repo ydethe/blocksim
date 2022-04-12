@@ -36,8 +36,7 @@ class TestLogger(TestBase):
             log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
             log.log("t", i * dt)
 
-        istat = log.export(pth)
-        self.assertEqual(istat, 0)
+        log.export(pth)
         del log
 
         log2 = Logger()
