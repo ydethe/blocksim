@@ -9,20 +9,20 @@ from matplotlib import pyplot as plt
 from blocksim.graphics import plotSpectrogram
 
 from blocksim.utils import load_antenna_config
-from blocksim.dsp.ActiveAntenna import ActiveAntenna
+from blocksim.dsp.AntennaNetwork import AntennaNetwork
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
-class TestActiveAntenna(TestBase):
+class TestAntennaNetwork(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_antenna_diagram(self, fill: bool = True):
 
         config = Path(__file__).parent / "antenna_config.py"
         ac = load_antenna_config(config)
 
-        ant = ActiveAntenna(ac)
+        ant = AntennaNetwork(ac)
 
         fig = plt.figure()
         gs = fig.add_gridspec(1, 1)
@@ -35,7 +35,7 @@ class TestActiveAntenna(TestBase):
 
 
 if __name__ == "__main__":
-    a = TestActiveAntenna()
+    a = TestAntennaNetwork()
 
     a.setUp()
     a.test_antenna_diagram()
