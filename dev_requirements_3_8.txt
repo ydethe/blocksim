@@ -24,6 +24,7 @@ docutils==0.17.1
 pytest==7.1.1
 pytest-cov==3.0.0
 pytest-mpl==0.14.0
+pytest_xdist==2.5.0
 pre-commit==2.18.1
 pylint==2.13.5
 nbconvert==5.6.1
