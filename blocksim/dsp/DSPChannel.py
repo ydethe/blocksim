@@ -181,13 +181,13 @@ class DSPChannel(AComputer):
 
         """
         azim, elev, dist, vrad, _, _ = itrf_to_azeld(rx_pos, tx_pos)
-        z = pi / 2 - elev * pi / 180
         lon, lat, h = itrf_to_geodetic(rx_pos)
 
         # Saastamoinen troposhperic model
         # https://gnss-sdr.org/docs/sp-blocks/pvt/#saastamoinen
         # https://www.cv.nrao.edu/~demerson/ionosphere/atten/atten.htm
         # https://www.itu.int/dms_pubrec/itu-r/rec/p/R-REC-P.618-8-200304-S!!PDF-E.pdf
+        z = pi / 2 - elev * pi / 180
         h_rel = 50.0
         p = 1013.15 * (1 - 2.2557e-5 * h) ** 5.2568
         T = 15 - 6.5e-3 * h + 273.15
@@ -206,7 +206,7 @@ class DSPChannel(AComputer):
             beta=self.beta,
         )
         h_iono = 100e3
-        inv_sq_f = self.wavelength**2 / c**2
+        inv_sq_f = self.wavelength ** 2 / c ** 2
         L_iono_dB = 2.2e15 * inv_sq_f / sqrt(cos(z) ** 2 + 2 * h_iono / Req)
         L_iono = 10 ** (L_iono_dB / 10)
 

@@ -47,6 +47,7 @@ In your virtual env:
 
     pip install -r dev_requirements_3_9.txt
     python3 setup.py develop
+    python3 -m ipykernel install --user --name=bs_env
 
 That's it ! You are now ready to use blocksim library.
 In the folder tests and examples are a lot of examples that can be used as a starting point.

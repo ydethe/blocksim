@@ -139,7 +139,7 @@ class Simulation(object):
         progress_bar: bool = True,
         error_on_unconnected: bool = True,
         fig=None,
-    ) -> Frame:
+    ) -> "FuncAnimation":
         """Resets the simulator, and simulates the closed-loop system
         up to the date given as an argument :
 
@@ -152,7 +152,7 @@ class Simulation(object):
             fig: In the case of a realtime plot (use of RTPlotter for example), must be the figure that is updated in real time
 
         Returns:
-            The time frame used for the simulation
+            The matplotlib FuncAnimation if fig is not None
 
         """
         # self.__logger.allocate(len(tps))
