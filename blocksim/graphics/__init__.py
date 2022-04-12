@@ -59,7 +59,7 @@ def format_parameter(samp: float, unit: str) -> str:
 
     Examples:
         >>> format_parameter(1.5e-3, 'm')
-        1.5 mm
+        '1.5 mm'
 
     """
     xm = np.abs(samp)
@@ -414,7 +414,7 @@ def plotBode(
         >>> f = ArbitraryDSPFilter(name="MTI", samplingPeriod=1e6, taps=[1, -1])
         >>> fig = plt.figure()
         >>> gs = fig.add_gridspec(2, 1)
-        >>> plotBode(f, spec_amp=gs[0, 0], spec_pha=gs[1, 0])
+        >>> _ = plotBode(f, spec_amp=gs[0, 0], spec_pha=gs[1, 0])
 
     """
     gs = spec_amp.get_gridspec()

@@ -253,7 +253,7 @@ class Multiplier(AComputer):
         >>> out = mul.compute_outputs(t1=0, t2=1, multiplied=np.ones((2, 2)), signal=np.ones(2))
         >>> out["multiplied"]
         array([[2., 2.],
-              [2., 2.]]...
+               [2., 2.]]...
 
     """
 

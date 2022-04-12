@@ -36,7 +36,6 @@ class Logger(object):
         >>> log.getValue('2*t') # doctest: +ELLIPSIS
         array([0, 2]...
         >>> log.export('tests/example.csv')
-        0
         >>> del log
         >>> log2 = Logger()
         >>> log2.loadLogFile('tests/example.csv')

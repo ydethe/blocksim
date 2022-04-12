@@ -66,10 +66,10 @@ class ADSPComputer(AComputer):
             >>> data = np.arange(6)
             >>> a.process(data) # doctest: +ELLIPSIS
             array([[0, 3],
-                  [0, 0],
-                  [1, 4],
-                  [0, 0],
-                  [2, 5]]...
+                   [0, 0],
+                   [1, 4],
+                   [0, 0],
+                   [2, 5]]...
 
         """
         if len(data.shape) == 1:
@@ -106,8 +106,8 @@ class ADSPComputer(AComputer):
             >>> data = np.arange(6).reshape((3, 2))
             >>> data
             array([[0, 1],
-                  [2, 3],
-                  [4, 5]])
+                   [2, 3],
+                   [4, 5]])
             >>> a.flatten(data)
             array([0, 2, 4, 1, 3, 5])
 
@@ -137,10 +137,10 @@ class ADSPComputer(AComputer):
             >>> strm = np.arange(10)
             >>> a.unflatten(strm)
             array([[0, 5],
-                  [1, 6],
-                  [2, 7],
-                  [3, 8],
-                  [4, 9]])
+                   [1, 6],
+                   [2, 7],
+                   [3, 8],
+                   [4, 9]])
 
         """
         ny = self.output_size
