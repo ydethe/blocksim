@@ -135,7 +135,7 @@ class Logger(object):
         if str(self.__uri) == "":
             raise (FileNotFoundError(self.__uri))
 
-        ldata = plugin_manager.hook.loadLogFile(log=self, file=self.__uri)
+        ldata = plugin_manager.hook.loadLogFile(log=self, uri=self.__uri)
         lok = [x for x in ldata if x]
         if len(lok) == 0:
             raise IOError("No logger to handle '%s'" % self.__uri)
