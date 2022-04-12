@@ -1,5 +1,6 @@
 htmldoc
 test_results.xml
+examples/example_*.py
 
 *.bak
 .vscode/

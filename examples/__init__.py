@@ -13,6 +13,13 @@ from nbconvert.preprocessors import ExecutePreprocessor
 from nbconvert import MarkdownExporter
 
 
+def __f1_newer_than_f2(f1, f2):
+    f1time = os.path.getmtime(f1)
+    f2time = os.path.getmtime(f2)
+
+    return f1time > f2time
+
+
 def __list_notebooks(root):
     files_with_full_path = (
         f.path for f in os.scandir(root) if f.is_file() and f.path.endswith(".ipynb")
@@ -65,7 +72,9 @@ odir.mkdir(parents=True, exist_ok=True)
 
 for fic in __list_notebooks("examples"):
     print(fic)
-    nb = __read_notebook(fic)
-    __execute_notebook(ep, nb)
-    __render_notebook(exporter, nb, odir)
-    __create_py("examples", fic)
+    pth_py = Path("examples") / os.path.basename(fic).replace(".ipynb", ".py")
+    if __f1_newer_than_f2(fic, pth_py):
+        nb = __read_notebook(fic)
+        __execute_notebook(ep, nb)
+        __render_notebook(exporter, nb, odir)
+        __create_py("examples", fic)
