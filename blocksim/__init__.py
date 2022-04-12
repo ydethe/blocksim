@@ -77,7 +77,13 @@ plugins = eps["blocksim"]
 
 for ep in plugins:
     if ep.name.startswith("logger_"):
-        plugin = import_module(ep.value)
+        try:
+            plugin = import_module(ep.value)
+        except:
+            plugin = None
+            logger.warning(f"Failed to load {ep.value}")
+        if plugin is None:
+            continue
         if not plugin_manager.is_registered(plugin=plugin.Logger()):
             plugin_manager.register(plugin=plugin.Logger(), name=ep.name)
             logger.info("Registered %s" % ep.value)

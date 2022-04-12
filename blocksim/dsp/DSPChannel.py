@@ -206,7 +206,7 @@ class DSPChannel(AComputer):
             beta=self.beta,
         )
         h_iono = 100e3
-        inv_sq_f = self.wavelength ** 2 / c ** 2
+        inv_sq_f = self.wavelength**2 / c**2
         L_iono_dB = 2.2e15 * inv_sq_f / sqrt(cos(z) ** 2 + 2 * h_iono / Req)
         L_iono = 10 ** (L_iono_dB / 10)
 
