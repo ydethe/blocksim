@@ -43,7 +43,7 @@ class Logger(object, metaclass=Singleton):
 
     @hookimpl
     def export(self, log: "Logger", uri: str) -> int:
-        if not self.test_suitable(fic):
+        if not self.test_suitable(uri):
             return -1
 
         data = log.getRawData()
