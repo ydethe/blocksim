@@ -1,5 +1,6 @@
 from typing import Iterable
 from datetime import datetime
+from pathlib import Path
 
 import pluggy
 import pandas as pd
@@ -17,15 +18,15 @@ hookimpl = pluggy.HookimplMarker("blocksim")
 
 class Logger(object, metaclass=Singleton):
     @hookimpl
-    def test_suitable(self, uri: str) -> bool:
+    def test_suitable(self, uri: Path) -> bool:
         if uri is None:
             return False
 
-        istat = uri.endswith(".xls")
+        istat =(uri.suffix==".xls")
         return istat
 
     @hookimpl
-    def loadLogFile(self, log: "Logger", uri: str):
+    def loadLogFile(self, log: "Logger", uri: Path):
         if not self.test_suitable(uri):
             return False
 
@@ -42,7 +43,7 @@ class Logger(object, metaclass=Singleton):
         return
 
     @hookimpl
-    def export(self, log: "Logger", uri: str) -> int:
+    def export(self, log: "Logger", uri: Path) -> int:
         if not self.test_suitable(uri):
             return -1
 

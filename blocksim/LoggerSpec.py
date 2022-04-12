@@ -1,4 +1,5 @@
 from functools import wraps
+from pathlib import Path
 
 import pluggy
 
@@ -9,7 +10,7 @@ class LoggerSpec(object):
     """Specification for all plugins that extend the `Logger.Logger` capacities"""
 
     @hookspec
-    def test_suitable(self, uri: str) -> bool:
+    def test_suitable(self, uri: Path) -> bool:
         """Tests weeather a log:'Logger' can handle a fic
 
         Args:
@@ -21,7 +22,7 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def loadLogFile(self, log: "Logger", uri: str) -> bool:
+    def loadLogFile(self, log: "Logger", uri: Path) -> bool:
         """Load log file
 
         Args:
@@ -48,7 +49,7 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def export(self, log: "Logger", uri: str) -> int:
+    def export(self, log: "Logger", uri: Path) -> int:
         """Export the log into a file
 
         Args:

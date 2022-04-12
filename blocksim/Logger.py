@@ -4,6 +4,7 @@ from keyword import iskeyword
 from types import FunctionType
 from datetime import datetime, timezone
 import os
+from pathlib import Path
 
 import pluggy
 import numpy as np
@@ -47,7 +48,7 @@ class Logger(object):
     __datetime_fmt = "%Y-%m-%d %H:%M-%S"
     __slots__ = [
         "__data",
-        "__fic",
+        "__uri",
         "__index",
         "__alloc",
         "__start_time",
@@ -58,7 +59,7 @@ class Logger(object):
 
     def reset(self):
         """Resets the logger and empties all the recorded data"""
-        self.__fic = None
+        self.__uri = None
         self.__start_time = datetime.now(tz=timezone.utc)
         self.__data = defaultdict(list)
         self.__index = 0
@@ -113,16 +114,16 @@ class Logger(object):
         """
         return self.__start_time
 
-    def getLoadedFile(self) -> str:
+    def getLoadedFile(self) -> Path:
         """Get the name of the file or the URI associated to the logger
 
         Returns:
             The path or URI
 
         """
-        return self.__fic
+        return self.__uri
 
-    def loadLogFile(self, uri: str):
+    def loadLogFile(self, uri: Path):
         """Loads a specified file or URI into the logger.
         Looks up among all plugins which one can handle the extension of **fig**
 
@@ -130,16 +131,16 @@ class Logger(object):
             uri: The path or URI where the data will be written
 
         """
-        self.__fic = str(uri)
-        if self.__fic == "":
-            raise (FileNotFoundError(self.__fic))
+        self.__uri = Path(uri)
+        if str(self.__uri) == "":
+            raise (FileNotFoundError(self.__uri))
 
-        ldata = plugin_manager.hook.loadLogFile(log=self, file=uri)
+        ldata = plugin_manager.hook.loadLogFile(log=self, file=self.__uri)
         lok = [x for x in ldata if x]
         if len(lok) == 0:
-            raise IOError("No logger to handle '%s'" % uri)
+            raise IOError("No logger to handle '%s'" % self.__uri)
         elif len(lok) > 1:
-            raise IOError("Too many loggers to handle '%s'" % uri)
+            raise IOError("Too many loggers to handle '%s'" % self.__uri)
 
     def allocate(self, size: int):
         """If called with a size, pre allocates the data with an array of size *size*
@@ -451,7 +452,7 @@ class Logger(object):
         y = fftconvolve(sig, a, mode="same")
         return y
 
-    def export(self, uri: str):
+    def export(self, uri: Path):
         """Exports the logger to a specified file or URI into the logger.
         Looks up among all plugins which one can handle the extension of **fig**
 
@@ -462,13 +463,13 @@ class Logger(object):
             SystemError if no handler has been identified or if too many handlers were identified
 
         """
-        self.__fic = str(uri)
+        self.__uri = Path(uri)
 
-        lstat = plugin_manager.hook.export(log=self, uri=uri)
+        lstat = plugin_manager.hook.export(log=self, uri=self.__uri)
 
         lok = [x for x in lstat if x >= 0]
 
         if len(lok) == 0:
-            raise SystemError("Unable to write '%s'" % uri)
+            raise SystemError("Unable to write '%s'" % self.__uri)
         elif len(lok) > 1:
             raise SystemError("Uncoherent return '%s'" % lok)
