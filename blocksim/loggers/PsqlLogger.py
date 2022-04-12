@@ -34,7 +34,7 @@ class Logger(object, metaclass=Singleton):
         if uri is None:
             return False
 
-        istat = (uri.parts[0]=="postgresql+psycopg2:")
+        istat = uri.parts[0] == "postgresql+psycopg2:"
         return istat
 
     @hookimpl

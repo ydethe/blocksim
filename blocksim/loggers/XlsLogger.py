@@ -22,7 +22,7 @@ class Logger(object, metaclass=Singleton):
         if uri is None:
             return False
 
-        istat =(uri.suffix==".xls")
+        istat = uri.suffix == ".xls"
         return istat
 
     @hookimpl

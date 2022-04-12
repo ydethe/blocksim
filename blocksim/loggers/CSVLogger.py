@@ -23,7 +23,7 @@ class Logger(object, metaclass=Singleton):
         if uri is None:
             return False
 
-        istat = (uri.suffix==".csv")
+        istat = uri.suffix == ".csv"
         return istat
 
     @hookimpl

@@ -96,7 +96,7 @@ class TestSatellite(TestBase):
             for t in tps:
                 dat = s.compute_outputs(t1=t, t2=t, itrf=None, subpoint=None)
                 x, y, z, vx, vy, vz = dat["itrf"]
-                traj.addPosition(x, y, z)
+                traj.addPosition(t, x, y, z)
             sp.plotTrajectory(axe, traj, linewidth=4)
 
         sats = createSatellites(tle_file=tle_pth, tsync=t0, prop=CircleSatellite)
@@ -105,7 +105,7 @@ class TestSatellite(TestBase):
             for t in tps:
                 dat = s.compute_outputs(t1=t, t2=t, itrf=None, subpoint=None)
                 x, y, z, vx, vy, vz = dat["itrf"]
-                traj.addPosition(x, y, z)
+                traj.addPosition(t, x, y, z)
             sp.plotTrajectory(axe, traj)
 
         return fig
@@ -223,7 +223,7 @@ class TestSatellite(TestBase):
             log=log,
             name="traj",
             npoint=ns,
-            params=("iss_itrf_px", "iss_itrf_py", "iss_itrf_pz"),
+            params=("t", "iss_itrf_px", "iss_itrf_py", "iss_itrf_pz"),
             color="red",
         )
 
@@ -241,10 +241,10 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestSatellite()
-    a.test_teme_itrf()
+    # a.test_teme_itrf()
     # a.test_satellite()
     # a.test_iss()
     # a.test_ground_track()
-    # a.test_circle_satellite()
+    a.test_circle_satellite()
 
-    # plt.show()
+    plt.show()

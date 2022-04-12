@@ -57,7 +57,7 @@ class Trajectory(object):
         """Converts the Trajectory into a pandas.DataFrame
 
         Returns:
-            A DataFrame containing the time stamp, longitude, latitude and altitude data (deg and m)
+            A DataFrame containing the time stamp, longitude, latitude and altitude data (s, deg and m)
 
         """
         ns = len(self)
@@ -65,7 +65,8 @@ class Trajectory(object):
         lon = np.empty(ns)
         alt = np.empty(ns)
         for k in range(ns):
-            lo, la, alt[k] = itrf_to_geodetic((self.x[k], self.y[k], self.z[k]))
+            pos = (self.x[k], self.y[k], self.z[k])
+            lo, la, alt[k] = itrf_to_geodetic(pos)
             lon[k] = lo * 180 / pi
             lat[k] = la * 180 / pi
         df = pd.DataFrame(
@@ -86,9 +87,9 @@ class Trajectory(object):
         cls,
         log: Logger,
         name: str,
-        npoint: int,
         params: Tuple[str],
         color: tuple,
+        npoint: int = -1,
         raw_value: bool = True,
     ) -> "Trajectory":
         """Instanciates a Trajectory from a Logger
@@ -96,8 +97,8 @@ class Trajectory(object):
         Args:
             log: The Logger that contains the information
             name: Name of the Trajectory
-            npoint: Number of samples to read. The npoint first samples are read
-            params: A tuple with the 3 names of values (X, Y, Z) to read in log. These values shall be ITRF meter coordinates
+            npoint: Number of samples to read. The npoint first samples are read. If negative, all the points are read
+            params: A tuple with the 4 names of values (T, X, Y, Z) to read in log. These values shall be ITRF meter coordinates
             color: The color as a 4-elements tuple:
 
             *  r between 0 and 1
@@ -110,7 +111,7 @@ class Trajectory(object):
             The Trajectory instance
 
         """
-        xname, yname, zname = params
+        tname, xname, yname, zname = params
 
         if raw_value:
             mth = log.getRawValue
@@ -118,15 +119,17 @@ class Trajectory(object):
             mth = log.getValue
 
         if npoint > 0:
+            t = mth(tname)[:npoint]
             x = mth(xname)[:npoint]
             y = mth(yname)[:npoint]
             z = mth(zname)[:npoint]
         else:
+            t = mth(tname)
             x = mth(xname)
             y = mth(yname)
             z = mth(zname)
 
-        traj = Trajectory(name=name, x=x, y=y, z=z, color=color)
+        traj = Trajectory(name=name, t=t, x=x, y=y, z=z, color=color)
 
         return traj
 
@@ -143,6 +146,7 @@ class Trajectory(object):
             z: Z coordinate in ITRF (m)
 
         """
+        self.t = np.hstack((self.t, np.array([t])))
         self.x = np.hstack((self.x, np.array([x])))
         self.y = np.hstack((self.y, np.array([y])))
         self.z = np.hstack((self.z, np.array([z])))

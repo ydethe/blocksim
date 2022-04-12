@@ -23,7 +23,7 @@ class Logger(object, metaclass=Singleton):
         if uri is None:
             return False
 
-        istat = (uri.suffix==".pkl")
+        istat = uri.suffix == ".pkl"
         return istat
 
     @hookimpl
