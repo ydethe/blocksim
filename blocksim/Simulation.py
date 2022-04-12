@@ -5,6 +5,7 @@ import tqdm
 import numpy as np
 import matplotlib.animation as animation
 from matplotlib import pyplot as plt
+import networkx as nx
 
 from .exceptions import *
 from .core.Frame import Frame
@@ -226,7 +227,27 @@ class Simulation(object):
 
         inp.setOutput(otp)
 
-    def getComputerOutputByName(self, frame: Frame, name: str) -> np.array:
+    def computeGraph(self) -> nx.DiGraph:
+        """Computes the simulation graph. The result can be plotted thanks to `blocksim.graphics.plotGraph`
+
+        Returns:
+            The simulation graph as an instance of nx.DiGraph
+
+        """
+        g = nx.DiGraph()
+        for c in self.getComputersList():
+            g.add_node(c.getName())
+
+        for dst in self.getComputersList():
+            for inp in dst.getListInputs():
+                otp = inp.getOutput()
+                if not otp is None:
+                    src = otp.getComputer()
+                    g.add_edge(src.getName(), dst.getName())
+
+        return g
+
+    def getComputerOutputByName(self, frame: Frame, name: str) -> "array":
         """Returns the data of the computer's output
         The *name* of the data is designated by :
         <computer>.<output>[coord]

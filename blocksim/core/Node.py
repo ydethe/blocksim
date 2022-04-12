@@ -72,7 +72,7 @@ class Input(ABaseNode):
 
     def getDataForFrame(
         self, frame: Frame, error_on_unconnected: bool = True
-    ) -> np.array:
+    ) -> "array":
         """Gets the data for the given time frame
 
         Args:
@@ -189,7 +189,7 @@ class Output(ABaseNode):
         for iscal in product(*it):
             yield self.__snames[iscal], dat[iscal]
 
-    def getInitialeState(self) -> np.array:
+    def getInitialeState(self) -> "array":
         """Gets the element's initial state vector
 
         Returns:
@@ -239,7 +239,7 @@ class Output(ABaseNode):
 
     def getDataForFrame(
         self, frame: Frame, error_on_unconnected: bool = True
-    ) -> np.array:
+    ) -> "array":
         """Gets the data for the Output at the given time frame
         If the given time frame is different from the last one seen by the Output,
         the update of the simulation is triggered.
@@ -289,7 +289,7 @@ class AWGNOutput(Output):
         else:
             self.cplxe = False
 
-    def addGaussianNoise(self, state: np.array) -> np.array:
+    def addGaussianNoise(self, state: "array") -> "array":
         """Adds a gaussian noise to a state vector
 
         Args:
@@ -311,7 +311,7 @@ class AWGNOutput(Output):
 
     def getDataForFrame(
         self, frame: Frame, error_on_unconnected: bool = True
-    ) -> np.array:
+    ) -> "array":
         if self.getCurrentFrame() != frame:
             self.setFrame(frame)
             if frame.getTimeStep() == 0:
@@ -536,7 +536,7 @@ class AComputer(ABaseNode):
         otp = self.getOutputByName(output_name)
         otp.setInitialState(initial_state)
 
-    def getInitialStateForOutput(self, output_name: str) -> np.array:
+    def getInitialStateForOutput(self, output_name: str) -> "array":
         """Sets the initial state vector for a given output
 
         Args:
@@ -765,7 +765,7 @@ class AComputer(ABaseNode):
         uid: UUID = None,
         name: str = None,
         error_on_unconnected: bool = True,
-    ) -> np.array:
+    ) -> "array":
         """Gets the data for the given input, either withs its id or with its name
         One and only one of uid and name shall be given
 
@@ -802,7 +802,7 @@ class AComputer(ABaseNode):
         uid: UUID = None,
         name: str = None,
         error_on_unconnected: bool = True,
-    ) -> np.array:
+    ) -> "array":
         """Gets the data for the given output, either withs its id or with its name
         One and only one of uid and name shall be given
 

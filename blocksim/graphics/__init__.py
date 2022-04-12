@@ -15,6 +15,7 @@ from numpy.polynomial import Polynomial
 from matplotlib import pyplot as plt
 from matplotlib.image import AxesImage
 from matplotlib.backend_bases import Event
+import networkx as nx
 
 from .. import logger
 from ..Logger import Logger
@@ -576,6 +577,36 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":
     fig = createFigureFromSpec(spec, log)
 
     return fig
+
+
+def plotGraph(G, pos=None, axe_spec=None, **kwds):
+    """See https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pylab.draw.html#networkx.drawing.nx_pylab.draw
+
+    Args:
+        G: graph to draw
+        pos: A dictionary with nodes as keys and positions as values.
+            If not specified a spring layout positioning will be computed.
+            See networkx.drawing.layout for functions that compute node positions.
+        axe_spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
+        kwds: See link above
+
+    """
+    if axe_spec is None:
+        fig = plt.figure()
+        gs = fig.add_gridspec(1, 1)
+        axe_spec = gs[0, 0]
+
+    gs = axe_spec.get_gridspec()
+    fig = gs.figure
+    axe = fig.add_subplot(axe_spec)
+
+    if not "node_size" in kwds.keys():
+        kwds["node_size"] = 1000
+    if pos is None:
+        pos = nx.planar_layout(G)
+    nx.draw_networkx(G, pos=pos, ax=axe, **kwds)
+
+    return axe
 
 
 def plot3DEarth(trajectories: Iterable[Trajectory]) -> B3DPlotter:

@@ -62,11 +62,11 @@ class DSPLine(object):
         return self.__samplingPeriod
 
     @property
-    def y_serie(self) -> np.array:
+    def y_serie(self) -> "array":
         return self.__y_serie.copy()
 
     @property
-    def default_transform(self) -> np.array:
+    def default_transform(self) -> "array":
         return self.__default_transform
 
     @LazyProperty
@@ -124,7 +124,7 @@ class DSPLine(object):
 
         return x_serie
 
-    def generateXSerie(self, index: int = None) -> np.array:
+    def generateXSerie(self, index: int = None) -> "array":
         """Generates the x samples of the line
 
         Args:
@@ -187,7 +187,7 @@ class DSPLine(object):
 
         return lpeak
 
-    def __interpolate(self, new_x: np.array, complex_output: bool = True) -> np.array:
+    def __interpolate(self, new_x: np.array, complex_output: bool = True) -> "array":
         if complex_output:
             y_serie = 1j * self._itp_y(new_x)
             y_serie += self._itp_x(new_x)
@@ -413,7 +413,7 @@ class DSPLine(object):
         return _to_db
 
     @classmethod
-    def to_db(cls, x: "array") -> np.array:
+    def to_db(cls, x: "array") -> "array":
         """Converts the samples into their power, in dB.
         If a sample's power is below *low*, the dB value in clamped to *low*.
 

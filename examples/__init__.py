@@ -31,7 +31,10 @@ def __list_notebooks(root):
 
 def __read_notebook(path):
     with open(path, "r") as f:
-        nb = nbformat.reads(f.read(), as_version=4)
+        buf = f.read()
+    if len(buf) == 0:
+        return None
+    nb = nbformat.reads(buf, as_version=4)
     return nb
 
 
@@ -77,6 +80,8 @@ for fic in __list_notebooks("examples"):
     pth_py = Path("examples") / os.path.basename(fic).replace(".ipynb", ".py")
     if __f1_newer_than_f2(fic, pth_py):
         nb = __read_notebook(fic)
+        if nb is None:
+            continue
         __execute_notebook(ep, nb)
         __render_notebook(exporter, nb, odir)
         __create_py("examples", fic)

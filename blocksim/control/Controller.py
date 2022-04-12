@@ -101,7 +101,10 @@ class PIDController(AController):
     ) -> dict:
         (ix,) = integral
         x = estimation[0]
-        dx = estimation[1]
+        if self.D == 0.0:
+            dx = 0.0
+        else:
+            dx = estimation[1]
         (c,) = setpoint
 
         u = self.P * (x - c) + self.I * ix + self.D * dx

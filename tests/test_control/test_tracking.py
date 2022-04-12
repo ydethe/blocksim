@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
-def generate_lin_fm(ns: int, fs: float, f1: float, f2: float) -> np.array:
+def generate_lin_fm(ns: int, fs: float, f1: float, f2: float) -> "array":
     t = np.arange(ns) / fs
     tau = ns / fs
     x = exp(1j * (pi * t * (2 * f1 * tau + f2 * t - f1 * t)) / tau)

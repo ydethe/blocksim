@@ -142,7 +142,7 @@ class DSPChannel(AComputer):
             raise ValueError(mean.shape[0], n)
         otp.mean = mean
 
-    def getCovariance(self) -> np.array:
+    def getCovariance(self) -> "array":
         """Returns the covariance matrix of the gaussian distribution
 
         Returns:
@@ -152,7 +152,7 @@ class DSPChannel(AComputer):
         otp = self.getOutputByName("rxsig")
         return otp.cov
 
-    def getMean(self) -> np.array:
+    def getMean(self) -> "array":
         """Returns the mean vector of the gaussian distribution
 
         Returns:

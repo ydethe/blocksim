@@ -228,15 +228,12 @@ class LTISystem(ASystem):
         dX = self.matA @ x + self.matB @ u
         return dX
 
-    def jacobian(self, t: float, x: np.array, u: np.array) -> np.array:
+    def jacobian(self, t: float, x: "array", u: "array") -> "array":
         return self.matA
 
 
 class G6DOFSystem(ASystem):
     """Generic 6 DOF rigid body
-    The attitude state is handled with quaternions
-    The integration scheme is 5-stage Crouch-Grossman method "CG4",
-    which garantees that the attitude quaternion's norm remains equal to 1
 
     http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf
 
@@ -306,7 +303,7 @@ class G6DOFSystem(ASystem):
         self.createParameter("J", np.eye(3) * 1e-3)
         self.createParameter("max_q_denorm", 1e-6)
 
-    def vecBodyToEarth(self, frame: Frame, x: np.array) -> np.array:
+    def vecBodyToEarth(self, frame: Frame, x: "array") -> "array":
         """Expresses a vector from the body frame to the Earth's frame
 
         Args:
@@ -322,11 +319,8 @@ class G6DOFSystem(ASystem):
         )
         return vecBodyToEarth(np.array([qw, qx, qy, qz]), x)
 
-    def vecEarthToBody(self, frame: Frame, x: np.array) -> np.array:
+    def vecEarthToBody(self, frame: Frame, x: "array") -> "array":
         """Expresses a vector from Earth's frame to the body's frame
-
-        Args:
-            frame: The time frame
             x: Vector expressed in Earth's frame
 
         Returns:

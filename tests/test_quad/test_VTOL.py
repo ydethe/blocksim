@@ -211,7 +211,7 @@ class TestPVTOLComplex(TestBase):
             snames=["x_cons", "y_cons", "z_cons", "psi_cons"],
         )
         ctlatt = AttPilot("ctlatt", att_sys)
-        ctlvtol = VTOLPilot(vtol_sys, lqr)
+        ctlvtol = VTOLPilot(name="ctlvtol", sys=vtol_sys, ctl=lqr)
 
         spt_otp = OrderedDict()
         spt_otp["u0"] = (0,)

@@ -50,7 +50,7 @@ class DSPSpectrogram(object):
         self.unit_of_y_var = "Hz"
         self.projection = projection
 
-    def generateXSerie(self, index: int = None) -> np.array:
+    def generateXSerie(self, index: int = None) -> "array":
         """Generates the x samples of the spectrogram
 
         Args:
@@ -68,7 +68,7 @@ class DSPSpectrogram(object):
         x = index * self.samplingXPeriod + self.samplingXStart
         return x
 
-    def generateYSerie(self, index: int = None) -> np.array:
+    def generateYSerie(self, index: int = None) -> "array":
         """Generates the y samples of the spectrogram
 
         Args:
@@ -191,7 +191,7 @@ class DSPSpectrogram(object):
         return _to_db
 
     @classmethod
-    def to_db(cls, x: np.array) -> np.array:
+    def to_db(cls, x: np.array) -> "array":
         """Converts the samples into their power, in dB.
         If a sample's power is below *low*, the dB value in clamped to *low*.
 

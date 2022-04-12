@@ -15,7 +15,7 @@ class NPSSGenerator(AComputer):
     def __init__(self, name: str):
         AComputer.__init__(self, name=name)
 
-    def __update__(self, data: np.array) -> np.array:
+    def __update__(self, data: np.array) -> "array":
         sc_nb = 11
 
         spec_seq = zadoff_chu(u=5, n=sc_nb)
@@ -38,7 +38,7 @@ class NPSSCorrelator(AComputer):
         self.createParameter("sc_nb", value=11)
         self.createParameter("u", value=5)
 
-    def __update__(self, data: np.array) -> np.array:
+    def __update__(self, data: np.array) -> "array":
         nsymb = len(data) // self.nech_symb
 
         spec_seq = zadoff_chu(u=self.u, n=self.sc_nb)

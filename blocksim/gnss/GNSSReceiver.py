@@ -33,7 +33,7 @@ class UEPositionOutput(Output):
     def getTsync(self) -> datetime:
         return self.__tsync
 
-    def getGeocentricITRFPositionAt(self, t_calc: datetime) -> np.array:
+    def getGeocentricITRFPositionAt(self, t_calc: datetime) -> "array":
         """Return the geocentric ITRF position of the satellite at a given time
 
         Args:
@@ -108,7 +108,7 @@ class GNSSReceiver(AComputer):
         otp = self.getOutputByName("realpos")
         return otp.getTsync()
 
-    def getSatellitePositionFromEphem(self, ephem: np.array, isat: int) -> np.array:
+    def getSatellitePositionFromEphem(self, ephem: np.array, isat: int) -> "array":
         """Given the array of all satellites ephemeris,
         returns the position for satellite number isat
 
@@ -122,7 +122,7 @@ class GNSSReceiver(AComputer):
         """
         return ephem[6 * isat : 6 * isat + 3]
 
-    def getSatelliteVelocityFromEphem(self, ephem: np.array, isat: int) -> np.array:
+    def getSatelliteVelocityFromEphem(self, ephem: np.array, isat: int) -> "array":
         """Given the array of all satellites ephemeris,
         returns the velocity for satellite number isat
 

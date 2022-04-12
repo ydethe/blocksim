@@ -659,7 +659,7 @@ class CircleSatellite(ASatellite):
 
         return sat
 
-    def getGeocentricITRFPositionAt(self, td: float) -> np.array:
+    def getGeocentricITRFPositionAt(self, td: float) -> "array":
         t_epoch = (self.tsync - self.getInitialEpoch()).total_seconds() + td
 
         th = self.__sat_puls * td

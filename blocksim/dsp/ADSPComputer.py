@@ -91,7 +91,7 @@ class ADSPComputer(AComputer):
 
         return outputs[self.output_name].astype(typ)
 
-    def flatten(self, data: np.array) -> np.array:
+    def flatten(self, data: np.array) -> "array":
         """Given a batch block of input, returns a 1D array for processing
         The first column of the block is copied, then the second and so on
 
@@ -122,7 +122,7 @@ class ADSPComputer(AComputer):
 
         return strm
 
-    def unflatten(self, strm: np.array) -> np.array:
+    def unflatten(self, strm: np.array) -> "array":
         """Given a 1D flatten data, returns the matching data block
         The attribute *output_size* gives the size of the columns
 

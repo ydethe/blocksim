@@ -42,7 +42,7 @@ class Motor(ASystem):
         self.createParameter("k", 2.9e-5)
         self.createParameter("Umax", 12)
 
-    def transition(self, t: float, x: np.array, u: np.array) -> np.array:
+    def transition(self, t: float, x: np.array, u: np.array) -> "array":
         (s,) = x
         (u0,) = u
         ds = (

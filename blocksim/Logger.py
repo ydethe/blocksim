@@ -251,7 +251,7 @@ class Logger(object):
 
         return len(data0)
 
-    def getFlattenOutput(self, name: str, dtype=np.complex128) -> np.array:
+    def getFlattenOutput(self, name: str, dtype=np.complex128) -> "array":
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -355,7 +355,7 @@ class Logger(object):
                 "Too many loggers to handle file '%s'" % self.getLoadedFile()
             )
 
-    def getValue(self, name: str) -> np.array:
+    def getValue(self, name: str) -> "array":
         """Get the value of a logged variable
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos
@@ -414,7 +414,7 @@ class Logger(object):
 
     def getFilteredValue(
         self, name: str, ntaps: int, cutoff: float, window: str = "hamming"
-    ) -> np.array:
+    ) -> "array":
         """Get the value of a logged variable, and applies a low-pass filter
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos

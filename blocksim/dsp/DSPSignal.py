@@ -305,7 +305,7 @@ class DSPSignal(DSPLine, ASetPoint):
             y_serie=y,
         )
 
-    def getUnfoldedPhase(self, eps: float = 1e-9) -> np.array:
+    def getUnfoldedPhase(self, eps: float = 1e-9) -> "array":
         """Gets the phase law from the signal
 
         Args:

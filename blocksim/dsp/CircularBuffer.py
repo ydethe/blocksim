@@ -41,7 +41,7 @@ class CircularBuffer(object):
         if not offset is None:
             self.__offset = offset
 
-    def _getBuffer(self) -> np.array:
+    def _getBuffer(self) -> "array":
         return self.__buffer.copy()
 
     def doubleBufferSize(self):
@@ -254,7 +254,7 @@ class CircularBuffer(object):
         for k in range(self.__size):
             yield self.__buffer[(k + self.__offset) % self.__size]
 
-    def getAsArray(self) -> np.array:
+    def getAsArray(self) -> "array":
         """Returns the content of the buffer in chronological order
 
         Returns:

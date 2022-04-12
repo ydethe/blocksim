@@ -121,7 +121,7 @@ def verif_mat_diag(A: "array") -> bool:
     return True
 
 
-def calc_cho(A: np.array) -> np.array:
+def calc_cho(A: np.array) -> "array":
     """Returns the cholesky decomposition C of a symetric matrix A:
 
     $$ A = C.C^T $$
@@ -174,8 +174,8 @@ def rad(x: float) -> float:
 
 
 def assignVector(
-    v: np.array, expected_shape: tuple, dst_name: str, src_name: str, dtype
-) -> np.array:
+    v: "array", expected_shape: tuple, dst_name: str, src_name: str, dtype
+) -> "array":
     """
 
     Args:
@@ -189,7 +189,7 @@ def assignVector(
         Copy of the vector v if no problem encountered
 
     Raises:
-        ValueError: If the vector is not a np.array or not with the correct shape
+        ValueError: If the vector is not a> "array" or not with the correct shape
 
     Examples:
         >>> v = np.arange(5)
@@ -264,7 +264,7 @@ def assignVector(
     return res
 
 
-def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> np.array:
+def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> "array":
     """
     https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix
 
@@ -334,7 +334,7 @@ def matrix_to_quat(R: np.array) -> Iterable[float]:
     return np.array([-qr, qi, qj, qk])
 
 
-def matrix_to_euler(R: np.array) -> Iterable[float]:
+def matrix_to_euler(R: "array") -> Iterable[float]:
     """
 
     https://www.learnopencv.com/rotation-matrix-to-euler-angles/
@@ -371,7 +371,7 @@ def matrix_to_euler(R: np.array) -> Iterable[float]:
     return r, p, y
 
 
-def euler_to_matrix(roll: float, pitch: float, yaw: float) -> np.array:
+def euler_to_matrix(roll: float, pitch: float, yaw: float) -> "array":
     """
 
     https://www.learnopencv.com/rotation-matrix-to-euler-angles/
@@ -486,7 +486,7 @@ def euler_to_quat(roll: float, pitch: float, yaw: float) -> Iterable[float]:
     return qr, qi, qj, qk
 
 
-def vecBodyToEarth(attitude: np.array, x: np.array) -> np.array:
+def vecBodyToEarth(attitude: np.array, x: np.array) -> "array":
     """Expresses a vector from the body frame to the Earth's frame
 
     Args:
@@ -508,7 +508,7 @@ def vecBodyToEarth(attitude: np.array, x: np.array) -> np.array:
     return R @ x
 
 
-def vecEarthToBody(attitude: np.array, x: np.array) -> np.array:
+def vecEarthToBody(attitude: np.array, x: np.array) -> "array":
     """Expresses a vector from Earth's frame to the body's frame
 
     Args:
@@ -570,7 +570,7 @@ def anomaly_true_to_mean(ecc: float, v: float) -> float:
     return M
 
 
-def build_env(pos: np.array) -> np.array:
+def build_env(pos: np.array) -> "array":
     """Builds a ENV frame at a given position
 
     Args:

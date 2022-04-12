@@ -226,7 +226,7 @@ class AKalmanFilter(AEstimator):
         otp.setInitialState(matK0)
 
     @abstractmethod
-    def A(self, t1: float, t2: float) -> np.array:  # pragma: no cover
+    def A(self, t1: float, t2: float) -> "array":  # pragma: no cover
         """(n x n) State (or system) matrix
 
         Args:
@@ -240,7 +240,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def B(self, t1: float, t2: float) -> np.array:  # pragma: no cover
+    def B(self, t1: float, t2: float) -> "array":  # pragma: no cover
         """(n x m) Input matrix
 
         Args:
@@ -254,7 +254,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def C(self, t: float) -> np.array:  # pragma: no cover
+    def C(self, t: float) -> "array":  # pragma: no cover
         """(p x n) Output matrix
 
         Args:
@@ -268,7 +268,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def D(self, t: float) -> np.array:  # pragma: no cover
+    def D(self, t: float) -> "array":  # pragma: no cover
         """(p x m) Feedthrough (or feedforward) matrix
 
         Args:
@@ -282,7 +282,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def Q(self, t: float) -> np.array:  # pragma: no cover
+    def Q(self, t: float) -> "array":  # pragma: no cover
         """(n x n) Gaussian noise covariance for the state vector
 
         Args:
@@ -296,7 +296,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def R(self, t: float) -> np.array:  # pragma: no cover
+    def R(self, t: float) -> "array":  # pragma: no cover
         """(n x n) Gaussian noise covariance for the measurement vector
 
         Args:
@@ -455,26 +455,26 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         Ad, Bd, Cd, Dd, dt = cont2discrete(sys, dt, method=method, alpha=alpha)
         return Ad, Bd, Cd, Dd
 
-    def A(self, t1: float, t2: float) -> np.array:
+    def A(self, t1: float, t2: float) -> "array":
         dt = t2 - t1
         Ad, Bd, Cd, Dd = self.discretize(dt)
         return Ad
 
-    def B(self, t1: float, t2: float) -> np.array:
+    def B(self, t1: float, t2: float) -> "array":
         dt = t2 - t1
         Ad, Bd, Cd, Dd = self.discretize(dt)
         return Bd
 
-    def C(self, t: float) -> np.array:
+    def C(self, t: float) -> "array":
         return self.matC
 
-    def D(self, test_ss_kal: float) -> np.array:
+    def D(self, test_ss_kal: float) -> "array":
         return self.matD
 
-    def Q(self, t: float) -> np.array:
+    def Q(self, t: float) -> "array":
         return self.matQ
 
-    def R(self, t: float) -> np.array:
+    def R(self, t: float) -> "array":
         return self.matR
 
 

@@ -33,3 +33,4 @@ jupyter~=1.0.0
 ipython~=7.17.0
 black==22.3.0
 markupsafe==2.0.1
+networkx==2.4
