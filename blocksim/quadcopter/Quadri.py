@@ -40,12 +40,12 @@ class Quadri(G6DOFSystem):
 
         e3 = np.array([0, 0, 1])
         t3 = vecBodyToEarth(att, e3)
-        force = -self.m * self.g * e3 + self.b * np.sum(u ** 2) * t3
+        force = -self.m * self.g * e3 + self.b * np.sum(u**2) * t3
         torque = np.array(
             [
-                (s4 ** 2 - s2 ** 2) * self.l * self.b,
-                (s1 ** 2 - s3 ** 2) * self.l * self.b,
-                (s1 ** 2 + s3 ** 2 - s2 ** 2 - s4 ** 2) * self.mot.k,
+                (s4**2 - s2**2) * self.l * self.b,
+                (s1**2 - s3**2) * self.l * self.b,
+                (s1**2 + s3**2 - s2**2 - s4**2) * self.mot.k,
             ]
         )
 

@@ -31,7 +31,7 @@ class Motor(ASystem):
         (s,) = x
         (u0,) = u
         ds = (
-            -self.km ** 2 / (self.Jr * self.R) * s
+            -self.km**2 / (self.Jr * self.R) * s
             - self.kgb * self.k / self.Jr * np.abs(s) * s
             + self.km / (self.Jr * self.R) * np.clip(u0, -self.Umax, self.Umax)
         )

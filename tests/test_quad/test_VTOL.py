@@ -121,7 +121,7 @@ class TestPVTOLComplex(TestBase):
         )
         ctl_mot0.D = 0.0
         ctl_mot0.I = mot0.km / tau
-        ctl_mot0.P = ctl_mot0.I * mot0.Jr * mot0.R / mot0.km ** 2
+        ctl_mot0.P = ctl_mot0.I * mot0.Jr * mot0.R / mot0.km**2
         ctl_mot0.Ks = Ks
         ctl_mot0.Umin = -mot0.Umax
         ctl_mot0.Umax = mot0.Umax
@@ -131,7 +131,7 @@ class TestPVTOLComplex(TestBase):
         )
         ctl_mot1.D = 0.0
         ctl_mot1.I = mot0.km / tau
-        ctl_mot1.P = ctl_mot1.I * mot0.Jr * mot0.R / mot0.km ** 2
+        ctl_mot1.P = ctl_mot1.I * mot0.Jr * mot0.R / mot0.km**2
         ctl_mot1.Ks = Ks
         ctl_mot1.Umin = -mot0.Umax
         ctl_mot1.Umax = mot0.Umax
@@ -141,7 +141,7 @@ class TestPVTOLComplex(TestBase):
         )
         ctl_mot2.D = 0.0
         ctl_mot2.I = mot0.km / tau
-        ctl_mot2.P = ctl_mot2.I * mot0.Jr * mot0.R / mot0.km ** 2
+        ctl_mot2.P = ctl_mot2.I * mot0.Jr * mot0.R / mot0.km**2
         ctl_mot2.Ks = Ks
         ctl_mot2.Umin = -mot0.Umax
         ctl_mot2.Umax = mot0.Umax
@@ -151,7 +151,7 @@ class TestPVTOLComplex(TestBase):
         )
         ctl_mot3.D = 0.0
         ctl_mot3.I = mot0.km / tau
-        ctl_mot3.P = ctl_mot3.I * mot0.Jr * mot0.R / mot0.km ** 2
+        ctl_mot3.P = ctl_mot3.I * mot0.Jr * mot0.R / mot0.km**2
         ctl_mot3.Ks = Ks
         ctl_mot3.Umin = -mot0.Umax
         ctl_mot3.Umax = mot0.Umax
