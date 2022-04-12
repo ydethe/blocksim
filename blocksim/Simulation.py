@@ -25,7 +25,7 @@ class Simulation(object):
 
     """
 
-    def __init__(self, computers:list=[]):
+    def __init__(self, computers: list = []):
         self.__computers = []
         self.__logger = Logger()
         for c in computers:

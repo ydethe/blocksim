@@ -66,7 +66,7 @@ class PIDController(AController):
     Args:
         name: Name of the element
         shape_estimation: Shape of the data expected by the estimation (> 2)
-        snames: 
+        snames:
         coeffs: Coefficients of the retroaction (P, I, D)
 
     """
