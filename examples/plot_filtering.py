@@ -1,4 +1,4 @@
 """
-.. include:: ../build/htmldoc/example_filtering/example_filtering.md
+.. include:: ../build/htmldoc/example_filtering.md
 
 """
