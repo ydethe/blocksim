@@ -27,7 +27,6 @@ ref_repr = """   ========================
    ========================
 """
 
-# source activate "D:\Users\blaudiy\Documents\Mes Outils Personnels\myenv"
 class System(ASystem):
     def __init__(self, name: str):
         ASystem.__init__(self, name, shape_command=1, snames_state=["x", "v"])

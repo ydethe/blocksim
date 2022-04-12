@@ -14,7 +14,7 @@ from blocksim.Simulation import Simulation
 from blocksim.utils import rad
 
 from blocksim.utils import geodetic_to_itrf
-from blocksim.source.Satellite import createSatellites
+from blocksim.satellite.Satellite import createSatellites
 from blocksim.gnss.GNSSTracker import GNSSTracker
 from blocksim.gnss.GNSSReceiver import GNSSReceiver
 

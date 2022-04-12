@@ -14,13 +14,13 @@ import pytest
 from blocksim.Simulation import Simulation
 
 from blocksim.constants import Req, omega, mu
-from blocksim.source.Satellite import (
+from blocksim.satellite.Satellite import (
     SGP4Satellite,
     CircleSatellite,
     createSatellites,
 )
 from blocksim.utils import *
-from blocksim.source.Trajectory import Trajectory
+from blocksim.satellite.Trajectory import Trajectory
 from blocksim.graphics.EarthPlotter import EarthPlotter
 
 sys.path.insert(0, str(Path(__file__).parent.parent))

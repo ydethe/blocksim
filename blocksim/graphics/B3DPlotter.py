@@ -34,7 +34,7 @@ from panda3d.core import (
 from ..utils import resource_path
 from ..constants import Req, rf
 from ..utils import datetime_to_skyfield, geodetic_to_itrf
-from ..source.Trajectory import Trajectory
+from ..satellite.Trajectory import Trajectory
 
 
 class B3DPlotter(ShowBase):
@@ -48,7 +48,7 @@ class B3DPlotter(ShowBase):
         from numpy import sqrt, cos, sin, pi
 
         from blocksim.constants import Req
-        from blocksim.source.Satellite import SGP4Satellite
+        from blocksim.satellite.Satellite import SGP4Satellite
         from blocksim.B3DPlotter import B3DPlotter
 
         sat = SGP4Satellite.fromTLE('tests/rigidsphere.tle')

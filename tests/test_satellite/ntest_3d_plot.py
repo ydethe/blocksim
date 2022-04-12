@@ -16,7 +16,7 @@ class TestB3DPlotter(TestBase):
 
         from blocksim.constants import Req
         from blocksim.gnss.GNSSReceiver import GNSSReceiver
-        from blocksim.source.Satellite import SGP4Satellite
+        from blocksim.satellite.Satellite import SGP4Satellite
         from blocksim.graphics.B3DPlotter import B3DPlotter
 
         # Parametres orbite

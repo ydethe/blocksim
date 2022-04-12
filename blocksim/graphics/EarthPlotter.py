@@ -8,7 +8,7 @@ import numpy as np
 from numpy import sqrt, pi, cos, sin
 
 from ..constants import *
-from ..source.Trajectory import Trajectory
+from ..satellite.Trajectory import Trajectory
 
 __all__ = ["EarthPlotter"]
 

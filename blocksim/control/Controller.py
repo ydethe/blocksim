@@ -28,7 +28,7 @@ class AController(AComputer):
         name: Name of the element
         shape_setpoint: Shape of the setpoint data
         shape_estimation: Shape of the estimation data
-        snames: Name of each of the scalar components of the estimation.
+        snames: Name of each of the scalar components of the command.
           Its shape defines the shape of the data
 
     """
@@ -66,6 +66,7 @@ class PIDController(AController):
     Args:
         name: Name of the element
         shape_estimation: Shape of the data expected by the estimation (> 2)
+        snames: 
         coeffs: Coefficients of the retroaction (P, I, D)
 
     """

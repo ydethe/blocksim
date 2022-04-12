@@ -1,3 +1,8 @@
+"""This module provides signal processing functions
+BOC and PSK modulator are available, as well as antenna network, Klobuchar model, delay lines and more.
+
+"""
+
 from math import factorial
 from itertools import product
 from typing import List, Union

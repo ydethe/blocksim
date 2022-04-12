@@ -1,3 +1,9 @@
+"""Advanced plotting functions.
+Allows plotting from a `blocksim.Logger.Logger`, or from `blocksim.dsp.DSPLine.DSPLine`
+3D plot around Earth are also possible
+
+"""
+
 from typing import Any, Tuple, Iterable
 
 from parse import compile
@@ -19,7 +25,7 @@ from ..dsp import phase_unfold
 from .AxeSpec import AxeSpec
 from .FigureSpec import FigureSpec
 from .B3DPlotter import B3DPlotter
-from ..source.Trajectory import Trajectory
+from ..satellite.Trajectory import Trajectory
 
 
 def getUnitAbbrev(mult: float) -> str:

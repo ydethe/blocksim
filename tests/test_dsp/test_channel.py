@@ -18,7 +18,7 @@ from blocksim.utils import geodetic_to_itrf
 from blocksim.constants import Req, c
 from blocksim.dsp.DSPChannel import DSPChannel
 from blocksim.graphics.EarthPlotter import EarthPlotter
-from blocksim.source.Satellite import SGP4Satellite
+from blocksim.satellite.Satellite import SGP4Satellite
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

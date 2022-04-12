@@ -20,11 +20,16 @@ class Simulation(object):
 
     Also logs all the simulated values
 
+    Args:
+        computers: list of AComputer to add to the simulation. Can be done later with `addComputer`
+
     """
 
-    def __init__(self):
+    def __init__(self, computers:list=[]):
         self.__computers = []
         self.__logger = Logger()
+        for c in computers:
+            self.addComputer(c)
 
     def getComputersList(self) -> Iterable[AComputer]:
         """Returns the list of all the computers of the simulation.
