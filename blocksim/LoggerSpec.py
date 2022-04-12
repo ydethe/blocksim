@@ -9,11 +9,11 @@ class LoggerSpec(object):
     """Specification for all plugins that extend the `Logger.Logger` capacities"""
 
     @hookspec
-    def test_suitable(self, fic: str) -> bool:
+    def test_suitable(self, uri: str) -> bool:
         """Tests weeather a log:'Logger' can handle a fic
 
         Args:
-            fic: A path indicated by the user
+            uri: The path or URI indicated by the user
 
         Returns:
             The result of the test
