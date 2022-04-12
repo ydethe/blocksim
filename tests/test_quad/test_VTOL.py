@@ -67,7 +67,7 @@ class TestPVTOL(TestBase):
         self.lqr.matR = np.eye(3) * 5
         self.lqr.computeGain()
 
-        self.ctl = VTOLPilot(self.sys, self.lqr)
+        self.ctl = VTOLPilot(name="ctlvtol", sys=self.sys, ctl=self.lqr)
 
         self.stp = Step(
             "stp",
@@ -108,10 +108,10 @@ class TestPVTOLComplex(TestBase):
         """
         super(TestPVTOLComplex, cls).setUpClass()
 
-        mot0 = Motor(0)
-        mot1 = Motor(1)
-        mot2 = Motor(2)
-        mot3 = Motor(3)
+        mot0 = Motor(prefix="mot", num=0)
+        mot1 = Motor(prefix="mot", num=1)
+        mot2 = Motor(prefix="mot", num=2)
+        mot3 = Motor(prefix="mot", num=3)
 
         tau = 50e-3
         Ks = 0.0
@@ -199,7 +199,7 @@ class TestPVTOLComplex(TestBase):
         lqr.matD = np.zeros((3, 3))
         lqr.computeGain()
 
-        att_sys = Quadri(mot0)
+        att_sys = Quadri(name="sys", mot=mot0)
         x0 = att_sys.getInitialStateForOutput("state")
         x0[:6] = np.array([0, 0, 0, 2.349619, -2.409138, 4.907362])
         w0 = np.array([2, -1, 3]) / 2

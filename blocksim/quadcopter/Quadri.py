@@ -3,9 +3,10 @@ from typing import Iterable
 import numpy as np
 import scipy.linalg as lin
 
-from blocksim.core.Node import Input
-from blocksim.control.System import G6DOFSystem
-from blocksim.utils import vecBodyToEarth, vecEarthToBody
+from ..core.Node import Input
+from ..control.System import G6DOFSystem
+from ..utils import vecBodyToEarth, vecEarthToBody
+from .Motor import Motor
 
 
 # name_of_outputs=['px','py','pz','vx','vy','vz','roll','pitch','yaw','wx','wy','wz']
@@ -13,14 +14,15 @@ class Quadri(G6DOFSystem):
     """
 
     Attributes:
-        mot: `Motor.Motor` instance to use to control the Quadri
-        b: TODO
-        g: gravitation. For Earth, 9.81 m/s²
-        l: TODO
-        Jr: TODO
+        mot: Motor instance to use to control the Quadri
+        b: thrust coefficient
+        g: gravitation. For Earth, 9.81 (m/s²)
+        l: radius of UAV (m)
+        Jr: inertia matrix (kg.m²)
 
     Args:
-        mot: `Motor.Motor` instance to use to control the Quadri
+        name: name of the Quadri
+        mot: Motor instance to use to control the Quadri
 
     http://www.gipsa-lab.grenoble-inp.fr/~nicolas.marchand/teaching/Nonlinear_PSPI.pdf
 
@@ -28,10 +30,10 @@ class Quadri(G6DOFSystem):
 
     __slots__ = []
 
-    def __init__(self, mot):
+    def __init__(self, name: str, mot: Motor):
         G6DOFSystem.__init__(
             self,
-            "sys",
+            name=name,
         )
         inp = Input("command", shape=(4,), dtype=np.float64)
         self.replaceInput(old_name="command", new_input=inp)

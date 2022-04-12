@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.linalg as lin
 
-from blocksim.control.System import ASystem
+from ..control.System import ASystem
 
 
 # name_of_outputs=['s%i' % num,'ds%i' % num]
@@ -10,24 +10,25 @@ class Motor(ASystem):
 
     Attributes:
         num: the 0-based index of the motor
-        km: TODO
-        Jr: TODO
-        R: TODO
-        kgb: TODO
-        k: TODO
-        Umax: TODO
+        km: motor constant (N.m/A)
+        Jr: rotor inertia (J.g.m²)
+        R: motor resistance (ohm)
+        kgb: gearbox ratio (-)
+        k: drag coefficient
+        Umax: maximal voltage (V)
 
     Args:
+        prefix: name prefix of the Motor
         num: Index of the motor (starting at 0)
 
     """
 
     __slots__ = []
 
-    def __init__(self, num):
+    def __init__(self, prefix: str, num: int):
         ASystem.__init__(
             self,
-            "mot%i" % num,
+            f"{prefix}{num}",
             shape_command=(1,),
             snames_state=["s"],
             dtype=np.float64,

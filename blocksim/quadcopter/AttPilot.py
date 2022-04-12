@@ -1,7 +1,10 @@
 import numpy as np
 import scipy.linalg as lin
 
-from blocksim.control.Controller import AController
+from ..control.Controller import AController
+from .Quadri import Quadri
+from .Motor import Motor
+
 
 __all__ = ["AttPilot"]
 
@@ -53,17 +56,17 @@ class AttPilot(AController):
     * Gy: TODO
 
     Attributes:
-        sys: `Quadri.Quadri` instance to be controlled
+        sys: Quadri instance to be controlled
 
     Args:
         name: Name of the controller
-        sys: `Quadri.Quadri` instance to be controlled
+        sys: Quadri instance to be controlled
 
     """
 
     __slots__ = []
 
-    def __init__(self, name, sys):
+    def __init__(self, name: str, sys: Quadri):
         AController.__init__(
             self,
             name,
@@ -75,7 +78,7 @@ class AttPilot(AController):
         self.createParameter("sys", sys)
 
     @property
-    def mot(self):
+    def mot(self) -> Motor:
         return self.sys.mot
 
     def compute_outputs(

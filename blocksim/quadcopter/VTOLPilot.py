@@ -1,29 +1,30 @@
 import numpy as np
 import scipy.linalg as lin
 
-from blocksim.control.Controller import AController
-from blocksim.control.System import ASystem
+from ..control.Controller import AController
+from ..control.System import ASystem
 
 
 class VTOLPilot(AController):
     """Outter loop position / velocity controller
 
     Attributes:
-        sys: `control.System.ASystem` instance to be controlled
-        lqr: `control.Controller.AController` to use for the control
+        sys: ASystem instance to be controlled
+        ctl: AController to use for the control
         pitch_d_max: Pitch security : the controller forbids a pitch setpoint of more than pitch_d_max (rad)
         roll_d_max: Roll security : the controller forbids a roll setpoint of more than roll_d_max (rad)
 
     Args:
-        sys: `control.System.ASystem` instance to be controlled
-        lqr:`control.Controller.AController` to use for the control
+        name: name of the VTOLPilot
+        sys: ASystem instance to be controlled
+        ctl: AController to use for the control
 
     """
 
-    def __init__(self, sys: ASystem, lqr: AController):
+    def __init__(self, name: str, sys: ASystem, ctl: AController):
         AController.__init__(
             self,
-            name="ctlvtol",
+            name=name,
             shape_setpoint=(4,),
             shape_estimation=(6,),
             snames=[
@@ -37,7 +38,7 @@ class VTOLPilot(AController):
             ],
         )
         self.createParameter(name="sys", value=sys)
-        self.createParameter(name="lqr", value=lqr)
+        self.createParameter(name="ctl", value=ctl)
         self.createParameter(name="pitch_d_max", value=np.pi / 180 * 45)
         self.createParameter(name="roll_d_max", value=np.pi / 180 * 45)
 
@@ -51,7 +52,7 @@ class VTOLPilot(AController):
     ) -> dict:
         pos_d = setpoint[:3]
         yaw_d = setpoint[3]
-        A0 = self.lqr.matN @ pos_d - self.lqr.matK @ estimation
+        A0 = self.ctl.matN @ pos_d - self.ctl.matK @ estimation
 
         A = A0 + np.array([0, 0, self.sys.g])
         A_cons = lin.norm(A)

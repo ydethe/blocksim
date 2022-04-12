@@ -30,8 +30,8 @@ from TestBase import TestBase
 class TestQuad(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_motor(self):
-        mot = Motor(0)
-        sys = Quadri(mot)
+        mot = Motor(prefix="mot", num=0)
+        sys = Quadri(name="sys", mot=mot)
         ctl = AntiWindupPIDController("ctl", shape_estimation=(2,), snames=["u"])
         ctl.D = 0.0
         tau = 50e-3
@@ -67,10 +67,10 @@ class TestQuad(TestBase):
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_quad(self):
-        mot1 = Motor(1)
-        mot2 = Motor(2)
-        mot3 = Motor(3)
-        mot4 = Motor(4)
+        mot1 = Motor(prefix="mot", num=1)
+        mot2 = Motor(prefix="mot", num=2)
+        mot3 = Motor(prefix="mot", num=3)
+        mot4 = Motor(prefix="mot", num=4)
 
         grp_inp = OrderedDict()
         grp_inp["in1"] = (1,)
@@ -82,7 +82,7 @@ class TestQuad(TestBase):
             inputs=grp_inp,
             snames=["gs1", "gs2", "gs3", "gs4"],
         )
-        sys = Quadri(mot1)
+        sys = Quadri(name="sys", mot=mot1)
         stp = Step("stp", cons=np.ones(1) * 8, snames=["u"])
 
         sim = Simulation()
@@ -138,10 +138,10 @@ class TestCmdAtt(TestBase):
         """
         super(TestCmdAtt, cls).setUpClass()
 
-        mot0 = Motor(0)
-        mot1 = Motor(1)
-        mot2 = Motor(2)
-        mot3 = Motor(3)
+        mot0 = Motor(prefix="mot", num=0)
+        mot1 = Motor(prefix="mot", num=1)
+        mot2 = Motor(prefix="mot", num=2)
+        mot3 = Motor(prefix="mot", num=3)
 
         tau = 50e-3
         Ks = 0.0
@@ -196,7 +196,7 @@ class TestCmdAtt(TestBase):
             inputs=grp_inp,
             snames=["gs0", "gs1", "gs2", "gs3"],
         )
-        sys = Quadri(mot0)
+        sys = Quadri(name="sys", mot=mot0)
         x0 = sys.getInitialStateForOutput("state")
         w0 = np.array([2, -1, 3]) / 2
         x0[10:13] = w0
