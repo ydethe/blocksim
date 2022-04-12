@@ -122,24 +122,24 @@ class Logger(object):
         """
         return self.__fic
 
-    def loadLogFile(self, fic: str):
+    def loadLogFile(self, uri: str):
         """Loads a specified file or URI into the logger.
         Looks up among all plugins which one can handle the extension of **fig**
 
         Args:
-            fic: The file or URI to load
+            uri: The path or URI where the data will be written
 
         """
-        self.__fic = str(fic)
+        self.__fic = str(uri)
         if self.__fic == "":
             raise (FileNotFoundError(self.__fic))
 
-        ldata = plugin_manager.hook.loadLogFile(log=self, file=fic)
+        ldata = plugin_manager.hook.loadLogFile(log=self, file=uri)
         lok = [x for x in ldata if x]
         if len(lok) == 0:
-            raise IOError("No logger to handle '%s'" % fic)
+            raise IOError("No logger to handle '%s'" % uri)
         elif len(lok) > 1:
-            raise IOError("Too many loggers to handle '%s'" % fic)
+            raise IOError("Too many loggers to handle '%s'" % uri)
 
     def allocate(self, size: int):
         """If called with a size, pre allocates the data with an array of size *size*
@@ -451,24 +451,24 @@ class Logger(object):
         y = fftconvolve(sig, a, mode="same")
         return y
 
-    def export(self, fic: str):
+    def export(self, uri: str):
         """Exports the logger to a specified file or URI into the logger.
         Looks up among all plugins which one can handle the extension of **fig**
 
         Args:
-            fic: The file or URI to write to
+            uri: The path or URI to write in
 
         Raises:
             SystemError if no handler has been identified or if too many handlers were identified
 
         """
-        self.__fic = str(fic)
+        self.__fic = str(uri)
 
-        lstat = plugin_manager.hook.export(log=self, file=fic)
+        lstat = plugin_manager.hook.export(log=self, uri=uri)
 
         lok = [x for x in lstat if x >= 0]
 
         if len(lok) == 0:
-            raise SystemError("Unable to write '%s'" % fic)
+            raise SystemError("Unable to write '%s'" % uri)
         elif len(lok) > 1:
             raise SystemError("Uncoherent return '%s'" % lok)

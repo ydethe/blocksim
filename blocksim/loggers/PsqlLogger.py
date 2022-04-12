@@ -29,23 +29,15 @@ hookimpl = pluggy.HookimplMarker("blocksim")
 
 class Logger(object, metaclass=Singleton):
     @hookimpl
-    def test_suitable(self, fic: str) -> bool:
-        if fic is None:
+    def test_suitable(self, uri: str) -> bool:
+        if uri is None:
             return False
 
-        istat = fic.startswith("postgresql+psycopg2://")
+        istat = uri.startswith("postgresql+psycopg2://")
         return istat
 
     @hookimpl
-    def loadLogFile(self, log: "Logger", fic: str):
-        """Loads the content of an existing log file
-
-        Args:
-          fic
-            Path of a log file
-
-        """
-        uri = fic
+    def loadLogFile(self, log: "Logger", uri: str):
         if not self.test_suitable(uri):
             return False
 
@@ -76,10 +68,9 @@ class Logger(object, metaclass=Singleton):
         return data
 
     @hookimpl
-    def export(self, log: "Logger", fic: str) -> int:
+    def export(self, log: "Logger", uri: str) -> int:
         from .. import logger
 
-        uri = fic
         if not self.test_suitable(uri):
             return -1
 

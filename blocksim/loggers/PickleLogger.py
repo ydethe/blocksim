@@ -18,39 +18,32 @@ hookimpl = pluggy.HookimplMarker("blocksim")
 
 class Logger(object, metaclass=Singleton):
     @hookimpl
-    def test_suitable(self, fic: str) -> bool:
-        if fic is None:
+    def test_suitable(self, uri: str) -> bool:
+        if uri is None:
             return False
 
-        istat = fic.endswith(".pkl")
+        istat = uri.endswith(".pkl")
         return istat
 
     @hookimpl
-    def loadLogFile(self, log: "Logger", fic: str):
-        if not self.test_suitable(fic):
+    def loadLogFile(self, log: "Logger", uri: str):
+        if not self.test_suitable(uri):
             return False
 
-        data = pd.read_pickle(fic)
+        data = pd.read_pickle(uri)
         log.setRawData(data)
         return True
 
     @hookimpl
     def getRawValue(self, log: "Logger", name: str) -> "array":
-        """Loads the content of an existing log file
-
-        Args:
-          fic
-            Path of a log file
-
-        """
         return
 
     @hookimpl
-    def export(self, log: "Logger", fic: str) -> int:
-        if not self.test_suitable(fic):
+    def export(self, log: "Logger", uri: str) -> int:
+        if not self.test_suitable(uri):
             return -1
 
         data = log.getRawData()
         df = pd.DataFrame(data)
-        df.to_pickle(fic)
+        df.to_pickle(uri)
         return 0

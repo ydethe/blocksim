@@ -18,19 +18,19 @@ hookimpl = pluggy.HookimplMarker("blocksim")
 
 class Logger(object, metaclass=Singleton):
     @hookimpl
-    def test_suitable(self, fic: str) -> bool:
-        if fic is None:
+    def test_suitable(self, uri: str) -> bool:
+        if uri is None:
             return False
 
-        istat = fic.endswith(".csv")
+        istat = uri.endswith(".csv")
         return istat
 
     @hookimpl
-    def loadLogFile(self, log: "Logger", fic: str) -> bool:
-        if not self.test_suitable(fic):
+    def loadLogFile(self, log: "Logger", uri: str) -> bool:
+        if not self.test_suitable(uri):
             return False
 
-        data = pd.read_csv(fic, sep=";", na_values="")
+        data = pd.read_csv(uri, sep=";", na_values="")
         for k in data.columns:
             if data[k].dtype == "O":
                 data[k] = data[k].apply(np.complex128)
@@ -39,21 +39,14 @@ class Logger(object, metaclass=Singleton):
 
     @hookimpl
     def getRawValue(self, log: "Logger", name: str) -> "array":
-        """Loads the content of an existing log file
-
-        Args:
-          fic
-            Path of a log file
-
-        """
         return
 
     @hookimpl
-    def export(self, log: "Logger", fic: str) -> int:
+    def export(self, log: "Logger", uri: str) -> int:
         if not self.test_suitable(fic):
             return -1
 
         data = log.getRawData()
         df = pd.DataFrame(data)
-        df.to_csv(fic, sep=";", na_rep="", index=False)
+        df.to_csv(uri, sep=";", na_rep="", index=False)
         return 0

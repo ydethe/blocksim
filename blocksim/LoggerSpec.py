@@ -21,12 +21,12 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def loadLogFile(self, log: "Logger", fic: str) -> bool:
+    def loadLogFile(self, log: "Logger", uri: str) -> bool:
         """Load log file
 
         Args:
             log: The `Logger.Logger` that contains the data
-            fic: The fic where the data will be written
+            uri: The path or URI where the data will be written
 
         Return:
             True if the file could be loaded
@@ -48,12 +48,12 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def export(self, log: "Logger", fic: str) -> int:
+    def export(self, log: "Logger", uri: str) -> int:
         """Export the log into a file
 
         Args:
             log: The `Logger.Logger` that contains the data
-            fic: The path to the file to write in
+            uri: The path or URI to write in
 
         Return:
             A positive or null value if the export was successful
