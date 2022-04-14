@@ -212,6 +212,35 @@ class ASatellite(AComputer):
 
         return outputs
 
+    def getTrajectoryFromLogger(self, log: "Logger", color=(1, 0, 0, 1)) -> Trajectory:
+        """Bulids a Trajectory for the ASatellite from a Logger
+
+        Args:
+            log: The logger to read
+            color: The color as a 4-elements tuple:
+
+            *  r between 0 and 1
+            *  g between 0 and 1
+            *  b between 0 and 1
+            *  alpha between 0 and 1 (use 1 for fully opaque)
+
+        Returns:
+            A Trajectory instance
+
+        """
+        traj = Trajectory.fromLogger(
+            log,
+            name=self.getName(),
+            params=(
+                "t",
+                f"{self.getName()}_itrf_px",
+                f"{self.getName()}_itrf_py",
+                f"{self.getName()}_itrf_pz",
+            ),
+            color=color,
+        )
+        return traj
+
     @abstractmethod
     def getGeocentricITRFPositionAt(self, td: float) -> "array":  # pragma: no cover
         """Abstract method that shall compute, for a simulation time td,
@@ -357,7 +386,9 @@ class SGP4Satellite(ASatellite):
         return sat
 
     @classmethod
-    def fromTLE(cls, tsync: datetime, tle_file: str, iline: int = 0) -> "SGP4Satellite":
+    def fromTLE(
+        cls, tsync: datetime, tle_file: str, iline: int = 0, name_prefix: str = ""
+    ) -> "SGP4Satellite":
         """Builds a SGP4Satellite from a TLE file
         Returns None if the file was incorrect
         See https://en.wikipedia.org/wiki/Two-line_element_set
@@ -366,6 +397,7 @@ class SGP4Satellite(ASatellite):
             tsync: Time that corresponds to the simulation time zero
             tle_file: TLE file path or URL
             iline: Number of the object in the TLE (in case of a multi object TLE file)
+            name_prefix: Prefix to use to modify the satellites' name
 
         Returns:
             A SGP4Satellite instance
@@ -401,7 +433,7 @@ class SGP4Satellite(ASatellite):
 
         satrec = Satrec.twoline2rv(line1, line2)
 
-        sat = cls(name, tsync)
+        sat = cls(name_prefix + name, tsync)
         sat.__setSGP4(satrec)
 
         return sat
@@ -607,7 +639,7 @@ class CircleSatellite(ASatellite):
 
     @classmethod
     def fromTLE(
-        cls, tsync: datetime, tle_file: str, iline: int = 0
+        cls, tsync: datetime, tle_file: str, iline: int = 0, name_prefix: str = ""
     ) -> "CircleSatellite":
         """Builds a CircleSatellite from a TLE file
         Returns None if the file was incorrect
@@ -617,6 +649,7 @@ class CircleSatellite(ASatellite):
             tsync: Time that corresponds to the simulation time zero
             tle_file: TLE file path or URL
             iline: Number of the object in the TLE (in case of a multi object TLE file)
+            name_prefix: Prefix to use to modify the satellites' name
 
         Returns:
             A CircleSatellite instance
@@ -655,7 +688,9 @@ class CircleSatellite(ASatellite):
         pv_teme = sgp4_to_teme(satrec, dt)
         pv_itrf = teme_to_itrf(dt, pv_teme)
 
-        sat = CircleSatellite.fromITRF(name=name, tsync=tsync, pv_itrf=pv_itrf)
+        sat = CircleSatellite.fromITRF(
+            name=name_prefix + name, tsync=tsync, pv_itrf=pv_itrf
+        )
 
         return sat
 
@@ -682,7 +717,10 @@ class CircleSatellite(ASatellite):
 
 
 def createSatellites(
-    tle_file: str, tsync: datetime, prop: ASatellite = SGP4Satellite
+    tle_file: str,
+    tsync: datetime,
+    prop: ASatellite = SGP4Satellite,
+    name_prefix: str = "",
 ) -> List[ASatellite]:
     """Creates a list of satellites from a TLE file, using the specified subclass of ASatellite
 
@@ -690,6 +728,7 @@ def createSatellites(
         tle_file: TLE file path or URL
         tsync: Time that corresponds to the simulation time zero
         prop: Propagator to use, as a subclass of ASatellite
+        name_prefix: Prefix to use to modify the satellites' name
 
     Returns:
         A list of instances of ASatellite (following prop argument),
@@ -699,9 +738,10 @@ def createSatellites(
     iline = 0
     satellites = []
     while True:
-        sat = prop.fromTLE(tsync, tle_file, iline=iline)
+        sat = prop.fromTLE(tsync, tle_file, iline=iline, name_prefix=name_prefix)
         if sat is None:
             break
+        sat.getName
         satellites.append(sat)
         iline += 1
 

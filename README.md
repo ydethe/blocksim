@@ -52,6 +52,8 @@ In your virtual env:
 That's it ! You are now ready to use blocksim library.
 In the folder tests and examples are a lot of examples that can be used as a starting point.
 
+The use of https://pypi.org/project/intel-scipy/ and https://ahrs.readthedocs.io/en/latest/index.html is under study
+
 # Run tests
 
 To run tests, just run:

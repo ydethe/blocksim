@@ -38,8 +38,8 @@ def __read_notebook(path):
     return nb
 
 
-def __execute_notebook(ep, nb):
-    ep.preprocess(nb, {"metadata": {"path": "./"}})
+def __execute_notebook(root, ep, nb):
+    ep.preprocess(nb, {"metadata": {"path": root}})
 
 
 def __render_notebook(exporter, nb, odir):
@@ -75,13 +75,14 @@ odir.mkdir(parents=True, exist_ok=True)
 
 # https://nbconvert.readthedocs.io/en/latest/nbconvert_library.html
 
-for fic in __list_notebooks("examples"):
+root = "examples"
+for fic in __list_notebooks(root):
     print(fic)
     pth_py = Path("examples") / os.path.basename(fic).replace(".ipynb", ".py")
     if __f1_newer_than_f2(fic, pth_py):
         nb = __read_notebook(fic)
         if nb is None:
             continue
-        __execute_notebook(ep, nb)
+        __execute_notebook(root, ep, nb)
         __render_notebook(exporter, nb, odir)
         __create_py("examples", fic)

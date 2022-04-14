@@ -2,7 +2,6 @@ import sys
 from pathlib import Path
 import unittest
 from typing import Iterable
-from collections import OrderedDict
 
 import numpy as np
 import scipy.linalg as lin
@@ -12,7 +11,6 @@ import pytest
 from blocksim.control.System import ASystem, G6DOFSystem
 from blocksim.control.Controller import (
     AController,
-    LQRegulator,
     AntiWindupPIDController,
 )
 from blocksim.Simulation import Simulation
@@ -23,7 +21,7 @@ from blocksim.quadcopter.Quadri import Quadri
 from blocksim.quadcopter.AttPilot import AttPilot
 from blocksim.quadcopter.Motor import Motor
 
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
@@ -72,7 +70,7 @@ class TestQuad(TestBase):
         mot3 = Motor(prefix="mot", num=3)
         mot4 = Motor(prefix="mot", num=4)
 
-        grp_inp = OrderedDict()
+        grp_inp = {}
         grp_inp["in1"] = (1,)
         grp_inp["in2"] = (1,)
         grp_inp["in3"] = (1,)
@@ -186,7 +184,7 @@ class TestCmdAtt(TestBase):
         ctl_mot3.Umin = -mot0.Umax
         ctl_mot3.Umax = mot0.Umax
 
-        grp_inp = OrderedDict()
+        grp_inp = {}
         grp_inp["in0"] = (1,)
         grp_inp["in1"] = (1,)
         grp_inp["in2"] = (1,)
@@ -214,7 +212,7 @@ class TestCmdAtt(TestBase):
         )
         ctl = AttPilot("ctlatt", sys)
 
-        spt_otp = OrderedDict()
+        spt_otp = {}
         spt_otp["u0"] = (0,)
         spt_otp["u1"] = (1,)
         spt_otp["u2"] = (2,)

@@ -49,32 +49,51 @@ class Simulation(object):
         """
         return self.__computers
 
-    def addComputer(self, computer: AComputer):
-        """Adds a computer to the simulation
+    def addComputer(self, *computers: Iterable[AComputer]):
+        """Adds one or several computers to the simulation
 
         Args:
-            computer: Computer to be added
+            computers: List of AComputer to be added
 
         Raises:
-            DuplicateElement: If the computer is already in the simulation
+            DuplicateElement: If one of the computers is already in the simulation
 
         """
-        name = computer.getName()
+        for comp in computers:
+            name = comp.getName()
 
-        if "_" in name:
-            raise ValueError(
-                "Cannot log variables with '_' in their name (got '%s')" % name
-            )
+            if "_" in name:
+                raise ValueError(
+                    "Cannot log variables with '_' in their name (got '%s')" % name
+                )
 
-        for c in self.__computers:
-            if c.getName() == name:
-                raise DuplicateElement(c.getName())
+            for c in self.__computers:
+                if c.getName() == name:
+                    raise DuplicateElement(c.getName())
 
-        # Controllers shall be updated last
-        if computer.isController():
-            self.__computers.append(computer)
-        else:
-            self.__computers.insert(0, computer)
+            # Controllers shall be updated last
+            if comp.isController():
+                self.__computers.append(comp)
+            else:
+                self.__computers.insert(0, comp)
+
+    def removeComputer(self, *computers: Iterable[AComputer]):
+        """Removes one or several computers to the simulation.
+        If a computer in the given list is not in the Simulation, it is ignored
+
+        Args:
+            computers: List of AComputer to be removed
+
+        """
+        csim_names = [c.getName() for c in self.__computers]
+
+        for comp in computers:
+            name = comp.getName()
+
+            if name in csim_names:
+                icomp = csim_names.index(name)
+                self.__computers.pop(icomp)
+                csim_names = [c.getName() for c in self.__computers]
 
     def getComputerByName(self, name: str) -> AComputer:
         """Returns the computer named *name*
@@ -156,6 +175,8 @@ class Simulation(object):
 
         """
         # self.__logger.allocate(len(tps))
+
+        self.__logger.reset()
 
         frame = Frame(start_timestamp=tps[0], stop_timestamp=tps[0])
 

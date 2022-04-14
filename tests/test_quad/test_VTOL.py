@@ -2,7 +2,6 @@ import sys
 from pathlib import Path
 import unittest
 from typing import Iterable
-from collections import OrderedDict
 
 import numpy as np
 import scipy.linalg as lin
@@ -10,7 +9,7 @@ from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.control.System import LTISystem
-from blocksim.control.Controller import LQRegulator, AntiWindupPIDController
+from blocksim.control.Controller import AntiWindupPIDController
 from blocksim.Simulation import Simulation
 from blocksim.control.SetPoint import Step
 from blocksim.control.Route import Group, Split
@@ -19,7 +18,7 @@ from blocksim.quadcopter.AttPilot import AttPilot
 from blocksim.quadcopter.Motor import Motor
 from blocksim.quadcopter.VTOLPilot import VTOLPilot
 
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
@@ -47,27 +46,17 @@ class TestPVTOL(TestBase):
         self.sys.createParameter("m", value=0.458)
         self.sys.createParameter("g", value=9.81)
 
-        spt_otp = OrderedDict()
-        spt_otp["split"] = [0, 1, 2]
-        self.splt = Split(
-            name="split",
-            signal_shape=(7,),
-            outputs=spt_otp,
-        )
-
-        self.lqr = LQRegulator(
-            "lqr", shape_setpoint=(4,), shape_estimation=(3,), snames=["fx", "fy", "fz"]
-        )
-        self.lqr.matA = self.sys.matA
-        self.lqr.matB = self.sys.matB
-        self.lqr.matC = np.zeros((3, 6))
-        self.lqr.matC[:, 0:3] = np.eye(3)
-        self.lqr.matD = np.zeros((3, 3))
-        self.lqr.matQ = np.eye(6)
-        self.lqr.matR = np.eye(3) * 5
-        self.lqr.computeGain()
-
-        self.ctl = VTOLPilot(name="ctlvtol", sys=self.sys, ctl=self.lqr)
+        self.ctl = VTOLPilot(name="ctlvtol", grav=9.81)
+        self.ctl.matQ = np.eye(6)
+        self.ctl.matR = np.eye(3) * 5
+        self.ctl.matA = np.zeros((6, 6))
+        self.ctl.matA[0:3, 3:6] = np.eye(3)
+        self.ctl.matB = np.zeros((6, 3))
+        self.ctl.matB[3:6, :] = np.eye(3)
+        self.ctl.matC = np.zeros((3, 6))
+        self.ctl.matC[:, 0:3] = np.eye(3)
+        self.ctl.matD = np.zeros((3, 3))
+        self.ctl.computeGain()
 
         self.stp = Step(
             "stp",
@@ -81,12 +70,10 @@ class TestPVTOL(TestBase):
         sim.addComputer(self.stp)
         sim.addComputer(self.sys)
         sim.addComputer(self.ctl)
-        sim.addComputer(self.splt)
 
         sim.connect("stp.setpoint", "ctlvtol.setpoint")
         sim.connect("sys.state", "ctlvtol.estimation")
-        sim.connect("ctlvtol.command", "split.signal")
-        sim.connect("split.split", "sys.command")
+        sim.connect("ctlvtol.command", "sys.command")
 
         tps = np.arange(0, 10, 0.01)
         sim.simulate(tps, progress_bar=False)
@@ -167,37 +154,17 @@ class TestPVTOLComplex(TestBase):
             snames=["gs0", "gs1", "gs2", "gs3"],
         )
 
-        vtol_sys = LTISystem(
-            "sys",
-            shape_command=(3,),
-            snames_state=[
-                "state_x",
-                "state_y",
-                "state_z",
-                "state_vx",
-                "state_vy",
-                "state_vz",
-            ],
-        )
-        vtol_sys.setInitialStateForOutput((np.random.rand(6) - 0.5) * 20, "state")
-        vtol_sys.matA = np.zeros((6, 6))
-        vtol_sys.matA[0:3, 3:6] = np.eye(3)
-        vtol_sys.matB = np.zeros((6, 3))
-        vtol_sys.matB[3:6, :] = np.eye(3)
-        vtol_sys.createParameter("m", 0.458)
-        vtol_sys.createParameter("g", 9.81)
-
-        lqr = LQRegulator(
-            "lqr", shape_setpoint=(4,), shape_estimation=(6,), snames=["fx", "fy", "fz"]
-        )
-        lqr.matQ = np.eye(6)
-        lqr.matR = np.eye(3) * 5
-        lqr.matA = vtol_sys.matA
-        lqr.matB = vtol_sys.matB
-        lqr.matC = np.zeros((3, 6))
-        lqr.matC[:, 0:3] = np.eye(3)
-        lqr.matD = np.zeros((3, 3))
-        lqr.computeGain()
+        ctlvtol = VTOLPilot(name="ctlvtol", grav=9.81)
+        ctlvtol.matQ = np.eye(6)
+        ctlvtol.matR = np.eye(3) * 5
+        ctlvtol.matA = np.zeros((6, 6))
+        ctlvtol.matA[0:3, 3:6] = np.eye(3)
+        ctlvtol.matB = np.zeros((6, 3))
+        ctlvtol.matB[3:6, :] = np.eye(3)
+        ctlvtol.matC = np.zeros((3, 6))
+        ctlvtol.matC[:, 0:3] = np.eye(3)
+        ctlvtol.matD = np.zeros((3, 3))
+        ctlvtol.computeGain()
 
         att_sys = Quadri(name="sys", mot=mot0)
         x0 = att_sys.getInitialStateForOutput("state")
@@ -210,10 +177,10 @@ class TestPVTOLComplex(TestBase):
             cons=np.array([0, 0, 0, 0]),
             snames=["x_cons", "y_cons", "z_cons", "psi_cons"],
         )
-        ctlatt = AttPilot("ctlatt", att_sys)
-        ctlvtol = VTOLPilot(name="ctlvtol", sys=vtol_sys, ctl=lqr)
 
-        spt_otp = OrderedDict()
+        ctlatt = AttPilot("ctlatt", att_sys)
+
+        spt_otp = {}
         spt_otp["u0"] = (0,)
         spt_otp["u1"] = (1,)
         spt_otp["u2"] = (2,)
@@ -224,15 +191,7 @@ class TestPVTOLComplex(TestBase):
             outputs=spt_otp,
         )
 
-        vspt_otp = OrderedDict()
-        vspt_otp["att"] = [3, 4, 5, 6]
-        vtolspt = Split(
-            name="vtolspt",
-            signal_shape=(7,),
-            outputs=vspt_otp,
-        )
-
-        wspt_otp = OrderedDict()
+        wspt_otp = {}
         wspt_otp["pv"] = list(range(6))
         wtolspt = Split(
             name="wtolspt",
@@ -251,7 +210,6 @@ class TestPVTOLComplex(TestBase):
         sim.addComputer(ctlvtol)
         sim.addComputer(ctlatt)
         sim.addComputer(spt)
-        sim.addComputer(vtolspt)
         sim.addComputer(wtolspt)
         sim.addComputer(ctl_mot0)
         sim.addComputer(ctl_mot1)
@@ -260,8 +218,7 @@ class TestPVTOLComplex(TestBase):
 
         sim.connect("stp.setpoint", "ctlvtol.setpoint")
         sim.connect("ctlatt.command", "spt.signal")
-        sim.connect("ctlvtol.command", "vtolspt.signal")
-        sim.connect("vtolspt.att", "ctlatt.setpoint")
+        sim.connect("ctlvtol.att", "ctlatt.setpoint")
         sim.connect("spt.u0", "ctlmot0.setpoint")
         sim.connect("spt.u1", "ctlmot1.setpoint")
         sim.connect("spt.u2", "ctlmot2.setpoint")
@@ -338,9 +295,9 @@ class TestPVTOLComplex(TestBase):
         return self.plotVerif(
             "Figure 3",
             [
-                {"var": "deg(ctlvtol_command_roll)"},
-                {"var": "deg(ctlvtol_command_pitch)"},
-                {"var": "deg(ctlvtol_command_yaw)"},
+                {"var": "deg(ctlvtol_att_roll)"},
+                {"var": "deg(ctlvtol_att_pitch)"},
+                {"var": "deg(ctlvtol_att_yaw)"},
             ],
         )
 
@@ -348,9 +305,13 @@ class TestPVTOLComplex(TestBase):
 if __name__ == "__main__":
     unittest.main()
 
+    a = TestPVTOL()
+    a.setUp()
+    a.test_quad_simplified()
+
     # a = TestPVTOLComplex()
     # TestPVTOLComplex.setUpClass()
     # a.setUp()
     # a.test_quad_complexe_att()
 
-    # plt.show()
+    plt.show()

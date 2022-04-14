@@ -29,7 +29,7 @@ __all__ = [
 
 class ConvergedGainMatrix(Output):
 
-    __slots__ = []
+    __slots__ = ["__K"]
 
     def __init__(self, name: str, state: Output, meas: Input, dtype):
         ny = state.getDataShape()[0]
@@ -58,15 +58,24 @@ class ConvergedGainMatrix(Output):
         Pp = dare(Ad.T, Cd.T, estim.matQ, estim.matR)
 
         # Converged gain matrix
-        K = Pp @ Cd.T @ lin.inv(Cd @ Pp @ Cd.T + estim.matR)
+        self.__K = Pp @ Cd.T @ lin.inv(Cd @ Pp @ Cd.T + estim.matR)
 
-        self.setData(K)
-        self.setInitialState(K)
+        self.setData(self.__K)
+        self.setInitialState(self.__K)
+
+    def getConvergedGainMatrix(self) -> "array":
+        """Returns the offline gain matrix K
+
+        Returns:
+            The offline gain matrix K
+
+        """
+        return self.__K.copy()
 
 
 class ConvergedStateCovariance(Output):
 
-    __slots__ = []
+    __slots__ = ["__P"]
 
     def __init__(self, name: str, state: Output, dtype):
         nx = state.getDataShape()[0]
@@ -99,10 +108,19 @@ class ConvergedStateCovariance(Output):
         K = Pp @ Cd.T @ lin.inv(Cd @ Pp @ Cd.T + estim.matR)
 
         # The matrix P is the estimation error covariance matrix in steady state
-        P = (np.eye(n) - K @ Cd) @ Pp
+        self.__P = (np.eye(n) - K @ Cd) @ Pp
 
-        self.setData(P)
-        self.setInitialState(P)
+        self.setData(self.__P)
+        self.setInitialState(self.__P)
+
+    def getConvergedStateCovariance(self) -> "array":
+        """Returns the offline covariance matrix P
+
+        Returns:
+            The offline covariance matrix P
+
+        """
+        return self.__P.copy()
 
 
 class AEstimator(AComputer):
@@ -561,6 +579,26 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
 
         self.createParameter("dt", value=dt)
 
+    def getConvergedStateCovariance(self) -> "array":
+        """Returns the offline covariance matrix P
+
+        Returns:
+            The offline covariance matrix P
+
+        """
+        otp = self.getOutputByName("statecov")
+        return otp.getConvergedStateCovariance()
+
+    def getConvergedGainMatrix(self) -> "array":
+        """Returns the offline gain matrix K
+
+        Returns:
+            The offline gain matrix K
+
+        """
+        otp = self.getOutputByName("matK")
+        return otp.getConvergedGainMatrix()
+
     def compute_outputs(
         self,
         t1: float,
@@ -591,8 +629,25 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
 
 
 class SpectrumEstimator(SteadyStateKalmanFilter):
-    """Frequency tracker based on a Kalman filter.
+    r"""Frequency tracker based on a Kalman filter.
     The number of frequencies to be tracked in *tracks* and the number of states shall be equal
+
+    The associated Kalman system is:
+
+    $$
+        A=2.i.\pi.\begin{pmatrix}
+        f_1 & 0   & 0 & \dots  & 0 \\
+        0   & f_2 & 0 & \dots & 0 \\
+        \vdots & \vdots & \ddots & \vdots \\
+        0 & 0   & 0 & \dots  & f_n
+        \end{pmatrix}
+    $$
+
+    $$
+        C=\begin{pmatrix}
+        1 & 1   & 1 & \dots  & 1
+        \end{pmatrix}
+    $$
 
     The inputs of the element are **command** and **measurement**
 

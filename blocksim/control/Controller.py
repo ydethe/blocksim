@@ -198,7 +198,7 @@ class AntiWindupPIDController(AController):
 
 
 class LQRegulator(AController):
-    """LQ regulator
+    """LQ regulator. See https://en.wikipedia.org/wiki/Linear-quadratic_regulator
 
     The inputs of the element are *estimation* and *setpoint*
     The outputs of the computer are **command**

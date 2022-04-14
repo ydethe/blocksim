@@ -85,6 +85,13 @@ class TestTrackingSteadyState(TestBase):
 
         sim.simulate(self.sig.generateXSerie(), progress_bar=False)
 
+        K = kal.getConvergedGainMatrix()
+        P = kal.getConvergedStateCovariance()
+        ii = np.diag_indices(nb_tracks)
+
+        self.assertAlmostEqual(np.max(np.abs(K - 1 / nb_tracks)), 0, delta=1e-2)
+        self.assertAlmostEqual(np.max(np.abs(P[ii] - 1.97484567)), 0, delta=1e-7)
+
         log = sim.getLogger()
         spg = kal.getSpectrogram(log)
 
@@ -98,8 +105,6 @@ class TestTrackingSteadyState(TestBase):
             color="white",
             linestyle="--",
         )
-        axe.set_xlabel("Time (s)")
-        axe.set_ylabel("Frequency (Hz)")
 
         return fig
 

@@ -13,8 +13,22 @@ __all__ = ["DSPSpectrogram"]
 class DSPSpectrogram(object):
     """Representation of a spectrogram
 
+    Attributes:
+        name: Name of the spectrogram
+        samplingXStart: First date of the sample of the spectrogram
+        samplingXPeriod: Time spacing of the spectrogram
+        samplingYStart: First frequency of the sample of the spectrogram
+        samplingYPeriod: Frequency spacing of the spectrogram
+        img: Matrix of complex samples
+        default_transform: Function to apply to the samples before plotting
+        name_of_x_var: Name of x variable. Default: "Time"
+        unit_of_x_var: Unit of x variable. Default: "s"
+        name_of_y_var: Name of y variable. Default: "Frequency"
+        unit_of_y_var: Unit of y variable. Default: "Hz"
+        projection: Axe projection. Can be 'rectilinear' or 'polar'
+
     Args:
-        name: Name of the spectrum
+        name: Name of the spectrogram
         samplingXStart: First date of the sample of the spectrogram
         samplingXPeriod: Time spacing of the spectrogram
         samplingYStart: First frequency of the sample of the spectrogram

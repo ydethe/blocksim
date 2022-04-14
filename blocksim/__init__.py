@@ -57,8 +57,8 @@ __email__ = "yann.blaudin-de-the@thalesaleniaspace.com"
 logger = logging.getLogger("blocksim_logger")
 
 # on met le niveau du logger à DEBUG, comme ça il écrit tout
-logger.setLevel(logging.DEBUG)
-# logger.setLevel(logging.INFO)
+# logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 # création d'un formateur qui va ajouter le temps, le niveau
 # de chaque message quand on écrira un message dans le log

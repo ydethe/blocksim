@@ -1,28 +1,28 @@
+from typing import Iterable
+
 import numpy as np
 import scipy.linalg as lin
 
-from ..control.Controller import AController
+from ..control.Controller import LQRegulator
 from ..control.System import ASystem
 
 
-class VTOLPilot(AController):
+class VTOLPilot(LQRegulator):
     """Outter loop position / velocity controller
 
     Attributes:
-        sys: ASystem instance to be controlled
-        ctl: AController to use for the control
+        grav: Gravitation constant (m/s²)
         pitch_d_max: Pitch security : the controller forbids a pitch setpoint of more than pitch_d_max (rad)
         roll_d_max: Roll security : the controller forbids a roll setpoint of more than roll_d_max (rad)
 
     Args:
         name: name of the VTOLPilot
-        sys: ASystem instance to be controlled
-        ctl: AController to use for the control
+        grav: Gravitation constant (m/s²)
 
     """
 
-    def __init__(self, name: str, sys: ASystem, ctl: AController):
-        AController.__init__(
+    def __init__(self, name: str, grav: float):
+        LQRegulator.__init__(
             self,
             name=name,
             shape_setpoint=(4,),
@@ -31,14 +31,19 @@ class VTOLPilot(AController):
                 "fx",
                 "fy",
                 "fz",
+            ],
+        )
+        self.defineOutput(
+            name="att",
+            snames=[
                 "roll",
                 "pitch",
                 "yaw",
                 "A",
             ],
+            dtype=np.float64,
         )
-        self.createParameter(name="sys", value=sys)
-        self.createParameter(name="ctl", value=ctl)
+        self.createParameter(name="grav", value=grav)
         self.createParameter(name="pitch_d_max", value=np.pi / 180 * 45)
         self.createParameter(name="roll_d_max", value=np.pi / 180 * 45)
 
@@ -48,13 +53,14 @@ class VTOLPilot(AController):
         t2: float,
         setpoint: np.array,
         estimation: np.array,
+        att: np.array,
         command: np.array,
     ) -> dict:
         pos_d = setpoint[:3]
         yaw_d = setpoint[3]
-        A0 = self.ctl.matN @ pos_d - self.ctl.matK @ estimation
+        A0 = self.matN @ pos_d - self.matK @ estimation
 
-        A = A0 + np.array([0, 0, self.sys.g])
+        A = A0 + np.array([0, 0, self.grav])
         A_cons = lin.norm(A)
         Tx, Ty, Tz = A / A_cons
 
@@ -72,9 +78,8 @@ class VTOLPilot(AController):
         roll_d = np.clip(roll_d, -self.roll_d_max, self.roll_d_max)
         pitch_d = np.clip(pitch_d, -self.pitch_d_max, self.pitch_d_max)
 
-        u = np.hstack((A0, np.array([roll_d, pitch_d, yaw_d, A_cons])))
-
         outputs = {}
-        outputs["command"] = u
+        outputs["command"] = A0
+        outputs["att"] = np.array([roll_d, pitch_d, yaw_d, A_cons])
 
         return outputs
