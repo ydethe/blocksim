@@ -7,23 +7,26 @@ from scipy import linalg as lin
 from skyfield.api import Loader
 
 import pytest
-panda3d = pytest.importorskip("panda3d")
+try:
+    panda3d = pytest.importorskip("panda3d")
 
-from direct.showbase.ShowBase import ShowBase
-from panda3d.core import (
-    GeomVertexFormat,
-    GeomVertexData,
-    GeomVertexWriter,
-    Geom,
-    GeomNode,
-    Texture,
-    PointLight,
-    TextureStage,
-    GeomTristrips,
-    GeomLinestrips,
-    NodePath,
-    LVecBase3,
-)
+    from direct.showbase.ShowBase import ShowBase
+    from panda3d.core import (
+        GeomVertexFormat,
+        GeomVertexData,
+        GeomVertexWriter,
+        Geom,
+        GeomNode,
+        Texture,
+        PointLight,
+        TextureStage,
+        GeomTristrips,
+        GeomLinestrips,
+        NodePath,
+        LVecBase3,
+    )
+except Exception as e:
+    pass
 
 from ..utils import resource_path
 from ..constants import Req, rf

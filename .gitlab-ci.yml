@@ -12,7 +12,7 @@ test:
     - echo "tzdata tzdata/Areas select Europe" > preseed.txt
     - echo "tzdata tzdata/Zones/Europe select Paris" >> preseed.txt
     - debconf-set-selections preseed.txt
-    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends python3-pip python3.8-dev python3.8-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl
+    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends graphviz python3-pip python3.8-dev python3.8-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl
     - python3 --version
     - pip3 install "numpy==1.22.3" "scikit-build==0.14.1"
     - pip3 install "cartopy<0.20.0" "slycot~=0.4.0.0"
