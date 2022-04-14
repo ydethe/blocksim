@@ -121,7 +121,7 @@ class B3DPlotter(ShowBase):
                 color=traj.color, itrf_positions=list(zip(traj.x, traj.y, traj.z))
             )
 
-    def plotLine(self, color: list, itrf_positions: list) -> NodePath:
+    def plotLine(self, color: list, itrf_positions: list) -> "NodePath":
         """Plots a custom 3D line
 
         Args:
@@ -174,7 +174,7 @@ class B3DPlotter(ShowBase):
 
     def plotCube(
         self, itrf_position: list, size: float, color: list = None
-    ) -> NodePath:
+    ) -> "NodePath":
         """
         Plots a cube
 
@@ -260,7 +260,7 @@ class B3DPlotter(ShowBase):
 
         return nodePath
 
-    def plotEarth(self) -> NodePath:
+    def plotEarth(self) -> "NodePath":
         """Plots a 3D Earth"""
         tex_path = resource_path("8081_earthmap4k.jpg", package="blocksim")
         return self.plotSphere(
@@ -271,7 +271,7 @@ class B3DPlotter(ShowBase):
 
     def plotSphere(
         self, texture: str, number_of_meridians, number_of_latcircles
-    ) -> NodePath:
+    ) -> "NodePath":
         """
         Plots a textured sphere
 
