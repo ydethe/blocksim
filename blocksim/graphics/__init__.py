@@ -25,7 +25,6 @@ from ..dsp.DSPSpectrogram import DSPSpectrogram
 from ..dsp import phase_unfold
 from .AxeSpec import AxeSpec
 from .FigureSpec import FigureSpec
-from .B3DPlotter import B3DPlotter
 from ..satellite.Trajectory import Trajectory
 
 
@@ -609,7 +608,7 @@ def plotGraph(G, pos=None, axe_spec=None, **kwds):
     return axe
 
 
-def plot3DEarth(trajectories: Iterable[Trajectory]) -> B3DPlotter:
+def plot3DEarth(trajectories: Iterable[Trajectory]) -> "B3DPlotter":
     """Shows a 3D tracetory around a 3D Earth
 
     Args:
@@ -619,6 +618,7 @@ def plot3DEarth(trajectories: Iterable[Trajectory]) -> B3DPlotter:
         A B3DPlotter instance. Call app.run() to show the window
 
     """
+    from .B3DPlotter import B3DPlotter
     app = B3DPlotter()
 
     app.buildEarth()
