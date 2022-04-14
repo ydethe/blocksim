@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-import unittest
 from datetime import datetime, timezone
 
 import numpy as np

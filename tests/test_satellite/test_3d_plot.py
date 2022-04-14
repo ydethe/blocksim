@@ -1,8 +1,7 @@
-import os
+from pathlib import Path
 import sys
-import unittest
 
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
@@ -25,7 +24,7 @@ class TestB3DPlotter(TestBase):
         )
         satellite = SGP4Satellite.fromOrbitalElements(
             name="sat",
-            t=t_init,
+            tsync=t_init,
             a=Req + 630e3,  # semi-major axis
             ecc=0.0001,  # eccentricity
             argp=4.253109078380886 * pi / 180,  # argument of perigee (radians)
@@ -37,7 +36,7 @@ class TestB3DPlotter(TestBase):
         )
         sim = SGP4Satellite.fromOrbitalElements(
             name="sim",
-            t=t_init,
+            tsync=t_init,
             a=Req + 630e3 + 0.608887,  # semi-major axis
             ecc=0.0,  # eccentricity
             argp=0,  # argument of perigee (radians)
@@ -66,27 +65,27 @@ class TestB3DPlotter(TestBase):
             number_of_periods=nb_per, color=(1, 1, 0, 1)
         )
 
-        psat = satellite.getGeocentricITRFPositionAt(t_init)[:3]
-        psat_sim = sim.getGeocentricITRFPositionAt(t_init)[:3]
-        dsat = device.getGeocentricITRFPositionAt(t_init)[:3]
+        psat = satellite.getGeocentricITRFPositionAt(0)[:3]
+        psat_sim = sim.getGeocentricITRFPositionAt(0)[:3]
+        dsat = device.getGeocentricITRFPositionAt(0)[:3]
         u1 = dsat / lin.norm(dsat)
         u2 = (psat - dsat) / lin.norm(psat - dsat)
         print(180 / pi * np.arcsin(u1 @ u2))
 
         app = B3DPlotter()
-        # app.buildSunLight(t_calc)
-        app.buildEarth()
+        
+        app.plotEarth()
 
         # app.buildLine(color=(0, 1, 0, 1), itrf_positions=[(0,0,0), app.sun_light.getPos()*Req])
-        app.buildLine(color=(0, 1, 0, 1), itrf_positions=[psat, dsat])
+        app.plotLine(color=(0, 1, 0, 1), itrf_positions=[psat, dsat])
 
-        app.buildTrajectory(traj)
-        app.buildTrajectory(traj_sim)
+        app.plotTrajectory(traj)
+        app.plotTrajectory(traj_sim)
 
-        app.buildCube(itrf_position=dsat, size=100e3, color=(0, 0, 1, 1))
+        app.plotCube(itrf_position=dsat, size=100e3, color=(0, 0, 1, 1))
 
-        app.buildCube(itrf_position=psat, size=100e3, color=(1, 0, 0, 1))
-        app.buildCube(itrf_position=psat_sim, size=100e3, color=(1, 1, 0, 1))
+        app.plotCube(itrf_position=psat, size=100e3, color=(1, 0, 0, 1))
+        app.plotCube(itrf_position=psat_sim, size=100e3, color=(1, 1, 0, 1))
 
         return app
 
@@ -95,4 +94,4 @@ if __name__ == "__main__":
     a = TestB3DPlotter()
     app = a.test_3d_plot()
 
-    # app.run()
+    app.run()
