@@ -25,13 +25,14 @@ pytest==7.1.1
 pytest-cov==3.0.0
 pytest-mpl==0.14.0
 pytest_xdist==2.5.0
+pytest-mock==3.7.0
 pre-commit==2.18.1
 pylint==2.13.5
 nbconvert==5.6.1
 pdoc3==0.10.0
 jinja2==3.0.3
 jupyter~=1.0.0
-ipython~=7.17.0
+ipython~=7.23.1
 black==22.3.0
 markupsafe==2.0.1
 networkx==2.4

@@ -1,24 +1,19 @@
-import math
-from datetime import datetime, timedelta, timezone
-import pkg_resources
+from datetime import datetime
 
 import numpy as np
-from numpy import sqrt, cos, sin, pi
+from numpy import pi
 from scipy import linalg as lin
 
 from skyfield.api import Loader
-from skyfield.api import utc
 
-import panda3d
+import pytest
+panda3d = pytest.importorskip("panda3d")
 
-# from pandac.PandaModules import *
-# ConfigVariableBool('fullscreen').setValue(1)
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import (
     GeomVertexFormat,
     GeomVertexData,
     GeomVertexWriter,
-    GeomTriangles,
     Geom,
     GeomNode,
     Texture,
@@ -26,7 +21,6 @@ from panda3d.core import (
     TextureStage,
     GeomTristrips,
     GeomLinestrips,
-    WindowProperties,
     NodePath,
     LVecBase3,
 )
