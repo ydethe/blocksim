@@ -85,8 +85,8 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestBOC()
-    # a.test_boc_spectrum()
+    a.test_boc_spectrum()
     # a.test_boc_autocorr()
-    a.test_boc_parallel()
+    # a.test_boc_parallel()
 
     plt.show()

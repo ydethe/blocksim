@@ -24,7 +24,7 @@ class BOCMapping(ADSPComputer):
         name: Name of the computer
         f_ref: Chip rate of the modulation (Hz)
         m: Sub-carrier frequency multiplier : f_s = m.f_ref
-        n: Chip frequency multiplier : f_s = m.f_ref
+        n: Chip frequency multiplier : f_s = n.f_ref
         p_samp: Muliplier so that the sequence is sampled at f_samp = p_samp*f_s
         input_size: Number of bits modulated in parallel.
 
