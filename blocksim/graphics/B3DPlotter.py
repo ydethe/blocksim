@@ -25,8 +25,8 @@ try:
         NodePath,
         LVecBase3,
     )
-except Exception as e:
-    pass
+except BaseException as e:
+    ShowBase=object
 
 from ..utils import resource_path
 from ..constants import Req, rf
