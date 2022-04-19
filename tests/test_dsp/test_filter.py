@@ -7,6 +7,7 @@ import unittest
 import numpy as np
 from numpy import pi, exp
 from scipy import linalg as lin
+from scipy.signal import lfilter
 from matplotlib import pyplot as plt
 import pytest
 
@@ -184,14 +185,69 @@ class TestFilter(TestBase):
 
         return fig
 
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_iir_design(self):
+        wp = 20
+        ws = 30
+        fs = 100
+        gpass = 1
+        gstop = 40
+
+        fig = plt.figure()
+        gs = fig.add_gridspec(2, 1)
+
+        filt = ArbitraryDSPFilter.fromIIRSpecification(
+            name="filt", wp=wp, ws=ws, gpass=gpass, gstop=gstop, fs=fs
+        )
+        plotBode(filt, spec_amp=gs[0, 0], spec_pha=gs[1, 0])
+
+        return fig
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_iir_filter(self):
+        wp = 20
+        ws = 30
+        fs = 100
+        gpass = 1
+        gstop = 40
+
+        filt = ArbitraryDSPFilter.fromIIRSpecification(
+            name="filt", wp=wp, ws=ws, gpass=gpass, gstop=gstop, fs=fs
+        )
+
+        rng = np.random.default_rng()
+        t = np.linspace(0, 2, 201)
+        dt = t[1] - t[0]
+        x = (
+            np.sin(2 * np.pi * 0.75 * t * (1 - t) + 2.1)
+            + 0.1 * np.sin(2 * np.pi * 1.25 * t + 1)
+            + 0.18 * np.cos(2 * np.pi * 3.85 * t)
+        )
+        xn = x + rng.standard_normal(len(t)) * 0.08
+
+        sig = DSPSignal(name="sig", samplingStart=t[0], samplingPeriod=dt, y_serie=xn)
+
+        z = filt.apply(sig)
+
+        fig = plt.figure()
+        gs = fig.add_gridspec(1, 1)
+
+        axe = plotDSPLine(sig, spec=gs[0, 0])
+        plotDSPLine(z, spec=axe)
+        axe.legend(("noisy signal", "filt.apply"), loc="best")
+
+        return fig
+
 
 if __name__ == "__main__":
     # unittest.main()
 
     a = TestFilter()
     # a.test_bode()
-    a.test_filtrage()
-    a.test_filtrage_chirp()
+    # a.test_filtrage()
+    # a.test_filtrage_chirp()
     # a.test_phase_estimator()
+    # a.test_iir_design()
+    a.test_iir_filter()
 
     plt.show()

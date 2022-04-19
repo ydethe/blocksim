@@ -28,7 +28,10 @@ class ADSPFilter(AComputer):
     __slots__ = []
 
     def __init__(
-        self, name: str, samplingPeriod: float, dtype=np.complex128,
+        self,
+        name: str,
+        samplingPeriod: float,
+        dtype=np.complex128,
     ):
         AComputer.__init__(self, name=name)
 
@@ -69,7 +72,11 @@ class ADSPFilter(AComputer):
         pass
 
     def compute_outputs(
-        self, t1: float, t2: float, unfilt: np.array, filt: np.array,
+        self,
+        t1: float,
+        t2: float,
+        unfilt: np.array,
+        filt: np.array,
     ) -> dict:
         otp = self.getOutputByName("filt")
 
@@ -195,8 +202,8 @@ class ArbitraryDSPFilter(ADSPFilter):
 
         """
         if analog:
-            wp=wp/(2*pi)
-            ws=ws/(2*pi)
+            wp = wp / (2 * pi)
+            ws = ws / (2 * pi)
         b, a = iirdesign(
             wp, ws, gpass, gstop, analog=analog, ftype=ftype, output="ba", fs=fs
         )
@@ -303,7 +310,7 @@ class BandpassDSPFilter(ADSPFilter):
 
         # https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need/31077
         d = 10e-2
-        nt = int(-2 / 3 * log10(10 * d ** 2) * fs / (self.f_high - self.f_low))
+        nt = int(-2 / 3 * log10(10 * d**2) * fs / (self.f_high - self.f_low))
         if nt > self.numtaps:
             raise ValueError(self.numtaps, nt)
 
