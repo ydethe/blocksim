@@ -11,35 +11,22 @@ test:
     - export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
     - echo "tzdata tzdata/Areas select Europe" > preseed.txt && echo "tzdata tzdata/Zones/Europe select Paris" >> preseed.txt
     - debconf-set-selections preseed.txt
-    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends graphviz python3-pip python3.8-dev python3.8-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl wget
+    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends graphviz python3-pip python3.8-dev python3.8-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl
     - python3 --version
-    - pip install "numpy==1.22.3" "scikit_build"
-    - wget https://files.pythonhosted.org/packages/85/21/4e7110462f3529b2fbcff8a519b61bf64e0604b8fcbe9a07649c9bed9d7a/slycot-0.4.0.0.tar.gz
-    - wget https://files.pythonhosted.org/packages/46/c1/04e50c9986842f00f7db0e7a65caa896840050d7328f74e5b7437aa01179/Cartopy-0.18.0.tar.gz
-    - tar -xf slycot-0.4.0.0.tar.gz
-    - cd slycot-0.4.0.0
-    - python3 setup.py bdist_wheel
-    - cd ..
-    - tar -xf Cartopy-0.18.0.tar.gz
-    - cd Cartopy-0.18.0
-    - python3 setup.py bdist_wheel
-    - cd ..
-    # - pip3 install --index-url https://pypi.fury.io/manawenuz --extra-index-url https://pypi.org/simple -r dev_requirements_3_8.txt
-    # - python3 setup.py develop
-    # - python3 -m pytest --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim/ tests --doctest-modules blocksim/
-    # - sh mkdoc.sh
-    # - coverage html
-    # - python3 setup.py sdist
-    # - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
+    - pip3 install --index-url https://pypi.fury.io/manawenuz --extra-index-url https://pypi.org/simple -r dev_requirements_3_8.txt
+    - python3 setup.py develop
+    - python3 -m pytest --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim/ tests --doctest-modules blocksim/
+    - sh mkdoc.sh
+    - coverage html
+    - python3 setup.py sdist
+    - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
   artifacts:
     when: always
     paths:
-      - Cartopy-0.18.0/dist
-      - slycot-0.4.0.0/dist
-      # - results
-      # - htmlcov
-      # - htmldoc
-      # - dist
+      - results
+      - htmlcov
+      - htmldoc
+      - dist
 
 pages:
   stage: deploy
