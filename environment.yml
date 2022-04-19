@@ -1,3 +1,4 @@
+# mamba env create -f environment.yml
 name: sim
 channels:
   - conda-forge
@@ -17,11 +18,11 @@ dependencies:
   - networkx=2.7.1
   - openpyxl=3.0.9
   - parse=1.19.0
-  - pdoc3=0.10.0
-  - pip=21.2.4=py38hca03da5_0
-  - pluggy=1.0.0=py38hca03da5_1
-  - psycopg2=2.8.6=py38hf27765b_1
-  - pylint=2.13.5=py38hca03da5_1
+  - pdoc3=0.9.2
+  - pip=21.2.4
+  - pluggy=1.0.0
+  - psycopg2=2.8.6
+  - pylint=2.13.5
   - pytest=7.1.1
   - pytest-cov=3.0.0
   - pytest-mpl=0.14.0
