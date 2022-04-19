@@ -122,7 +122,7 @@ class ArbitraryDSPFilter(ADSPFilter):
     """A filter with custom taps
     https://en.wikipedia.org/wiki/Infinite_impulse_response
 
-    $$ H(z) = B(z)/A(z) $$
+    $$ H(z) = B(z)/A(z) = \frac{b_0 + b_1.z^{-1} + \dots + b_{nb-1}.z^{-nb+1}}{a_0 + a_1.z^{-1} + \dots + a_{na-1}.z^{-na+1}} $$
 
     Args:
         name: Name of the filter
@@ -170,20 +170,16 @@ class ArbitraryDSPFilter(ADSPFilter):
 
         Args:
             name: Name of the filter
-            fs: The sampling frequency of the digital system
-            wp, ws (float or array like, shape (2,)):  Passband and stopband edge frequencies. Possible values are scalars
-                (for lowpass and highpass filters) or ranges (for bandpass and bandstop
-                filters).
-                For digital filters, these are in the same units as `fs`. By default,
-                `fs` is 2 half-cycles/sample, so these are normalized from 0 to 1,
-                where 1 is the Nyquist frequency. For example:
+            fs: The sampling frequency of the digital system (Hz)
+            wp, ws (float or array like, shape (2,)):  Passband and stopband edge frequencies in Hz. Possible values are scalars
+                (for lowpass and highpass filters) or ranges (for bandpass and bandstop filters).
+                For example:
 
-                    - Lowpass:   wp = 0.2,          ws = 0.3
-                    - Highpass:  wp = 0.3,          ws = 0.2
-                    - Bandpass:  wp = [0.2, 0.5],   ws = [0.1, 0.6]
-                    - Bandstop:  wp = [0.1, 0.6],   ws = [0.2, 0.5]
+                    - Lowpass:   wp = 20,          ws = 30
+                    - Highpass:  wp = 30,          ws = 20
+                    - Bandpass:  wp = [20, 50],   ws = [10, 60]
+                    - Bandstop:  wp = [10, 60],   ws = [20, 50]
 
-                For analog filters, `wp` and `ws` are angular frequencies (e.g., rad/s).
                 Note, that for bandpass and bandstop filters passband must lie strictly
                 inside stopband or vice versa.
             gpass: The maximum loss in the passband (dB).
@@ -198,6 +194,9 @@ class ArbitraryDSPFilter(ADSPFilter):
                     - Bessel/Thomson: 'bessel'
 
         """
+        if analog:
+            wp=wp/(2*pi)
+            ws=ws/(2*pi)
         b, a = iirdesign(
             wp, ws, gpass, gstop, analog=analog, ftype=ftype, output="ba", fs=fs
         )
