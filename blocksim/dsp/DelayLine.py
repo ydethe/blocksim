@@ -2,8 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from .CircularBuffer import CircularBuffer
-
+from ..core.CircularBuffer import CircularBuffer
 from .. import logger
 
 

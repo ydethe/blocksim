@@ -7,6 +7,7 @@ from scipy import linalg as lin
 from skyfield.api import Loader
 
 import pytest
+
 try:
     panda3d = pytest.importorskip("panda3d")
 
@@ -26,7 +27,7 @@ try:
         LVecBase3,
     )
 except BaseException as e:
-    ShowBase=object
+    ShowBase = object
 
 from ..utils import resource_path
 from ..constants import Req, rf

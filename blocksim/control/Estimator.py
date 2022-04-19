@@ -13,6 +13,7 @@ from ..core.Node import AComputer, Input, Output
 from ..core.Frame import Frame
 from ..Logger import Logger
 from ..dsp.DSPSpectrogram import DSPSpectrogram
+from ..dsp.DSPFilter import ArbitraryDSPFilter
 from ..utils import quat_to_euler, euler_to_quat, assignVector
 
 
@@ -55,7 +56,19 @@ class ConvergedGainMatrix(Output):
 
         # We solve the Discrete Algebraic Riccati Equation (DARE)
         # The matrix Pp is the prediction error covariance matrix in steady state which is the positive solution of the DARE
-        Pp = dare(Ad.T, Cd.T, estim.matQ, estim.matR)
+        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.solve_discrete_are.html
+        Pp = dare(a=Ad.T, b=Cd.T, q=estim.matQ, r=estim.matR)
+        a = Ad.T
+        b = Cd.T
+        q = estim.matQ
+        r = estim.matR
+        x = Pp
+        aH = np.conj(a.T)
+        bH = np.conj(b.T)
+
+        v = aH @ x @ a - x - (aH @ x @ b) @ lin.inv(r + bH @ x @ b) @ (bH @ x @ a) + q
+        err = np.max(np.abs(v))
+        assert err < 1e-10
 
         # Converged gain matrix
         self.__K = Pp @ Cd.T @ lin.inv(Cd @ Pp @ Cd.T + estim.matR)
@@ -634,12 +647,19 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
 
     The associated Kalman system is:
 
+    $$ \dot{X} = A.X $$
+    $$ Y=C.X $$
+
+    With
+
+    $$ X = (A_1.exp(i.\omega_1.t),A_2.exp(i.\omega_2.t),\dots,A_n.exp(i.\omega_n.t))^T $$
+
     $$
-        A=2.i.\pi.\begin{pmatrix}
-        f_1 & 0   & 0 & \dots  & 0 \\
-        0   & f_2 & 0 & \dots & 0 \\
+        A=\begin{pmatrix}
+        i.\omega_1 & 0   & 0 & \dots  & 0 \\
+        0   & i.\omega_2 & 0 & \dots & 0 \\
         \vdots & \vdots & \ddots & \vdots \\
-        0 & 0   & 0 & \dots  & f_n
+        0 & 0   & 0 & \dots  & i.\omega_n
         \end{pmatrix}
     $$
 
@@ -649,7 +669,10 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         \end{pmatrix}
     $$
 
-    The inputs of the element are **command** and **measurement**
+    Applying Kalman filter theory to this system, we get at each time step an updated estimate of X.
+    We can extract from \( X \) the complex coefficients \( A_k \), which are amplitude and phase for each of the pulsations \( \omega_k \)
+
+    The input of the element is **measurement**
 
     Args:
         name: Name of the system
@@ -680,6 +703,7 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
             dtype=np.complex128,
         )
         self.createParameter("tracks", tracks)
+        self.removeInput("command")
 
         nb_tracks = len(self.tracks)
 
@@ -687,6 +711,23 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         self.matB = np.zeros((nb_tracks, 1), dtype=np.complex128)
         self.matC = np.ones((1, nb_tracks), dtype=np.complex128)
         self.matD = np.zeros((1, 1), dtype=np.complex128)
+
+    def getEstimatingFilter(self, name: str) -> ArbitraryDSPFilter:
+        from scipy.signal import dlti
+
+        matK = self.getOutputByName("matK")
+        matK.resetCallback(None)
+        K = self.getConvergedGainMatrix()
+
+        Ad, Bd, Cd, Dd = self.discretize(self.dt)
+        sys = dlti(Ad - K @ Cd, K, Cd, Dd, dt=self.dt)
+        sys2 = sys.to_tf()
+
+        filt = ArbitraryDSPFilter(
+            name=name, samplingPeriod=self.dt, btaps=sys2.num, ataps=sys2.den
+        )
+
+        return filt
 
     def getSpectrogram(self, log: Logger) -> DSPSpectrogram:
         """Gets the spectrogram from the Logger after simulation
@@ -723,6 +764,33 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         )
 
         return spg
+
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        measurement: np.array,
+        state: np.array,
+        output: np.array,
+        statecov: np.array,
+        matK: np.array,
+    ) -> dict:
+        xest_pred, meas_pred, P_pred = self._prediction(
+            state, statecov, np.zeros(1), t1, t2
+        )
+
+        # Modified update with converged gain matrix
+        y = measurement - meas_pred
+        xest = xest_pred + matK @ y
+        # [END]Modified update with converged gain matrix
+
+        outputs = {}
+        outputs["output"] = meas_pred
+        outputs["statecov"] = statecov.copy()
+        outputs["matK"] = matK.copy()
+        outputs["state"] = xest
+
+        return outputs
 
 
 class MadgwickFilter(AComputer):

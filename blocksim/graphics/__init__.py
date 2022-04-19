@@ -407,7 +407,10 @@ def plotSpectrogram(
 
 
 def plotBode(
-    filt: ADSPFilter, spec_amp: "SubplotSpec", spec_pha: "SubplotSpec"
+    filt: ADSPFilter,
+    spec_amp: "SubplotSpec",
+    spec_pha: "SubplotSpec",
+    fpoints: int = 200,
 ) -> Tuple["AxesSubplot", "AxesSubplot"]:
     """Plots the bode diagram of a filter
 
@@ -415,9 +418,11 @@ def plotBode(
         filt: Filter to analyse
         spec_amp: The matplotlib SubplotSpec that defines the amplitude axis to draw on. Obtained by fig.add_gridspec and slicing
         spec_pha: The matplotlib SubplotSpec that defines the phase axis to draw on. Obtained by fig.add_gridspec and slicing
+        fpoints: If int, number of frequency samples to use for the plot
+            If iterable, list of frequency samples to use for the plot
 
     Examples:
-        >>> f = ArbitraryDSPFilter(name="MTI", samplingPeriod=1e6, taps=[1, -1])
+        >>> f = ArbitraryDSPFilter(name="MTI", samplingPeriod=1e6, btaps=[1, -1])
         >>> fig = plt.figure()
         >>> gs = fig.add_gridspec(2, 1)
         >>> _ = plotBode(f, spec_amp=gs[0, 0], spec_pha=gs[1, 0])
@@ -435,14 +440,17 @@ def plotBode(
 
     fs = 1 / filt.samplingPeriod
 
-    n = 200
-    b = filt.generateCoefficients()
+    b, a = filt.generateCoefficients()
 
-    freq = np.arange(0, fs / 2, fs / 2 / n)
+    if hasattr(fpoints, "__iter__"):
+        freq = fpoints
+    else:
+        freq = np.arange(0, fs / 2, fs / 2 / fpoints)
 
-    p = Polynomial(b)
     z = np.exp(-1j * 2 * np.pi * freq / fs)
-    y = p(z)
+    p = Polynomial(b)
+    q = Polynomial(a)
+    y = p(z) / q(z)
 
     axe_amp.plot(freq, DSPLine.to_db(y))
     axe_amp.grid(True)
@@ -619,6 +627,7 @@ def plot3DEarth(trajectories: Iterable[Trajectory]) -> "B3DPlotter":
 
     """
     from .B3DPlotter import B3DPlotter
+
     app = B3DPlotter()
 
     app.buildEarth()

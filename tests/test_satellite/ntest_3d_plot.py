@@ -73,7 +73,7 @@ class TestB3DPlotter(TestBase):
         print(180 / pi * np.arcsin(u1 @ u2))
 
         app = B3DPlotter()
-        
+
         app.plotEarth()
 
         # app.buildLine(color=(0, 1, 0, 1), itrf_positions=[(0,0,0), app.sun_light.getPos()*Req])

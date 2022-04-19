@@ -10,10 +10,9 @@ import pytest
 from blocksim.Logger import Logger
 from blocksim.control.Estimator import SteadyStateKalmanFilter, SpectrumEstimator
 from blocksim.Simulation import Simulation
-from blocksim.control.SetPoint import Step
 from blocksim.control.Route import IQExtract
 from blocksim.graphics.FigureSpec import FigureSpec
-from blocksim.graphics import plotSpectrogram
+from blocksim.graphics import plotSpectrogram, plotBode
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp import phase_unfold
 
@@ -35,7 +34,7 @@ class TestTrackingSteadyState(TestBase):
         self.fs = 20
         self.dt = 1.0 / self.fs
         f1 = 3
-        f2 = 10
+        f2 = 10.0
         tau = 12
         self.tracks = np.arange(0, 20, 0.5) / self.fs
         ns = int(self.fs * tau)
@@ -57,8 +56,6 @@ class TestTrackingSteadyState(TestBase):
             .applyGaussianNoise(0.5)
         )
 
-        self.ctrl = Step("ctrl", snames=["u"], cons=np.zeros(1))
-
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_tracking_steadystate_cplxe(self):
         nb_tracks = len(self.tracks)
@@ -76,12 +73,10 @@ class TestTrackingSteadyState(TestBase):
 
         sim = Simulation()
 
-        sim.addComputer(self.ctrl)
         sim.addComputer(self.sig)
         sim.addComputer(kal)
 
         sim.connect("sig.setpoint", "kal.measurement")
-        sim.connect("ctrl.setpoint", "kal.command")
 
         sim.simulate(self.sig.generateXSerie(), progress_bar=False)
 
@@ -108,11 +103,36 @@ class TestTrackingSteadyState(TestBase):
 
         return fig
 
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_bode_steadystate_cplxe(self):
+        nb_tracks = len(self.tracks)
+
+        kal = SpectrumEstimator(
+            name="kal",
+            dt=self.dt,
+            shape_cmd=(1,),
+            snames_output=["x_kal"],
+            snames_state=["x_%i_est" % i for i in range(nb_tracks)],
+            tracks=self.tracks * self.fs,
+        )
+        kal.matQ = np.eye(nb_tracks) / 10
+        kal.matR = np.eye(1)
+
+        filt = kal.getEstimatingFilter("filt")
+
+        fig = plt.figure()
+        gs = fig.add_gridspec(2, 1)
+        axe_amp, axe_pha = plotBode(
+            filt, spec_amp=gs[0, 0], spec_pha=gs[1, 0], fpoints=np.arange(0, 20, 0.1)
+        )
+
+        return fig
+
 
 if __name__ == "__main__":
-    # unittest.main()
-
     a = TestTrackingSteadyState()
     a.setUp()
-    fig = a.test_tracking_steadystate_cplxe()
+    a.test_tracking_steadystate_cplxe()
+    a.test_bode_steadystate_cplxe()
+
     plt.show()

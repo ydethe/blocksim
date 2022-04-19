@@ -174,7 +174,7 @@ class TestFilter(TestBase):
         gs = fig.add_gridspec(1, 1)
 
         taps = derivative_coeff(rank=1, order=10)
-        filt = ArbitraryDSPFilter(name="filt", samplingPeriod=1 / fs, taps=taps * fs)
+        filt = ArbitraryDSPFilter(name="filt", samplingPeriod=1 / fs, btaps=taps * fs)
 
         psig = filt.apply(sig)
         res = -psig / sig / (2 * pi * 1j)
@@ -189,8 +189,9 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestFilter()
-    a.test_bode()
-    # a.test_filtrage()
+    # a.test_bode()
+    a.test_filtrage()
+    a.test_filtrage_chirp()
     # a.test_phase_estimator()
 
     plt.show()

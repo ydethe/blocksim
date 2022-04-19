@@ -2,39 +2,15 @@ from abc import abstractmethod
 
 import numpy as np
 from numpy import log10, exp, pi, sqrt, cos, sin
-from scipy.signal import firwin2, firwin, lfilter_zi, lfilter
+from scipy.signal import firwin2, firwin, filtfilt, lfilter, iirdesign
 
 from .. import logger
 from ..core.Frame import Frame
-from ..core.Node import AComputer, Input, Output
+from ..core.Node import AComputer, Input, Output, WeightedFIROutput
 from .DSPSignal import DSPSignal
-from .CircularBuffer import CircularBuffer
 
 
 __all__ = ["ADSPFilter", "BandpassDSPFilter", "DSPFilter"]
-
-
-class WeightedOutput(Output):
-
-    __slots__ = ["__taps", "__buf"]
-
-    def __init__(self, name: str, dtype):
-        Output.__init__(self, name=name, snames=["sample"], dtype=dtype)
-        self.setInitialState(initial_state=np.array([0], dtype=dtype))
-
-    def resetCallback(self, frame: Frame):
-        filt = self.getComputer()
-        typ = self.getDataType()
-
-        self.__taps = filt.generateCoefficients()
-        n = len(self.__taps)
-        self.__buf = CircularBuffer(size=n, dtype=typ)
-
-    def processSample(self, sample: np.complex128) -> np.complex128:
-        self.__buf.append(sample)
-        buf = self.__buf.getAsArray()
-        res = buf @ self.__taps
-        return res
 
 
 class ADSPFilter(AComputer):
@@ -52,17 +28,14 @@ class ADSPFilter(AComputer):
     __slots__ = []
 
     def __init__(
-        self,
-        name: str,
-        samplingPeriod: float,
-        dtype=np.complex128,
+        self, name: str, samplingPeriod: float, dtype=np.complex128,
     ):
         AComputer.__init__(self, name=name)
 
         self.createParameter(name="samplingPeriod", value=samplingPeriod)
 
         self.defineInput("unfilt", shape=1, dtype=dtype)
-        otp = WeightedOutput(name="filt", dtype=dtype)
+        otp = WeightedFIROutput(name="filt", snames=["sample"], dtype=dtype)
         self.addOutput(otp)
 
     def getTransientPhaseDuration(self) -> float:
@@ -72,19 +45,31 @@ class ADSPFilter(AComputer):
             Transcient duration (s)
 
         """
-        numtaps = len(self.generateCoefficients())
-        return numtaps * self.samplingPeriod / 2
+        b, a = self.generateCoefficients()
+
+        if len(a) == 1 and np.abs(a[0] - 1) < 1e-9:
+            # FIR filter case
+            numtaps = len(b)
+            gd = numtaps * self.samplingPeriod / 2
+        else:
+            # IIR filter case
+            gd = 0.0
+
+        return gd
 
     @abstractmethod
     def generateCoefficients(self):  # pragma: no cover
+        """Shall return a and b coefficient of numerator and denominator respectively
+        TODO
+
+        Returns:
+            A tuple of coefficients (b, a)
+
+        """
         pass
 
     def compute_outputs(
-        self,
-        t1: float,
-        t2: float,
-        unfilt: np.array,
-        filt: np.array,
+        self, t1: float, t2: float, unfilt: np.array, filt: np.array,
     ) -> dict:
         otp = self.getOutputByName("filt")
 
@@ -105,10 +90,7 @@ class ADSPFilter(AComputer):
             The filtered signal
 
         """
-        b = self.generateCoefficients()
-
-        zi = lfilter_zi(b, [1])
-        z, _ = lfilter(b, [1], s.y_serie, zi=zi * s.y_serie[0])
+        z = self.process(s.y_serie)
 
         return DSPSignal(
             name="Filtered %s" % s.name,
@@ -128,21 +110,25 @@ class ADSPFilter(AComputer):
             The filtered signal
 
         """
-        b = self.generateCoefficients()
+        b, a = self.generateCoefficients()
 
-        zi = lfilter_zi(b, [1])
-        z, _ = lfilter(b, [1], s, zi=zi * s[0])
+        # z = filtfilt(b, a, s)
+        z = lfilter(b, a, s)
 
         return z
 
 
 class ArbitraryDSPFilter(ADSPFilter):
     """A filter with custom taps
+    https://en.wikipedia.org/wiki/Infinite_impulse_response
+
+    $$ H(z) = B(z)/A(z) $$
 
     Args:
         name: Name of the filter
         samplingPeriod: Time spacing of the signal (s)
-        taps: Coefficients of the filter
+        btaps: Coefficients of the filter denominator
+        ataps: Coefficients of the filter numerator
 
     """
 
@@ -152,20 +138,138 @@ class ArbitraryDSPFilter(ADSPFilter):
         self,
         name: str,
         samplingPeriod: float,
-        taps: "array",
+        btaps: "array",
+        ataps: "array" = np.array([1.0]),
         dtype=np.complex128,
     ):
         ADSPFilter.__init__(self, name=name, samplingPeriod=samplingPeriod, dtype=dtype)
 
         self.createParameter(name="samplingPeriod", value=samplingPeriod)
-        self.createParameter(name="taps", value=taps)
+        self.createParameter(name="ataps", value=ataps)
+        self.createParameter(name="btaps", value=btaps)
 
     def generateCoefficients(self):
-        return self.taps
+        return self.btaps, self.ataps
+
+    @classmethod
+    def fromIIRSpecification(
+        cls,
+        name: str,
+        fs: float,
+        wp,
+        ws,
+        gpass: float,
+        gstop: float,
+        analog: bool = False,
+        ftype: str = "ellip",
+    ) -> "ArbitraryDSPFilter":
+        """Complete IIR digital and analog filter design.
+
+        Given passband and stopband frequencies and gains, construct an analog or
+        digital IIR filter of minimum order for a given basic type.
+
+        Args:
+            name: Name of the filter
+            fs: The sampling frequency of the digital system
+            wp, ws (float or array like, shape (2,)):  Passband and stopband edge frequencies. Possible values are scalars
+                (for lowpass and highpass filters) or ranges (for bandpass and bandstop
+                filters).
+                For digital filters, these are in the same units as `fs`. By default,
+                `fs` is 2 half-cycles/sample, so these are normalized from 0 to 1,
+                where 1 is the Nyquist frequency. For example:
+
+                    - Lowpass:   wp = 0.2,          ws = 0.3
+                    - Highpass:  wp = 0.3,          ws = 0.2
+                    - Bandpass:  wp = [0.2, 0.5],   ws = [0.1, 0.6]
+                    - Bandstop:  wp = [0.1, 0.6],   ws = [0.2, 0.5]
+
+                For analog filters, `wp` and `ws` are angular frequencies (e.g., rad/s).
+                Note, that for bandpass and bandstop filters passband must lie strictly
+                inside stopband or vice versa.
+            gpass: The maximum loss in the passband (dB).
+            gstop: The minimum attenuation in the stopband (dB).
+            analog: When True, return an analog filter, otherwise a digital filter is returned
+            ftype: The type of IIR filter to design:
+
+                    - Butterworth   : 'butter'
+                    - Chebyshev I   : 'cheby1'
+                    - Chebyshev II  : 'cheby2'
+                    - Cauer/elliptic: 'ellip'
+                    - Bessel/Thomson: 'bessel'
+
+        """
+        b, a = iirdesign(
+            wp, ws, gpass, gstop, analog=analog, ftype=ftype, output="ba", fs=fs
+        )
+        filt = ArbitraryDSPFilter(
+            name=name, samplingPeriod=1 / fs, btaps=b, ataps=a, dtype=np.complex128
+        )
+        return filt
+
+    @classmethod
+    def fromFIRSpecification(
+        cls,
+        name: str,
+        fs: float,
+        numtaps: int,
+        freq,
+        gain,
+        nfreqs: int = None,
+        window: str = "hamming",
+        antisymmetric: bool = False,
+    ) -> "ArbitraryDSPFilter":
+        """
+        FIR filter design using the window method.
+
+        From the given frequencies `freq` and corresponding gains `gain`,
+        this function constructs an FIR filter with linear phase and
+        (approximately) the given frequency response.
+
+        Args:
+            name: Name of the filter
+            fs: The sampling frequency of the signal. Each frequency in `cutoff` must be between 0 and ``fs/2``.
+            numtaps: The number of taps in the FIR filter.  `numtaps` must be less than `nfreqs`.
+            freq (array_like, 1-D): The frequency sampling points. Typically 0.0 to 1.0 with 1.0 being
+                Nyquist.  The Nyquist frequency is half `fs`.
+                The values in `freq` must be nondecreasing. A value can be repeated
+                once to implement a discontinuity. The first value in `freq` must
+                be 0, and the last value must be ``fs/2``. Values 0 and ``fs/2`` must
+                not be repeated.
+            gain (array_like): The filter gains at the frequency sampling points. Certain
+                constraints to gain values, depending on the filter type, are applied,
+                see Notes for details.
+            nfreqs: The size of the interpolation mesh used to construct the filter.
+                For most efficient behavior, this should be a power of 2 plus 1
+                (e.g, 129, 257, etc). The default is one more than the smallest
+                power of 2 that is not less than `numtaps`. `nfreqs` must be greater
+                than `numtaps`.
+            window: Window function to use. Default is "hamming". See
+                `scipy.signal.get_window` for the complete list of possible values.
+                If None, no window function is applied.
+            antisymmetric: Whether resulting impulse response is symmetric/antisymmetric.
+
+        """
+        b = firwin2(
+            numtaps=numtaps,
+            freq=freq,
+            gain=gain,
+            nfreqs=nfreqs,
+            window=window,
+            antisymmetric=antisymmetric,
+            fs=fs,
+        )
+        filt = ArbitraryDSPFilter(
+            name=name,
+            samplingPeriod=1 / fs,
+            btaps=b,
+            ataps=np.array([1.0]),
+            dtype=np.complex128,
+        )
+        return filt
 
 
 class BandpassDSPFilter(ADSPFilter):
-    """A bandpass filter, generated with https://docs.scipy.org/doc/scipy-1.8.0/html-scipyorg/reference/generated/scipy.signal.firwin.html
+    """A bandpass FIR filter, generated with https://docs.scipy.org/doc/scipy-1.8.0/html-scipyorg/reference/generated/scipy.signal.firwin.html
 
     Args:
         name: Name of the spectrum
@@ -196,17 +300,11 @@ class BandpassDSPFilter(ADSPFilter):
         self.createParameter(name="win", value=win)
 
     def generateCoefficients(self) -> "array":
-        """Generates the filter's coefficients
-
-        Returns:
-            The coefficients
-
-        """
         fs = 1 / self.samplingPeriod
 
         # https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need/31077
         d = 10e-2
-        nt = int(-2 / 3 * log10(10 * d**2) * fs / (self.f_high - self.f_low))
+        nt = int(-2 / 3 * log10(10 * d ** 2) * fs / (self.f_high - self.f_low))
         if nt > self.numtaps:
             raise ValueError(self.numtaps, nt)
 
@@ -227,4 +325,4 @@ class BandpassDSPFilter(ADSPFilter):
             fs=fs,
         )
 
-        return b
+        return b, np.array([1.0])

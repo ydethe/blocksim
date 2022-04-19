@@ -1,19 +1,20 @@
 from abc import abstractmethod
-from typing import Iterable, Iterator
+from typing import Iterable, Iterator, List
 from itertools import product
 from uuid import UUID, uuid4
 
 import numpy as np
 from numpy import sqrt
 
+from .. import logger
+from ..utils import assignVector, calc_cho
 from ..exceptions import *
 from .Frame import Frame
 from .ABaseNode import ABaseNode
-from .. import logger
-from ..utils import assignVector, calc_cho
+from .CircularBuffer import CircularBuffer
 
 
-__all__ = ["Input", "Output", "AWGNOutput", "AComputer"]
+__all__ = ["Input", "Output", "AWGNOutput", "WeightedFIROutput", "AComputer"]
 
 
 class Input(ABaseNode):
@@ -142,7 +143,7 @@ class Output(ABaseNode):
         s = "%s%s" % (self.getName(), self.getDataShape())
         return s
 
-    def setInitialState(self, initial_state: np.array):
+    def setInitialState(self, initial_state: "array"):
         """Sets the element's initial state vector
 
         Args:
@@ -324,6 +325,48 @@ class AWGNOutput(Output):
             self.setData(noisy)
 
         return super().getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
+
+
+class WeightedFIROutput(Output):
+    """To be useable, the AComputer that uses WeightedFIROutput
+    has to implement a generateCoefficients method that returns
+    the taps weighting the output.
+    See `dsp.DSPFilter.BandpassDSPFilter.generateCoefficients`
+
+    """
+
+    __slots__ = ["__yprev", "__a_taps", "__a_buf", "__b_taps", "__b_buf"]
+
+    def __init__(self, name: str, snames: List[str], dtype):
+        Output.__init__(self, name=name, snames=snames, dtype=dtype)
+        self.setInitialState(initial_state=np.array([0], dtype=dtype))
+
+    def resetCallback(self, frame: Frame):
+        filt = self.getComputer()
+        typ = self.getDataType()
+
+        x0 = self.getInitialeState()
+        self.__yprev = x0[0]
+
+        self.__b_taps, self.__a_taps = filt.generateCoefficients()
+        na = len(self.__a_taps)
+        nb = len(self.__b_taps)
+        self.__a_buf = CircularBuffer(size=na, dtype=typ)
+        self.__b_buf = CircularBuffer(size=nb, dtype=typ)
+
+    def processSample(self, sample: np.complex128) -> np.complex128:
+        self.__a_buf.append(self.__yprev)
+        self.__b_buf.append(sample)
+        na = len(self.__a_buf)
+        nb = len(self.__b_buf)
+        ba = self.__a_buf.getAsArray()
+        bb = self.__b_buf.getAsArray()
+        a0 = self.__a_taps[0]
+        ya = ba[na - 1 : 0 : -1] @ self.__a_taps[1:]
+        xb = bb[::-1] @ self.__b_taps
+        y = (xb - ya) / a0
+        self.__yprev = y
+        return y
 
 
 class AComputer(ABaseNode):
@@ -652,6 +695,18 @@ class AComputer(ABaseNode):
         del self.__outputs[oid]
         self.addOutput(new_output)
 
+    def removeOutput(self, oname: str):
+        """Removes the specified Output
+
+        Args:
+            oname: The name of the Output to remove
+
+        """
+        otp = self.getOutputByName(oname)
+        otp.setComputer(None)
+        oid = otp.getID()
+        self.__outputs.pop(oid)
+
     def defineInput(self, name: str, shape: int, dtype) -> Input:
         """Creates an input for the computer
 
@@ -692,6 +747,17 @@ class AComputer(ABaseNode):
         iid = inp.getID()
         del self.__inputs[iid]
         self.addInput(new_input)
+
+    def removeInput(self, iname: str):
+        """Removes the specified Input
+
+        Args:
+            iname: The name of the Input to remove
+
+        """
+        inp = self.getInputByName(iname)
+        iid = inp.getID()
+        self.__inputs.pop(iid)
 
     def getOutputById(self, output_id: UUID) -> Output:
         """Get an output with its id
