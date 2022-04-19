@@ -2,12 +2,12 @@ from abc import abstractmethod
 
 import numpy as np
 from numpy import log10, exp, pi, sqrt, cos, sin
-from scipy.signal import firwin2, firwin, filtfilt, lfilter, iirdesign
+from scipy.signal import firwin2, firwin, lfilter, iirdesign
 
 from .. import logger
-from ..core.Frame import Frame
-from ..core.Node import AComputer, Input, Output, WeightedFIROutput
+from ..core.Node import AComputer, WeightedFIROutput
 from .DSPSignal import DSPSignal
+from .group_delays import group_delayz
 
 
 __all__ = ["ADSPFilter", "BandpassDSPFilter", "DSPFilter"]
@@ -56,7 +56,10 @@ class ADSPFilter(AComputer):
             gd = numtaps * self.samplingPeriod / 2
         else:
             # IIR filter case
-            gd = 0.0
+            # https://www.dsprelated.com/showarticle/69.php
+            # https://github.com/spatialaudio/group-delay-of-filters/blob/main/examples/digital-iir-filters.py
+            # group_delayz(b, a, w, fs=1/self.samplingPeriod)
+            gd=0.
 
         return gd
 
@@ -167,7 +170,6 @@ class ArbitraryDSPFilter(ADSPFilter):
         ws,
         gpass: float,
         gstop: float,
-        analog: bool = False,
         ftype: str = "ellip",
     ) -> "ArbitraryDSPFilter":
         """Complete IIR digital and analog filter design.
@@ -191,7 +193,6 @@ class ArbitraryDSPFilter(ADSPFilter):
                 inside stopband or vice versa.
             gpass: The maximum loss in the passband (dB).
             gstop: The minimum attenuation in the stopband (dB).
-            analog: When True, return an analog filter, otherwise a digital filter is returned
             ftype: The type of IIR filter to design:
 
                     - Butterworth   : 'butter'
@@ -201,11 +202,8 @@ class ArbitraryDSPFilter(ADSPFilter):
                     - Bessel/Thomson: 'bessel'
 
         """
-        if analog:
-            wp = wp / (2 * pi)
-            ws = ws / (2 * pi)
         b, a = iirdesign(
-            wp, ws, gpass, gstop, analog=analog, ftype=ftype, output="ba", fs=fs
+            wp, ws, gpass, gstop, analog=False, ftype=ftype, output="ba", fs=fs
         )
         filt = ArbitraryDSPFilter(
             name=name, samplingPeriod=1 / fs, btaps=b, ataps=a, dtype=np.complex128
