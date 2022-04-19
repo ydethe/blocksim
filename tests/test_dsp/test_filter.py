@@ -215,7 +215,6 @@ class TestFilter(TestBase):
             name="filt", wp=wp, ws=ws, gpass=gpass, gstop=gstop, fs=fs
         )
 
-        rng = np.random.default_rng()
         t = np.linspace(0, 2, 201)
         dt = t[1] - t[0]
         x = (
@@ -223,7 +222,7 @@ class TestFilter(TestBase):
             + 0.1 * np.sin(2 * np.pi * 1.25 * t + 1)
             + 0.18 * np.cos(2 * np.pi * 3.85 * t)
         )
-        xn = x + rng.standard_normal(len(t)) * 0.08
+        xn = x + np.random.normal(size=len(t)) * 0.08
 
         sig = DSPSignal(name="sig", samplingStart=t[0], samplingPeriod=dt, y_serie=xn)
 
