@@ -80,7 +80,7 @@ class TestFilter(TestBase):
         sim.simulate(tps, progress_bar=False)
         log = sim.getLogger()
         y_sim = DSPSignal.fromLogger(name="filt", log=log, param="filter_filt_sample")
-        y = y_sim.forceSamplingStart(-filt.getTransientPhaseDuration())
+        y = y_sim.forceSamplingStart(-filt.getGroupDelay())
 
         y_direct = filt.apply(s1)
         diff = y_direct - y
@@ -140,7 +140,7 @@ class TestFilter(TestBase):
         sim.simulate(tps, progress_bar=False)
         log = sim.getLogger()
         y = DSPSignal.fromLogger(name="filt", log=log, param="filter_filt_sample")
-        y = y.forceSamplingStart(y.generateXSerie(0) - filt.getTransientPhaseDuration())
+        y = y.forceSamplingStart(y.generateXSerie(0) - filt.getGroupDelay())
 
         fig = plt.figure()
         axe = fig.add_subplot(111)

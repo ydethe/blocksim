@@ -496,7 +496,7 @@ class DSPSignal(DSPLine, ASetPoint):
             samplingPeriod=self.samplingPeriod,
             win="hamming",
         )
-        dtf = filt.getTransientPhaseDuration()
+        dtf = filt.getGroupDelay()
         y_filt = filt.process(y_mix)
 
         # SSB : https://en.wikipedia.org/wiki/Single-sideband_modulation

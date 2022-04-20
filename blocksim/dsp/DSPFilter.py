@@ -50,11 +50,11 @@ class ADSPFilter(AComputer):
         otp = TFOutput(name="filt", snames=["sample"], dtype=dtype)
         self.addOutput(otp)
 
-    def getTransientPhaseDuration(self) -> float:
-        """Returns the duration of the transcient phase of the filter
+    def getGroupDelay(self) -> float:
+        """Returns the group delay of the filter
 
         Returns:
-            Transcient duration (s)
+            Group delay (s)
 
         """
         b, a = self.generateCoefficients()
@@ -116,7 +116,7 @@ class ADSPFilter(AComputer):
 
         return DSPSignal(
             name="Filtered %s" % s.name,
-            samplingStart=s.samplingStart - self.getTransientPhaseDuration(),
+            samplingStart=s.samplingStart - self.getGroupDelay(),
             samplingPeriod=s.samplingPeriod,
             y_serie=z,
             default_transform=np.real,
