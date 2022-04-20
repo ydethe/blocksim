@@ -6,7 +6,6 @@ from numpy import log10, exp, pi, sqrt, cos, sin, log2
 from scipy import linalg as lin
 from scipy.signal import (
     firwin2,
-    firwin,
     lfilter,
     iirdesign,
     TransferFunction,
