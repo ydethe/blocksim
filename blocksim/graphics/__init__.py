@@ -12,6 +12,7 @@ from scipy.special import erfc
 from scipy.interpolate import interp2d
 from numpy import sqrt, log10
 from numpy.polynomial import Polynomial
+from numpy.polynomial.polynomial import polyval
 from matplotlib import pyplot as plt
 from matplotlib.image import AxesImage
 from matplotlib.backend_bases import Event
@@ -422,12 +423,14 @@ def plotBode(
             If iterable, list of frequency samples to use for the plot
 
     Examples:
-        >>> f = ArbitraryDSPFilter(name="MTI", samplingPeriod=1e6, btaps=[1, -1])
+        >>> f = ArbitraryDSPFilter(name="MTI", samplingPeriod=1e6, num=[1, -1])
         >>> fig = plt.figure()
         >>> gs = fig.add_gridspec(2, 1)
         >>> _ = plotBode(f, spec_amp=gs[0, 0], spec_pha=gs[1, 0])
 
     """
+    from scipy.signal import TransferFunction, freqz
+
     gs = spec_amp.get_gridspec()
     fig = gs.figure
     axe_amp = fig.add_subplot(spec_amp)
@@ -447,14 +450,12 @@ def plotBode(
     else:
         freq = np.arange(0, fs / 2, fs / 2 / fpoints)
 
-    z = np.exp(-1j * 2 * np.pi * freq / fs)
-    p = Polynomial(b)
-    q = Polynomial(a)
-    y = p(z) / q(z)
+    num, den = TransferFunction._z_to_zinv(b, a)
+    _, y = freqz(num, den, worN=freq, fs=fs)
 
     axe_amp.plot(freq, DSPLine.to_db(y))
     axe_amp.grid(True)
-    axe_amp.set_ylabel("Ampliude (dB)")
+    axe_amp.set_ylabel("Amplitude (dB)")
 
     pha = phase_unfold(y)
 

@@ -1,16 +1,25 @@
 from abc import abstractmethod
+from typing import Tuple
 
 import numpy as np
-from numpy import log10, exp, pi, sqrt, cos, sin
-from scipy.signal import firwin2, firwin, lfilter, iirdesign
+from numpy import log10, exp, pi, sqrt, cos, sin, log2
+from scipy import linalg as lin
+from scipy.signal import (
+    firwin2,
+    firwin,
+    lfilter,
+    iirdesign,
+    TransferFunction,
+    remez,
+    firls,
+)
 
 from .. import logger
-from ..core.Node import AComputer, WeightedFIROutput
+from ..core.Node import AComputer, TFOutput
 from .DSPSignal import DSPSignal
-from .group_delays import group_delayz
 
 
-__all__ = ["ADSPFilter", "BandpassDSPFilter", "DSPFilter"]
+__all__ = ["ADSPFilter", "BandpassDSPFilter", "ArbitraryDSPFilter"]
 
 
 class ADSPFilter(AComputer):
@@ -38,7 +47,7 @@ class ADSPFilter(AComputer):
         self.createParameter(name="samplingPeriod", value=samplingPeriod)
 
         self.defineInput("unfilt", shape=1, dtype=dtype)
-        otp = WeightedFIROutput(name="filt", snames=["sample"], dtype=dtype)
+        otp = TFOutput(name="filt", snames=["sample"], dtype=dtype)
         self.addOutput(otp)
 
     def getTransientPhaseDuration(self) -> float:
@@ -50,7 +59,7 @@ class ADSPFilter(AComputer):
         """
         b, a = self.generateCoefficients()
 
-        if len(a) == 1 and np.abs(a[0] - 1) < 1e-9:
+        if len(a) == len(b) and np.abs(a[0] - 1) < 1e-9 and lin.norm(a[1:]) < 1e-9:
             # FIR filter case
             numtaps = len(b)
             gd = numtaps * self.samplingPeriod / 2
@@ -59,14 +68,17 @@ class ADSPFilter(AComputer):
             # https://www.dsprelated.com/showarticle/69.php
             # https://github.com/spatialaudio/group-delay-of-filters/blob/main/examples/digital-iir-filters.py
             # group_delayz(b, a, w, fs=1/self.samplingPeriod)
-            gd=0.
+            gd = 0.0
 
         return gd
 
     @abstractmethod
-    def generateCoefficients(self):  # pragma: no cover
-        """Shall return a and b coefficient of numerator and denominator respectively
-        TODO
+    def generateCoefficients(self) -> Tuple["array"]:  # pragma: no cover
+        r"""Shall return a and b coefficient of numerator and denominator respectively
+        Coefficients for both the numerator and denominator should be specified in descending exponent order
+        (e.g. \( z^2 + 3.z + 5 \) would be represented as [1, 3, 5]).
+
+        $$ H(z) = B(z)/A(z) = \frac{b_0.z^{nb-1} + b_1.z^{nb-2} + \dots + b_{nb-1}}{a_0.z^{na-1} + a_1.z^{na-2} + \dots + a_{na-1}} $$
 
         Returns:
             A tuple of coefficients (b, a)
@@ -122,23 +134,24 @@ class ADSPFilter(AComputer):
         """
         b, a = self.generateCoefficients()
 
-        # z = filtfilt(b, a, s)
         z = lfilter(b, a, s)
 
         return z
 
 
 class ArbitraryDSPFilter(ADSPFilter):
-    """A filter with custom taps
+    r"""A filter with custom taps
     https://en.wikipedia.org/wiki/Infinite_impulse_response
+    Coefficients for both the numerator and denominator should be specified in descending exponent order
+    (e.g. \( z^2 + 3.z + 5 \) would be represented as [1, 3, 5]).
 
-    $$ H(z) = B(z)/A(z) = \frac{b_0 + b_1.z^{-1} + \dots + b_{nb-1}.z^{-nb+1}}{a_0 + a_1.z^{-1} + \dots + a_{na-1}.z^{-na+1}} $$
+    $$ H(z) = B(z)/A(z) = \frac{b_0.z^{nb-1} + b_1.z^{nb-2} + \dots + b_{nb-1}}{a_0.z^{na-1} + a_1.z^{na-2} + \dots + a_{na-1}} $$
 
     Args:
         name: Name of the filter
         samplingPeriod: Time spacing of the signal (s)
-        btaps: Coefficients of the filter denominator
-        ataps: Coefficients of the filter numerator
+        num: Coefficients of the filter denominator
+        den: Coefficients of the filter numerator
 
     """
 
@@ -148,18 +161,34 @@ class ArbitraryDSPFilter(ADSPFilter):
         self,
         name: str,
         samplingPeriod: float,
-        btaps: "array",
-        ataps: "array" = np.array([1.0]),
+        num: "array",
+        den: "array" = None,
         dtype=np.complex128,
     ):
         ADSPFilter.__init__(self, name=name, samplingPeriod=samplingPeriod, dtype=dtype)
 
+        if den is None:
+            den = np.zeros_like(num)
+            den[0] = 1
+
         self.createParameter(name="samplingPeriod", value=samplingPeriod)
-        self.createParameter(name="ataps", value=ataps)
-        self.createParameter(name="btaps", value=btaps)
+        self.createParameter(name="den", value=np.array(den.copy()))
+        self.createParameter(name="num", value=np.array(num.copy()))
 
     def generateCoefficients(self):
-        return self.btaps, self.ataps
+        return self.num.copy(), self.den.copy()
+
+    def to_dlti(self) -> TransferFunction:
+        """Creates a scipy TransferFunction instance.
+        See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.TransferFunction.html
+
+        Returns:
+            The TransferFunction instance
+
+        """
+        b, a = self.generateCoefficients()
+        sys = TransferFunction(b, a, dt=self.samplingPeriod)
+        return sys
 
     @classmethod
     def fromIIRSpecification(
@@ -206,7 +235,11 @@ class ArbitraryDSPFilter(ADSPFilter):
             wp, ws, gpass, gstop, analog=False, ftype=ftype, output="ba", fs=fs
         )
         filt = ArbitraryDSPFilter(
-            name=name, samplingPeriod=1 / fs, btaps=b, ataps=a, dtype=np.complex128
+            name=name,
+            samplingPeriod=1 / fs,
+            num=b,
+            den=a,
+            dtype=np.complex128,
         )
         return filt
 
@@ -216,11 +249,10 @@ class ArbitraryDSPFilter(ADSPFilter):
         name: str,
         fs: float,
         numtaps: int,
-        freq,
-        gain,
-        nfreqs: int = None,
-        window: str = "hamming",
-        antisymmetric: bool = False,
+        bands: "array",
+        desired: "array",
+        method: str = "firwin2",
+        **kwargs,
     ) -> "ArbitraryDSPFilter":
         """
         FIR filter design using the window method.
@@ -231,42 +263,92 @@ class ArbitraryDSPFilter(ADSPFilter):
 
         Args:
             name: Name of the filter
-            fs: The sampling frequency of the signal. Each frequency in `cutoff` must be between 0 and ``fs/2``.
-            numtaps: The number of taps in the FIR filter.  `numtaps` must be less than `nfreqs`.
-            freq (array_like, 1-D): The frequency sampling points. Typically 0.0 to 1.0 with 1.0 being
-                Nyquist.  The Nyquist frequency is half `fs`.
-                The values in `freq` must be nondecreasing. A value can be repeated
-                once to implement a discontinuity. The first value in `freq` must
-                be 0, and the last value must be ``fs/2``. Values 0 and ``fs/2`` must
-                not be repeated.
-            gain (array_like): The filter gains at the frequency sampling points. Certain
-                constraints to gain values, depending on the filter type, are applied,
-                see Notes for details.
-            nfreqs: The size of the interpolation mesh used to construct the filter.
-                For most efficient behavior, this should be a power of 2 plus 1
-                (e.g, 129, 257, etc). The default is one more than the smallest
-                power of 2 that is not less than `numtaps`. `nfreqs` must be greater
-                than `numtaps`.
-            window: Window function to use. Default is "hamming". See
-                `scipy.signal.get_window` for the complete list of possible values.
-                If None, no window function is applied.
-            antisymmetric: Whether resulting impulse response is symmetric/antisymmetric.
+            fs: The sampling frequency of the signal (Hz)
+            numtaps: The number of taps in the FIR filter
+            bands (array_like): A monotonic sequence containing the band edges (Hz)
+                All elements must be non-negative and less than fs/2
+            desired (array_like): A sequence half the size of bands containing the desired gain
+                in each of the specified bands
+            method: One of 'firwin2', 'remez', 'ls'
 
         """
-        b = firwin2(
-            numtaps=numtaps,
-            freq=freq,
-            gain=gain,
-            nfreqs=nfreqs,
-            window=window,
-            antisymmetric=antisymmetric,
-            fs=fs,
-        )
+        if method == "firwin2":
+            nfreqs = 1 + 2 ** int(np.ceil(log2(numtaps)))
+            nbands = len(desired)
+            n_per_band = nfreqs // nbands
+
+            if bands[0] == 0:
+                freq_a = []
+                gain_a = []
+            else:
+                freq_a = [0]
+                gain_a = [0]
+
+            for k in range(nbands):
+                f1, f2 = bands[2 * k : 2 * k + 2]
+                bf = np.linspace(f1, f2, n_per_band)
+                freq_a.extend(bf)
+                gain_a.extend(desired[k] * np.ones_like(bf))
+
+            if bands[-1] != fs / 2:
+                freq_a.append(fs / 2)
+                gain_a.append(0)
+
+            freq = kwargs.pop("freq", freq_a)
+            gain = kwargs.pop("gain", gain_a)
+
+            if numtaps % 2 == 0 and gain[0] == 0 and gain[-1] == 0.0:
+                # Filter type II or IV
+                antisymmetric = True  # Could be False if we want to
+            elif numtaps % 2 == 0 and gain[0] == 0 and gain[-1] != 0.0:
+                # Filter type IV
+                antisymmetric = False
+            elif numtaps % 2 == 0 and gain[0] != 0 and gain[-1] == 0.0:
+                # Filter type II
+                antisymmetric = True
+            elif numtaps % 2 == 0 and gain[0] != 0 and gain[-1] != 0.0:
+                # Filter type
+                raise ValueError(f"N={numtaps},H(1)={gain[0]},H(-1)={gain[-1]}")
+            elif numtaps % 2 == 1 and gain[0] == 0 and gain[-1] == 0.0:
+                # Filter type I or III
+                antisymmetric = True  # Could be False if we want to
+            elif numtaps % 2 == 1 and gain[0] == 0 and gain[-1] != 0.0:
+                # Filter type I
+                antisymmetric = True
+            elif numtaps % 2 == 1 and gain[0] != 0 and gain[-1] == 0.0:
+                # Filter type I
+                antisymmetric = True
+            elif numtaps % 2 == 1 and gain[0] != 0 and gain[-1] != 0.0:
+                # Filter type I
+                antisymmetric = True
+
+            # kwargs: window='hamming'
+            b = firwin2(
+                numtaps=numtaps,
+                freq=freq,
+                gain=gain,
+                antisymmetric=antisymmetric,
+                fs=fs,
+                **kwargs,
+            )
+        elif method == "remez":
+            # kwargs: weight=None, type='bandpass', maxiter=25, grid_density=16
+            b = remez(numtaps, bands, desired, fs=fs, **kwargs)
+        elif method == "ls":
+            # kwargs: weight=None
+            desired_ls = np.empty_like(bands)
+            desired_ls[::2] = desired
+            desired_ls[1::2] = desired
+            b = firls(numtaps, bands, desired_ls, fs=fs, **kwargs)
+
+        a = np.zeros_like(b)
+        a[0] = 1
+
         filt = ArbitraryDSPFilter(
             name=name,
             samplingPeriod=1 / fs,
-            btaps=b,
-            ataps=np.array([1.0]),
+            num=b,
+            den=a,
             dtype=np.complex128,
         )
         return filt
@@ -329,4 +411,6 @@ class BandpassDSPFilter(ADSPFilter):
             fs=fs,
         )
 
-        return b, np.array([1.0])
+        a = np.zeros_like(b)
+        a[0] = 1
+        return b, a

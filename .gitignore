@@ -1,6 +1,8 @@
 htmldoc
 test_results.xml
 examples/example_*.py
+blocksim/classes.png
+tests/quadri.csv
 
 .ipynb/
 *.bak

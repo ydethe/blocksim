@@ -63,6 +63,7 @@ def __render_notebook(exporter, nb, odir):
 def __create_py(root, fic):
     pth_py = Path(root) / os.path.basename(fic).replace(".ipynb", ".py")
     rt = os.path.basename(fic).replace(".ipynb", "")
+    print("   ", pth_py)
     with open(pth_py, "w") as f:
         f.write(f'"""\n.. include:: ../build/htmldoc/{rt}.md\n"""')
 

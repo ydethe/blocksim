@@ -9,7 +9,7 @@ import pytest
 
 from blocksim.core.Node import Frame
 from blocksim.control.SetPoint import Step
-from blocksim.control.System import LTISystem
+from blocksim.control.System import LTISystem, TransferFunctionSystem
 from blocksim.Simulation import Simulation
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -17,6 +17,55 @@ from TestBase import TestBase, plotAnalyticsolution
 
 
 class TestSystem(TestBase):
+    def test_tfsystem(self):
+        from scipy.signal import lti
+
+        num = [1, 3, 3]
+        den = [1, 2, 1]
+        dt = 0.01
+        ns = 200
+        t = np.arange(ns) * dt
+
+        sys = TransferFunctionSystem(name="sys", sname="x", num=num, den=den, dt=dt)
+        sp = lti(num, den)
+
+        # ========================================
+        # Simulating via scipy.signal
+        # ========================================
+        _, ysp = sp.step(T=t)
+        ysp = np.squeeze(ysp)
+
+        # ========================================
+        # Simulating via blocksim
+        # ========================================
+        ybs = np.empty(ns)
+        state = np.zeros(1)
+        inner = np.zeros(2)
+        u = 1
+        for i in range(ns - 1):
+            outputs = sys.compute_outputs(
+                t1=t[i], t2=t[i + 1], command=np.array([u]), state=state, inner=inner
+            )
+            state = outputs["state"]
+            inner = outputs["inner"]
+            ybs[i] = state[0]
+
+        outputs = sys.compute_outputs(
+            t1=t[ns - 1],
+            t2=t[ns - 1] + dt,
+            command=np.array([u]),
+            state=state,
+            inner=inner,
+        )
+        ybs[ns - 1] = state[0]
+
+        # ========================================
+        # Comparison
+        # ========================================
+        err = np.max(np.abs(ybs - ysp))
+
+        self.assertAlmostEqual(err, 0, delta=1e-2)
+
     def test_ltisystem(self):
         stp = Step("stp", snames=["c"], cons=np.array([0]))
         sys = LTISystem("sys", shape_command=1, snames_state=["x", "dx"])
@@ -57,4 +106,5 @@ class TestSystem(TestBase):
 if __name__ == "__main__":
     a = TestSystem()
     a.setUp()
-    a.test_ltisystem()
+    a.test_tfsystem()
+    # a.test_ltisystem()

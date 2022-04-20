@@ -1,10 +1,16 @@
 from abc import abstractmethod
 from typing import Iterable
+from functools import lru_cache
 
 import numpy as np
 from numpy import sqrt
 from scipy.integrate import ode
-from scipy.signal import cont2discrete
+from scipy.signal import (
+    cont2discrete,
+    tf2ss,
+    TransferFunction,
+    StateSpace,
+)
 import scipy.linalg as lin
 
 from ..exceptions import *
@@ -13,7 +19,7 @@ from ..core.Frame import Frame
 from ..core.Node import AComputer
 
 
-__all__ = ["ASystem", "LTISystem", "G6DOFSystem"]
+__all__ = ["ASystem", "LTISystem", "G6DOFSystem", "TransferFunctionSystem"]
 
 
 class ASystem(AComputer):
@@ -128,7 +134,7 @@ class ASystem(AComputer):
 
 
 class LTISystem(ASystem):
-    """Models a SISO LTI system :
+    """Models a MIMO LTI system :
 
     $$ dX/dt = A.X + B.u $$
 
@@ -432,3 +438,139 @@ class G6DOFSystem(ASystem):
         outputs["state"] = res
 
         return outputs
+
+
+class TransferFunctionSystem(AComputer):
+    r"""Linear Time Invariant system class in transfer function form.
+
+    Represents the system as the continuous-time transfer function
+
+    $$ H(s)=\frac{\sum_{i=0}^N b[N-i] s^i}{\sum_{j=0}^M a[M-j] s^j} $$
+
+    Sequences representing the coefficients of the numerator and denominator polynomials,
+    in order of descending degree. The denominator needs to be at least as long as the numerator.
+
+    Attributes:
+        num: Numerator coefficients
+        den: Denominator coefficients
+        dt: Time step (s)
+        matA: Continuous state matrix
+        matB: Continuous input matrix
+        matC: Continuous output matrix
+        matD: Continuous feedthrough matrix
+
+    Args:
+        name: Name of the AComputer
+        sname: Name of the output state
+        num: Coefficients of the numerator
+        den: Coefficients of the denominator
+        dt: Time step (s)
+
+    """
+
+    def __init__(
+        self,
+        name: str,
+        sname: str,
+        num: "array",
+        den: "array",
+        dt: float,
+        dtype=np.float64,
+    ):
+        A, B, C, D = tf2ss(num, den)
+
+        AComputer.__init__(self, name=name)
+
+        ns, _ = A.shape
+        self.defineOutput(
+            name="inner", snames=[f"is{i}" for i in range(ns)], dtype=dtype
+        )
+        self.defineOutput(name="state", snames=[sname], dtype=dtype)
+        self.defineInput("command", (1,), dtype)
+
+        self.createParameter(name="num", value=num, read_only=True)
+        self.createParameter(name="den", value=den, read_only=True)
+        self.createParameter(name="dt", value=dt, read_only=True)
+        self.createParameter(name="matA", value=A, read_only=True)
+        self.createParameter(name="matB", value=B, read_only=True)
+        self.createParameter(name="matC", value=C, read_only=True)
+        self.createParameter(name="matD", value=D, read_only=True)
+
+    @lru_cache(maxsize=None)
+    def discretize(
+        self, method: str = "zoh", alpha: float = None
+    ) -> Iterable[np.array]:
+        """Turns the continous system into a discrete one
+
+        Args:
+            method: Discretization method:
+
+              * gbt: generalized bilinear transformation
+              * bilinear: Tustin’s approximation (“gbt” with alpha=0.5)
+              * euler: Euler (or forward differencing) method (“gbt” with alpha=0)
+              * backward_diff: Backwards differencing (“gbt” with alpha=1.0)
+              * zoh: zero-order hold (default)
+            alpha: Parameter for the gbt method, within [0, 1]
+              The generalized bilinear transformation weighting parameter, which should only be specified with method=”gbt”, and is ignored otherwise
+
+        Returns:
+            Ad: Discrete state matrix
+            Bd: Discrete input matrix
+            Cd: Discrete output matrix
+            Dd: Discrete direct term
+
+        """
+        sys = (self.matA, self.matB, self.matC, self.matD)
+        Ad, Bd, Cd, Dd, dt = cont2discrete(sys, self.dt, method=method, alpha=alpha)
+        return Ad, Bd, Cd, Dd
+
+    def compute_outputs(
+        self,
+        t1: float,
+        t2: float,
+        command: "array",
+        state: "array",
+        inner: "array",
+    ) -> dict:
+        Ad, Bd, Cd, Dd = self.discretize()
+
+        state = Cd @ inner + Dd @ command
+        inner = Ad @ inner + Bd @ command
+
+        outputs = {}
+        outputs["state"] = state
+        outputs["inner"] = inner
+
+        return outputs
+
+    def to_continuous_tf(self) -> "TransferFunctionContinuous":
+        """Returns an instance of TransferFunctionContinuous from scipy.signal
+        See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.TransferFunction.html
+
+        """
+        sys = TransferFunction(self.num, self.den)
+        return sys
+
+    def to_continuous_ss(self) -> "StateSpaceContinuous":
+        """Returns an instance StateSpaceContinuous from scipy.signal
+        See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.StateSpace.html
+
+        """
+        sys = TransferFunction(self.num, self.den)
+        return sys.to_ss()
+
+    def to_discrete_tf(self) -> "TransferFunctionDiscrete":
+        """Returns an instance of TransferFunctionDiscrete from scipy.signal
+        See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.TransferFunction.html
+
+        """
+        sys = TransferFunction(self.num, self.den, dt=self.dt)
+        return sys
+
+    def to_discrete_ss(self) -> "StateSpaceDiscrete":
+        """Returns an instance StateSpaceDiscrete from scipy.signal
+        See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.StateSpace.html
+
+        """
+        sys = TransferFunction(self.num, self.den, dt=self.dt)
+        return sys.to_ss()

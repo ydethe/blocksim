@@ -14,7 +14,7 @@ from .ABaseNode import ABaseNode
 from .CircularBuffer import CircularBuffer
 
 
-__all__ = ["Input", "Output", "AWGNOutput", "WeightedFIROutput", "AComputer"]
+__all__ = ["Input", "Output", "AWGNOutput", "TFOutput", "AComputer"]
 
 
 class Input(ABaseNode):
@@ -327,11 +327,12 @@ class AWGNOutput(Output):
         return super().getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
 
 
-class WeightedFIROutput(Output):
-    """To be useable, the AComputer that uses WeightedFIROutput
+class TFOutput(Output):
+    """To be useable, the AComputer that uses TFOutput
     has to implement a generateCoefficients method that returns
     the taps weighting the output.
-    See `dsp.DSPFilter.BandpassDSPFilter.generateCoefficients`
+    See `dsp.DSPFilter.ADSPFilter.generateCoefficients`
+    The AComputer shall call `TFOutput.processSample` to process samples
 
     """
 

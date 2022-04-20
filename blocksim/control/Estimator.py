@@ -5,7 +5,7 @@ from functools import lru_cache
 import numpy as np
 from numpy import cos, sin, cosh, sinh, sqrt, exp, pi
 from scipy import linalg as lin
-from scipy.signal import firwin, cont2discrete
+from scipy.signal import firwin, cont2discrete, TransferFunction
 
 from ..exceptions import *
 from .System import LTISystem
@@ -669,6 +669,7 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         \end{pmatrix}
     $$
 
+    At each time step, the measurement is one complex signal sample.
     Applying Kalman filter theory to this system, we get at each time step an updated estimate of X.
     We can extract from \( X \) the complex coefficients \( A_k \), which are amplitude and phase for each of the pulsations \( \omega_k \)
 
@@ -688,18 +689,17 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         self,
         name: str,
         dt: float,
-        shape_cmd: tuple,
         snames_state: Iterable[str],
-        snames_output: Iterable[str],
+        sname_output: str,
         tracks: np.array,
     ):
         SteadyStateKalmanFilter.__init__(
             self,
             name=name,
             dt=dt,
-            shape_cmd=shape_cmd,
+            shape_cmd=(1,),
             snames_state=snames_state,
-            snames_output=snames_output,
+            snames_output=[sname_output],
             dtype=np.complex128,
         )
         self.createParameter("tracks", tracks)
@@ -712,19 +712,55 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         self.matC = np.ones((1, nb_tracks), dtype=np.complex128)
         self.matD = np.zeros((1, 1), dtype=np.complex128)
 
-    def getEstimatingFilter(self, name: str) -> ArbitraryDSPFilter:
-        from scipy.signal import dlti
+    def to_dlti(self, ma_freq: Iterable[int] = None) -> TransferFunction:
+        """Creates a scipy TransferFunction instance.
+        See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.TransferFunction.html
+
+        Args:
+            ma_freq: List of index of frequencies that shall be selected by the ArbitraryDSPFilter.
+                By default, all the frequencies specified in **tracks** are taken
+
+        Returns:
+            The TransferFunction instance
+
+        """
+        from scipy.signal import StateSpace
 
         matK = self.getOutputByName("matK")
         matK.resetCallback(None)
         K = self.getConvergedGainMatrix()
 
+        n = len(self.tracks)
+        if ma_freq is None:
+            ma_freq = list(range(n))
+
         Ad, Bd, Cd, Dd = self.discretize(self.dt)
-        sys = dlti(Ad - K @ Cd, K, Cd, Dd, dt=self.dt)
+        Cf = np.zeros((1, n))
+        Cf[0, ma_freq] = 1.0
+        sys = StateSpace(Ad - K @ Cd, K, Cf, Dd, dt=self.dt)
         sys2 = sys.to_tf()
 
+        return sys2
+
+    def getEstimatingFilter(
+        self, name: str, ma_freq: Iterable[int] = None
+    ) -> ArbitraryDSPFilter:
+        """Returns the filter equivalent to the SISO system
+        that takes as input the measured sample, and as output the estimated signal
+
+        Args:
+            name: Name of the created filter
+            ma_freq: List of index of frequencies that shall be selected by the ArbitraryDSPFilter.
+                By default, all the frequencies specified in **tracks** are taken
+
+        Returns:
+            The ArbitraryDSPFilter instance
+
+        """
+        sys = self.to_dlti(ma_freq=ma_freq)
+
         filt = ArbitraryDSPFilter(
-            name=name, samplingPeriod=self.dt, btaps=sys2.num, ataps=sys2.den
+            name=name, samplingPeriod=self.dt, num=sys.num, den=sys.den
         )
 
         return filt

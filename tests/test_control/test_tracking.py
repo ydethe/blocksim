@@ -63,8 +63,7 @@ class TestTrackingSteadyState(TestBase):
         kal = SpectrumEstimator(
             name="kal",
             dt=self.dt,
-            shape_cmd=(1,),
-            snames_output=["x_kal"],
+            sname_output="x_kal",
             snames_state=["x_%i_est" % i for i in range(nb_tracks)],
             tracks=self.tracks * self.fs,
         )
@@ -110,8 +109,7 @@ class TestTrackingSteadyState(TestBase):
         kal = SpectrumEstimator(
             name="kal",
             dt=self.dt,
-            shape_cmd=(1,),
-            snames_output=["x_kal"],
+            sname_output="x_kal",
             snames_state=["x_%i_est" % i for i in range(nb_tracks)],
             tracks=self.tracks * self.fs,
         )
@@ -128,11 +126,36 @@ class TestTrackingSteadyState(TestBase):
 
         return fig
 
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_bode3_steadystate_cplxe(self):
+        nb_tracks = len(self.tracks)
+
+        kal = SpectrumEstimator(
+            name="kal",
+            dt=self.dt,
+            sname_output="x_kal",
+            snames_state=["x_%i_est" % i for i in range(nb_tracks)],
+            tracks=self.tracks * self.fs,
+        )
+        kal.matQ = np.eye(nb_tracks) / 10
+        kal.matR = np.eye(1)
+
+        filt = kal.getEstimatingFilter("filt", ma_freq=[3])
+
+        fig = plt.figure()
+        gs = fig.add_gridspec(2, 1)
+        plotBode(
+            filt, spec_amp=gs[0, 0], spec_pha=gs[1, 0], fpoints=np.arange(0, 20, 0.1)
+        )
+
+        return fig
+
 
 if __name__ == "__main__":
     a = TestTrackingSteadyState()
     a.setUp()
-    a.test_tracking_steadystate_cplxe()
-    a.test_bode_steadystate_cplxe()
+    # a.test_tracking_steadystate_cplxe()
+    # a.test_bode_steadystate_cplxe()
+    a.test_bode3_steadystate_cplxe()
 
     plt.show()
