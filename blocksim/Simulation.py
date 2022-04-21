@@ -22,11 +22,11 @@ class Simulation(object):
     Also logs all the simulated values
 
     Args:
-        computers: list of AComputer to add to the simulation. Can be done later with `addComputer`
+        computers: list of `blocksim.core.Node.AComputer` to add to the simulation. Can be done later with `Simulation.addComputer`
 
     """
 
-    def __init__(self, computers: list = []):
+    def __init__(self, computers: Iterable[AComputer] = []):
         self.__computers = []
         self.__logger = Logger()
         for c in computers:

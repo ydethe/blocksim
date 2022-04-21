@@ -25,25 +25,17 @@ test:
     - sh dev/mkdoc.sh
       # - python3 -m pytest --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim/ tests --doctest-modules blocksim/
       # - coverage html
+    - mkdir public
+    - cp -r htmldoc/* public
+    - cp dev/index.html htmldoc
   artifacts:
     when: always
     paths:
       # - results
       # - htmlcov
-      - htmldoc
       - dist
+      - public
+      
 
 # https://ydethe.gitlab.io/blocksim/htmldoc/blocksim/
-pages:
-  stage: deploy
-  dependencies:
-  - test
-  rules:
-    - if: $CI_COMMIT_TAG =~ /^v.*/
-      when: always
-  script:
-    - mkdir public
-    - cp -r dist htmldoc public
-  artifacts:
-    paths:
-      - public
+#

@@ -103,7 +103,7 @@ class ADSPFilter(AComputer):
         return outputs
 
     def apply(self, s: DSPSignal) -> DSPSignal:
-        """Filters a DSPSignal without having to create a `Simulation.Simulation`
+        """Filters a DSPSignal without having to create a `blocksim.Simulation.Simulation`
 
         Args:
             s: The DSPSignal to filter
@@ -123,10 +123,10 @@ class ADSPFilter(AComputer):
         )
 
     def process(self, s: "array") -> "array":
-        """Filters a signal without having to create a `Simulation.Simulation`
+        """Filters a signal without having to create a `blocksim.Simulation.Simulation`
 
         Args:
-            s: The signal to filter
+            s: The array of (complex) samples to filter
 
         Returns:
             The filtered signal
