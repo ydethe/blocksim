@@ -42,7 +42,7 @@ pages:
       when: always
   script:
     - mkdir public
-    - cp -r htmlcov htmldoc public
+    - cp -r dist htmldoc public
   artifacts:
     paths:
       - public

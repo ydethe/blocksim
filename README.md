@@ -45,7 +45,7 @@ Once the env is active, clone the repository. Note that the repository can be cl
 
 In your virtual env:
 
-    pip install -r dev_requirements_3_9.txt
+    pip install -r dev/dev_requirements_3_9.txt
     python3 setup.py develop
     python3 -m ipykernel install --user --name=bs_env
 
@@ -72,7 +72,10 @@ If needed (for example, a new test with its associated baseline image), we might
 
 Just run:
 
-    ./mkdoc.sh
+    sh dev/mkdoc.sh
 
 A few guidelines for updating the doc
 https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
+
+For now, it is hosted here: http://navlin10:8081/blocksim/blocksim/
+
