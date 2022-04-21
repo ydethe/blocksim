@@ -27,7 +27,7 @@ test:
       # - coverage html
     - mkdir public
     - cp -r htmldoc/* public
-    - cp dev/index.html htmldoc
+    - cp dev/index.html public
   artifacts:
     when: always
     paths:
