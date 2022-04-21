@@ -5,8 +5,8 @@ import numpy as np
 from numpy import log10, exp, pi, sqrt, cos, sin, log2
 from scipy import linalg as lin
 from scipy.signal import (
-    firwin,
     firwin2,
+    firwin,
     lfilter,
     iirdesign,
     TransferFunction,
@@ -103,7 +103,7 @@ class ADSPFilter(AComputer):
         return outputs
 
     def apply(self, s: DSPSignal) -> DSPSignal:
-        """Filters a DSPSignal without having to create a blocksim.Simulation.Simulation
+        """Filters a DSPSignal without having to create a `Simulation.Simulation`
 
         Args:
             s: The DSPSignal to filter
@@ -123,7 +123,7 @@ class ADSPFilter(AComputer):
         )
 
     def process(self, s: "array") -> "array":
-        """Filters a signal without having to create a blocksim.Simulation.Simulation
+        """Filters a signal without having to create a `Simulation.Simulation`
 
         Args:
             s: The signal to filter

@@ -33,6 +33,7 @@ test:
       - htmldoc
       - dist
 
+# https://ydethe.gitlab.io/blocksim/htmldoc/blocksim/
 pages:
   stage: deploy
   dependencies:
