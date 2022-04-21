@@ -23,7 +23,7 @@ test:
     - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
     - python3 -m ipykernel install --user --name=sim
     - sh dev/mkdoc.sh
-    - python3 -m pytest --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim/ tests --doctest-modules blocksim/
+      #    - python3 -m pytest --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim/ tests --doctest-modules blocksim/
     - coverage html
   artifacts:
     when: always
