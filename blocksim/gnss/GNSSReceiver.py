@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 import numpy as np
 from numpy import sqrt
+from numpy import pi
 import scipy.linalg as lin
 from scipy.optimize import minimize, Bounds
 from skyfield.api import Topos, load
@@ -13,51 +14,7 @@ from ..core.Node import AComputer, Output
 from .. import logger
 from ..utils import datetime_to_skyfield, skyfield_to_datetime, build_env
 from ..constants import c as clum
-from ..utils import pdot
-
-
-class UEPositionOutput(Output):
-
-    __slots__ = ["__sgp4_rep", "__tsync"]
-
-    def __init__(self, name: str, lon: float, lat: float, alt: float, tsync: datetime):
-        Output.__init__(
-            self, name=name, snames=["x", "y", "z", "vx", "vy", "vz"], dtype=np.float64
-        )
-        self.__sgp4_rep = Topos(
-            latitude_degrees=lat, longitude_degrees=lon, elevation_m=alt
-        )
-        self.__tsync = tsync
-
-    def getTsync(self) -> datetime:
-        return self.__tsync
-
-    def getGeocentricITRFPositionAt(self, t_calc: datetime) -> "array":
-        """Return the geocentric ITRF position of the satellite at a given time
-
-        Args:
-            td: Time of the position
-
-        Returns:
-            A tuple of x, y, z ITRF coordinates (m)
-
-        """
-        t = datetime_to_skyfield(t_calc)
-
-        pv = self.__sgp4_rep.at(t)
-        pos, vel = pv.frame_xyz_and_velocity(framelib.itrs)
-
-        ps = pos.m
-        vs = vel.km_per_s * 1000
-
-        return np.hstack((ps, vs))
-
-    def resetCallback(self, t0: float):
-        super().resetCallback(t0)
-        dt = timedelta(seconds=t0)
-        td = self.__tsync + dt
-        state = self.getGeocentricITRFPositionAt(td)
-        self.setInitialState(state)
+from ..utils import pdot, geodetic_to_itrf
 
 
 class GNSSReceiver(AComputer):
@@ -71,6 +28,10 @@ class GNSSReceiver(AComputer):
     Attributes:
         algo: Type of algorithm to use. Can be 'ranging' or 'doppler'
         optim: Defaults to "trust-constr"
+        lon: True longitude of the receiver (deg)
+        lat: True latitude of the receiver (deg)
+        alt: True altitude of the receiver (m)
+        tsync: Datetime object that gives the date and time at simulation time 0
 
     Args:
         name: Name of the element
@@ -82,7 +43,7 @@ class GNSSReceiver(AComputer):
 
     """
 
-    __slots__ = []
+    __slots__ = ["__itrf_pv"]
 
     def __init__(
         self, name: str, nsat: int, lon: float, lat: float, alt: float, tsync: datetime
@@ -90,8 +51,9 @@ class GNSSReceiver(AComputer):
         AComputer.__init__(self, name)
         self.defineInput("measurements", shape=(2 * nsat,), dtype=np.float64)
         self.defineInput("ephemeris", shape=(6 * nsat,), dtype=np.float64)
-        otp = UEPositionOutput(name="realpos", lon=lon, lat=lat, alt=alt, tsync=tsync)
-        self.addOutput(otp)
+        self.defineOutput(
+            "realpos", snames=["x", "y", "z", "vx", "vy", "vz"], dtype=np.float64
+        )
         self.defineOutput(
             "estpos", snames=["x", "y", "z", "vx", "vy", "vz"], dtype=np.float64
         )
@@ -100,12 +62,12 @@ class GNSSReceiver(AComputer):
         )
         self.defineOutput("estclkerror", snames=["dp", "dv"], dtype=np.float64)
 
+        self.createParameter("lat", value=lat)
+        self.createParameter("lon", value=lon)
+        self.createParameter("alt", value=alt)
         self.createParameter("algo", value="ranging")
         self.createParameter("optim", value="trust-constr")
-
-    def getTsync(self) -> datetime:
-        otp = self.getOutputByName("realpos")
-        return otp.getTsync()
+        self.createParameter(name="tsync", value=tsync)
 
     def getSatellitePositionFromEphem(self, ephem: np.array, isat: int) -> "array":
         """Given the array of all satellites ephemeris,
@@ -555,20 +517,12 @@ class GNSSReceiver(AComputer):
 
         return np.hstack((pos, np.zeros(3))), dv
 
-    def getGeocentricITRFPositionAt(self, t_calc: datetime) -> "array":
-        """
-        Return the geocentric ITRF position of the satellite at a given time
-
-        Args:
-            td: Time of the position
-
-        Returns:
-            An array with x, y, z (m) and vx, vy, vz (m/s)
-
-        """
-        otp = self.getOutputByName("realpos")
-        realpos = otp.getGeocentricITRFPositionAt(t_calc)
-        return realpos
+    def resetCallback(self, t0: float):
+        super().resetCallback(t0)
+        x, y, z = geodetic_to_itrf(
+            lon=self.lon * pi / 180, lat=self.lat * pi / 180, h=self.alt
+        )
+        self.__itrf_pv = np.array([x, y, z, 0.0, 0.0, 0.0])
 
     def getAbsoluteTime(self, t: float) -> datetime:
         """Converts a simulation time into absolute time
@@ -597,9 +551,7 @@ class GNSSReceiver(AComputer):
         estpos: np.array,
         estclkerror: np.array,
     ) -> dict:
-        td = self.getAbsoluteTime(t2)
-
-        realpos = self.getGeocentricITRFPositionAt(td)
+        realpos = self.__itrf_pv
 
         if np.max(np.abs(measurements)) < 1 or not self.algo:
             pos = np.zeros(6)

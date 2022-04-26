@@ -15,6 +15,31 @@ from TestBase import TestBase
 
 
 class TestSignalOperations(TestBase):
+    def test_energy(self):
+        tau = 10e-6
+        bp = 5e6
+        fs = bp * 3
+        eta = 0.1
+        nrep = 50
+        fdop = 1e3
+
+        rep = DSPSignal.fromLinearFM(
+            name="rep",
+            samplingStart=0,
+            samplingPeriod=1 / fs,
+            tau=tau,
+            fstart=-bp / 2,
+            fend=bp / 2,
+        )
+
+        Et = rep.energy
+        srep = rep.fft()
+
+        Ef = srep.energy
+
+        self.assertAlmostEqual(Et, Ef, delta=0.0)
+        self.assertAlmostEqual(Et, 150.0, delta=0.0)
+
     def test_truncate(self):
         sig = DSPSignal(
             name="sig", samplingStart=0, samplingPeriod=1, y_serie=np.arange(10)

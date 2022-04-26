@@ -384,6 +384,7 @@ class TestMahony(TestBase):
         x0[6:10] = q
         self.sys.setInitialStateForOutput(x0, "state")
 
+        self.est.Ki = 0.0
         self.est.setMagnetometerCalibration(
             offset=np.arange(3), softiron_matrix=np.eye(3) / 2
         )

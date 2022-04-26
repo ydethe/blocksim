@@ -252,9 +252,7 @@ class LQRegulator(AController):
         self.createParameter(name="matE", value=0.0)
         self.createParameter(name="matN", value=0.0)
 
-    def computeGain(
-        self, precomp: bool = True,
-    ):
+    def computeGain(self):
         """Computes the optimal gain K, and the correct precompensation gain N.
         Called automatically at beginning of simulation
 
@@ -280,10 +278,6 @@ class LQRegulator(AController):
         * matE : eigenvalues of the closed loop system
         * matN : precompensation gain
 
-        Args:
-          precomp: If True, also computes the N matrix such as for a setpoint c,
-            the command u = N.c - K.x suppresses the steady-state error.
-
         """
         import control
 
@@ -302,14 +296,10 @@ class LQRegulator(AController):
         self.matS = S
         self.matE = E
 
-        if precomp:
-            # Computation of the precompensation gain
-            iABK = lin.inv(A - B @ self.matK)
-            M = -(C - D @ self.matK) @ iABK @ B + D
-            self.matN = lin.inv(M)
-        else:
-            nout = D.shape[0]
-            self.matN = np.eye(nout)
+        # Computation of the precompensation gain
+        iABK = lin.inv(A - B @ self.matK)
+        M = -(C - D @ self.matK) @ iABK @ B + D
+        self.matN = lin.inv(M)
 
     def resetCallback(self, t0: float):
         super().resetCallback(t0)

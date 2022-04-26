@@ -148,7 +148,10 @@ class Simulation(object):
             yield comp, ddict["output_port"], ddict["input_port"]
 
     def __init_sim(
-        self, clist: Iterable[str], t0: float, error_on_unconnected: bool = True,
+        self,
+        clist: Iterable[str],
+        t0: float,
+        error_on_unconnected: bool = True,
     ):
         for cname in clist:
             comp = self.getComputerByName(cname)

@@ -230,7 +230,7 @@ class TestSatellite(TestBase):
         fig = plt.figure()
         ep = EarthPlotter()
         axe = ep.createAxe(fig)
-        ep.plotTrajectory(axe, traj)
+        ep.plotTrajectory(axe, traj, color="red")
         ep.plotDeviceReach(axe, coord=pt, elev_min=pi / 8, sat_alt=600e3)
         ep.plotPoint(axe, coord=pt)
 

@@ -474,7 +474,7 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         """Turns the continous system into a discrete one
 
         Args:
-            dt: Fixed time step of the simulation
+            dt: Fixed time step of the simulation (s)
             method: Discretization method:
 
               * gbt: generalized bilinear transformation
@@ -560,7 +560,7 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
 
     Args:
         name: Name of the element
-        dt: Time step used for solving the Discrete Algebraic Riccati Equation
+        dt: Time step used for solving the Discrete Algebraic Riccati Equation (s)
         shape_cmd: Shape of the command
         snames_state: Name of each of the scalar components of the state.
           Its shape defines the shape of the data

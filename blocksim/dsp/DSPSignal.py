@@ -145,7 +145,7 @@ class DSPSignal(DSPLine, ASetPoint):
 
     @classmethod
     def fromLogger(cls, name: str, log: "Logger", param: str) -> "DSPSignal":
-        """Builds a signal from a `blocksim.Logger.Logger`
+        """Builds a signal from a `blocksim.loggers.Logger.Logger`
 
         Args:
             name: Name of the signal

@@ -11,7 +11,7 @@ hookspec = pluggy.HookspecMarker("blocksim")
 
 
 class LoggerSpec(object):
-    """Specification for all plugins that extend the `blocksim.Logger.Logger` capacities"""
+    """Specification for all plugins that extend the `blocksim.loggers.Logger.Logger` capacities"""
 
     @hookspec
     def test_suitable(self, uri: Path) -> bool:
@@ -30,7 +30,7 @@ class LoggerSpec(object):
         """Load log file
 
         Args:
-            log: The `blocksim.Logger.Logger` that contains the data
+            log: The `blocksim.loggers.Logger.Logger` that contains the data
             uri: The path or URI where the data will be written
 
         Return:
@@ -40,11 +40,11 @@ class LoggerSpec(object):
 
     @hookspec
     def getRawValue(self, log: "Logger", name: str) -> "array":
-        """If implemented, subsequent calls to `blocksim.Logger.Logger.getRawValue` will use this method.
-        Otherwise, the internal dictionary of `blocksim.Logger.Logger` is used.
+        """If implemented, subsequent calls to `blocksim.loggers.Logger.Logger.getRawValue` will use this method.
+        Otherwise, the internal dictionary of `blocksim.loggers.Logger.Logger` is used.
 
         Args:
-            log: The `blocksim.Logger.Logger` that contains the data
+            log: The `blocksim.loggers.Logger.Logger` that contains the data
             name: Name of the variable to read
 
         Return:
@@ -57,7 +57,7 @@ class LoggerSpec(object):
         """Export the log into a file
 
         Args:
-            log: The `blocksim.Logger.Logger` that contains the data
+            log: The `blocksim.loggers.Logger.Logger` that contains the data
             uri: The path or URI to write in
 
         Return:

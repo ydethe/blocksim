@@ -189,7 +189,9 @@ class Output(ABaseNode):
         self.__data = valid_data
         self.__tdata = self.process(valid_data)
 
-    def _getUnprocessedData(self,) -> "array":
+    def _getUnprocessedData(
+        self,
+    ) -> "array":
         """Gets the data for the Output
 
         Returns:
@@ -198,7 +200,9 @@ class Output(ABaseNode):
         """
         return self.__data.copy()
 
-    def getData(self,) -> "array":
+    def getData(
+        self,
+    ) -> "array":
         """Gets the data for the Output
 
         Returns:
@@ -504,7 +508,7 @@ class AComputer(ABaseNode):
         """Gets the list of output vectors for a computer's output
 
         Args:
-            logger: A `blocksim.Logger.Logger` that contains the values
+            logger: A `blocksim.loggers.Logger.Logger` that contains the values
             output_name
                 Name of an output. For example, for a sensor, *measurement*
             dtype
@@ -824,7 +828,12 @@ class DummyComputer(AComputer):
         self.defineOutput("xout", snames=["x"], dtype=np.int64)
         self.setInitialStateForOutput(np.array([0]), output_name="xout")
 
-    def update(self, t1: float, t2: float, **inputs,) -> dict:
+    def update(
+        self,
+        t1: float,
+        t2: float,
+        **inputs,
+    ) -> dict:
         outputs = {}
         outputs["xout"] = np.array([0])
 

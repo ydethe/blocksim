@@ -11,7 +11,7 @@ class ADelayLine(metaclass=ABCMeta):
     __slots__ = []
 
     @abstractmethod
-    def addSample(self, t: float, sample: np.complex128):
+    def addSample(self, t: float, sample: np.complex128):  # pragma: no cover
         """Adds a sample in the delay line
 
         Args:
@@ -22,7 +22,7 @@ class ADelayLine(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def getDelayedSample(self, delay: float) -> np.complex128:
+    def getDelayedSample(self, delay: float) -> np.complex128:  # pragma: no cover
         """Interpolates at time delay in the delay line
 
         Args:

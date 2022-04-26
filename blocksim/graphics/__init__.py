@@ -1,5 +1,5 @@
 """Advanced plotting functions.
-Allows plotting from a `blocksim.Logger.Logger`, or from `blocksim.dsp.DSPLine.DSPLine`
+Allows plotting from a `blocksim.loggers.Logger.Logger`, or from `blocksim.dsp.DSPLine.DSPLine`
 3D plot around Earth are also possible
 
 """
