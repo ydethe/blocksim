@@ -486,10 +486,12 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
               The generalized bilinear transformation weighting parameter, which should only be specified with method=”gbt”, and is ignored otherwise
 
         Returns:
-            Ad: Discrete state matrix
-            Bd: Discrete input matrix
-            Cd: Discrete output matrix
-            Dd: Discrete direct term
+            A tuple of 4 matrices:
+
+            * Ad: Discrete state matrix
+            * Bd: Discrete input matrix
+            * Cd: Discrete output matrix
+            * Dd: Discrete feedthrough matrix
 
         """
         sys = (self.matA, self.matB, self.matC, self.matD)

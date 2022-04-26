@@ -256,7 +256,8 @@ class LQRegulator(AController):
         self,
         precomp: bool = True,
     ):
-        """Computes the optimal gain K, and the correct precompensation gain N
+        """Computes the optimal gain K, and the correct precompensation gain N.
+        Called automatically at beginning of simulation
 
         K minimizes the quadratic cost:
 
@@ -281,8 +282,7 @@ class LQRegulator(AController):
         * matN : precompensation gain
 
         Args:
-          precomp
-            If True, also computes the N matrix such as for a setpoint c,
+          precomp: If True, also computes the N matrix such as for a setpoint c,
             the command u = N.c - K.x suppresses the steady-state error.
 
         """
@@ -311,6 +311,11 @@ class LQRegulator(AController):
             nout = D.shape[0]
             self.matN = np.eye(nout)
 
+    def resetCallback(self, t0:float):
+        super().resetCallback(t0)
+
+        self.computeGain()
+        
     def update(
         self,
         t1: float,

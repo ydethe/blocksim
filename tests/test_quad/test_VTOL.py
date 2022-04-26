@@ -56,7 +56,6 @@ class TestPVTOL(TestBase):
         self.ctl.matC = np.zeros((3, 6))
         self.ctl.matC[:, 0:3] = np.eye(3)
         self.ctl.matD = np.zeros((3, 3))
-        self.ctl.computeGain()
 
         self.stp = Step(
             "stp",
@@ -164,7 +163,6 @@ class TestPVTOLComplex(TestBase):
         ctlvtol.matC = np.zeros((3, 6))
         ctlvtol.matC[:, 0:3] = np.eye(3)
         ctlvtol.matD = np.zeros((3, 3))
-        ctlvtol.computeGain()
 
         att_sys = Quadri(name="sys", mot=mot0)
         x0 = att_sys.getInitialStateForOutput("state")

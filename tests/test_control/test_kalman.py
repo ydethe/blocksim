@@ -221,7 +221,6 @@ class TestKalman(TestBase):
         ctl.matD = kal.matD
         ctl.matQ = np.eye(2) / 10000
         ctl.matR = np.eye(1) / 100
-        ctl.computeGain()
 
         stp = Step(name="stp", snames=["c"], cons=np.array([1]))
 
