@@ -58,7 +58,7 @@ The use of https://pypi.org/project/intel-scipy/ and https://ahrs.readthedocs.io
 
 To run tests, just run:
 
-    python3 -m pytest -n 4 --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
+    python3 -m pytest -n 8 --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
 
 Once the tests are run, the code coverage is available. To have a html version in the htmlcov folder, run:
 
@@ -66,7 +66,7 @@ Once the tests are run, the code coverage is available. To have a html version i
 
 If needed (for example, a new test with its associated baseline image), we might have to regenerate the baseline images. In this case, run:
 
-    python3 -m pytest -n 4 --mpl-generate-path=tests/baseline tests
+    python3 -m pytest -n 8 --mpl-generate-path=tests/baseline tests
 
 # Build the doc
 

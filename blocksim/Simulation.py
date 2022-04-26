@@ -7,7 +7,6 @@ from uuid import UUID
 
 import tqdm
 import numpy as np
-from scipy import linalg as lin
 import matplotlib.animation as animation
 from matplotlib import pyplot as plt
 import networkx as nx
@@ -161,10 +160,18 @@ class Simulation(object):
         # While updating computers modifies the state of the outputs,
         # we keep on updating computers
         modif = 10.0
-        while modif > 1e-6:
+        iloop = 0
+        while modif > 1e-6 and iloop < 10:
+            iloop += 1
+
             try:
                 dmodif = self.update(
-                    clist, t0, t0, error_on_unconnected=error_on_unconnected, noexc=True
+                    clist,
+                    t0,
+                    t0,
+                    error_on_unconnected=error_on_unconnected,
+                    noexc=True,
+                    nolog=True,
                 )
                 modif = np.sum([x for x in dmodif.values() if not np.isnan(x)])
                 logger.debug(f"modif: {dmodif}")
@@ -175,6 +182,8 @@ class Simulation(object):
                 modif = 10.0
                 logger.debug(f"modif: {modif}")
 
+        self.update(clist, t0, t0, error_on_unconnected=error_on_unconnected)
+
     def update(
         self,
         clist: Iterable[str],
@@ -182,6 +191,7 @@ class Simulation(object):
         t2: float,
         error_on_unconnected: bool = True,
         noexc: bool = False,
+        nolog: bool = False,
     ) -> float:
         """Steps the simulation, and logs all the outputs of the computers
 
@@ -200,6 +210,17 @@ class Simulation(object):
             idata = {}
             for src, oport, iport in self.getInputStream(cname):
                 idata[iport] = src.getDataForOutput(oport)
+
+            # Check completness of input data
+            for itp in comp.getListInputs():
+                iname=itp.getName()
+                if not iname in idata.keys():
+                    if error_on_unconnected:
+                        raise UnconnectedInput(cname,iname)
+                    else:
+                        idata[iname] = itp.getDefaultInputData()
+
+            # Gives output data for computers that need self looping
             for otp in comp.getListOutputs():
                 oname = otp.getName()
                 idata[oname] = otp.getData()
@@ -207,24 +228,27 @@ class Simulation(object):
             try:
                 odata = comp.update(t1, t2, **idata)
             except BaseException as e:
-                # logger.error(f"While updating {cname}")
                 if noexc:
                     continue
                 else:
+                    logger.error(f"While updating {cname}")
                     raise e
 
             for otp in comp.getListOutputs():
                 oname = otp.getName()
                 dat = np.atleast_1d(odata[oname])
                 u = dat - otp._getUnprocessedData()
-                u2 = lin.norm(u)
+                u2 = np.nansum(u*np.conj(u), dtype=np.float64)
                 modif[f"{cname}.{oname}"] = u2
+                if cname == "ctl" and oname == "command":
+                    modif[f"{cname}.{oname}.dat"] = dat
                 otp.setData(dat, cname=cname)
                 for n, x in otp.iterScalarNameValue():
-                    if comp.isLogged:
+                    if comp.isLogged and not nolog:
                         self.__logger.log(name="%s_%s_%s" % (cname, oname, n), val=x)
 
-        self.__logger.log(name="t", val=t2)
+        if not nolog:
+            self.__logger.log(name="t", val=t2)
 
         return modif
 
@@ -376,6 +400,7 @@ class Simulation(object):
             >>> el = DummyComputer('el', with_input=False)
             >>> sim = Simulation()
             >>> sim.addComputer(el)
+            >>> sim.simulate([0], progress_bar=False)
             >>> sim.getComputerOutputByName('el.xout')
             array([0]...
             >>> sim.getComputerOutputByName('el.xout[0]')
@@ -391,7 +416,7 @@ class Simulation(object):
 
         c = self.getComputerByName(comp_name)
         otp = c.getOutputByName(out_name)
-        data = otp.getDataForFrame(frame)
+        data = otp.getData()
         if idx is None:
             return data
         else:

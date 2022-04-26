@@ -366,6 +366,13 @@ class AKalmanFilter(AEstimator):
 
         return xest, K, P
 
+    # def resetCallback(self, t0:float):
+    #     super().resetCallback(t0)
+
+    #     state = self.getOutputByName("state")
+
+    #     state.setInitialState(X0)
+
     def update(
         self,
         t1: float,

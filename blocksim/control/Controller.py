@@ -287,7 +287,6 @@ class LQRegulator(AController):
 
         """
         import control
-
         control.use_numpy_matrix(flag=False)
 
         Q = self.matQ
@@ -297,7 +296,7 @@ class LQRegulator(AController):
         C = self.matC
         D = self.matD
 
-        K, S, E = control.lqr(A, B, Q, R)
+        K, S, E = control.lqr(A, B, Q, R, method='scipy')
 
         self.matK = K
         self.matS = S

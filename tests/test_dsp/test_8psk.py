@@ -112,7 +112,7 @@ class Test8PSK(TestBase):
 
         ber = len(np.where(ref != est)[0]) / ntot
 
-        self.assertLess(ber, 1.4e-2)
+        self.assertLess(ber, 2.5e-2)
 
         fig = plt.figure()
         axe = fig.add_subplot(111)

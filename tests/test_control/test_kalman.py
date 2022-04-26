@@ -42,11 +42,7 @@ class TestKalman(TestBase):
         sys.setInitialStateForOutput(np.array([-1.0, 0.0]), "state")
 
         kal = SteadyStateKalmanFilter(
-            "kal",
-            dt=dt,
-            shape_cmd=(1,),
-            snames_state=["x", "v"],
-            snames_output=["x"],
+            "kal", dt=dt, shape_cmd=(1,), snames_state=["x", "v"], snames_output=["x"],
         )
         kal.matA = sys.matA
         kal.matB = sys.matB
@@ -66,8 +62,8 @@ class TestKalman(TestBase):
         self.assertAlmostEqual(err_mean, 0, delta=1e-9)
 
         a = 8
-        P = -k + 3 * a**2 * m
-        I = a**3 * m
+        P = -k + 3 * a ** 2 * m
+        I = a ** 3 * m
         D = 3 * a * m
         Umin = -100
         Umax = 100
@@ -147,8 +143,8 @@ class TestKalman(TestBase):
         self.assertAlmostEqual(err_mean, 0, delta=1e-9)
 
         a = 8
-        P = -k + 3 * a**2 * m
-        I = a**3 * m
+        P = -k + 3 * a ** 2 * m
+        I = a ** 3 * m
         D = 3 * a * m
         ctl = PIDController(
             "ctl", shape_estimation=(2,), snames=["u"], coeffs=(P, I, D)
@@ -199,10 +195,7 @@ class TestKalman(TestBase):
         sys.setInitialStateForOutput(np.array([-1.0, 0.0]), "state")
 
         kal = TimeInvariantKalmanFilter(
-            "kal",
-            shape_cmd=(1,),
-            snames_state=["x", "v", "b"],
-            snames_output=["x"],
+            "kal", shape_cmd=(1,), snames_state=["x", "v", "b"], snames_output=["x"],
         )
         kal.matA = np.zeros((3, 3))
         kal.matA[:2, :2] = sys.matA
@@ -276,7 +269,7 @@ if __name__ == "__main__":
 
     a = TestKalman()
     # a.test_ss_kal()
-    # a.test_ti_kal()
-    a.test_awc_kal()
+    a.test_ti_kal()
+    # a.test_awc_kal()
 
     plt.show()

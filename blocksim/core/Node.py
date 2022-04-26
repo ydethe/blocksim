@@ -36,6 +36,9 @@ class Input(ABaseNode):
             self.__shape = shape
         self.__dtype = dtype
 
+    def getDefaultInputData(self)->'array':
+        return np.zeros(self.getDataShape(), dtype=self.getDataType())
+        
     def __repr__(self):
         s = "%s%s" % (self.getName(), self.getDataShape())
         return s
@@ -293,8 +296,6 @@ class TFOutput(Output):
         self.setInitialState(initial_state=np.array([0], dtype=dtype))
 
     def resetCallback(self, t0: float):
-        super().resetCallback(t0)
-
         filt = self.getComputer()
         typ = self.getDataType()
 
@@ -306,6 +307,8 @@ class TFOutput(Output):
         nb = len(self.__b_taps)
         self.__a_buf = CircularBuffer(size=na, dtype=typ)
         self.__b_buf = CircularBuffer(size=nb, dtype=typ)
+
+        super().resetCallback(t0)
 
     def processSample(self, sample: np.complex128) -> np.complex128:
         self.__a_buf.append(self.__yprev)

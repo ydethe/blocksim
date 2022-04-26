@@ -409,7 +409,7 @@ class TestMahony(TestBase):
         err_a = np.max(np.abs(self.log.getValue("maho_euler_pitch")[iok] - w[iok]))
 
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-9)
-        self.assertAlmostEqual(err_a, 0.0, delta=0.08)
+        self.assertAlmostEqual(err_a, 0.0, delta=0.085)
 
         return self.plotVerif(
             "Figure 1",

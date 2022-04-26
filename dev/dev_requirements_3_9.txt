@@ -16,7 +16,7 @@ panda3d==1.10.7
 cartopy==0.18.0
 pluggy==1.0.0
 typer==0.4.1
-control==0.9.0
+control==0.9.1
 pandas==1.4.2
 openpyxl==3.0.9
 parse==1.19.0

@@ -389,10 +389,7 @@ if __name__ == "__main__":
     a.test_gnss_ranging()
 
     # a.setUp()
-    # a.test_gnss_bancroft()
-
-    # a.setUp()
     # a.test_gnss_doppler()
 
-    # a.setUp()
-    # a.test_gnss_dv()
+    a.setUp()
+    a.test_gnss_dv()

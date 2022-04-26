@@ -14,7 +14,7 @@ from sqlalchemy.orm import sessionmaker
 
 from .Logger import Logger
 from ..exceptions import *
-from ..DatabaseModel import (
+from ..db.DatabaseModel import (
     Base,
     Simulation,
     IntegerSerie,

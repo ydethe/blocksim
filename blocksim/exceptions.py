@@ -267,18 +267,6 @@ class UnknownOutput(Exception):
         )
 
 
-class UnknownInput(Exception):
-    def __init__(self, elem_name, input_name):
-        self.elem_name = elem_name
-        self.input_name = input_name
-
-    def __str__(self):
-        return "For element '%s' : the input '%s' does not exist" % (
-            self.elem_name,
-            self.input_name,
-        )
-
-
 class DenormalizedQuaternion(Exception):
     def __init__(self, elem_name, q):
         self.elem_name = elem_name
@@ -289,3 +277,11 @@ class DenormalizedQuaternion(Exception):
             "For element '%s' : the attitude quaternion '%s' has a norm different from 1 : %f"
             % (self.elem_name, self.q, np.sum(self.q**2))
         )
+
+class UnconnectedInput(Exception):
+    def __init__(self, cname, iname):
+        self.cname = cname
+        self.iname = iname
+
+    def __str__(self):
+        return f"{self.cname}.{self.iname} not connected"

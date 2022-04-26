@@ -17,7 +17,7 @@ Example:
 >>> # We set the initial position to -1, and the initial velocity to 0
 >>> sys.setInitialStateForOutput(np.array([-1.0, 0.0]), "state")
 >>> ctl = PIDController("ctl", shape_estimation=(2,), snames=["u"], coeffs=(1.0, 0.0, 0.0))
->>> sim = Simulation([sys, ctl])
+>>> sim = Simulation(sys, ctl)
 >>> sim.connect("sys.state", "ctl.estimation")
 >>> sim.connect("ctl.command", "sys.command")
 >>> sim.simulate(np.arange(200) / 100, error_on_unconnected=False)
