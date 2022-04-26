@@ -26,6 +26,10 @@ blocksim comes with some CLI utilities.
 
 [See examples](../examples/index.html)
 
+# Coverage
+
+[See coverage](../coverage/index.html)
+
 # Class diagram
 
 ![classes](./classes.png "Class diagram")
