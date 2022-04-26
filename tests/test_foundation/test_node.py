@@ -7,11 +7,11 @@ from numpy import cos, sin, sqrt, exp
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.core.Node import Frame
 from blocksim.control.SetPoint import Step
 from blocksim.control.System import ASystem
 from blocksim.control.Controller import PIDController
 from blocksim.Simulation import Simulation
+from blocksim.graphics import plotGraph
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase, plotAnalyticsolution
@@ -68,6 +68,12 @@ class TestSimpleControl(TestBase):
         sim.connect(src_name="ctl.command", dst_name="sys.command")
         sim.connect(src_name="sys.state", dst_name="ctl.estimation")
         sim.connect(src_name="stp.setpoint", dst_name="ctl.setpoint")
+
+        # import networkx as nx
+        # g=sim.computeGraph()
+        # assert not nx.is_directed_acyclic_graph(g)
+        # axe=plotGraph(g)
+        # return axe.figure
 
         tps = np.arange(0, 2, 0.01)
         sim.simulate(tps, progress_bar=False)

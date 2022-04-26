@@ -2,7 +2,6 @@ import numpy as np
 from numpy import exp, pi, sqrt, cos, sin, tan
 from scipy import linalg as lin
 
-from ..core.Frame import Frame
 from ..core.Node import AComputer, AWGNOutput
 from .DSPSignal import DSPSignal
 
@@ -216,7 +215,7 @@ class DSPChannel(AComputer):
 
         return dist, vrad, azim, elev, L_atm, dt_atm
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

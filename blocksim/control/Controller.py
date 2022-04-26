@@ -3,7 +3,6 @@ from typing import Iterable
 import numpy as np
 from scipy import linalg as lin
 
-from ..core.Frame import Frame
 from ..core.Node import AComputer
 from .System import LTISystem
 
@@ -19,7 +18,7 @@ __all__ = [
 class AController(AComputer):
     """Abstract class for a scalar controller
 
-    Implement the method **compute_outputs** to make it concrete
+    Implement the method **update** to make it concrete
 
     The inputs of the computer are **estimation** and **setpoint**
     The output of the computer is **command**
@@ -90,14 +89,14 @@ class PIDController(AController):
         self.createParameter("I", value=I)
         self.createParameter("D", value=D)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
-        integral: np.array,
-        setpoint: np.array,
-        estimation: np.array,
-        command: np.array,
+        integral: "array",
+        setpoint: "array",
+        estimation: "array",
+        command: "array",
     ) -> dict:
         (ix,) = integral
         x = estimation[0]
@@ -169,7 +168,7 @@ class AntiWindupPIDController(AController):
         self.createParameter("Umax", value=Umax)
         self.createParameter("Ks", value=Ks)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -313,7 +312,7 @@ class LQRegulator(AController):
             nout = D.shape[0]
             self.matN = np.eye(nout)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

@@ -54,7 +54,7 @@ class Motor(ASystem):
         dX = np.array([ds])
         return dX
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -62,7 +62,7 @@ class Motor(ASystem):
         state: np.array,
         vel: np.array,
     ) -> dict:
-        outputs = super().compute_outputs(t1, t2, command, state)
+        outputs = super().update(t1, t2, command, state)
 
         (s,) = outputs["state"]
         (ds,) = self.transition(t2, (s,), command)

@@ -1,16 +1,20 @@
-from typing import Iterable
+"""Simulation classs implementation
+
+"""
+
+from typing import Iterable, Tuple
 from uuid import UUID
 
 import tqdm
 import numpy as np
+from scipy import linalg as lin
 import matplotlib.animation as animation
 from matplotlib import pyplot as plt
 import networkx as nx
 
 from .exceptions import *
-from .core.Frame import Frame
 from .core.Node import Input, Output, AComputer, DummyComputer
-from .Logger import Logger
+from .loggers.Logger import Logger
 from . import logger
 
 __all__ = ["Simulation"]
@@ -22,17 +26,19 @@ class Simulation(object):
     Also logs all the simulated values
 
     Args:
-        computers: list of `blocksim.core.Node.AComputer` to add to the simulation. Can be done later with `Simulation.addComputer`
+        computers: list of `blocksim.core.Node.AComputer` to add to the simulation. Can be done later with `blocksim.Simulation.addComputer`
 
     """
 
-    def __init__(self, computers: Iterable[AComputer] = []):
-        self.__computers = []
+    __slots__ = ["__logger", "__graph"]
+
+    def __init__(self, *computers: Iterable[AComputer]):
         self.__logger = Logger()
+        self.__graph = nx.MultiDiGraph()
         for c in computers:
             self.addComputer(c)
 
-    def getComputersList(self) -> Iterable[AComputer]:
+    def iterComputersList(self) -> Iterable[AComputer]:
         """Returns the list of all the computers of the simulation.
 
         Returns:
@@ -42,12 +48,14 @@ class Simulation(object):
             >>> el = DummyComputer('el')
             >>> sim = Simulation()
             >>> sim.addComputer(el)
-            >>> for e in sim.getComputersList():
+            >>> for e in sim.iterComputersList():
             ...     print(e.getName())
             el
 
         """
-        return self.__computers
+        for n, data in self.__graph.nodes(data=True):
+            comp = data["computer"]
+            yield comp
 
     def addComputer(self, *computers: Iterable[AComputer]):
         """Adds one or several computers to the simulation
@@ -67,15 +75,11 @@ class Simulation(object):
                     "Cannot log variables with '_' in their name (got '%s')" % name
                 )
 
-            for c in self.__computers:
+            for c in self.iterComputersList():
                 if c.getName() == name:
                     raise DuplicateElement(c.getName())
 
-            # Controllers shall be updated last
-            if comp.isController():
-                self.__computers.append(comp)
-            else:
-                self.__computers.insert(0, comp)
+            self.__graph.add_node(name, computer=comp)
 
     def removeComputer(self, *computers: Iterable[AComputer]):
         """Removes one or several computers to the simulation.
@@ -85,15 +89,10 @@ class Simulation(object):
             computers: List of AComputer to be removed
 
         """
-        csim_names = [c.getName() for c in self.__computers]
-
         for comp in computers:
             name = comp.getName()
 
-            if name in csim_names:
-                icomp = csim_names.index(name)
-                self.__computers.pop(icomp)
-                csim_names = [c.getName() for c in self.__computers]
+            self.__graph.remove_node(name)
 
     def getComputerByName(self, name: str) -> AComputer:
         """Returns the computer named *name*
@@ -105,11 +104,11 @@ class Simulation(object):
             KeyError: If no computer has the name *name*
 
         """
-        for c in self.__computers:
-            if c.getName() == name:
-                return c
+        data = dict(self.__graph.nodes(data="computer", default=None))
 
-        raise KeyError(name)
+        comp = data[name]
+
+        return comp
 
     def getComputerById(self, cid: UUID) -> AComputer:
         """Returns the computer with given id
@@ -124,33 +123,110 @@ class Simulation(object):
             KeyError: If no element has the id *cid*
 
         """
-        for c in self.__computers:
+        for c in self.iterComputersList():
             if c.getID() == cid:
                 return c
 
         raise KeyError(cid)
 
-    def update(self, frame: Frame, error_on_unconnected: bool = True):
+    def getParentComputers(self, cname: str) -> Iterable[AComputer]:
+        for p in self.__graph.predecessors(cname):
+            yield self.getComputerByName(p)
+
+    def getInputStream(self, cname: str) -> Iterable[Tuple[AComputer, str, str]]:
+        """Iterates over the source computer and the connected ports
+
+        Yields:
+            A (src,oport,iport) tuple, where:
+
+            * src is the source computer
+            * oport is the name of the connected source's output
+            * iport is the name of the connected computer's input
+
+        """
+        for (u, v, ddict) in self.__graph.in_edges(nbunch=cname, data=True):
+            comp = self.getComputerByName(u)
+            yield comp, ddict["output_port"], ddict["input_port"]
+
+    def __init_sim(
+        self,
+        clist: Iterable[str],
+        t0: float,
+        error_on_unconnected: bool = True,
+    ):
+        for cname in clist:
+            comp = self.getComputerByName(cname)
+            comp.resetCallback(t0)
+
+        # While updating computers modifies the state of the outputs,
+        # we keep on updating computers
+        modif = 10.0
+        while modif > 1e-6:
+            try:
+                dmodif = self.update(
+                    clist, t0, t0, error_on_unconnected=error_on_unconnected, noexc=True
+                )
+                modif = np.sum([x for x in dmodif.values() if not np.isnan(x)])
+                logger.debug(f"modif: {dmodif}")
+            except KeyboardInterrupt:
+                break
+            except BaseException as e:
+                raise e
+                modif = 10.0
+                logger.debug(f"modif: {modif}")
+
+    def update(
+        self,
+        clist: Iterable[str],
+        t1: float,
+        t2: float,
+        error_on_unconnected: bool = True,
+        noexc: bool = False,
+    ) -> float:
         """Steps the simulation, and logs all the outputs of the computers
 
         Args:
-            frame: Time frame
+            clist: List of the computers' name, topologically ordered
+            t1: Current simulation time (s)
+            t2: New simulation time (s)
+            error_on_unconnected: True to raise an exception is an input is not connected.
+                If an input is not connected and error_on_unconnected is False, the input will be padded with zeros
 
         """
-        # Controllers shall be updated last
-        for c in self.__computers:
-            c_name = c.getName()
-            for oid in c.getListOutputsIds():
-                otp = c.getOutputById(oid)
-                o_name = otp.getName()
-                for n, x in otp.iterScalarNameValue(
-                    frame, error_on_unconnected=error_on_unconnected
-                ):
-                    if c.isLogged:
-                        self.__logger.log(name="%s_%s_%s" % (c_name, o_name, n), val=x)
+        modif = {}
 
-        t = frame.getStopTimeStamp()
-        self.__logger.log(name="t", val=t)
+        for cname in clist:
+            comp = self.getComputerByName(cname)
+            idata = {}
+            for src, oport, iport in self.getInputStream(cname):
+                idata[iport] = src.getDataForOutput(oport)
+            for otp in comp.getListOutputs():
+                oname = otp.getName()
+                idata[oname] = otp.getData()
+
+            try:
+                odata = comp.update(t1, t2, **idata)
+            except BaseException as e:
+                # logger.error(f"While updating {cname}")
+                if noexc:
+                    continue
+                else:
+                    raise e
+
+            for otp in comp.getListOutputs():
+                oname = otp.getName()
+                dat = np.atleast_1d(odata[oname])
+                u = dat - otp._getUnprocessedData()
+                u2 = lin.norm(u)
+                modif[f"{cname}.{oname}"] = u2
+                otp.setData(dat, cname=cname)
+                for n, x in otp.iterScalarNameValue():
+                    if comp.isLogged:
+                        self.__logger.log(name="%s_%s_%s" % (cname, oname, n), val=x)
+
+        self.__logger.log(name="t", val=t2)
+
+        return modif
 
     def simulate(
         self,
@@ -173,17 +249,33 @@ class Simulation(object):
         Returns:
             The matplotlib FuncAnimation if fig is not None
 
+        Raises:
+            CyclicGraph if the simulation graph contains a cycle after Controllers disconnection
+
         """
-        # self.__logger.allocate(len(tps))
+        # Remove cycles in Simulation graph
+        # sg=nx.MultiDiGraph()
+        # sg.add_nodes_from(self.__graph)
+
+        # for comp in self.iterComputersList():
+        #     cname = comp.getName()
+        #     for (u, _, ddict) in self.__graph.in_edges(nbunch=cname,data=True):
+        #         if not comp.isController():
+        #             sg.add_edge(u,cname,**ddict)
+
+        # if not nx.is_directed_acyclic_graph(sg):
+        #     cycle=nx.find_cycle(sg, orientation="original")
+        #     raise CyclicGraph(cycle)
+
+        # clist=list(nx.topological_sort(sg))
+
+        clist = [c.getName() for c in self.iterComputersList()]
 
         self.__logger.reset()
 
-        frame = Frame(start_timestamp=tps[0], stop_timestamp=tps[0])
+        t0 = tps[0]
 
-        for c in self.__computers:
-            c.resetCallback(frame)
-
-        self.update(frame, error_on_unconnected=error_on_unconnected)
+        self.__init_sim(clist, t0, error_on_unconnected=error_on_unconnected)
 
         if progress_bar and fig is None:
             itr = tqdm.tqdm(range(len(tps) - 1))
@@ -191,9 +283,9 @@ class Simulation(object):
             itr = range(len(tps) - 1)
 
         def _anim_func(k):
-            dt = tps[k + 1] - tps[k]
-            frame.updateByStep(dt)
-            self.update(frame, error_on_unconnected=error_on_unconnected)
+            self.update(
+                clist, tps[k], tps[k + 1], error_on_unconnected=error_on_unconnected
+            )
 
         if fig is None:
             for k in itr:
@@ -224,7 +316,7 @@ class Simulation(object):
 
     def connect(self, src_name: str, dst_name: str):
         """Links an computer with another, so that the state of the source is connected to the input of the destination.
-        Both src and dst must have been added with `Simulation.addComputer`
+        Both src and dst must have been added with `blocksim.Simulation.addComputer`
 
         Args:
             src_name: Source computer. Example : sys.output
@@ -246,29 +338,23 @@ class Simulation(object):
                     src_name, otp.getDataShape(), dst_name, inp.getDataShape()
                 )
 
-        inp.setOutput(otp)
+        self.__graph.add_edge(
+            src_comp_name,
+            dst_comp_name,
+            output_port=src_out_name,
+            input_port=dst_in_name,
+        )
 
-    def computeGraph(self) -> nx.DiGraph:
+    def computeGraph(self) -> nx.MultiDiGraph:
         """Computes the simulation graph. The result can be plotted thanks to `blocksim.graphics.plotGraph`
 
         Returns:
-            The simulation graph as an instance of nx.DiGraph
+            The simulation graph as an instance of nx.MultiDiGraph
 
         """
-        g = nx.DiGraph()
-        for c in self.getComputersList():
-            g.add_node(c.getName())
+        return self.__graph.copy()
 
-        for dst in self.getComputersList():
-            for inp in dst.getListInputs():
-                otp = inp.getOutput()
-                if not otp is None:
-                    src = otp.getComputer()
-                    g.add_edge(src.getName(), dst.getName())
-
-        return g
-
-    def getComputerOutputByName(self, frame: Frame, name: str) -> "array":
+    def getComputerOutputByName(self, name: str) -> "array":
         """Returns the data of the computer's output
         The *name* of the data is designated by :
         <computer>.<output>[coord]
@@ -278,7 +364,6 @@ class Simulation(object):
         * coord is optional, and is the number of the scalar in the data vector
 
         Args:
-            frame: The current time frame
             name: Name of the data. If it does not exist, raises KeyError
 
         Returns:
@@ -291,10 +376,9 @@ class Simulation(object):
             >>> el = DummyComputer('el', with_input=False)
             >>> sim = Simulation()
             >>> sim.addComputer(el)
-            >>> frame = Frame()
-            >>> sim.getComputerOutputByName(frame, 'el.xout')
+            >>> sim.getComputerOutputByName('el.xout')
             array([0]...
-            >>> sim.getComputerOutputByName(frame, 'el.xout[0]')
+            >>> sim.getComputerOutputByName('el.xout[0]')
             0
 
         """

@@ -48,7 +48,7 @@ class OFDMMapping(ADSPComputer):
         self.createParameter("dataCarriers", value=dataCarriers)
         self.createParameter("pilotValue", value=pilotValue)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -130,7 +130,7 @@ class OFDMDemapping(ADSPComputer):
         self.createParameter("dataCarriers", value=list(dataCarriers))
         self.createParameter("pilotValue", value=pilotValue)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

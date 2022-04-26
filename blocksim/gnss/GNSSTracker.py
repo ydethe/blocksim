@@ -101,7 +101,7 @@ class GNSSTracker(ASensors):
         self.setMean(np.zeros(6 * nsat), oname="ephemeris")
         self.setCovariance(np.zeros((6 * nsat, 6 * nsat)), oname="ephemeris")
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

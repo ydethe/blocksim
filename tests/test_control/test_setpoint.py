@@ -7,7 +7,6 @@ from numpy import cos, sin, sqrt, exp, pi
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.core.Node import Frame
 from blocksim.control.SetPoint import (
     Step,
     InterpolatedSetPoint,

@@ -60,7 +60,7 @@ class DSPSignal(DSPLine, ASetPoint):
         self.name_of_x_var = "Time"
         self.unit_of_x_var = "s"
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -145,7 +145,7 @@ class DSPSignal(DSPLine, ASetPoint):
 
     @classmethod
     def fromLogger(cls, name: str, log: "Logger", param: str) -> "DSPSignal":
-        """Builds a signal from a `Logger.Logger`
+        """Builds a signal from a `blocksim.Logger.Logger`
 
         Args:
             name: Name of the signal
@@ -286,10 +286,10 @@ class DSPSignal(DSPLine, ASetPoint):
         """Applies the discrete Fourier transform
 
         Args:
-            win: The window to be applied. See `dsp.get_window`
+            win: The window to be applied. See `blocksim.dsp.get_window`
 
         Returns:
-            The resulting `dsp.DSPSpectrum`
+            The resulting `blocksim.dsp.DSPSpectrum.DSPSpectrum`
 
         """
         from .DSPSpectrum import DSPSpectrum
@@ -334,7 +334,7 @@ class DSPSignal(DSPLine, ASetPoint):
 
         Args:
             y: The DSPSignal to correlate with
-            win : The type of window to create. See `dsp.get_window` for more details.
+            win : The type of window to create. See `blocksim.dsp.get_window` for more details.
 
         Returns:
             The resulting DSPSignal

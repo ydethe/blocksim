@@ -10,8 +10,7 @@ from scipy.signal import firwin, cont2discrete, TransferFunction
 from ..exceptions import *
 from .System import LTISystem
 from ..core.Node import AComputer, Input, Output
-from ..core.Frame import Frame
-from ..Logger import Logger
+from ..loggers.Logger import Logger
 from ..dsp.DSPSpectrogram import DSPSpectrogram
 from ..dsp.DSPFilter import ArbitraryDSPFilter
 from ..utils import quat_to_euler, euler_to_quat, assignVector
@@ -46,7 +45,9 @@ class ConvergedGainMatrix(Output):
         cov0 = np.zeros(nc, dtype=dtype)
         self.setInitialState(cov0)
 
-    def resetCallback(self, frame: Frame):
+    def resetCallback(self, t0: float):
+        super().resetCallback(t0)
+
         # from control import dare
         from scipy.linalg import solve_discrete_are as dare
 
@@ -104,7 +105,9 @@ class ConvergedStateCovariance(Output):
         cov0 = np.zeros(nc, dtype=dtype)
         self.setInitialState(cov0)
 
-    def resetCallback(self, frame: Frame):
+    def resetCallback(self, t0: float):
+        super().resetCallback(t0)
+
         # from control import dare
         from scipy.linalg import solve_discrete_are as dare
 
@@ -139,7 +142,7 @@ class ConvergedStateCovariance(Output):
 class AEstimator(AComputer):
     """Abstract class for a state estimator
 
-    Implement the method **compute_outputs** to make it concrete
+    Implement the method **update** to make it concrete
 
     The input name of the element are **command** and **measurement**
     The outputs of the computer are **state** and **output**
@@ -363,7 +366,7 @@ class AKalmanFilter(AEstimator):
 
         return xest, K, P
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -612,7 +615,7 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         otp = self.getOutputByName("matK")
         return otp.getConvergedGainMatrix()
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -801,7 +804,7 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
 
         return spg
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -896,7 +899,7 @@ class MadgwickFilter(AComputer):
         """
         return self.mag_offsets.copy(), self.mag_softiron_matrix.copy()
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -1164,7 +1167,7 @@ class MahonyFilter(AComputer):
         """
         return self.mag_offsets.copy(), self.mag_softiron_matrix.copy()
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

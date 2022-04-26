@@ -1,3 +1,7 @@
+"""A set of useful functions
+
+"""
+
 import os
 import sys
 import glob
@@ -79,7 +83,7 @@ def resource_path(resource: str, package: str = "blocksim") -> str:
         The path to the resource
 
     Examples:
-      >>> pth = resource_path('dummy.txt')
+        >>> pth = resource_path('dummy.txt')
 
     """
     from importlib import import_module
@@ -121,7 +125,7 @@ def verif_mat_diag(A: "array") -> bool:
     return True
 
 
-def calc_cho(A: np.array) -> "array":
+def calc_cho(A: "array") -> "array":
     """Returns the cholesky decomposition C of a symetric matrix A:
 
     $$ A = C.C^T $$
@@ -189,7 +193,7 @@ def assignVector(
         Copy of the vector v if no problem encountered
 
     Raises:
-        ValueError: If the vector is not a> "array" or not with the correct shape
+        ValueError: If the vector is not a np.array or not with the correct shape
 
     Examples:
         >>> v = np.arange(5)
@@ -298,7 +302,7 @@ def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> "array":
     return res
 
 
-def matrix_to_quat(R: np.array) -> Iterable[float]:
+def matrix_to_quat(R: "array") -> Iterable[float]:
     """
 
     Examples:
@@ -486,7 +490,7 @@ def euler_to_quat(roll: float, pitch: float, yaw: float) -> Iterable[float]:
     return qr, qi, qj, qk
 
 
-def vecBodyToEarth(attitude: np.array, x: np.array) -> "array":
+def vecBodyToEarth(attitude: "array", x: "array") -> "array":
     """Expresses a vector from the body frame to the Earth's frame
 
     Args:
@@ -508,7 +512,7 @@ def vecBodyToEarth(attitude: np.array, x: np.array) -> "array":
     return R @ x
 
 
-def vecEarthToBody(attitude: np.array, x: np.array) -> "array":
+def vecEarthToBody(attitude: "array", x: "array") -> "array":
     """Expresses a vector from Earth's frame to the body's frame
 
     Args:
@@ -570,7 +574,7 @@ def anomaly_true_to_mean(ecc: float, v: float) -> float:
     return M
 
 
-def build_env(pos: np.array) -> "array":
+def build_env(pos: "array") -> "array":
     """Builds a ENV frame at a given position
 
     Args:
@@ -916,7 +920,7 @@ def datetime_to_skyfield(td: datetime) -> Time:
     Converts a datetime struct to a skyfield Time struct
 
     Args:
-        td : a datetime instance or array of datetime to convert
+        td: a datetime instance or array of datetime to convert
 
     Returns:
         Skyfield date and time structure. See https://rhodesmill.org/skyfield/api-time.html#skyfield.timelib.Time
@@ -958,8 +962,8 @@ def pdot(u: "array", v: "array") -> float:
         u: First quadri-vector
         v: Second quadri-vector
 
-      Returns:
-          Pseudo scalar product
+    Returns:
+        Pseudo scalar product
 
     """
     return u[0] * v[0] + u[1] * v[1] + u[2] * v[2] - u[3] * v[3]
@@ -983,7 +987,7 @@ def cexp(x):
 
 def load_antenna_config(config: str):
     """Loads a module located at the given path
-    Used in `dsp.AntennaNetwork.AntennaNetwork`
+    Used in `blocksim.dsp.AntennaNetwork.AntennaNetwork`
 
     Args:
         config: path to a python file

@@ -22,7 +22,7 @@ class IMU(ASensors):
             snames=["gx", "gy", "gz", "ax", "ay", "az", "mx", "my", "mz"],
         )
 
-    def compute_outputs(
+    def update(
         self, t1: float, t2: float, state: np.array, measurement: np.array
     ) -> dict:
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = state

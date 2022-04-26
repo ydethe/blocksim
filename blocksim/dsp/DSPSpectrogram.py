@@ -183,7 +183,7 @@ class DSPSpectrogram(object):
             low: The min value to clamp to (dB)
 
         Returns:
-            The function to map on a complex time serie
+            The function to map on a complex map
 
         Examples:
             >>> f = DSPLine.to_db_lim(low=-80)

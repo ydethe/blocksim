@@ -28,7 +28,7 @@ class TestRTPlotter(TestBase):
         sig = DSPSignal(name="sig", samplingStart=0, samplingPeriod=dt, y_serie=z)
 
         im = {}
-        im["z"] = [0], {}
+        im["z"] = [0], {"label": "sig"}
 
         rtp = RTPlotter(name="rtp", axe=axe, input_map=im)
 

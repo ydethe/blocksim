@@ -25,7 +25,7 @@ class GenericComputer(AComputer):
 
     Examples:
         >>> com = GenericComputer("com", shape_in=(5,), shape_out=(1,), callable=np.sum, dtype_in=np.int64, dtype_out=np.int64)
-        >>> out = com.compute_outputs(t1=0, t2=1, xin=np.arange(5), xout=None)
+        >>> out = com.update(t1=0, t2=1, xin=np.arange(5), xout=None)
         >>> out["xout"]
         10
 
@@ -52,7 +52,7 @@ class GenericComputer(AComputer):
         )
         self.createParameter("callable", value=callable)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

@@ -2,7 +2,6 @@ import numpy as np
 from numpy import log10, exp, pi, sqrt, cos, sin
 from scipy.signal import firwin2, firwin, lfilter_zi, lfilter
 
-from ..core.Frame import Frame
 from ..core.Node import AComputer, Input, AWGNOutput
 from .DSPSignal import DSPSignal
 
@@ -94,7 +93,7 @@ class DSPAWGN(AComputer):
         otp = self.getOutputByName("noisy")
         return otp.mean
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

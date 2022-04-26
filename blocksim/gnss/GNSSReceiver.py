@@ -9,7 +9,6 @@ from skyfield.api import Topos, load
 from skyfield import framelib
 
 from ..core.Node import AComputer, Output
-from ..core.Frame import Frame
 
 from .. import logger
 from ..utils import datetime_to_skyfield, skyfield_to_datetime, build_env
@@ -53,9 +52,9 @@ class UEPositionOutput(Output):
 
         return np.hstack((ps, vs))
 
-    def resetCallback(self, frame: Frame):
-        """Resets the element internal state to zero."""
-        dt = timedelta(seconds=frame.getStartTimeStamp())
+    def resetCallback(self, t0: float):
+        super().resetCallback(t0)
+        dt = timedelta(seconds=t0)
         td = self.__tsync + dt
         state = self.getGeocentricITRFPositionAt(td)
         self.setInitialState(state)
@@ -535,74 +534,24 @@ class GNSSReceiver(AComputer):
 
             return G * mult
 
-        def bancroft():
-            a = np.empty(nsat)
-            B = np.empty((nsat, 4))
-            nval = -1
-            for k in range(nsat):
-                spos = self.getSatellitePositionFromEphem(ephem, k)
-                pr = self.getPseudorangeFromMeas(meas, k)
-                if np.isnan(pr):
-                    continue
-                nval += 1
-                a[nval] = 0.5 * (spos @ spos - pr**2)
-                B[nval, :3] = spos
-                B[nval, 3] = -pr
+        bnd = np.ones(4)
 
-            a = a[: nval + 1]
-            B = B[: nval + 1, :]
-            e = np.ones(nval + 1)
+        # jac: CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, trust-constr
+        # bounds: L-BFGS-B, TNC, SLSQP, Powell, trust-constr
+        res = minimize(
+            fun=cout,
+            jac=jac,
+            x0=np.zeros(4),
+            method=self.optim,
+            # options={"maxfev": 100000, "maxiter": 100000},
+            bounds=Bounds(-bnd, bnd),
+        )
+        if not res.success:
+            return None
 
-            Bp = lin.inv(B.T @ B) @ B.T
-            Bpe = Bp @ e
-            Bpa = Bp @ a
-
-            a2 = pdot(Bpe, Bpe)
-            b2 = -2 + 2 * pdot(Bpe, Bpa)
-            c2 = pdot(Bpa, Bpa)
-
-            dlt = b2**2 - 4 * a2 * c2
-            l1 = -b2 / (2 * a2) + np.sqrt(dlt) / (2 * a2)
-            l2 = -b2 / (2 * a2) - np.sqrt(dlt) / (2 * a2)
-
-            u1 = np.dot(Bp, a + l1 * e)
-            u2 = np.dot(Bp, a + l2 * e)
-
-            v1 = np.dot(B, u1) - a - l1 * e
-            v2 = np.dot(B, u2) - a - l2 * e
-            j1 = np.dot(v1, v1)
-            j2 = np.dot(v2, v2)
-
-            if j1 < j2:
-                pos = u1[:3]
-                ct = u1[3]
-            else:
-                pos = u2[:3]
-                ct = u2[3]
-
-            return pos, ct
-
-        if self.optim == "bancroft":
-            pos, dv = bancroft()
-        else:
-            bnd = np.ones(4)
-
-            # jac: CG, BFGS, Newton-CG, L-BFGS-B, TNC, SLSQP, trust-constr
-            # bounds: L-BFGS-B, TNC, SLSQP, Powell, trust-constr
-            res = minimize(
-                fun=cout,
-                jac=jac,
-                x0=np.zeros(4),
-                method=self.optim,
-                # options={"maxfev": 100000, "maxiter": 100000},
-                bounds=Bounds(-bnd, bnd),
-            )
-            if not res.success:
-                return None
-
-            Xu = X0 + mult * res.x
-            pos = Xu[:3]
-            dv = Xu[3]
+        Xu = X0 + mult * res.x
+        pos = Xu[:3]
+        dv = Xu[3]
 
         return np.hstack((pos, np.zeros(3))), dv
 
@@ -637,7 +586,7 @@ class GNSSReceiver(AComputer):
         td = tsync + dt
         return td
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

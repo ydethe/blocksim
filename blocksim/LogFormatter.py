@@ -1,3 +1,7 @@
+"""A formatter for debug logging
+
+"""
+
 import logging
 
 

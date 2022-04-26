@@ -12,7 +12,7 @@ from singleton3 import Singleton
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ..Logger import Logger
+from .Logger import Logger
 from ..exceptions import *
 from ..DatabaseModel import (
     Base,

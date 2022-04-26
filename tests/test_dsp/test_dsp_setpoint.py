@@ -8,7 +8,6 @@ from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.graphics import plotDSPLine
-from blocksim.core.Node import Frame
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.control.System import ASystem
 from blocksim.control.Controller import PIDController

@@ -1,3 +1,7 @@
+"""Some fundamental constants
+
+"""
+
 from numpy import pi
 
 

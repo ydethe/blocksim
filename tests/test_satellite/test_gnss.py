@@ -339,24 +339,6 @@ class TestGNSS(TestBase):
         self.assertAlmostEqual(z, self.z_ref, delta=0.5)
         self.assertAlmostEqual(dp_est, self.tkr.dp, delta=0.5)
 
-    def test_gnss_bancroft(self):
-        self.rec.optim = "bancroft"
-
-        tps = np.linspace(0, 3, 3)
-        self.sim.simulate(tps, progress_bar=False)
-
-        log = self.sim.getLogger()
-
-        x = log.getValue("UE_estpos_x")[-1]
-        y = log.getValue("UE_estpos_y")[-1]
-        z = log.getValue("UE_estpos_z")[-1]
-        dp_est = log.getValue("UE_estclkerror_dp")[-1]
-
-        self.assertAlmostEqual(x, self.x_ref, delta=0.5)
-        self.assertAlmostEqual(y, self.y_ref, delta=0.5)
-        self.assertAlmostEqual(z, self.z_ref, delta=0.5)
-        self.assertAlmostEqual(dp_est, self.tkr.dp, delta=0.5)
-
     def test_gnss_doppler(self):
         self.rec.algo = "doppler"
 

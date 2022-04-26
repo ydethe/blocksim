@@ -64,8 +64,8 @@ class TestMadgwick(TestBase):
 
         sys = G6DOFSystem("sys")
         x0 = np.zeros(13)
-        q = np.array([1 / sqrt(2), 0, 0, -1 / sqrt(2)])
-        w = np.array([0.0, 0.0, 5.0])
+        q = np.array([1.0, 0.0, 0.0, 0.0])
+        w = np.array([0.0, 0.0, 0.2])
         x0[6:10] = q
         x0[10:13] = w
         sys.setInitialStateForOutput(x0, output_name="state")
@@ -91,14 +91,14 @@ class TestMadgwick(TestBase):
         )
 
         ctrl = PIDController(
-            name="ctrl", shape_estimation=2, snames=["u"], coeffs=[10.0, 1.0, 0.0]
+            name="ctrl", shape_estimation=2, snames=["u"], coeffs=[1.0, 0.0, 0.0]
         )
 
         mux = GenericComputer(
             name="mux",
-            shape_in=(3,),
+            shape_in=(4,),
             shape_out=(2,),
-            callable=lambda x: np.array([x[2], x[0]]),
+            callable=lambda x: np.array([x[3], 0.0]),
             dtype_in=np.float64,
             dtype_out=np.float64,
         )
@@ -107,18 +107,18 @@ class TestMadgwick(TestBase):
 
         sim.addComputer(stp)
         sim.addComputer(sys)
-        sim.addComputer(imu)
-        sim.addComputer(est)
         sim.addComputer(demux)
         sim.addComputer(mux)
         sim.addComputer(ctrl)
+        sim.addComputer(imu)
+        sim.addComputer(est)
 
         sim.connect("stp.setpoint", "ctrl.setpoint")
         sim.connect("ctrl.command", "demux.xin")
         sim.connect("demux.xout", "sys.command")
         sim.connect("sys.state", "imu.state")
         sim.connect("imu.measurement", "madg.measurement")
-        sim.connect("madg.euler", "mux.xin")
+        sim.connect("madg.state", "mux.xin")
         sim.connect("mux.xout", "ctrl.estimation")
 
         tps = np.arange(200) * self.dt
@@ -126,7 +126,9 @@ class TestMadgwick(TestBase):
         self.log = sim.getLogger()
 
         fig = self.plotVerif(
-            "ctrl", [{"var": "deg(madg_euler_yaw)"}, {"var": "deg(sys_euler_yaw)"}]
+            "ctrl",
+            [{"var": "deg(madg_euler_yaw)"}, {"var": "deg(sys_euler_yaw)"}],
+            [{"var": "ctrl_command_u"}],
         )
 
         return fig
@@ -138,7 +140,7 @@ class TestMadgwick(TestBase):
         null_acc_meas[-1] = 1
         self.assertRaises(
             TooWeakAcceleration,
-            self.est.compute_outputs,
+            self.est.update,
             0,
             1,
             measurement=null_acc_meas,
@@ -150,7 +152,7 @@ class TestMadgwick(TestBase):
         null_mag_meas[3] = 1
         self.assertRaises(
             TooWeakMagneticField,
-            self.est.compute_outputs,
+            self.est.update,
             0,
             1,
             measurement=null_mag_meas,
@@ -348,7 +350,7 @@ class TestMahony(TestBase):
         null_acc_meas[-1] = 1
         self.assertRaises(
             TooWeakAcceleration,
-            self.est.compute_outputs,
+            self.est.update,
             0,
             1,
             measurement=null_acc_meas,
@@ -360,7 +362,7 @@ class TestMahony(TestBase):
         null_mag_meas[3] = 1
         self.assertRaises(
             TooWeakMagneticField,
-            self.est.compute_outputs,
+            self.est.update,
             0,
             1,
             measurement=null_mag_meas,
@@ -475,7 +477,7 @@ if __name__ == "__main__":
 
     a = TestMadgwick()
     a.setUp()
-    # a.test_madgwick_cl()
-    a.test_madgwick_pitch()
+    a.test_madgwick_cl()
+    # a.test_madgwick_pitch()
 
     plt.show()

@@ -1,3 +1,6 @@
+"""Exceptions defined for blocksim
+"""
+
 import numpy as np
 import scipy.linalg as lin
 

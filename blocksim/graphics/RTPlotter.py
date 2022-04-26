@@ -1,7 +1,6 @@
 import numpy as np
 
 from .. import logger
-from ..core.Frame import Frame
 from ..core.Node import AComputer, Input
 
 
@@ -33,25 +32,21 @@ class RTPlotter(AComputer):
         self.createParameter(name="input_map", value=input_map, read_only=True)
         self.createParameter(name="axe", value=axe)
 
-    def resetCallback(self, frame: Frame):
+    def resetCallback(self, t0: float):
+        super().resetCallback(t0)
+
         self.axe.grid(True)
 
         self.__lines = []
         for k in self.input_map.keys():
-            itp = self.getInputByName(k)
-            otp = itp.getOutput()
-            snames = otp.getScalarNames()
             selected_input, kwargs = self.input_map[k]
-            cname = otp.getComputer().getName()
-            oname = otp.getName()
             for si in selected_input:
-                lbl = "%s_%s_%s" % (cname, oname, snames[si])
-                (line,) = self.axe.plot([], [], label=lbl, **kwargs)
+                (line,) = self.axe.plot([], [], **kwargs)
                 self.__lines.append(line)
 
         self.axe.legend()
 
-    def compute_outputs(self, t1, t2, **inputs):
+    def update(self, t1, t2, **inputs):
         _ = inputs.pop("data")
 
         res = []

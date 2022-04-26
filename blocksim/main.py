@@ -1,11 +1,13 @@
-# main.py
+"""Implementation of entry points for the CLI program
+
+"""
 
 from typing import Tuple
 import os
 import argparse
 
 from . import logger
-from .Logger import Logger
+from .loggers.Logger import Logger
 
 import typer
 

@@ -49,7 +49,7 @@ class PSKMapping(ADSPComputer):
         self.createParameter("cmapping", value=exp(1j * self.mapping), read_only=True)
         self.createParameter("bmapping", value=2 ** np.arange(mu), read_only=True)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -149,7 +149,7 @@ class PSKDemapping(ADSPComputer):
         self.createParameter("mapping", value=np.array(mapping), read_only=True)
         self.createParameter("cmapping", value=exp(1j * self.mapping), read_only=True)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

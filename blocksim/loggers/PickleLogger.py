@@ -7,7 +7,7 @@ import pluggy
 import pandas as pd
 from singleton3 import Singleton
 
-from ..Logger import Logger
+from .Logger import Logger
 from .. import logger
 from ..exceptions import *
 

@@ -94,7 +94,7 @@ class TestSatellite(TestBase):
         for s in sats:
             traj = Trajectory(name=s.getName(), color="red")
             for t in tps:
-                dat = s.compute_outputs(t1=t, t2=t, itrf=None, subpoint=None)
+                dat = s.update(t1=t, t2=t, itrf=None, subpoint=None)
                 x, y, z, vx, vy, vz = dat["itrf"]
                 traj.addPosition(t, x, y, z)
             sp.plotTrajectory(axe, traj, linewidth=4)
@@ -103,7 +103,7 @@ class TestSatellite(TestBase):
         for s in sats:
             traj = Trajectory(name=s.getName(), color="blue")
             for t in tps:
-                dat = s.compute_outputs(t1=t, t2=t, itrf=None, subpoint=None)
+                dat = s.update(t1=t, t2=t, itrf=None, subpoint=None)
                 x, y, z, vx, vy, vz = dat["itrf"]
                 traj.addPosition(t, x, y, z)
             sp.plotTrajectory(axe, traj)
@@ -124,12 +124,12 @@ class TestSatellite(TestBase):
             mano=0,  # mean anomaly (radians)
             node=0,  # nodeo: right ascension of ascending node (radians)
         )
-        pv0 = satellite.compute_outputs(0, 0, subpoint=None, itrf=None)["itrf"]
+        pv0 = satellite.update(0, 0, subpoint=None, itrf=None)["itrf"]
 
         r = satellite.orbit_periapsis
         ws = sqrt(mu / r**3)
         t = 2 * pi / (ws - satellite.orbital_precession - omega)
-        pv = satellite.compute_outputs(0, t, subpoint=None, itrf=None)["itrf"]
+        pv = satellite.update(0, t, subpoint=None, itrf=None)["itrf"]
 
         err = lin.norm(pv - pv0)
         self.assertAlmostEqual(err, 0, delta=1700)
@@ -194,7 +194,7 @@ class TestSatellite(TestBase):
 
         dt = satellite.orbit_period
         t = dt.total_seconds()
-        pv = satellite.compute_outputs(0, t, subpoint=None, itrf=None)["itrf"]
+        pv = satellite.update(0, t, subpoint=None, itrf=None)["itrf"]
 
         traj = satellite.geocentricITRFTrajectory(
             number_of_periods=1, number_of_position=100

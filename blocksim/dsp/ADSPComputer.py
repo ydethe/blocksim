@@ -54,7 +54,7 @@ class ADSPComputer(AComputer):
         )
 
     def process(self, data: "array") -> "array":
-        """Batch processes an input stream by calling compute_outputs.
+        """Batch processes an input stream by calling update.
 
         Args:
             data: A stream of input data
@@ -87,7 +87,7 @@ class ADSPComputer(AComputer):
         comp_args = dict()
         comp_args[self.output_name] = None
         comp_args[self.input_name] = data
-        outputs = self.compute_outputs(t1=0, t2=0, **comp_args)
+        outputs = self.update(t1=0, t2=0, **comp_args)
 
         return outputs[self.output_name].astype(typ)
 
@@ -169,7 +169,7 @@ class DummyDSPComputer(ADSPComputer):
             output_dtype=np.int64,
         )
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

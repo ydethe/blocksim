@@ -7,7 +7,6 @@ from numpy import cos, sin, sqrt, exp, pi
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.core.Node import Frame
 from blocksim.control.SetPoint import Step
 from blocksim.control.System import LTISystem, TransferFunctionSystem
 from blocksim.Simulation import Simulation
@@ -43,14 +42,14 @@ class TestSystem(TestBase):
         inner = np.zeros(2)
         u = 1
         for i in range(ns - 1):
-            outputs = sys.compute_outputs(
+            outputs = sys.update(
                 t1=t[i], t2=t[i + 1], command=np.array([u]), state=state, inner=inner
             )
             state = outputs["state"]
             inner = outputs["inner"]
             ybs[i] = state[0]
 
-        outputs = sys.compute_outputs(
+        outputs = sys.update(
             t1=t[ns - 1],
             t2=t[ns - 1] + dt,
             command=np.array([u]),

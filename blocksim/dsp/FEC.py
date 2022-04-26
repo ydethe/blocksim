@@ -53,7 +53,7 @@ class FECCoder(ADSPComputer):
     def k_cc(self):
         return len(self.G)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -107,7 +107,7 @@ class FECDecoder(ADSPComputer):
     def k_cc(self):
         return len(self.G)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

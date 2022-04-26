@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from numpy import pi
 
-from ..Logger import Logger
+from ..loggers.Logger import Logger
 from ..utils import itrf_to_geodetic
 
 

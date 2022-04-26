@@ -19,7 +19,7 @@ from matplotlib.backend_bases import Event
 import networkx as nx
 
 from .. import logger
-from ..Logger import Logger
+from ..loggers.Logger import Logger
 from ..dsp.DSPFilter import ADSPFilter, ArbitraryDSPFilter
 from ..dsp.DSPLine import DSPLine
 from ..dsp.DSPSpectrogram import DSPSpectrogram
@@ -597,6 +597,9 @@ def plotGraph(G, pos=None, axe_spec=None, **kwds):
             See networkx.drawing.layout for functions that compute node positions.
         axe_spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
         kwds: See link above
+
+    Returns
+        The actual axe used for plotting
 
     """
     if axe_spec is None:

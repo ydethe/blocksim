@@ -73,7 +73,9 @@ class Test8PSK(TestBase):
         grp_inp["in0"] = (1,)
         grp_inp["in1"] = (1,)
         grp_inp["in2"] = (1,)
-        grp = Group(name="grp", inputs=grp_inp, snames=["g0", "g1", "g2"])
+        grp = Group(
+            name="grp", inputs=grp_inp, snames=["g0", "g1", "g2"], dtype=np.int32
+        )
 
         psk_co = PSKMapping(name="map", mapping=mapping, output_size=1)
         awgn = DSPAWGN(

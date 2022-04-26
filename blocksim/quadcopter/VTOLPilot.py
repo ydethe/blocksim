@@ -47,7 +47,7 @@ class VTOLPilot(LQRegulator):
         self.createParameter(name="pitch_d_max", value=np.pi / 180 * 45)
         self.createParameter(name="roll_d_max", value=np.pi / 180 * 45)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

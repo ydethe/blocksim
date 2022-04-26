@@ -49,7 +49,7 @@ class DSPSpectrum(DSPLine):
         """Applies the inverse discrete Fourier transform
 
         Args:
-            win: The window to be applied. See `dsp.get_window`
+            win: The window to be applied. See `blocksim.dsp.get_window`
 
         Returns:
           The resulting DSPSignal

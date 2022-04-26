@@ -8,7 +8,6 @@ from scipy import linalg as lin
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.core.Node import Frame
 from blocksim.control.SetPoint import Step
 from blocksim.control.System import LTISystem, G6DOFSystem
 from blocksim.control.Controller import (
@@ -277,7 +276,7 @@ if __name__ == "__main__":
 
     a = TestKalman()
     # a.test_ss_kal()
-    a.test_ti_kal()
-    # a.test_awc_kal()
+    # a.test_ti_kal()
+    a.test_awc_kal()
 
     plt.show()

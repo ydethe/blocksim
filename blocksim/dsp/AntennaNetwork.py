@@ -125,7 +125,7 @@ class AntennaNetwork(AComputer):
 
         return diag
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

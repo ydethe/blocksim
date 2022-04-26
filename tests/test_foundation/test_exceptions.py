@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 
 from blocksim.exceptions import *
-from blocksim.Logger import Logger
+from blocksim.loggers.Logger import Logger
 from blocksim.Simulation import Simulation
 from blocksim.control.System import LTISystem, G6DOFSystem
 from blocksim.control.SetPoint import Rectangular, Step
@@ -30,7 +30,7 @@ class DummyTestElement(AComputer):
         self.createParameter("ns", 0)
         self.createParameter("no", 0)
 
-    def compute_outputs(
+    def update(
         self, t1: float, t2: float, output: np.array, state: np.array, **inputs
     ) -> dict:
         n = self.getOutputByName("state").getDataShape()[0]
@@ -125,7 +125,7 @@ class TestExceptions(TestBase):
         sys.setInitialStateForOutput(np.zeros(13), "state")
         self.assertRaises(
             DenormalizedQuaternion,
-            sys.compute_outputs,
+            sys.update,
             0,
             1,
             command=np.zeros(6),

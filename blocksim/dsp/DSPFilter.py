@@ -86,19 +86,18 @@ class ADSPFilter(AComputer):
         """
         pass
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
         unfilt: np.array,
         filt: np.array,
     ) -> dict:
-        otp = self.getOutputByName("filt")
-
         assert len(unfilt) == 1
-        filt = otp.processSample(unfilt[0])
+
+        # The actual filtering is made in TFOutput
         outputs = {}
-        outputs["filt"] = np.array([filt])
+        outputs["filt"] = unfilt
 
         return outputs
 
@@ -257,7 +256,7 @@ class ArbitraryDSPFilter(ADSPFilter):
         """
         FIR filter design using the window method.
 
-        From the given frequencies `freq` and corresponding gains `gain`,
+        From the given frequencies *freq* and corresponding gains *gain*,
         this function constructs an FIR filter with linear phase and
         (approximately) the given frequency response.
 

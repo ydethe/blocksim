@@ -4,7 +4,6 @@ from itertools import product
 import numpy as np
 from scipy.interpolate import interp1d
 
-from ..core.Frame import Frame
 from ..core.Node import AComputer
 
 
@@ -21,7 +20,7 @@ __all__ = [
 class ASetPoint(AComputer):
     """Abstract class for a set point
 
-    Implement the method **compute_outputs** to make it concrete
+    Implement the method **update** to make it concrete
 
     This element has no input
     The output name of the computer is **setpoint**
@@ -63,7 +62,7 @@ class Step(ASetPoint):
         otp = self.getOutputByName("setpoint")
         otp.setInitialState(cons)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -162,7 +161,7 @@ class InterpolatedSetPoint(ASetPoint):
         )
         self.interpolators[iscal] = f
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -235,7 +234,7 @@ class Sinusoid(ASetPoint):
 
         return x0
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -275,7 +274,7 @@ class Ramp(ASetPoint):
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=dtype))
         self.createParameter("slopes", value=slopes)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -366,7 +365,7 @@ class Rectangular(ASetPoint):
 
         return res
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

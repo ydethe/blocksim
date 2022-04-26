@@ -15,7 +15,6 @@ import scipy.linalg as lin
 
 from ..exceptions import *
 from ..utils import vecBodyToEarth, vecEarthToBody, quat_to_euler
-from ..core.Frame import Frame
 from ..core.Node import AComputer
 
 
@@ -103,7 +102,7 @@ class ASystem(AComputer):
         """
         return
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -117,7 +116,7 @@ class ASystem(AComputer):
         if t1 != t2:
             try:
                 state = self.__integ.integrate(t2)
-            except Exception as e:
+            except BaseException as e:
                 print(72 * "=")
                 print("When updating '%s'" % self.getName())
                 print("t", t1)
@@ -309,11 +308,10 @@ class G6DOFSystem(ASystem):
         self.createParameter("J", np.eye(3) * 1e-3)
         self.createParameter("max_q_denorm", 1e-6)
 
-    def vecBodyToEarth(self, frame: Frame, x: "array") -> "array":
+    def vecBodyToEarth(self, x: "array") -> "array":
         """Expresses a vector from the body frame to the Earth's frame
 
         Args:
-            frame: The time frame
             x: Vector expressed in the body frame
 
         Returns:
@@ -321,12 +319,14 @@ class G6DOFSystem(ASystem):
 
         """
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = self.getDataForOutput(
-            frame, name="state"
+            oname="state"
         )
         return vecBodyToEarth(np.array([qw, qx, qy, qz]), x)
 
-    def vecEarthToBody(self, frame: Frame, x: "array") -> "array":
+    def vecEarthToBody(self, x: "array") -> "array":
         """Expresses a vector from Earth's frame to the body's frame
+
+        Args:
             x: Vector expressed in Earth's frame
 
         Returns:
@@ -334,7 +334,7 @@ class G6DOFSystem(ASystem):
 
         """
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = self.getDataForOutput(
-            frame, name="state"
+            oname="state"
         )
         return vecEarthToBody(np.array([qw, qx, qy, qz]), x)
 
@@ -351,12 +351,15 @@ class G6DOFSystem(ASystem):
         )
 
         dvx, dvy, dvz = force / self.m
+
         dwx, dwy, dwz = lin.inv(self.J) @ (-np.cross(w, self.J @ w) + torque)
         dqw, dqx, dqy, dqz = 0.5 * W @ q
+
         dX = np.array([vx, vy, vz, dvx, dvy, dvz, dqw, dqx, dqy, dqz, dwx, dwy, dwz])
+
         return dX
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -524,7 +527,7 @@ class TransferFunctionSystem(AComputer):
         Ad, Bd, Cd, Dd, dt = cont2discrete(sys, self.dt, method=method, alpha=alpha)
         return Ad, Bd, Cd, Dd
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

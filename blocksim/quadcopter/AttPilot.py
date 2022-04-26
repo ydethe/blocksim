@@ -81,7 +81,7 @@ class AttPilot(AController):
     def mot(self) -> Motor:
         return self.sys.mot
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

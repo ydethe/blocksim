@@ -196,16 +196,14 @@ class ASatellite(AComputer):
 
         for i in range(number_of_position):
             t = i * dt
-            output = self.compute_outputs(t - dt, t, itrf=None, subpoint=None)
+            output = self.update(t - dt, t, itrf=None, subpoint=None)
             x[i], y[i], z[i], _, _, _ = output["itrf"]
 
         traj = Trajectory(name=self.getName(), x=x, y=y, z=z, color=color)
 
         return traj
 
-    def compute_outputs(
-        self, t1: float, t2: float, subpoint: "array", itrf: "array"
-    ) -> dict:
+    def update(self, t1: float, t2: float, subpoint: "array", itrf: "array") -> dict:
         outputs = {}
         outputs["itrf"] = self.getGeocentricITRFPositionAt(t2)
         outputs["subpoint"] = np.array(self.subpoint(outputs["itrf"]))

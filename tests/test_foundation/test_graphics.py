@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.Logger import Logger
+from blocksim.loggers.Logger import Logger
 from blocksim.graphics import (
     plotFromLogger,
     createFigureFromSpec,

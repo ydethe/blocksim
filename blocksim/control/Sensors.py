@@ -6,7 +6,6 @@ from scipy import linalg as lin
 from .. import logger
 from ..exceptions import *
 from ..core.Node import AComputer, AWGNOutput
-from ..core.Frame import Frame
 
 
 __all__ = [
@@ -23,7 +22,7 @@ __all__ = [
 class ASensors(AComputer):
     """Abstract class for a set of sensors
 
-    Implement the method **compute_outputs** to make it concrete,
+    Implement the method **update** to make it concrete,
     and call `ASensors.setCovariance` and `ASensors.setMean`
 
     The input of the computer is **state**
@@ -141,7 +140,7 @@ class ProportionalSensors(ASensors):
         )
         self.createParameter("matC", value=0)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -200,7 +199,7 @@ class LinearSensors(ASensors):
         self.createParameter("matC", value=0)
         self.createParameter("matD", value=0)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -239,7 +238,7 @@ class StreamSensors(AComputer):
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=otp.getDataType()))
         self.createParameter("strm_data", value=strm_data)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

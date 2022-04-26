@@ -5,7 +5,6 @@ from types import FunctionType
 import numpy as np
 from scipy import linalg as lin
 
-from ..core.Frame import Frame
 from ..core.Node import AComputer
 
 
@@ -24,7 +23,7 @@ class IQExtract(AComputer):
 
     Examples:
         >>> iqe=IQExtract('iqe')
-        >>> out = iqe.compute_outputs(t1=0,t2=1,signal=np.array([1-2*1j]),iq=np.array([0]))
+        >>> out = iqe.update(t1=0,t2=1,signal=np.array([1-2*1j]),iq=np.array([0]))
         >>> out['iq']
         array([ 1., -2.]...
 
@@ -37,9 +36,7 @@ class IQExtract(AComputer):
         self.defineInput("signal", shape=(1,), dtype=np.complex128)
         self.defineOutput("iq", snames=["s_i", "s_q"], dtype=np.float64)
 
-    def compute_outputs(
-        self, t1: float, t2: float, signal: np.array, iq: np.array
-    ) -> dict:
+    def update(self, t1: float, t2: float, signal: np.array, iq: np.array) -> dict:
         (z,) = signal
 
         outputs = {}
@@ -69,7 +66,7 @@ class Clip(AComputer):
 
     Examples:
         >>> clp = Clip("clp", signal_shape=(1,), clipping_values={(1,): (None, 1)}, snames=["c0", "c1"])
-        >>> out = clp.compute_outputs(t1=0, t2=1, signal=np.array([3, 3]), clipped=np.zeros(2))
+        >>> out = clp.update(t1=0, t2=1, signal=np.array([3, 3]), clipped=np.zeros(2))
         >>> out["clipped"]
         array([3., 1.]...
 
@@ -93,9 +90,7 @@ class Clip(AComputer):
         self.defineOutput("clipped", snames=snames, dtype=dtype)
         self.createParameter("clipping_values", value=clipping_values)
 
-    def compute_outputs(
-        self, t1: float, t2: float, signal: np.array, clipped: np.array
-    ) -> dict:
+    def update(self, t1: float, t2: float, signal: np.array, clipped: np.array) -> dict:
         res = np.empty(clipped.shape, clipped.dtype)
 
         # Creating iterables, to handle the case where
@@ -139,7 +134,7 @@ class Split(AComputer):
         >>> out = dict()
         >>> out['split'] = [0, 2]
         >>> spt = Split("spt", signal_shape=(5,), outputs=out)
-        >>> out = spt.compute_outputs(t1=0, t2=1, signal=np.arange(5), split=np.zeros(2))
+        >>> out = spt.update(t1=0, t2=1, signal=np.arange(5), split=np.zeros(2))
         >>> out["split"]
         array([0., 2.]...
 
@@ -161,7 +156,7 @@ class Split(AComputer):
             snames = ["spt%i" % x for x in selected_input]
             self.defineOutput(k, snames=snames, dtype=dtype)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -198,7 +193,7 @@ class Group(AComputer):
         >>> inp = dict()
         >>> inp["s1"]=(1,); inp["s2"]=(1,)
         >>> grp = Group("grp", snames=["gs1", "gs2"], inputs=inp)
-        >>> out = grp.compute_outputs(t1=0, t2=1, grouped=np.zeros(2), s1=np.array([2]), s2=np.array([-1]))
+        >>> out = grp.update(t1=0, t2=1, grouped=np.zeros(2), s1=np.array([2]), s2=np.array([-1]))
         >>> out["grouped"]
         array([ 2., -1.]...
 
@@ -219,7 +214,7 @@ class Group(AComputer):
             self.defineInput(k, shape=shape, dtype=dtype)
         self.defineOutput("grouped", snames=snames, dtype=dtype)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,
@@ -250,7 +245,7 @@ class Multiplier(AComputer):
 
     Examples:
         >>> mul = Multiplier("mul", coeff=2 * np.ones((2, 2)))
-        >>> out = mul.compute_outputs(t1=0, t2=1, multiplied=np.ones((2, 2)), signal=np.ones(2))
+        >>> out = mul.update(t1=0, t2=1, multiplied=np.ones((2, 2)), signal=np.ones(2))
         >>> out["multiplied"]
         array([[2., 2.],
                [2., 2.]]...
@@ -285,7 +280,7 @@ class Multiplier(AComputer):
 
         self.defineOutput("multiplied", snames=snames, dtype=dtype)
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

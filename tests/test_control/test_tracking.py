@@ -7,7 +7,7 @@ from numpy import exp, pi, log10, sin, cos
 import matplotlib.pyplot as plt
 import pytest
 
-from blocksim.Logger import Logger
+from blocksim.loggers.Logger import Logger
 from blocksim.control.Estimator import SteadyStateKalmanFilter, SpectrumEstimator
 from blocksim.Simulation import Simulation
 from blocksim.control.Route import IQExtract

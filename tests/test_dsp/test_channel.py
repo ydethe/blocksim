@@ -128,8 +128,6 @@ class TestChannel(TestBase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
-
     a = TestChannel()
     a.setUp()
     a.test_channel()

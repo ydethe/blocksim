@@ -9,7 +9,6 @@ from numpy import sqrt
 from .. import logger
 from ..utils import assignVector, calc_cho
 from ..exceptions import *
-from .Frame import Frame
 from .ABaseNode import ABaseNode
 from .CircularBuffer import CircularBuffer
 
@@ -20,11 +19,6 @@ __all__ = ["Input", "Output", "AWGNOutput", "TFOutput", "AComputer"]
 class Input(ABaseNode):
     """Input node
 
-    The extra attributes  are:
-    * __output, which links the `Node.Input` with an `Node.Output`
-    * __shape, which is the number of scalars in the data expected by the input
-    * __dtype, which is the data type
-
     Args:
         name: Name of the Input
         shape: Shape of the data expected by the input
@@ -32,11 +26,10 @@ class Input(ABaseNode):
 
     """
 
-    __slots__ = ["__output", "__shape", "__dtype"]
+    __slots__ = ["__shape", "__dtype"]
 
     def __init__(self, name: str, shape: tuple, dtype):
         ABaseNode.__init__(self, name)
-        self.__output = None
         if isinstance(shape, int):
             self.__shape = (shape,)
         else:
@@ -47,68 +40,24 @@ class Input(ABaseNode):
         s = "%s%s" % (self.getName(), self.getDataShape())
         return s
 
-    def setOutput(self, output: "Output"):
-        """Sets the output connected to the Input
-
-        Args:
-            output: The connected output
-
-        """
-        self.__output = output
-
     def getDataShape(self) -> int:
         return self.__shape
 
     def getDataType(self) -> int:
         return self.__dtype
 
-    def getOutput(self) -> "Output":
-        """Gets the output connected to the Input
-
-        Returns:
-            The connected output
-
-        """
-        return self.__output
-
-    def getDataForFrame(
-        self, frame: Frame, error_on_unconnected: bool = True
-    ) -> "array":
-        """Gets the data for the given time frame
+    def process(self, data: "array") -> "array":
+        """Applies a transform to the incoming data.
+        By default, does nothing.
 
         Args:
-            frame: Time frame of the simulation
-            error_on_unconnected: Wether to raise an exception if an unconnected inuput is detected
+            data: The array to work on
 
         Returns:
-            The data coming from the connected output
+            The transformed array. Must be the same shape as the input
 
         """
-        otp = self.getOutput()
-
-        if error_on_unconnected and otp is None:
-            raise SimulationGraphError(
-                "The input '%s' is not connected" % self.getName()
-            )
-        elif not error_on_unconnected and otp is None:
-            data = np.zeros(self.getDataShape(), dtype=self.getDataType())
-            oname = "[unconnected]"
-        else:
-            data = otp.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
-            oname = otp.getName()
-
-        valid_data = assignVector(
-            data, self.getDataShape(), self.getName(), oname, self.getDataType()
-        )
-
-        if self.getCurrentFrame() != frame and frame.getTimeStep() == 0:
-            self.resetCallback(frame)
-
-        return valid_data
-
-    def updateAllOutput(self, frame: Frame):
-        """Unused for an input"""
-        pass
+        return data
 
 
 class Output(ABaseNode):
@@ -127,6 +76,7 @@ class Output(ABaseNode):
         "__shape",
         "__dtype",
         "__data",
+        "__tdata",
         "__snames",
         "__initial_state",
     ]
@@ -135,13 +85,32 @@ class Output(ABaseNode):
         ABaseNode.__init__(self, name)
         self.__computer = None
         self.__data = np.array([])
+        self.__tdata = np.array([])
         self.__dtype = dtype
         self.__snames = np.array(snames)
         self.__shape = self.__snames.shape
+        self.setInitialState(np.zeros(self.__shape, dtype=dtype))
+
+    def setComputer(self, comp: "AComputer"):
+        if not self.__computer is None:
+            if self.__computer.getName() != comp.getName():
+                logger.warning(
+                    f"Replacing AComputer associated with Output '{self.getName()}': '{self.__computer.getName()}' to '{comp.getName()}'"
+                )
+
+        self.__computer = comp
+
+    def getComputer(self) -> "AComputer":
+        return self.__computer
 
     def __repr__(self):
         s = "%s%s" % (self.getName(), self.getDataShape())
         return s
+
+    def resetCallback(self, t0: float):
+        super().resetCallback(t0)
+        dat = self.getInitialeState()
+        self.setData(dat)
 
     def setInitialState(self, initial_state: "array"):
         """Sets the element's initial state vector
@@ -168,9 +137,7 @@ class Output(ABaseNode):
         """
         return self.__snames
 
-    def iterScalarNameValue(
-        self, frame: Frame, error_on_unconnected: bool = True
-    ) -> Iterator:
+    def iterScalarNameValue(self) -> Iterator:
         """Iterate through all the data, and yield the name and the value of the scalar
 
         Yields:
@@ -178,7 +145,6 @@ class Output(ABaseNode):
 
         """
         ns = self.getDataShape()
-        dat = self.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
 
         # Creating iterables, to handle the case where
         # the output 'setpoint' is a matrix
@@ -188,7 +154,7 @@ class Output(ABaseNode):
 
         # Iterate over all dimensions
         for iscal in product(*it):
-            yield self.__snames[iscal], dat[iscal]
+            yield self.__snames[iscal], self.__tdata[iscal]
 
     def getInitialeState(self) -> "array":
         """Gets the element's initial state vector
@@ -205,74 +171,74 @@ class Output(ABaseNode):
     def getDataType(self):
         return self.__dtype
 
-    def setComputer(self, computer: "Computer"):
-        """Sets the computer containing the Output
-
-        Args:
-            computer: The computer to be set
-
-        """
-        self.__computer = computer
-
-    def getComputer(self) -> "Computer":
-        """Gets the computer containing the Output
-
-        Returns:
-            The computer set for the output
-
-        """
-        return self.__computer
-
-    def setData(self, data: np.array):
+    def setData(self, data: "array", cname: str = "?"):
         """Sets the data for the Output
+        data is the data **before** applying `Output.process`
 
         Args:
             data: The data for the output
 
         """
-        comp = self.getComputer()
-        nc = comp.getName()
         no = self.getName()
         valid_data = assignVector(
-            data, self.getDataShape(), "%s.%s" % (nc, no), "<arg>", self.__dtype
+            data, self.getDataShape(), "%s.%s" % (cname, no), "<arg>", self.__dtype
         )
         self.__data = valid_data
+        self.__tdata = self.process(valid_data)
 
-    def getDataForFrame(
-        self, frame: Frame, error_on_unconnected: bool = True
+    def _getUnprocessedData(
+        self,
     ) -> "array":
-        """Gets the data for the Output at the given time frame
-        If the given time frame is different from the last one seen by the Output,
-        the update of the simulation is triggered.
+        """Gets the data for the Output
 
-        Args:
-            frame: The time frame
-            error_on_unconnected: Wether to raise an exception if an unconnected inuput is detected
+        Returns:
+            data: The data for the output
 
         """
-        if self.getCurrentFrame() != frame:
-            self.setFrame(frame)
-            if frame.getTimeStep() == 0:
-                self.resetCallback(frame)
-                self.setData(self.getInitialeState())
-            data = self.getComputer().getDataForOutput(
-                frame, self.getID(), error_on_unconnected=error_on_unconnected
-            )
-            self.setData(data)
+        return self.__data.copy()
 
-        return self.__data
+    def getData(
+        self,
+    ) -> "array":
+        """Gets the data for the Output
 
-    def updateAllOutput(self, frame: Frame):
-        """Unused for Output"""
-        pass
+        Returns:
+            data: The data for the output
+
+        """
+        return self.__tdata.copy()
+
+    def process(self, data: "array") -> "array":
+        """Applies a transform to the outgoing data.
+        By default, does nothing.
+        The **transformed** data is stored
+
+        Args:
+            data: The array to work on
+
+        Returns:
+            The transformed array. Must be the same shape as the input
+
+        """
+        return data
 
 
 class AWGNOutput(Output):
 
-    __slots__ = ["mean", "cov", "cho", "cplxe"]
+    __slots__ = ["seed", "mean", "cov", "cho", "cplxe"]
 
-    def resetCallback(self, frame: Frame):
-        """Resets the element internal state to zero."""
+    def __init__(self, name: str, snames: Iterable[str], dtype=np.float64):
+        super().__init__(name, snames, dtype)
+        self.seed = 46351657
+
+        if dtype == np.complex128 or dtype == np.complex64:
+            self.cplxe = True
+        else:
+            self.cplxe = False
+
+    def resetCallback(self, t0: float):
+        np.random.seed(self.seed)
+
         if (
             self.mean.shape[0] != self.cov.shape[0]
             or self.mean.shape[0] != self.cov.shape[1]
@@ -284,13 +250,9 @@ class AWGNOutput(Output):
 
         self.cho = calc_cho(self.cov)
 
-        typ = self.getDataType()
-        if typ == np.complex128 or typ == np.complex64:
-            self.cplxe = True
-        else:
-            self.cplxe = False
+        super().resetCallback(t0)
 
-    def addGaussianNoise(self, state: "array") -> "array":
+    def process(self, state: "array") -> "array":
         """Adds a gaussian noise to a state vector
 
         Args:
@@ -310,29 +272,17 @@ class AWGNOutput(Output):
 
         return state + bg
 
-    def getDataForFrame(
-        self, frame: Frame, error_on_unconnected: bool = True
-    ) -> "array":
-        if self.getCurrentFrame() != frame:
-            self.setFrame(frame)
-            if frame.getTimeStep() == 0:
-                self.setData(self.getInitialeState())
-                self.resetCallback(frame)
-            data = self.getComputer().getDataForOutput(
-                frame, self.getID(), error_on_unconnected=error_on_unconnected
-            )
-            noisy = self.addGaussianNoise(data)
-            self.setData(noisy)
-
-        return super().getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
-
 
 class TFOutput(Output):
     """To be useable, the AComputer that uses TFOutput
     has to implement a generateCoefficients method that returns
     the taps weighting the output.
-    See `dsp.DSPFilter.ADSPFilter.generateCoefficients`
-    The AComputer shall call `TFOutput.processSample` to process samples
+    See `blocksim.dsp.DSPFilter.ADSPFilter.generateCoefficients`
+
+    Args:
+        name: Name of the output
+        snames: List of the names of the outputs
+        dtype: Type of the output
 
     """
 
@@ -342,7 +292,9 @@ class TFOutput(Output):
         Output.__init__(self, name=name, snames=snames, dtype=dtype)
         self.setInitialState(initial_state=np.array([0], dtype=dtype))
 
-    def resetCallback(self, frame: Frame):
+    def resetCallback(self, t0: float):
+        super().resetCallback(t0)
+
         filt = self.getComputer()
         typ = self.getDataType()
 
@@ -369,13 +321,24 @@ class TFOutput(Output):
         self.__yprev = y
         return y
 
+    def process(self, data: "array") -> "array":
+        res = np.empty_like(data)
+        rs = res.shape
+        li = []
+        for d in rs:
+            li.append(range(d))
+        for ind in product(*li):
+            res[ind] = self.processSample(data[ind])
+
+        return res
+
 
 class AComputer(ABaseNode):
     """Abstract class for all the computers of the control chain.
-    A AComputer contains a list of `Node.Input`
-    and a list of `Node.Output`
+    A AComputer contains a list of `Input`
+    and a list of `Output`
 
-    Implement **compute_outputs** to make it concrete
+    Implement **update** to make it concrete
 
     Args:
         name: Name of the element
@@ -542,7 +505,7 @@ class AComputer(ABaseNode):
         """Gets the list of output vectors for a computer's output
 
         Args:
-            logger: A `Logger.Logger` that contains the values
+            logger: A `blocksim.Logger.Logger` that contains the values
             output_name
                 Name of an output. For example, for a sensor, *measurement*
             dtype
@@ -557,9 +520,16 @@ class AComputer(ABaseNode):
         )
         return val
 
+    def resetCallback(self, t0: float):
+        super().resetCallback(t0)
+        for otp in self.getListOutputs():
+            otp.resetCallback(t0)
+        for itp in self.getListInputs():
+            itp.resetCallback(t0)
+
     def isController(self) -> bool:
         """Checks if the element is derived from AController
-        See `control.Controller.AController`
+        See `blocksim.control.Controller.AController`
 
         Returns:
           True if the element is derived from AController
@@ -666,8 +636,8 @@ class AComputer(ABaseNode):
         """
         otp = Output(name=name, snames=snames, dtype=dtype)
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=otp.getDataType()))
-        otp.setComputer(self)
         self.addOutput(otp)
+        otp.setComputer(self)
         return otp
 
     def addOutput(self, otp: Output):
@@ -681,6 +651,7 @@ class AComputer(ABaseNode):
             raise DuplicateOutput(self.getName(), otp.getName())
 
         otp.setComputer(self)
+
         self.__outputs[otp.getID()] = otp
 
     def replaceOutput(self, old_name: str, new_output: Output):
@@ -694,6 +665,7 @@ class AComputer(ABaseNode):
         otp = self.getOutputByName(old_name)
         oid = otp.getID()
         del self.__outputs[oid]
+        new_output.setComputer(self)
         self.addOutput(new_output)
 
     def removeOutput(self, oname: str):
@@ -826,126 +798,20 @@ class AComputer(ABaseNode):
         logger.error("In '%s' : input name not found '%s'" % (self.getName(), name))
         raise UnknownInput(self.getName(), name)
 
-    def getDataForInput(
-        self,
-        frame: Frame,
-        uid: UUID = None,
-        name: str = None,
-        error_on_unconnected: bool = True,
-    ) -> "array":
-        """Gets the data for the given input, either withs its id or with its name
-        One and only one of uid and name shall be given
-
-        Args:
-            frame: The time frame
-            uid: The id of the input
-            name: The name of the input
-
-        Returns:
-            The data
-
-        """
-        if uid is None and name is None:
-            logger.error(
-                "In '%s' : Unable to find input id=%s, name='%s'"
-                % (self.getName(), uid, name)
-            )
-        elif uid is None and not name is None:
-            inp = self.getInputByName(name)
-        elif not uid is None and name is None:
-            inp = self.getInputById(uid)
-        else:
-            logger.error(
-                "In '%s' : Unable to find input id=%s, name='%s'"
-                % (self.getName(), uid, name)
-            )
-
-        data = inp.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
-        return data
-
-    def getDataForOutput(
-        self,
-        frame: Frame,
-        uid: UUID = None,
-        name: str = None,
-        error_on_unconnected: bool = True,
-    ) -> "array":
-        """Gets the data for the given output, either withs its id or with its name
-        One and only one of uid and name shall be given
-
-        Args:
-            frame: The time frame
-            uid: The id of the output
-            name: The name of the output
-            error_on_unconnected: Wether to raise an exception if an unconnected inuput is detected
-
-        Returns:
-            The data
-
-        """
-        if self.getCurrentFrame() != frame:
-            self.setFrame(frame)
-            self.updateAllOutput(frame, error_on_unconnected=error_on_unconnected)
-
-        if uid is None and name is None:
-            logger.error(
-                "In '%s' : Unable to find output id=%s, name='%s'"
-                % (self.getName(), uid, name)
-            )
-        elif uid is None and not name is None:
-            otp = self.getOutputByName(name)
-        elif not uid is None and name is None:
-            otp = self.getOutputById(uid)
-        else:
-            logger.error(
-                "In '%s' : Unable to find output id=%s, name='%s'"
-                % (self.getName(), uid, name)
-            )
-
-        return otp.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
-
-    def getParents(self) -> Iterable["AComputer"]:
-        """Returns the parent computers
-
-        Returns:
-            An iterator on the computers' parents
-
-        """
-        for iid in self.getListInputsIds():
-            inp = self.getInputById(iid)
-            otp = inp.getOutput()
-            c = otp.getComputer()
-            yield c
+    def getDataForOutput(self, oname: str) -> "array":
+        otp = self.getOutputByName(name=oname)
+        return otp.getData()
 
     @abstractmethod
-    def compute_outputs(self, **inputs: dict) -> dict:  # pragma: no cover
-        pass
-
-    def updateAllOutput(self, frame: Frame, error_on_unconnected: bool = True):
-        """Updates all the outputs of the Computer
+    def update(self, **inputs: dict) -> dict:  # pragma: no cover
+        """Method used to update a Node.
 
         Args:
-            frame: The time frame
-            error_on_unconnected: Wether to raise an exception if an unconnected inuput is detected
+            t1: Current simulation time (s)
+            t2: New simulation time (s)
 
         """
-        inputs = {}
-        for inp in self.getListInputs():
-            k = inp.getName()
-            v = inp.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
-            inputs[k] = v
-        for otp in self.getListOutputs():
-            k = otp.getName()
-            v = otp.getDataForFrame(frame, error_on_unconnected=error_on_unconnected)
-            inputs[k] = v
-        inputs["t1"] = frame.getStartTimeStamp()
-        inputs["t2"] = frame.getStopTimeStamp()
-
-        outputs = self.compute_outputs(**inputs)
-
-        for otp in self.getListOutputs():
-            k = otp.getName()
-            otp.setData(outputs[k])
+        pass
 
 
 class DummyComputer(AComputer):
@@ -959,7 +825,7 @@ class DummyComputer(AComputer):
         self.defineOutput("xout", snames=["x"], dtype=np.int64)
         self.setInitialStateForOutput(np.array([0]), output_name="xout")
 
-    def compute_outputs(
+    def update(
         self,
         t1: float,
         t2: float,

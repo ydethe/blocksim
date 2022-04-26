@@ -51,7 +51,7 @@ class TestQPSK(TestBase):
         grp_inp = dict()
         grp_inp["in1"] = (1,)
         grp_inp["in2"] = (1,)
-        grp = Group(name="grp", inputs=grp_inp, snames=["even", "odd"])
+        grp = Group(name="grp", inputs=grp_inp, snames=["even", "odd"], dtype=np.int32)
 
         qpsk_co = PSKMapping(name="map", mapping=mapping, output_size=1)
         awgn = DSPAWGN(

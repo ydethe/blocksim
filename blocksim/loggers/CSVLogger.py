@@ -7,7 +7,7 @@ import pandas as pd
 from singleton3 import Singleton
 
 # from ..LoggerSpec import if_suitable
-from ..Logger import Logger
+from .Logger import Logger
 from .. import logger
 from ..exceptions import *
 

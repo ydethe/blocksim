@@ -8,7 +8,6 @@ import scipy.linalg as lin
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.core.Frame import Frame
 from blocksim.control.System import G6DOFSystem
 from blocksim.Simulation import Simulation
 from blocksim.control.SetPoint import Step, Rectangular
@@ -183,9 +182,8 @@ class Test6DOFSys(TestBase):
         tf = tps[-1]
         self.assertAlmostEqual(r[-1], T * tf**2 / 2 / sys.J[0, 0], delta=1e-8)
 
-        frame = Frame()
         vf = np.array([1, 0, 0])
-        vb = sys.vecEarthToBody(frame, vf)
+        vb = sys.vecEarthToBody(vf)
         self.assertAlmostEqual(lin.norm(vb - vf), 0.0, delta=1e-8)
 
 
