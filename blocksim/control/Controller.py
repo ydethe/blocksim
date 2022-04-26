@@ -253,8 +253,7 @@ class LQRegulator(AController):
         self.createParameter(name="matN", value=0.0)
 
     def computeGain(
-        self,
-        precomp: bool = True,
+        self, precomp: bool = True,
     ):
         """Computes the optimal gain K, and the correct precompensation gain N.
         Called automatically at beginning of simulation
@@ -287,6 +286,7 @@ class LQRegulator(AController):
 
         """
         import control
+
         control.use_numpy_matrix(flag=False)
 
         Q = self.matQ
@@ -296,7 +296,7 @@ class LQRegulator(AController):
         C = self.matC
         D = self.matD
 
-        K, S, E = control.lqr(A, B, Q, R, method='scipy')
+        K, S, E = control.lqr(A, B, Q, R, method="scipy")
 
         self.matK = K
         self.matS = S
@@ -311,11 +311,11 @@ class LQRegulator(AController):
             nout = D.shape[0]
             self.matN = np.eye(nout)
 
-    def resetCallback(self, t0:float):
+    def resetCallback(self, t0: float):
         super().resetCallback(t0)
 
         self.computeGain()
-        
+
     def update(
         self,
         t1: float,

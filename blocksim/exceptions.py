@@ -275,8 +275,9 @@ class DenormalizedQuaternion(Exception):
     def __str__(self):
         return (
             "For element '%s' : the attitude quaternion '%s' has a norm different from 1 : %f"
-            % (self.elem_name, self.q, np.sum(self.q**2))
+            % (self.elem_name, self.q, np.sum(self.q ** 2))
         )
+
 
 class UnconnectedInput(Exception):
     def __init__(self, cname, iname):

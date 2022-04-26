@@ -148,10 +148,7 @@ class Simulation(object):
             yield comp, ddict["output_port"], ddict["input_port"]
 
     def __init_sim(
-        self,
-        clist: Iterable[str],
-        t0: float,
-        error_on_unconnected: bool = True,
+        self, clist: Iterable[str], t0: float, error_on_unconnected: bool = True,
     ):
         for cname in clist:
             comp = self.getComputerByName(cname)
@@ -213,10 +210,10 @@ class Simulation(object):
 
             # Check completness of input data
             for itp in comp.getListInputs():
-                iname=itp.getName()
+                iname = itp.getName()
                 if not iname in idata.keys():
                     if error_on_unconnected:
-                        raise UnconnectedInput(cname,iname)
+                        raise UnconnectedInput(cname, iname)
                     else:
                         idata[iname] = itp.getDefaultInputData()
 
@@ -238,7 +235,7 @@ class Simulation(object):
                 oname = otp.getName()
                 dat = np.atleast_1d(odata[oname])
                 u = dat - otp._getUnprocessedData()
-                u2 = np.nansum(u*np.conj(u), dtype=np.float64)
+                u2 = np.nansum(u * np.conj(u), dtype=np.float64)
                 modif[f"{cname}.{oname}"] = u2
                 if cname == "ctl" and oname == "command":
                     modif[f"{cname}.{oname}.dat"] = dat

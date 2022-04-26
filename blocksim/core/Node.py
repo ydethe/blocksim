@@ -36,9 +36,9 @@ class Input(ABaseNode):
             self.__shape = shape
         self.__dtype = dtype
 
-    def getDefaultInputData(self)->'array':
+    def getDefaultInputData(self) -> "array":
         return np.zeros(self.getDataShape(), dtype=self.getDataType())
-        
+
     def __repr__(self):
         s = "%s%s" % (self.getName(), self.getDataShape())
         return s
@@ -189,9 +189,7 @@ class Output(ABaseNode):
         self.__data = valid_data
         self.__tdata = self.process(valid_data)
 
-    def _getUnprocessedData(
-        self,
-    ) -> "array":
+    def _getUnprocessedData(self,) -> "array":
         """Gets the data for the Output
 
         Returns:
@@ -200,9 +198,7 @@ class Output(ABaseNode):
         """
         return self.__data.copy()
 
-    def getData(
-        self,
-    ) -> "array":
+    def getData(self,) -> "array":
         """Gets the data for the Output
 
         Returns:
@@ -828,12 +824,7 @@ class DummyComputer(AComputer):
         self.defineOutput("xout", snames=["x"], dtype=np.int64)
         self.setInitialStateForOutput(np.array([0]), output_name="xout")
 
-    def update(
-        self,
-        t1: float,
-        t2: float,
-        **inputs,
-    ) -> dict:
+    def update(self, t1: float, t2: float, **inputs,) -> dict:
         outputs = {}
         outputs["xout"] = np.array([0])
 
