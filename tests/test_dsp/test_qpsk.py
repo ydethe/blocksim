@@ -33,7 +33,6 @@ class TestQPSK(TestBase):
 
         self.assertAlmostEqual(np.max(np.abs(data - data2)), 0, delta=1e-9)
 
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_qpsk_noise(self):
         mapping = np.array([pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4])
         ntot = 1023
@@ -87,18 +86,6 @@ class TestQPSK(TestBase):
 
         self.assertAlmostEqual(np.max(np.abs(ref - est)), 0, delta=1e-9)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        axe.grid(True)
-        axe.set_aspect("equal")
-        axe.scatter(
-            np.real(m), np.imag(m), color="blue", marker="+", label="RX symbols"
-        )
-        qpsk_co.plotConstellation(axe)
-        axe.legend(loc="best")
-
-        return fig
-
 
 if __name__ == "__main__":
     # unittest.main()
@@ -106,5 +93,3 @@ if __name__ == "__main__":
     a = TestQPSK()
     a.test_qpsk()
     a.test_qpsk_noise()
-
-    plt.show()

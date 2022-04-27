@@ -42,7 +42,6 @@ class Test8PSK(TestBase):
 
         self.assertAlmostEqual(np.max(np.abs(data - data2)), 0, delta=1e-9)
 
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_8psk_noise(self):
         mapping = [
             0,
@@ -114,18 +113,6 @@ class Test8PSK(TestBase):
 
         self.assertLess(ber, 2.5e-2)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        axe.grid(True)
-        axe.set_aspect("equal")
-        axe.scatter(
-            np.real(m), np.imag(m), color="blue", marker="+", label="RX symbols"
-        )
-        psk_co.plotConstellation(axe)
-        axe.legend(loc="best")
-
-        return fig
-
 
 if __name__ == "__main__":
     # unittest.main()
@@ -133,5 +120,3 @@ if __name__ == "__main__":
     a = Test8PSK()
     a.test_8psk()
     a.test_8psk_noise()
-
-    plt.show()

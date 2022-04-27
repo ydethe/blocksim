@@ -19,7 +19,7 @@ from TestBase import TestBase
 
 
 class TestBOC(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=20, savefig_kwargs={"dpi": 150})
     def test_boc_spectrum(self):
         fs = 1.023e6
         p_samp = 10
@@ -64,7 +64,7 @@ class TestBOC(TestBase):
 
         self.assertEqual(res.shape, (20, 5))
 
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=10, savefig_kwargs={"dpi": 150})
     def test_boc_autocorr(self):
         fs = 1.023e6
         p_samp = 10

@@ -56,7 +56,7 @@ class TestTrackingSteadyState(TestBase):
             .applyGaussianNoise(0.5)
         )
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=10, savefig_kwargs={"dpi": 150})
     def test_tracking_steadystate_cplxe(self):
         nb_tracks = len(self.tracks)
 
@@ -102,7 +102,7 @@ class TestTrackingSteadyState(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=10, savefig_kwargs={"dpi": 150})
     def test_bode_steadystate_cplxe(self):
         nb_tracks = len(self.tracks)
 
@@ -126,7 +126,7 @@ class TestTrackingSteadyState(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=25, savefig_kwargs={"dpi": 150})
     def test_bode3_steadystate_cplxe(self):
         nb_tracks = len(self.tracks)
 

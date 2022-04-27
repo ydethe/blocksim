@@ -26,9 +26,37 @@ blocksim comes with some CLI utilities.
 
 [See examples](../examples/index.html)
 
-# Coverage
+# Testing blocksim
+
+## Run the tests
+
+To run tests, just run:
+
+    python3 -m pytest -n 8 --html=report.html --self-contained-html --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
+
+To only run the tests related to the unstaged files or the current branch (according to Git):
+
+    python3 -m pytest -n 8 --picked --html=report.html --self-contained-html --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
+
+## Code coverage
+
+Once the tests are run, the code coverage is available. To have a html version in the htmlcov folder, run:
+
+    coverage html
 
 [See coverage](../coverage/index.html)
+
+## Baseline images generation
+
+If needed (for example, a new test with its associated baseline image), we might have to regenerate the baseline images. In this case, run:
+
+    python3 -m pytest -n 8 --mpl-generate-path=tests/baseline tests
+
+## Test reports
+
+[See test report](../tests/report.html)
+
+[See test results](../tests/results/fig_comparison.html)
 
 # Class diagram
 
