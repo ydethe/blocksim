@@ -154,8 +154,8 @@ class TestTrackingSteadyState(TestBase):
 if __name__ == "__main__":
     a = TestTrackingSteadyState()
     a.setUp()
-    a.test_tracking_steadystate_cplxe(pb=True)
+    # a.test_tracking_steadystate_cplxe(pb=True)
     # a.test_bode_steadystate_cplxe()
-    # a.test_bode3_steadystate_cplxe()
+    a.test_bode3_steadystate_cplxe()
 
     plt.show()

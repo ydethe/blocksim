@@ -28,7 +28,7 @@ class TestSignal(TestBase):
         fig = plt.figure()
         axe = fig.add_subplot(111)
         axe.grid(True)
-        plotDSPLine(y, axe)
+        plotDSPLine(y, axe, transform=s1.to_db_lim(-60))
 
         return fig
 
@@ -41,7 +41,7 @@ class TestSignal(TestBase):
         fig = plt.figure()
         axe = fig.add_subplot(111)
         axe.grid(True)
-        plotDSPLine(y, axe)
+        plotDSPLine(y, axe, transform=s1.to_db_lim(-60))
 
         return fig
 
@@ -59,7 +59,7 @@ class TestSignal(TestBase):
         fig = plt.figure()
         axe = fig.add_subplot(111)
         axe.grid(True)
-        plotDSPLine(y, axe)
+        plotDSPLine(y, axe, transform=s1.to_db_lim(-60))
 
         return fig
 
@@ -74,7 +74,7 @@ class TestSignal(TestBase):
         fig = plt.figure()
         axe = fig.add_subplot(111)
         axe.grid(True)
-        plotDSPLine(y, axe)
+        plotDSPLine(y, axe, transform=s1.to_db_lim(-60))
 
         return fig
 

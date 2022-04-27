@@ -37,8 +37,8 @@ class TestSignalOperations(TestBase):
 
         Ef = srep.energy
 
-        self.assertAlmostEqual(Et, Ef, delta=0.0)
-        self.assertAlmostEqual(Et, 150.0, delta=0.0)
+        self.assertAlmostEqual(Et, Ef, delta=1e-10)
+        self.assertAlmostEqual(Et, 150.0, delta=1e-10)
 
     def test_truncate(self):
         sig = DSPSignal(
