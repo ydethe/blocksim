@@ -63,5 +63,18 @@ class LoggerSpec(object):
         Return:
             A positive or null value if the export was successful
 
+        """
+
+    @hookspec
+    def log(self, log: "Logger", name: str, val: float) -> int:
+        """Export the log into a file
+
+        Args:
+            log: The `blocksim.loggers.Logger.Logger` that contains the data
+            name: Name of the parameter. Nothing is logged if *name* == '_'
+            val: Value to log
+
+        Return:
+            A positive or null value if the export was successful
 
         """

@@ -229,6 +229,9 @@ class Logger(object):
         if name == "t":
             self.__index += 1
 
+        # Handling of the logged value by the pugins
+        ldata = plugin_manager.hook.log(log=self, name=name, val=val)
+
     def getParametersName(self) -> Iterable[str]:
         """Returns an iterable on all the variables of the logger
 

@@ -162,17 +162,6 @@ class FileError(Exception):
         return "The file '%s' does not exist" % (self.fic,)
 
 
-class CyclicGraph(Exception):
-    def __init__(self, cycles):
-        self.cycles = cycles
-
-    def __str__(self):
-        return (
-            "The simulation graph has a cycle even when controllers are removed : %s"
-            % self.cycles
-        )
-
-
 class DuplicateInput(Exception):
     def __init__(self, elem_name, input_name):
         self.input_name = input_name

@@ -128,3 +128,7 @@ class Logger(object, metaclass=Singleton):
         self.__db_session = None
 
         return sim_id
+
+    @hookimpl
+    def log(self, log: "Logger", name: str, val: float) -> int:
+        return 1

@@ -257,7 +257,7 @@ class TestKalman(TestBase):
 
         self.log = sim.getLogger()
         kal_bias = self.log.getValue("kal_state_b")
-        self.assertAlmostEqual(kal_bias[-1], bias, delta=1.5e-2)
+        self.assertAlmostEqual(kal_bias[-1], bias, delta=2e-2)
 
         return self.plotVerif(
             "test_ss_kal",

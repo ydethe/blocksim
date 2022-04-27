@@ -145,7 +145,11 @@ class ADSPComputer(AComputer):
         """
         ny = self.output_size
 
-        assert len(strm) % ny == 0
+        if len(strm) % ny != 0:
+            raise AssertionError(
+                f"strm shall have a length multiple of {ny}. Got {strm.shape}"
+            )
+
         n = len(strm) // ny
 
         if n == 1:

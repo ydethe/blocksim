@@ -3,7 +3,7 @@
 """
 
 from typing import Iterable, Tuple
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import tqdm
 import numpy as np
@@ -157,32 +157,21 @@ class Simulation(object):
             comp = self.getComputerByName(cname)
             comp.resetCallback(t0)
 
-        # While updating computers modifies the state of the outputs,
-        # we keep on updating computers
-        modif = 10.0
-        iloop = 0
-        while modif > 1e-6 and iloop < 10:
-            iloop += 1
-
-            try:
-                dmodif = self.update(
-                    clist,
-                    t0,
-                    t0,
-                    error_on_unconnected=error_on_unconnected,
-                    noexc=True,
-                    nolog=True,
-                )
-                modif = np.sum([x for x in dmodif.values() if not np.isnan(x)])
-                logger.debug(f"modif: {dmodif}")
-            except KeyboardInterrupt:
-                break
-            except BaseException as e:
-                raise e
-                modif = 10.0
-                logger.debug(f"modif: {modif}")
-
-        self.update(clist, t0, t0, error_on_unconnected=error_on_unconnected)
+        try:
+            dmodif = self.update(
+                clist,
+                t0,
+                t0,
+                error_on_unconnected=error_on_unconnected,
+                noexc=True,
+                nolog=False,
+            )
+            # modif = np.sum([x for x in dmodif.values() if not np.isnan(x)])
+            logger.debug(f"modif: {dmodif}")
+        except KeyboardInterrupt:
+            return
+        except BaseException as e:
+            raise e
 
     def update(
         self,
@@ -273,27 +262,10 @@ class Simulation(object):
         Returns:
             The matplotlib FuncAnimation if fig is not None
 
-        Raises:
-            CyclicGraph if the simulation graph contains a cycle after Controllers disconnection
-
         """
         # Remove cycles in Simulation graph
-        # sg=nx.MultiDiGraph()
-        # sg.add_nodes_from(self.__graph)
-
-        # for comp in self.iterComputersList():
-        #     cname = comp.getName()
-        #     for (u, _, ddict) in self.__graph.in_edges(nbunch=cname,data=True):
-        #         if not comp.isController():
-        #             sg.add_edge(u,cname,**ddict)
-
-        # if not nx.is_directed_acyclic_graph(sg):
-        #     cycle=nx.find_cycle(sg, orientation="original")
-        #     raise CyclicGraph(cycle)
-
-        # clist=list(nx.topological_sort(sg))
-
-        clist = [c.getName() for c in self.iterComputersList()]
+        sg = self.computeAcyclicGraph()
+        clist = list(nx.topological_sort(sg))
 
         self.__logger.reset()
 
@@ -343,8 +315,8 @@ class Simulation(object):
         Both src and dst must have been added with `blocksim.Simulation.addComputer`
 
         Args:
-            src_name: Source computer. Example : sys.output
-            dst_name: Target computer. Example : ctl.estimation
+            src_name: Source computer. Example: sys.output
+            dst_name: Target computer. Example: ctl.estimation
 
         """
         src_comp_name, src_out_name = src_name.split(".")
@@ -367,6 +339,7 @@ class Simulation(object):
             dst_comp_name,
             output_port=src_out_name,
             input_port=dst_in_name,
+            key=uuid4(),
         )
 
     def computeGraph(self) -> nx.MultiDiGraph:
@@ -377,6 +350,31 @@ class Simulation(object):
 
         """
         return self.__graph.copy()
+
+    def computeAcyclicGraph(self) -> nx.MultiDiGraph:
+        """Computes the simulation DAG. The result can be plotted thanks to `blocksim.graphics.plotGraph`
+
+        Returns:
+            The simulation DAG as an instance of nx.MultiDiGraph
+
+        """
+        sg = self.__graph.copy()
+
+        while not nx.is_directed_acyclic_graph(sg):
+            cycle = nx.find_cycle(sg, orientation="original")
+            nb = None
+            for u, v, key, _ in cycle:
+                inb = sg.number_of_edges(u, v)
+                if nb is None:
+                    nb = inb
+                if inb <= nb:
+                    nb = inb
+                    rkey = key
+                    ru = u
+                    rv = v
+            sg.remove_edge(ru, rv, key=rkey)
+
+        return sg
 
     def getComputerOutputByName(self, name: str) -> "array":
         """Returns the data of the computer's output

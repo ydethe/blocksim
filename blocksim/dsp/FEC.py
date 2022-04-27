@@ -23,11 +23,11 @@ class FECCoder(ADSPComputer):
     def __init__(self, name: str, output_size: int = 3):
         # Convolutional encoder 7, 1/3
         G = np.array([[0o133, 0o171, 0o165]])
+        _, k_cc = G.shape
         depth = 7
         self.__trellis = Trellis(
             memory=np.array([depth]), g_matrix=G, polynomial_format="MSB"
         )
-        k_cc = len(G)
 
         if output_size % k_cc != 0:
             raise ValueError(
@@ -51,7 +51,8 @@ class FECCoder(ADSPComputer):
 
     @property
     def k_cc(self):
-        return len(self.G)
+        _, k_cc = self.G.shape
+        return k_cc
 
     def update(
         self,
@@ -62,10 +63,10 @@ class FECCoder(ADSPComputer):
     ) -> dict:
         strm = self.flatten(raw)
         fec_strm = conv_encode(strm, self.__trellis)
-        fec_bits = self.unflatten(fec_strm)
+        fec_bits = self.unflatten(fec_strm[: -self.k_cc * self.depth])
 
         outputs = {}
-        outputs["coded"] = fec_bits[: -self.depth]
+        outputs["coded"] = fec_bits
         return outputs
 
 
@@ -83,8 +84,9 @@ class FECDecoder(ADSPComputer):
 
     def __init__(self, name: str, output_size: int = 1):
         # Convolutional encoder 7, 1/3
-        depth = 7
         G = np.array([[0o133, 0o171, 0o165]])
+        _, k_cc = G.shape
+        depth = 7
         self.__trellis = Trellis(
             memory=np.array([depth]), g_matrix=G, polynomial_format="MSB"
         )
@@ -94,7 +96,7 @@ class FECDecoder(ADSPComputer):
             name=name,
             input_name="coded",
             output_name="raw",
-            input_size=output_size * len(G),
+            input_size=output_size * k_cc,
             output_size=output_size,
             input_dtype=np.int64,
             output_dtype=np.int64,
@@ -105,7 +107,8 @@ class FECDecoder(ADSPComputer):
 
     @property
     def k_cc(self):
-        return len(self.G)
+        _, k_cc = self.G.shape
+        return k_cc
 
     def update(
         self,
@@ -121,5 +124,5 @@ class FECDecoder(ADSPComputer):
         raw = self.unflatten(bits)
 
         outputs = {}
-        outputs["raw"] = raw[: -self.depth]
+        outputs["raw"] = raw
         return outputs

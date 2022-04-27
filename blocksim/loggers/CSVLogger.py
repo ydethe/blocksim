@@ -51,3 +51,7 @@ class Logger(object, metaclass=Singleton):
         df = pd.DataFrame(data)
         df.to_csv(uri, sep=";", na_rep="", index=False)
         return 0
+
+    @hookimpl
+    def log(self, log: "Logger", name: str, val: float) -> int:
+        return 1

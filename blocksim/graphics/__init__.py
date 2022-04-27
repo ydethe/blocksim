@@ -587,16 +587,13 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":
     return fig
 
 
-def plotGraph(G, pos=None, axe_spec=None, **kwds):
+def plotGraph(G, axe_spec=None, **kwds):
     """See https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pylab.draw.html#networkx.drawing.nx_pylab.draw
 
     Args:
         G: graph to draw
-        pos: A dictionary with nodes as keys and positions as values.
-            If not specified a spring layout positioning will be computed.
-            See networkx.drawing.layout for functions that compute node positions.
         axe_spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
-        kwds: See link above
+        kwds: See https://networkx.org/documentation/stable/reference/generated/networkx.drawing.layout.kamada_kawai_layout.html#networkx.drawing.layout.kamada_kawai_layout
 
     Returns
         The actual axe used for plotting
@@ -610,11 +607,11 @@ def plotGraph(G, pos=None, axe_spec=None, **kwds):
     gs = axe_spec.get_gridspec()
     fig = gs.figure
     axe = fig.add_subplot(axe_spec)
+    axe.set_aspect("equal")
 
     if not "node_size" in kwds.keys():
         kwds["node_size"] = 1000
-    if pos is None:
-        pos = nx.planar_layout(G)
+    pos = nx.kamada_kawai_layout(G)
     nx.draw_networkx(G, pos=pos, ax=axe, **kwds)
 
     return axe

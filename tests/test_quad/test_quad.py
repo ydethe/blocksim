@@ -121,16 +121,16 @@ class TestQuad(TestBase):
             "Figure 1",
             [{"var": "sys_state_pz"}],
             [
-                {"var": "sys_euler_roll*180/np.pi"},
-                {"var": "sys_euler_pitch*180/np.pi"},
-                {"var": "sys_euler_yaw*180/np.pi"},
+                {"var": "deg(sys_euler_roll)"},
+                {"var": "deg(sys_euler_pitch)"},
+                {"var": "deg(sys_euler_yaw)"},
             ],
         )
 
 
 class TestCmdAtt(TestBase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls, pb: bool = False):
         """simulation is slow, to avoid calling it for each test use setUpClass()
         and store the result as class variable
         """
@@ -261,9 +261,7 @@ class TestCmdAtt(TestBase):
         sim.connect("sys.euler", "ctlatt.euler")
 
         tps = np.arange(0, 70, 0.05)
-        sim.simulate(tps, progress_bar=False)
-        log = sim.getLogger()
-        log.export("tests/quadri.csv")
+        sim.simulate(tps, progress_bar=pb)
 
         cls.log = sim.getLogger()
 
@@ -330,15 +328,14 @@ class TestCmdAtt(TestBase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
-
     # a = TestQuad()
     # a.test_motor()
     # a.test_quad()
 
-    TestCmdAtt.setUpClass()
+    TestCmdAtt.setUpClass(pb=True)
     a = TestCmdAtt()
     a.setUp()
-    a.test_cmd_att_angles()
+    # a.test_cmd_att_angles()
+    a.test_cmd_att_sval()
 
     plt.show()

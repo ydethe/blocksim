@@ -48,3 +48,7 @@ class Logger(object, metaclass=Singleton):
         df = pd.DataFrame(data)
         df.to_pickle(uri)
         return 0
+
+    @hookimpl
+    def log(self, log: "Logger", name: str, val: float) -> int:
+        return 1

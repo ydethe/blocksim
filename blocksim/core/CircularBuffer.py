@@ -3,6 +3,9 @@ import logging
 
 import numpy as np
 
+from .. import logger
+
+
 __all__ = ["CircularBuffer"]
 
 
@@ -21,7 +24,6 @@ class CircularBuffer(object):
         "__dtype",
         "__buffer",
         "__offset",
-        "__last_search_idx",
         "__nb_inserted_element",
     ]
 
@@ -32,14 +34,7 @@ class CircularBuffer(object):
         self.__buffer[:] = fill_with
         self.__fill_with = fill_with
         self.__offset = 0  # Index where the next element will be stored
-        self.__last_search_idx = -1
         self.__nb_inserted_element = 0
-
-    def _setInternals(self, last_search_idx=None, offset=None):
-        if not last_search_idx is None:
-            self.__last_search_idx = last_search_idx
-        if not offset is None:
-            self.__offset = offset
 
     def _getBuffer(self) -> "array":
         return self.__buffer.copy()
@@ -64,8 +59,6 @@ class CircularBuffer(object):
         nz = np.empty(self.__size, dtype=self.__dtype)
         nz[:] = self.__fill_with
 
-        self.__last_search_idx += self.__size
-
         if self.__offset == 0:
             new_buf = np.hstack((self.__buffer, nz))
             self.__offset = self.__size
@@ -79,7 +72,8 @@ class CircularBuffer(object):
         self.__buffer = new_buf
 
     def search(self, value) -> int:
-        """Searches a value in the buffer
+        """Searches a value in the buffer, using interpolation search
+        https://en.wikipedia.org/wiki/Interpolation_search
 
         Args:
             The value to search
@@ -102,12 +96,14 @@ class CircularBuffer(object):
             -99
             >>> a.search(4)
             0
+            >>> a.search(5)
+            1
             >>> a.search(4.1)
             0
             >>> a.search(7.9)
             3
             >>> a.search(8)
-            3
+            -99
             >>> a.search(8.1)
             -99
 
@@ -116,6 +112,8 @@ class CircularBuffer(object):
             return -99
 
         iel = min(self.inserted_elements, self.__size)
+        if iel <= 1:
+            return -99
 
         min_tab = self[self.__size - iel]
         max_tab = self[-1]
@@ -125,66 +123,60 @@ class CircularBuffer(object):
 
         if value < min_tab:
             return -99
-        if value > max_tab:
+        if value >= max_tab:
             return -99
 
-        if self.__last_search_idx < 0:
-            # Dichotomic search
-            ka = 0
-            kb = self.__size - 2
-            found = False
-
-            # La condition 'ka <= kb' permet d'éviter de faire
-            # une boucle infinie si 'value' n'existe pas dans le tableau.
-            while not found and ka <= kb:
-                km = (ka + kb) // 2
-                if self[km] <= value and value < self[km + 1]:
-                    found = True
-                else:
-                    if value > self[km]:
-                        ka = km + 1
-                    else:
-                        kb = km - 1
-
-            # Affichage du résultat
-            if not found:
-                return -99
-
-        else:
-            km = self.__last_search_idx
-            while np.isnan(self[km]):
-                km += 1
-            lxm = self[km]
-            if km == self.__size - 2 and value >= lxm:
-                search = False
-            elif value > lxm or np.isnan(lxm):
-                way = 1
-                search = True
-            elif value < lxm:
-                way = -1
-                search = True
+        if iel == 3:
+            vm = self[self.__size - 2]
+            if value < vm:
+                return self.__size - 3
             else:
-                search = False
+                return self.__size - 2
+        elif iel == 2:
+            return self.__size - iel
 
-            xm = lxm
-            count = 0
-            while search and (way * value > way * xm or np.isnan(xm)):
-                km += way
-                xm = self[km]
-                if km == 0:
-                    search = False
-                count += 1
-                assert count < self.__size + 1
-            if search and way == 1:
-                km -= 1
+        # Interpolation search
+        # https://en.wikipedia.org/wiki/Interpolation_search
+        ka = self.__size - iel
+        kb = self.__size - 2
+
+        va = self[ka]
+        vb = self[kb]
+
+        g = (value - va) / (vb - va)
+        k = (kb - ka) * g
+        km = int(np.floor(k)) + ka
+        if km < 1:
+            km = 1
+        if km > self.__size - 3:
+            km = self.__size - 3
+
+        while value < self[km - 1] or self[km + 2] <= value:
+            if value < self[km - 1]:
+                kb = km - 1
+                vb = self[kb]
+            elif value >= self[km + 2]:
+                ka = km + 1
+                va = self[ka]
+
+            g = (value - va) / (vb - va)
+            k = (kb - ka) * g
+            km = int(np.floor(k)) + ka
+            if km < 1:
+                km = 1
+            if km > self.__size - 3:
+                km = self.__size - 3
+
+        if value >= self[km + 1]:
+            km += 1
+        if value < self[km]:
+            km -= 1
 
         if km < 0:
             raise AssertionError("km < 0: %i" % km)
 
         if km > self.__size - 2:
             raise AssertionError("km > size-2: km=%i, size=%i" % (km, self.__size))
-
-        self.__last_search_idx = km
 
         return km
 
