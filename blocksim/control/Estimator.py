@@ -110,6 +110,7 @@ class ConvergedStateCovariance(Output):
 
         # from control import dare
         from scipy.linalg import solve_discrete_are as dare
+        from scipy.linalg import solve
 
         n, _ = self.getDataShape()
         estim = self.getComputer()
@@ -118,7 +119,13 @@ class ConvergedStateCovariance(Output):
 
         # We solve the Discrete Algebraic Riccati Equation (DARE)
         # The matrix Pp is the prediction error covariance matrix in steady state which is the positive solution of the DARE
-        Pp = dare(Ad.T, Cd.T, estim.matQ, estim.matR)
+        a=Ad.T
+        b=Cd.T
+        q=estim.matQ
+        r=estim.matR
+        Pp = dare(a, b, q, r)
+        R = solve(r + b.T.dot(Pp).dot(b), b.T.dot(Pp).dot(a))
+        print(np.allclose(a.T.dot(Pp).dot(a) - Pp - a.T.dot(Pp).dot(b).dot(R), -q))
 
         # Converged gain matrix
         K = Pp @ Cd.T @ lin.inv(Cd @ Pp @ Cd.T + estim.matR)
