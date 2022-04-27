@@ -26,11 +26,14 @@ __all__ = [
     "MahonyFilter",
 ]
 
-def _check_dare(a,b,q,r,Pp):
+
+def _check_dare(a, b, q, r, Pp) -> bool:
     from scipy.linalg import solve
+
     R = solve(r + np.conj(b.T) @ Pp @ b, np.conj(b.T) @ Pp @ a)
     R2 = np.conj(a).T @ Pp @ a - Pp - np.conj(a.T).dot(Pp).dot(b).dot(R)
     return np.allclose(R2, -q)
+
 
 class ConvergedGainMatrix(Output):
 
@@ -64,8 +67,8 @@ class ConvergedGainMatrix(Output):
         # The matrix Pp is the prediction error covariance matrix in steady state which is the positive solution of the DARE
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.solve_discrete_are.html
         Pp = dare(a=Ad.T, b=Cd.T, q=estim.matQ, r=estim.matR)
-        assert _check_dare(Ad.T,Cd.T,estim.matQ,estim.matR,Pp)
-        
+        assert _check_dare(Ad.T, Cd.T, estim.matQ, estim.matR, Pp)
+
         # Converged gain matrix
         self.__K = Pp @ Cd.T @ lin.inv(Cd @ Pp @ Cd.T + estim.matR)
 
@@ -114,7 +117,7 @@ class ConvergedStateCovariance(Output):
         # We solve the Discrete Algebraic Riccati Equation (DARE)
         # The matrix Pp is the prediction error covariance matrix in steady state which is the positive solution of the DARE
         Pp = dare(a=Ad.T, b=Cd.T, q=estim.matQ, r=estim.matR)
-        assert _check_dare(Ad.T,Cd.T,estim.matQ,estim.matR,Pp)
+        assert _check_dare(Ad.T, Cd.T, estim.matQ, estim.matR, Pp)
 
         # Converged gain matrix
         K = Pp @ Cd.T @ lin.inv(Cd @ Pp @ Cd.T + estim.matR)
