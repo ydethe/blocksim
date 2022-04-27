@@ -125,11 +125,8 @@ class ConvergedStateCovariance(Output):
         r = estim.matR
         Pp = dare(a, b, q, r)
         R = solve(r + np.conj(b.T) @ Pp @ b, np.conj(b.T) @ Pp @ a)
-        print(
-            np.allclose(
-                np.conj(a).T @ Pp @ a - Pp - np.conj(a.T).dot(Pp).dot(b).dot(R), -q
-            )
-        )
+        R2 = np.conj(a).T @ Pp @ a - Pp - np.conj(a.T).dot(Pp).dot(b).dot(R)
+        assert np.allclose(R2, -q)
 
         # Converged gain matrix
         K = Pp @ Cd.T @ lin.inv(Cd @ Pp @ Cd.T + estim.matR)
