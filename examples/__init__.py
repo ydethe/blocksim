@@ -5,12 +5,17 @@
 .. include:: README.md
 
 """
+import sys
 import os
 from pathlib import Path
 
 import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
 from nbconvert import MarkdownExporter
+
+
+def bsprint(*x):
+    pass
 
 
 def __f1_newer_than_f2(f1, f2):
@@ -42,19 +47,19 @@ def __execute_notebook(root, ep, nb):
     ep.preprocess(nb, {"metadata": {"path": root}})
 
 
-def __render_notebook(exporter, nb, odir):
+def __render_notebook(exporter, fic, nb, odir):
     (body, resources) = exporter.from_notebook_node(nb)
     pth_dst = odir / os.path.basename(fic).replace(".ipynb", ".md")
-    print("   ", pth_dst)
+    bsprint("   ", pth_dst)
     rt = os.path.basename(fic).replace(".ipynb", "")
     with open(pth_dst, "w") as f:
         f.write(body.replace("![png](", f"![png]({rt}_"))
 
-    imgdir = Path("htmldoc") / "examples"
+    imgdir = Path("build/htmldoc") / "examples"
     imgdir.mkdir(parents=True, exist_ok=True)
     for pth_img in resources["outputs"].keys():
         bn = rt + "_" + pth_img
-        print("   ", imgdir / bn)
+        bsprint("   ", imgdir / bn)
         f = open(imgdir / bn, "wb")
         f.write(resources["outputs"][pth_img])
         f.close()
@@ -63,7 +68,7 @@ def __render_notebook(exporter, nb, odir):
 def __create_py(root, fic):
     pth_py = Path(root) / os.path.basename(fic).replace(".ipynb", ".py")
     rt = os.path.basename(fic).replace(".ipynb", "")
-    print("   ", pth_py)
+    bsprint("   ", pth_py)
     with open(pth_py, "w") as f:
         f.write(f'"""\n.. include:: ../build/htmldoc/{rt}.md\n"""')
 
@@ -76,14 +81,21 @@ odir.mkdir(parents=True, exist_ok=True)
 
 # https://nbconvert.readthedocs.io/en/latest/nbconvert_library.html
 
-root = "examples"
-for fic in __list_notebooks(root):
-    print(fic)
-    pth_py = Path("examples") / os.path.basename(fic).replace(".ipynb", ".py")
-    if __f1_newer_than_f2(fic, pth_py):
-        nb = __read_notebook(fic)
-        if nb is None:
-            continue
-        __execute_notebook(root, ep, nb)
-        __render_notebook(exporter, nb, odir)
-        __create_py("examples", fic)
+# root = "examples"
+# lnb=__list_notebooks(root)
+def __process(fic):
+    bsprint(fic)
+    root = os.path.dirname(fic)
+    nb = __read_notebook(fic)
+    if nb is None:
+        return
+    __execute_notebook(root, ep, nb)
+    __render_notebook(exporter, fic, nb, odir)
+    __create_py(root, fic)
+
+
+# for fic in lnb:
+#     __process(fic)
+if __name__ == "__main__":
+    fic = sys.argv[1]
+    __process(fic)

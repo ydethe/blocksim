@@ -151,7 +151,9 @@ class CircularBuffer(object):
         if km > self.__size - 3:
             km = self.__size - 3
 
-        while value < self[km - 1] or self[km + 2] <= value:
+        iloop = 0
+        while (value < self[km - 1] or self[km + 2] <= value) and iloop < self.__size:
+            iloop += 1
             if value < self[km - 1]:
                 kb = km - 1
                 vb = self[kb]
@@ -166,6 +168,9 @@ class CircularBuffer(object):
                 km = 1
             if km > self.__size - 3:
                 km = self.__size - 3
+
+        if iloop >= self.__size:
+            raise ValueError(f"Boucle infinie: bug dans CircularBuffer.search")
 
         if value >= self[km + 1]:
             km += 1

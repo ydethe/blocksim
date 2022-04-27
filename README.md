@@ -72,10 +72,11 @@ If needed (for example, a new test with its associated baseline image), we might
 
 Just run:
 
-    sh dev/mkdoc.sh
+    make -f dev/Makefile_Doc.mk
+
+This will create the doc in build/htmldoc
 
 A few guidelines for updating the doc
 https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
 
 For now, it is hosted here: http://navlin10:8081/blocksim/blocksim/
-

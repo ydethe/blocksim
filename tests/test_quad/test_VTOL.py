@@ -88,7 +88,7 @@ class TestPVTOL(TestBase):
 
 class TestPVTOLComplex(TestBase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls, pb: bool = False):
         """get_some_resource() is slow, to avoid calling it for each test use setUpClass()
         and store the result as class variable
         """
@@ -240,7 +240,7 @@ class TestPVTOLComplex(TestBase):
         sim.connect("wtolspt.pv", "ctlvtol.estimation")
 
         tps = np.arange(0, 20, 0.01)
-        sim.simulate(tps, progress_bar=False)
+        sim.simulate(tps, progress_bar=pb)
         log = sim.getLogger()
         log.export("tests/quadri.csv")
 
@@ -301,15 +301,13 @@ class TestPVTOLComplex(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
-
-    a = TestPVTOL()
-    a.setUp()
-    a.test_quad_simplified()
-
-    # a = TestPVTOLComplex()
-    # TestPVTOLComplex.setUpClass()
+    # a = TestPVTOL()
     # a.setUp()
-    # a.test_quad_complexe_att()
+    # a.test_quad_simplified()
+
+    a = TestPVTOLComplex()
+    TestPVTOLComplex.setUpClass(pb=True)
+    a.setUp()
+    a.test_quad_complexe_att()
 
     plt.show()

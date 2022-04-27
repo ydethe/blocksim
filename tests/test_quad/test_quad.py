@@ -196,7 +196,7 @@ class TestCmdAtt(TestBase):
         )
         sys = Quadri(name="sys", mot=mot0)
         x0 = sys.getInitialStateForOutput("state")
-        w0 = np.array([2, -1, 3]) / 2
+        w0 = np.array([2, -1, 3]) / 10
         x0[10:13] = w0
         sys.setInitialStateForOutput(x0, "state")
 
@@ -204,10 +204,10 @@ class TestCmdAtt(TestBase):
         stp = Rectangular("stp", snames=["r", "p", "y", "A"])
         stp.doors = np.array(
             [
-                (10, np.pi / 4, 0, 20),
-                (30, np.pi / 4, 0, 40),
-                (50, np.pi / 4, 0, 60),
-                (-1, A0, A0, 71),
+                (5, np.pi / 4, 0, 10),
+                (15, np.pi / 4, 0, 20),
+                (25, np.pi / 4, 0, 30),
+                (-1, A0, A0, 31),
             ]
         )
         ctl = AttPilot("ctlatt", sys)
@@ -260,7 +260,7 @@ class TestCmdAtt(TestBase):
         sim.connect("sys.state", "ctlatt.estimation")
         sim.connect("sys.euler", "ctlatt.euler")
 
-        tps = np.arange(0, 70, 0.05)
+        tps = np.arange(0, 31, 0.01)
         sim.simulate(tps, progress_bar=pb)
 
         cls.log = sim.getLogger()
@@ -271,16 +271,9 @@ class TestCmdAtt(TestBase):
         r = self.log.getValue("sys_euler_roll")
         p = self.log.getValue("sys_euler_pitch")
         y = self.log.getValue("sys_euler_yaw")
-        self.assertAlmostEqual(np.abs(r[-1]), 0, delta=1e-6)
-        self.assertAlmostEqual(np.abs(p[-1]), 0, delta=1e-6)
-        self.assertAlmostEqual(np.abs(y[-1]), 0, delta=1e-6)
-
-        # fx = self.log.getValue("fx")
-        # fy = self.log.getValue("fy")
-        # fz = self.log.getValue("fz")
-        # self.assertAlmostEqual(np.abs(fx[-1]), 0, delta=1e-9)
-        # self.assertAlmostEqual(np.abs(fy[-1]), 0, delta=1e-9)
-        # self.assertAlmostEqual(np.abs(fz[-1]), 0, delta=1e-9)
+        self.assertAlmostEqual(np.abs(r[-1]), 0, delta=2e-6)
+        self.assertAlmostEqual(np.abs(p[-1]), 0, delta=1.5e-5)
+        self.assertAlmostEqual(np.abs(y[-1]), 0, delta=5e-2)
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_cmd_att_angles(self):
@@ -335,7 +328,7 @@ if __name__ == "__main__":
     TestCmdAtt.setUpClass(pb=True)
     a = TestCmdAtt()
     a.setUp()
-    # a.test_cmd_att_angles()
-    a.test_cmd_att_sval()
+    a.test_cmd_att_angles()
+    # a.test_cmd_att_sval()
 
     plt.show()
