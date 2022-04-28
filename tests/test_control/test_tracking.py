@@ -57,7 +57,7 @@ class TestTrackingSteadyState(TestBase):
         )
 
     @pytest.mark.mpl_image_compare(tolerance=10, savefig_kwargs={"dpi": 150})
-    def test_tracking_steadystate_cplxe(self, pb: bool = False):
+    def test_tracking_steadystate_cplxe(self):
         nb_tracks = len(self.tracks)
 
         kal = SpectrumEstimator(
@@ -77,7 +77,7 @@ class TestTrackingSteadyState(TestBase):
 
         sim.connect("sig.setpoint", "kal.measurement")
 
-        sim.simulate(self.sig.generateXSerie(), progress_bar=pb)
+        sim.simulate(self.sig.generateXSerie(), progress_bar=False)
 
         K = kal.getConvergedGainMatrix()
         P = kal.getConvergedStateCovariance()
@@ -154,7 +154,7 @@ class TestTrackingSteadyState(TestBase):
 if __name__ == "__main__":
     a = TestTrackingSteadyState()
     a.setUp()
-    # a.test_tracking_steadystate_cplxe(pb=True)
+    # a.test_tracking_steadystate_cplxe()
     # a.test_bode_steadystate_cplxe()
     a.test_bode3_steadystate_cplxe()
 

@@ -112,7 +112,7 @@ eps = entry_points()
 plugins = eps["blocksim"]
 
 for ep in plugins:
-    if ep.name.startswith("logger_") and not ep.name.endswith("psql"):
+    if ep.name.startswith("logger_"):
         try:
             plugin = import_module(ep.value)
         except:
