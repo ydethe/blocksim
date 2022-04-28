@@ -90,7 +90,6 @@ class TestRadar(TestBase):
             spg,
             axe,
             transform=trf,
-            search_fig=False,
             find_peaks=1,
         )
         axe.set_title("Power (dB)")

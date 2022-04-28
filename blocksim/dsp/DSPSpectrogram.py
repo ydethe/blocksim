@@ -205,16 +205,18 @@ class DSPSpectrogram(object):
         return _to_db
 
     @classmethod
-    def to_db(cls, x: np.array) -> "array":
+    def to_db(cls, x: "array", lim_db: float = -100) -> "array":
         """Converts the samples into their power, in dB.
         If a sample's power is below *low*, the dB value in clamped to *low*.
 
         Args:
             x: The array of samples
+            lim_db: Limit to clamp the power (dB)
+                Pass None to avoid any clipping
 
         Returns:
             The power of the serie *x* in dB
 
         """
         pwr = np.real(np.conj(x) * x)
-        return 10 * np.log10(pwr)
+        return np.clip(10 * np.log10(pwr), a_min=lim_db, a_max=None)

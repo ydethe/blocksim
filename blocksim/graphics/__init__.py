@@ -222,7 +222,6 @@ def plotSpectrogram(
             * transform for a different transform from the one given at instanciation
             * find_peaks to search peaks
             * x_unit_mult to have a more readable unit prefix
-            * search_fig (bool) to generate a search figure
 
     Returns:
         The matplotlib image generated
@@ -244,7 +243,6 @@ def plotSpectrogram(
     axe.grid(True)
 
     transform = kwargs.pop("transform", spg.default_transform)
-    search_fig = kwargs.pop("search_fig", False)
     find_peaks = kwargs.pop("find_peaks", 0)
 
     if "x_unit_mult" in kwargs.keys():
@@ -314,7 +312,7 @@ def plotSpectrogram(
                 fontsize="x-small",
             )
 
-    def on_click(event: Event) -> Any:
+    def on_click(event: Event) -> Any:  # pragma: no cover
         # event.name (str): the event name
         # event.canvas (FigureCanvasBase): the FigureCanvas instance generating the event
         # event.guiEvent: the GUI event that triggered the Matplotlib event
@@ -327,6 +325,7 @@ def plotSpectrogram(
         # event.dblclick (bool): Whether the event is a double-click. This applies only to 'button_press_event' and is False otherwise. In particular, it's not used in 'button_release_event'.
         if event.inaxes != axe:
             return
+
         axe.axe_d.lines = []
         axe.axe_v.lines = []
 
@@ -334,75 +333,8 @@ def plotSpectrogram(
         vval = spg.generateYSerie() / y_unit_mult
 
         itp = interp2d(x=dval, y=vval, z=Z, kind="cubic", copy=False, bounds_error=True)
-        axe.axe_d.set_title(
-            "%s = %.3f %s%s, %s = %.3f %s%s"
-            % (
-                spg.name_of_x_var,
-                event.xdata,
-                x_unit_lbl,
-                spg.unit_of_x_var,
-                spg.name_of_y_var,
-                event.ydata,
-                y_unit_lbl,
-                spg.unit_of_y_var,
-            )
-        )
-
-        new_d = itp(dval, event.ydata)
-        axe.axe_d.plot(dval, new_d)
-        axe.axe_d.set_xlim((dval.min(), dval.max()))
-        axe.axe_d.set_ylim((new_d.min(), new_d.max()))
-
-        new_v = itp(event.xdata, vval)
-        axe.axe_v.plot(vval, new_v)
-        axe.axe_v.set_xlim((vval.min(), vval.max()))
-        axe.axe_v.set_ylim((new_v.min(), new_v.max()))
-
-        axe.mkr.set_data([event.xdata], [event.ydata])
-
-        axe.figure.canvas.draw()
-        axe.click_fig.canvas.draw()
-
-    if search_fig:
-        axe.figure.colorbar(ret, ax=axe)
-        axe.click_fig = plt.figure()
-        axe.axe_d = axe.click_fig.add_subplot(211)
-        axe.axe_v = axe.click_fig.add_subplot(212)
-        axe.axe_d.grid(True)
-        axe.axe_v.grid(True)
-        axe.axe_d.set_xlabel(
-            "%s (%s%s)"
-            % (
-                spg.name_of_x_var,
-                x_unit_lbl,
-                spg.unit_of_x_var,
-            )
-        )
-        axe.axe_v.set_xlabel(
-            "%s (%s%s)"
-            % (
-                spg.name_of_y_var,
-                y_unit_lbl,
-                spg.unit_of_y_var,
-            )
-        )
-
-        cid = axe.figure.canvas.mpl_connect("button_press_event", on_click)
-
-        vm = np.max(Z)
-        kd, kv = np.where(Z == vm)
-
-        class TmpEvent:
-            pass
-
-        evt = TmpEvent()
-        evt.inaxes = axe
-        evt.xdata = spg.generateXSerie(kv[0]) / x_unit_mult
-        evt.ydata = spg.generateYSerie(kd[0]) / y_unit_mult
-
-        (axe.mkr,) = axe.plot([], [], marker="x", color="black", linestyle="")
-
-        on_click(evt)
+        zdata = itp(event.xdata, event.ydata)
+        print(zdata)
 
     return axe
 
@@ -412,6 +344,7 @@ def plotBode(
     spec_amp: "SubplotSpec",
     spec_pha: "SubplotSpec",
     fpoints: int = 200,
+    pow_lim: float = -100.0,
 ) -> Tuple["AxesSubplot", "AxesSubplot"]:
     """Plots the bode diagram of a filter
 
@@ -453,7 +386,7 @@ def plotBode(
     num, den = TransferFunction._z_to_zinv(b, a)
     _, y = freqz(num, den, worN=freq, fs=fs)
 
-    axe_amp.plot(freq, DSPLine.to_db(y))
+    axe_amp.plot(freq, DSPLine.to_db(y, lim_db=pow_lim))
     axe_amp.grid(True)
     axe_amp.set_ylabel("Amplitude (dB)")
 
@@ -587,7 +520,7 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":
     return fig
 
 
-def plotGraph(G, axe_spec=None, **kwds):
+def plotGraph(G, axe_spec=None, **kwds) -> "Axes":
     """See https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pylab.draw.html#networkx.drawing.nx_pylab.draw
 
     Args:
@@ -634,19 +567,23 @@ def plot3DEarth(trajectories: Iterable[Trajectory]) -> "B3DPlotter":
     app.buildEarth()
 
     for traj in trajectories:
-        app.buildTrajectory(traj)
+        app.plotTrajectory(traj)
 
     return app
 
 
-def plotBER(fic, output=""):
+def plotBER(fic, axe_spec=None, **kwds) -> "Axes":
     """Helper function that plots a BER curve from a log file where the lines are :
 
     "[{level}] - SNR = {snr} dB, it={it}, Bits Received = {bit_rx}, Bit errors = {bit_err}, BER = {ber}"
 
     Args:
         fic: ASCII file to read
-        output: 'show' to display an interactive figure, name of a file to save the figure without displaying it
+        axe_spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
+        kwds: plotting options
+
+    Returns:
+        The actual axe used for plotting
 
     """
     p = compile(
@@ -661,22 +598,20 @@ def plotBER(fic, output=""):
         snr.append(float(dat["snr"]))
         ber.append(float(dat["ber"]))
 
-    c_n0 = np.array(snr) + 10 * log10(180e3)
+    if axe_spec is None:
+        fig = plt.figure()
+        gs = fig.add_gridspec(1, 1)
+        axe_spec = gs[0, 0]
 
-    fig = plt.figure(dpi=150)
-    axe = fig.add_subplot(111)
+    gs = axe_spec.get_gridspec()
+    fig = gs.figure
+    axe = fig.add_subplot(axe_spec)
     axe.grid(True)
+
     axe.grid(b=True, which="minor", color="#999999", linestyle="-", alpha=0.2)
-    axe.semilogy(c_n0, ber, label="Simu BER")
+    axe.semilogy(snr, ber, label="Simu BER", **kwds)
     axe.legend()
-    axe.set_xlabel("$C/N_0$ (dB)")
+    axe.set_xlabel("$SNR$ (dB)")
     axe.set_ylabel("BER")
 
-    if output == "show":
-        plt.show()
-    elif output == "":
-        pass
-    else:
-        plt.savefig(output)
-
-    return fig
+    return axe

@@ -19,6 +19,7 @@ from TestBase import TestBase
 
 
 class Test8PSK(TestBase):
+    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_8psk(self):
         mapping = [
             0,
@@ -41,6 +42,12 @@ class Test8PSK(TestBase):
         data2 = psk_dec.process(qpsk_payload)
 
         self.assertAlmostEqual(np.max(np.abs(data - data2)), 0, delta=1e-9)
+
+        fig = plt.figure()
+        axe = fig.add_subplot(111)
+        psk_co.plotConstellation(axe)
+
+        return axe.figure
 
     def test_8psk_noise(self):
         mapping = [

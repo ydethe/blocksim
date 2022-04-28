@@ -174,14 +174,15 @@ class TestLogger(TestBase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
-
     a = TestLogger()
-    a.setUp()
-    a.test_save_load_csv()
+    # a.setUp()
+    # a.test_save_load_csv()
 
     # a.setUp()
     # a.test_save_load_xls()
 
     # a.setUp()
     # a.test_save_load_pickle()
+
+    a.setUp()
+    a.ntest_save_load_psql()

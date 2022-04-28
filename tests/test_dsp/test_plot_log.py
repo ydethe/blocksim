@@ -17,9 +17,9 @@ class TestPlotLog(unittest.TestCase):
     @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_plot_log(self):
         pth = Path(__file__).parent / "ber_snr.txt"
-        fig = plotBER(str(pth), output="")
+        axe = plotBER(str(pth))
 
-        return fig
+        return axe.figure
 
 
 if __name__ == "__main__":

@@ -62,6 +62,10 @@ If needed (for example, a new test with its associated baseline image), we might
 
 ![classes](./classes.png "Class diagram")
 
+# Distribution
+
+Download source archive and wheel file [distribution](../dist)
+
 """
 
 # __init__.py
