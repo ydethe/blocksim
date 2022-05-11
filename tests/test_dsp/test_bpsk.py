@@ -84,7 +84,7 @@ class TestBPSK(TestBase):
 
         self.assertLess(ber, 1e-4)
 
-    @pytest.mark.mpl_image_compare(tolerance=25, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=40, savefig_kwargs={"dpi": 150})
     def test_bpsk_spectrum(self):
         p_samp = 10
         bpsk = PSKMapping(name="bpsk", mapping=[0, pi], p_samp=p_samp)

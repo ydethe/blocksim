@@ -1,6 +1,7 @@
 # antenna_config.py
-
+import os
 from pathlib import Path
+from pickle import load
 
 from numpy import pi, cos, arcsin
 
@@ -11,8 +12,12 @@ root = Path(__file__).parent
 name = "ant"
 freq = c / 0.3
 altitude = 10000.0
-hpbw = arcsin(1 / 3)
-coefficients = root / "coeff.pkl"
+hpbw = pi / 2
+coeff_pth = root / "coeff.pkl"
+
+if os.path.exists(coeff_pth):
+    with open(coeff_pth, "rb") as f:
+        coefficients = load(f)
 
 
 def th_profile(th):

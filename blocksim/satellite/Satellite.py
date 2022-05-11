@@ -528,6 +528,7 @@ class CircleSatellite(ASatellite):
 
     def setInitialITRF(self, t_epoch: float, pv: "array"):
         """Set the initial position and velocity from in ITRF position / velocity
+        The velocity is used only to determine the orbit's plane. It is then modified so that the orbit eccentricity be 0
         Also sets the attributes of the class
 
         Args:
@@ -539,18 +540,21 @@ class CircleSatellite(ASatellite):
         pos = pv_teme[:3]
         vel = pv_teme[3:]
         a = lin.norm(pos)
-
-        self.setInitialStateForOutput(initial_state=pv, output_name="itrf")
-        self.createParameter(name="initial_itrf", value=pv, read_only=True)
+        self.__sat_puls = sqrt(mu / a**3)
 
         n = np.cross(pos, vel)
         n /= lin.norm(n)
+        vel = np.cross(n, pos) * self.__sat_puls
+        pvc_teme = np.hstack((pos, vel))
 
-        self.__R1 = pv_teme
+        self.__R1 = pvc_teme
         self.__R2 = np.hstack((np.cross(n, pos), np.cross(n, vel)))
-        self.__sat_puls = sqrt(mu / a**3)
 
-        a, e, argp, inc, mano, node = teme_to_orbital(pv_teme)
+        pvc = teme_to_itrf(t_epoch=t_epoch, pv_teme=pvc_teme)
+        self.setInitialStateForOutput(initial_state=pvc, output_name="itrf")
+        self.createParameter(name="initial_itrf", value=pv, read_only=True)
+
+        a, e, argp, inc, mano, node = teme_to_orbital(pvc_teme)
 
         self.orbit_mano = mano
         self.orbit_eccentricity = 0.0
@@ -585,7 +589,8 @@ class CircleSatellite(ASatellite):
         mano: float = 0.0,
         node: float = 0.0,
     ) -> "CircleSatellite":
-        """
+        """Builds an orbit from orbital elements. The eccentricity is forced to 0
+
         Args:
             name: Name of the satellite
             tsync: Date that corresponds to simulation time = 0
@@ -618,6 +623,7 @@ class CircleSatellite(ASatellite):
         cls, name: str, tsync: datetime, pv_itrf: "array"
     ) -> "CircleSatellite":
         """Instanciates a CircleSatellite from an initial position and velocity from in ITRF position / velocity
+        The velocity is used only to determine the orbit's plane. It is then modified so that the orbit eccentricity be 0
         Also sets the attributes of the class
 
         Args:
@@ -640,6 +646,7 @@ class CircleSatellite(ASatellite):
         cls, tsync: datetime, tle_file: str, iline: int = 0, name_prefix: str = ""
     ) -> "CircleSatellite":
         """Builds a CircleSatellite from a TLE file
+        The velocity is used only to determine the orbit's plane. It is then modified so that the orbit eccentricity be 0
         Returns None if the file was incorrect
         See https://en.wikipedia.org/wiki/Two-line_element_set
 
@@ -700,7 +707,6 @@ class CircleSatellite(ASatellite):
         cth = cos(th)
         sth = sin(th)
 
-        # https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula#Matrix_notation
         if hasattr(td, "__iter__"):
             ns = len(td)
             newpv_teme = np.outer(self.__R1, cth) + np.outer(self.__R2, sth)

@@ -753,7 +753,7 @@ def teme_to_orbital(pv: "array"):
     p = h2 / mu
     asqr = 1 - p / a
     inc = arccos(hz / nh)
-    if asqr < 0:
+    if asqr <= 0:
         e = 0
         tano = 0
     else:

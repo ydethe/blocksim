@@ -11,7 +11,7 @@ from .DSPSpectrogram import DSPSpectrogram
 
 from .. import logger
 from ..constants import c, Req, mu
-from ..utils import cexp
+from ..utils import build_env, cexp, rotation_matrix
 
 __all__ = ["AntennaNetwork"]
 
@@ -40,7 +40,7 @@ class AntennaNetwork(AComputer):
         * mapping
         * freq (Hz)
         * hpbw (rad)
-        * coefficients: Path to pkl file containing the coefficients for each antenna
+        * coefficients: array of coefficients for each antenna
 
     """
 
@@ -61,15 +61,8 @@ class AntennaNetwork(AComputer):
         self.createParameter(name="hpbw", value=ac.hpbw, read_only=True)
         self.createParameter(name="wavelength", value=c / ac.freq, read_only=True)
 
-        N = 0
-        if os.path.exists(ac.coefficients):
-            from pickle import load
-
-            with open(ac.coefficients, "rb") as f:
-                self._coeff = load(f)
-
-            N = len(self._coeff)
-            logger.info("Loaded '%s'" % ac.coefficients)
+        self._coeff = ac.coefficients
+        N = len(self._coeff)
 
         self.createParameter(name="num_elem", value=N, read_only=True)
 
@@ -92,7 +85,7 @@ class AntennaNetwork(AComputer):
             A DSPSpectrogram that represents the diagram
 
         """
-        used_theta = np.linspace(0, pi / 2, n_points)
+        used_theta = np.linspace(0, self.hpbw, n_points)
         used_psi = np.linspace(0, 2 * pi, n_points)
         m = np.zeros((n_points, n_points), dtype=np.complex128)
         Emax = -1
@@ -135,14 +128,18 @@ class AntennaNetwork(AComputer):
         rxsig: "array",
         info: "array",
     ) -> dict:
-        u = rxpos[:3] - txpos[:3]
-        d = lin.norm(u)
-        u /= d
-        theta = arccos(u[0])
-        psi = arctan2(u[2], u[1])
+        M = build_env(txpos[:3])
+        vloc = M.T @ txpos[3:]
+        azv = arctan2(vloc[1], vloc[0])
+        u = -M.T @ (rxpos[:3] - txpos[:3])
+        d0 = lin.norm(u)
+        u /= d0
+        theta = arccos(u[2])
+        psi = arctan2(u[1], u[0])
+        psi -= azv
 
         amp = 0
-        d0 = self.th_profile(theta)
+        # d0 = self.th_profile(theta)
         for k in np.arange(self.num_elem):
             p, q = self.mapping(k)
             dk = d0 - sin(theta) * (cos(psi) * p + sin(psi) * q)
@@ -150,7 +147,6 @@ class AntennaNetwork(AComputer):
 
         outputs = {}
         outputs["rxsig"] = txsig * amp
-
         outputs["info"] = np.array([theta, psi])
 
         return outputs

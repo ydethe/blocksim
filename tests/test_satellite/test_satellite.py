@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-import unittest
 from datetime import datetime, timezone
 
 from skyfield.api import load
