@@ -97,7 +97,7 @@ class FiniteDelayLine(ADelayLine):
         itime = self._l_time.search(x)
 
         if np.isnan(itime) or itime < 0:
-            return 0
+            return np.complex128(0)
 
         ta = self._l_time[itime]
         tb = self._l_time[itime + 1]

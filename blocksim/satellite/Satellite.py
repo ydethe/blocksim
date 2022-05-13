@@ -149,7 +149,7 @@ class ASatellite(AComputer):
         self.createParameter(name="orbital_precession")  # (rad/s)
         self.createParameter(name="orbit_period")  # (s)
 
-    def subpoint(self, itrf_pos_vel: "array") -> Tuple[float]:
+    def subpoint(self, itrf_pos_vel: "array") -> Tuple[float, float]:
         """
         Return the latitude and longitude directly beneath this position.
 

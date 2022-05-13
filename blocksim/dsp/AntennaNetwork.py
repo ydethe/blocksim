@@ -11,7 +11,7 @@ from .DSPSpectrogram import DSPSpectrogram
 
 from .. import logger
 from ..constants import c, Req, mu
-from ..utils import build_env, cexp, rotation_matrix
+from ..utils import build_local_matrix, cexp, rotation_matrix
 
 __all__ = ["AntennaNetwork"]
 
@@ -22,7 +22,7 @@ class AntennaNetwork(AComputer):
     The inputs of the computer are **tx_pos**, **rx_pos** and **tx_sig**
     The outputs of the computer are **rx_sig**
 
-    The **tx_pos** and **rx_pos** vectors represent a 3D position (m) and 3D velocity (m/s) in ITRF
+    The **tx_pos** vector represents a 3D position (m) and 3D velocity (m/s) in ITRF
     **tx_sig** is the RX signal
 
     Attributes:
@@ -49,21 +49,23 @@ class AntennaNetwork(AComputer):
     def __init__(self, ac, dtype=np.complex128):
         AComputer.__init__(self, name=ac.name)
 
+        self._coeff = np.array(ac.coefficients, dtype=np.complex128)
+        N = len(self._coeff)
+
+        epnames = []
+        for k in range(N):
+            epnames.extend([f"px{k}", f"py{k}", f"pz{k}", f"vx{k}", f"vy{k}", f"vz{k}"])
+
         self.defineInput("txpos", shape=6, dtype=np.float64)
-        self.defineInput("rxpos", shape=6, dtype=np.float64)
         self.defineInput("txsig", shape=1, dtype=dtype)
-        self.defineOutput("rxsig", snames=["y"], dtype=dtype)
-        self.defineOutput("info", snames=["theta", "psi"], dtype=np.float64)
+        self.defineOutput("rxsig", snames=[f"y{k}" for k in range(N)], dtype=dtype)
+        self.defineOutput("elempos", snames=epnames, dtype=np.float64)
 
         self.createParameter(name="th_profile", value=ac.th_profile, read_only=True)
         self.createParameter(name="mapping", value=ac.mapping, read_only=True)
         self.createParameter(name="frequency", value=ac.freq, read_only=True)
         self.createParameter(name="hpbw", value=ac.hpbw, read_only=True)
         self.createParameter(name="wavelength", value=c / ac.freq, read_only=True)
-
-        self._coeff = ac.coefficients
-        N = len(self._coeff)
-
         self.createParameter(name="num_elem", value=N, read_only=True)
 
     def getCoefficients(self) -> "array":
@@ -123,30 +125,20 @@ class AntennaNetwork(AComputer):
         t1: float,
         t2: float,
         txpos: "array",
-        rxpos: "array",
         txsig: "array",
         rxsig: "array",
-        info: "array",
+        elempos: "array",
     ) -> dict:
-        M = build_env(txpos[:3])
-        vloc = M.T @ txpos[3:]
-        azv = arctan2(vloc[1], vloc[0])
-        u = -M.T @ (rxpos[:3] - txpos[:3])
-        d0 = lin.norm(u)
-        u /= d0
-        theta = arccos(u[2])
-        psi = arctan2(u[1], u[0])
-        psi -= azv
+        M = build_local_matrix(txpos[:3], xvec=txpos[3:])
 
-        amp = 0
-        # d0 = self.th_profile(theta)
+        apos = np.zeros(3)
         for k in np.arange(self.num_elem):
-            p, q = self.mapping(k)
-            dk = d0 - sin(theta) * (cos(psi) * p + sin(psi) * q)
-            amp += self._coeff[k] * cexp(dk / self.wavelength)
+            apos[:2] = self.mapping(k)
+            elempos[6 * k : 6 * k + 3] = txpos[:3] + M @ apos
+            elempos[6 * k + 3 : 6 * k + 6] = txpos[3:]  # TODO: Compute real velocities
 
         outputs = {}
-        outputs["rxsig"] = txsig * amp
-        outputs["info"] = np.array([theta, psi])
+        outputs["rxsig"] = txsig[0] * self._coeff
+        outputs["elempos"] = elempos
 
         return outputs

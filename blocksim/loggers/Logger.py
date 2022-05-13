@@ -135,8 +135,6 @@ class Logger(object):
 
         """
         self.__uri = Path(uri)
-        if not self.__uri.exists():
-            raise FileNotFoundError(self.__uri)
 
         ldata = plugin_manager.hook.loadLogFile(log=self, uri=self.__uri)
         lok = [x for x in ldata if x]
@@ -458,12 +456,15 @@ class Logger(object):
         y = fftconvolve(sig, a, mode="same")
         return y
 
-    def export(self, uri: Path):
+    def export(self, uri: Path) -> int:
         """Exports the logger to a specified file or URI into the logger.
         Looks up among all plugins which one can handle the extension of **fig**
 
         Args:
             uri: The path or URI to write in
+
+        Returns:
+            A integer that can be any information. **It needs to be >= 0 in case of success**
 
         Raises:
             SystemError if no handler has been identified or if too many handlers were identified
@@ -479,3 +480,5 @@ class Logger(object):
             raise SystemError("Unable to write '%s'" % self.__uri)
         elif len(lok) > 1:
             raise SystemError("Uncoherent return '%s'" % lok)
+
+        return lok[0]

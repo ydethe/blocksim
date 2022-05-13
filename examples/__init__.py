@@ -14,7 +14,7 @@ from nbconvert.preprocessors import ExecutePreprocessor
 from nbconvert import MarkdownExporter
 
 
-def bsprint(*x):
+def _bsprint(*x):
     pass
 
 
@@ -50,7 +50,7 @@ def __execute_notebook(root, ep, nb):
 def __render_notebook(exporter, fic, nb, odir):
     (body, resources) = exporter.from_notebook_node(nb)
     pth_dst = odir / os.path.basename(fic).replace(".ipynb", ".md")
-    bsprint("   ", pth_dst)
+    _bsprint("   ", pth_dst)
     rt = os.path.basename(fic).replace(".ipynb", "")
     with open(pth_dst, "w") as f:
         f.write(body.replace("![png](", f"![png]({rt}_"))
@@ -59,7 +59,7 @@ def __render_notebook(exporter, fic, nb, odir):
     imgdir.mkdir(parents=True, exist_ok=True)
     for pth_img in resources["outputs"].keys():
         bn = rt + "_" + pth_img
-        bsprint("   ", imgdir / bn)
+        _bsprint("   ", imgdir / bn)
         f = open(imgdir / bn, "wb")
         f.write(resources["outputs"][pth_img])
         f.close()
@@ -68,7 +68,7 @@ def __render_notebook(exporter, fic, nb, odir):
 def __create_py(root, fic):
     pth_py = Path(root) / os.path.basename(fic).replace(".ipynb", ".py")
     rt = os.path.basename(fic).replace(".ipynb", "")
-    bsprint("   ", pth_py)
+    _bsprint("   ", pth_py)
     with open(pth_py, "w") as f:
         f.write(f'"""\n.. include:: ../build/htmldoc/{rt}.md\n"""')
 
@@ -84,7 +84,7 @@ odir.mkdir(parents=True, exist_ok=True)
 # root = "examples"
 # lnb=__list_notebooks(root)
 def __process(fic):
-    bsprint(fic)
+    _bsprint(fic)
     root = os.path.dirname(fic)
     nb = __read_notebook(fic)
     if nb is None:

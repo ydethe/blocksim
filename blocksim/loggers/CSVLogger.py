@@ -31,6 +31,9 @@ class Logger(object, metaclass=Singleton):
         if not self.test_suitable(uri):
             return False
 
+        if not uri.exists():
+            raise FileNotFoundError(uri)
+
         data = pd.read_csv(uri, sep=";", na_values="")
         for k in data.columns:
             if data[k].dtype == "O":

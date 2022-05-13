@@ -30,6 +30,9 @@ class Logger(object, metaclass=Singleton):
         if not self.test_suitable(uri):
             return False
 
+        if not uri.exists():
+            raise FileNotFoundError(uri)
+
         data = pd.read_excel(uri, engine="openpyxl", na_values="")
         for k in data.columns:
             if data[k].dtype == "O":

@@ -624,7 +624,7 @@ class AComputer(ABaseNode):
             inp = self.getInputById(iid)
             yield inp.getName()
 
-    def defineOutput(self, name: str, snames: Iterator[str], dtype) -> Output:
+    def defineOutput(self, name: str, snames: List[str], dtype) -> Output:
         """Creates an output for the computer
 
         Args:

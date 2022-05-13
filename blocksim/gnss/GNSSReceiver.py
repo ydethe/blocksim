@@ -12,7 +12,7 @@ from skyfield import framelib
 from ..core.Node import AComputer, Output
 
 from .. import logger
-from ..utils import datetime_to_skyfield, skyfield_to_datetime, build_env
+from ..utils import datetime_to_skyfield, skyfield_to_datetime, build_local_matrix
 from ..constants import c as clum
 from ..utils import pdot, geodetic_to_itrf
 
@@ -150,7 +150,7 @@ class GNSSReceiver(AComputer):
         else:
             B = np.empty((nsat, 4))
 
-        Penv = build_env(pos)
+        Penv = build_local_matrix(pos)
 
         for k in range(nsat):
             spos = self.getSatellitePositionFromEphem(ephem, k)

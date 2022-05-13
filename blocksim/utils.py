@@ -49,7 +49,7 @@ __all__ = [
     "anomaly_true_to_ecc",
     "anomaly_mean_to_true",
     "anomaly_true_to_mean",
-    "build_env",
+    "build_local_matrix",
     "geodetic_to_itrf",
     "orbital_to_teme",
     "teme_to_orbital",
@@ -574,26 +574,30 @@ def anomaly_true_to_mean(ecc: float, v: float) -> float:
     return M
 
 
-def build_env(pos: "array") -> "array":
+def build_local_matrix(pos: "array", xvec: "array" = None) -> "array":
     """Builds a ENV frame at a given position
 
     Args:
         pos: Position (m) of a point in ITRF
+        xvec: If provided, the first column will be parallel to xvec. Else, the first column will be pointing to the East
 
     Returns:
         Matrix whose columns are:
 
-        * Local East vector
+        * Local East vector, or xvec
         * Local North vector
-        * Local Vertical vector
+        * Local Vertical vector, orthogonal to xvec
 
     """
     # Local ENV for the observer
     vert = pos.copy()
     vert /= lin.norm(vert)
 
-    east = np.cross(np.array([0, 0, 1]), pos)
-    east /= lin.norm(east)
+    if xvec is None:
+        east = np.cross(np.array([0, 0, 1]), pos)
+        east /= lin.norm(east)
+    else:
+        east = xvec / lin.norm(xvec)
 
     north = np.cross(vert, east)
 
@@ -883,7 +887,7 @@ def itrf_to_azeld(obs: "array", sat: "array") -> "array":
 
     """
     # Local ENV for the observer
-    obs_env = build_env(obs[:3])
+    obs_env = build_local_matrix(obs[:3])
 
     deltap = sat[:3] - obs[:3]
     deltav = sat[3:] - obs[3:]
@@ -902,14 +906,17 @@ def itrf_to_azeld(obs: "array", sat: "array") -> "array":
     az = arctan2(x, y) * 180 / pi
 
     # Local ENV for the satellite
-    sat_env = build_env(sat[:3] - obs[:3])
+    sat_env = build_local_matrix(sat[:3] - obs[:3])
     ve, vn, vr = sat_env.T @ deltav
     nv = lin.norm(deltav)
 
     # vr_verif = deltav @ deltap / dist
     # assert(lin.norm(vr-vr_verif)<1e-3)
 
-    vs = arcsin(vr / nv) * 180 / pi
+    if np.abs(nv) < 1e-6:
+        vs = 0.0
+    else:
+        vs = arcsin(vr / nv) * 180 / pi
     va = arctan2(ve, vn) * 180 / pi
 
     return az, el, dist, vr, vs, va

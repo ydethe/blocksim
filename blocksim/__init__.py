@@ -115,9 +115,9 @@ for ep in plugins:
     if ep.name.startswith("logger_"):
         try:
             plugin = import_module(ep.value)
-        except:
+        except BaseException as e:
             plugin = None
-            logger.warning(f"Failed to load {ep.value}")
+            logger.warning(f"Failed to load {ep.value}: {e}")
         if plugin is None:
             continue
         if not plugin_manager.is_registered(plugin=plugin.Logger()):

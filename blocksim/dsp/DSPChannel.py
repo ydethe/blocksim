@@ -1,5 +1,5 @@
 import numpy as np
-from numpy import exp, pi, sqrt, cos, sin, tan
+from numpy import arccos, exp, pi, sqrt, cos, sin, tan
 from scipy import linalg as lin
 
 from ..core.Node import AComputer, AWGNOutput
@@ -48,18 +48,19 @@ class DSPChannel(AComputer):
     Args:
         name: Name of the spectrum
         wavelength: Wavelength of the carrier (m)
-        antenna_gain: Gain of the antenna (dB)
-        antenna_temp: Temperature of the antenna (K)
+        antenna_gain: Gain of the RX antenna (dB)
+        antenna_temp: Temperature of the RX antenna (K)
         bandwidth: Bandwidth of the receiver (Hz)
         noise_factor: Noise factor of the receiver (dB)
         alpha: Alpha parameters for Klobuchar
         beta: Alpha parameters for Klobuchar
+        num_src: Number of radiating elements
         nodop: Remove distance (delay) & Doppler effects
         noatm: Remove atmospheric effects
 
     """
 
-    __slots__ = ["__gain_coef", "__delay_line"]
+    __slots__ = ["__gain_coef", "__delay_lines"]
 
     def __init__(
         self,
@@ -69,22 +70,21 @@ class DSPChannel(AComputer):
         antenna_temp: float,
         bandwidth: float,
         noise_factor: float,
-        alpha: np.array,
-        beta: np.array,
+        alpha: "array",
+        beta: "array",
+        num_src: int = 1,
         nodop: bool = False,
         noatm: bool = False,
         dtype=np.complex128,
     ):
         AComputer.__init__(self, name=name)
 
-        self.defineInput("txpos", shape=6, dtype=np.float64)
+        self.defineInput("txpos", shape=6 * num_src, dtype=np.float64)
         self.defineInput("rxpos", shape=6, dtype=np.float64)
-        self.defineInput("txsig", shape=1, dtype=dtype)
+        self.defineInput("txsig", shape=num_src, dtype=dtype)
         otp = AWGNOutput(name="rxsig", snames=["y"], dtype=dtype)
 
-        otp_size = 1
-
-        otp.setInitialState(np.zeros(otp_size, dtype=otp.getDataType()))
+        otp.setInitialState(np.zeros(1, dtype=otp.getDataType()))
         self.addOutput(otp)
         self.defineOutput(
             name="info",
@@ -99,6 +99,7 @@ class DSPChannel(AComputer):
         self.createParameter(name="noise_factor", value=noise_factor, read_only=True)
         self.createParameter(name="alpha", value=alpha, read_only=True)
         self.createParameter(name="beta", value=beta, read_only=True)
+        self.createParameter(name="num_src", value=num_src, read_only=True)
         self.createParameter(name="nodop", value=nodop)
         self.createParameter(name="noatm", value=noatm)
 
@@ -107,15 +108,18 @@ class DSPChannel(AComputer):
         noise_pow = (
             kb * bandwidth * ((10 ** (noise_factor / 10) - 1) * T0 + antenna_temp)
         )
-        cov = np.eye(otp_size) * noise_pow
-        mean = np.zeros(otp_size)
+        cov = np.eye(1) * noise_pow
+        mean = np.zeros(1)
 
         self.setMean(mean)
         self.setCovariance(cov)
 
-        self.__delay_line = FiniteDelayLine(size=128, dtype=np.complex128)
+        self.__delay_lines = []
+        for k in range(num_src):
+            dl = FiniteDelayLine(size=128, dtype=np.complex128)
+            self.__delay_lines.append(dl)
 
-    def setCovariance(self, cov: np.array):
+    def setCovariance(self, cov: "array"):
         """Sets the covariance matrix of the gaussian distribution
 
         Args:
@@ -128,7 +132,7 @@ class DSPChannel(AComputer):
             raise ValueError(cov.shape, (n, n))
         otp.cov = cov
 
-    def setMean(self, mean: np.array):
+    def setMean(self, mean: "array"):
         """Sets the mean vector of the gaussian distribution
 
         Args:
@@ -161,7 +165,7 @@ class DSPChannel(AComputer):
         otp = self.getOutputByName("rxsig")
         return otp.mean
 
-    def atmosphericModel(self, tx_pos: np.array, rx_pos: np.array):
+    def atmosphericModel(self, tx_pos: "array", rx_pos: "array"):  # type: ignore
         """Computes the atmospheric contribution
 
         Args:
@@ -219,40 +223,55 @@ class DSPChannel(AComputer):
         self,
         t1: float,
         t2: float,
-        txpos: np.array,
-        rxpos: np.array,
-        txsig: np.array,
-        rxsig: np.array,
-        info: np.array,
+        txpos: "array",  # type: ignore
+        rxpos: "array",  # type: ignore
+        txsig: "array",  # type: ignore
+        rxsig: "array",  # type: ignore
+        info: "array",  # type: ignore
     ) -> dict:
-        if self.noatm:
-            azim, elev, d, vrad, _, _ = itrf_to_azeld(rxpos, txpos)
-            L_atm = 1
-            dt_atm = 0
-        else:
-            d, vrad, azim, elev, L_atm, dt_atm = self.atmosphericModel(txpos, rxpos)
+        rxsig = np.empty(self.num_src, dtype=np.complex128)
+        delays = np.empty(self.num_src, dtype=np.float64)
+        for kelem in range(self.num_src):
+            txpos_k = txpos[6 * kelem : 6 * kelem + 6]
+            if self.noatm:
+                azim, elev, d, vrad, _, _ = itrf_to_azeld(rxpos, txpos_k)
+                L_atm = 1
+                dt_atm = 0
+            else:
+                d, vrad, azim, elev, L_atm, dt_atm = self.atmosphericModel(
+                    txpos_k, rxpos
+                )
 
-        if self.nodop:
-            phi_d0 = 0.0
-            vrad = 0.0
-            d = 1.0
-        else:
-            phi_d0 = -2 * pi * (d + c * dt_atm) / self.wavelength
+            if self.nodop:
+                phi_d0 = 0.0
+                vrad = 0.0
+                d = 1.0
+            else:
+                phi_d0 = -2 * pi * (d + c * dt_atm) / self.wavelength
 
-        delay = d / c + dt_atm
+            delay = d / c + dt_atm
+            delays[kelem] = delay
 
-        rxsig = txsig[0] * self.__gain_coef / sqrt(L_atm) / d * exp(1j * phi_d0)
+            psig = txsig[kelem] * self.__gain_coef / sqrt(L_atm) / d * exp(1j * phi_d0)
 
-        self.__delay_line.addSample(t2, rxsig)
-        rx_dl_sig = self.__delay_line.getDelayedSample(delay)
+            self.__delay_lines[kelem].addSample(t2, psig)
+            rx_dl_sig = self.__delay_lines[kelem].getDelayedSample(delay)
+            rxsig[kelem] = rx_dl_sig
 
-        C = np.abs(rx_dl_sig) ** 2
-        N = self.getCovariance()[0, 0]
-        SNR = C / N
-        CN0 = SNR * self.bandwidth
+            if kelem == 0:
+                C = np.abs(rx_dl_sig) ** 2
+                N = self.getCovariance()[0, 0]
+                SNR = C / N
+                CN0 = SNR * self.bandwidth
+                # r = lin.norm(txpos_k)
+                # Rh = lin.norm(rxpos)
+                # ctheta = (r**2 + d**2 - Rh**2) / (2 * d * r)
+                # ctheta = np.clip(ctheta, a_min=-1, a_max=1)
+                # theta = arccos(ctheta)
+                info = np.array([CN0, SNR, d, vrad, azim, elev, L_atm, dt_atm])
 
         outputs = {}
-        outputs["rxsig"] = np.array([rx_dl_sig])
-        outputs["info"] = np.array([CN0, SNR, d, vrad, azim, elev, L_atm, dt_atm])
+        outputs["rxsig"] = np.array([np.sum(rxsig)], dtype=np.complex128)
+        outputs["info"] = info
 
         return outputs

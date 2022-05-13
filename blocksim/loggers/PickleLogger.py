@@ -31,6 +31,9 @@ class Logger(object, metaclass=Singleton):
         if not self.test_suitable(uri):
             return False
 
+        if not uri.exists():
+            raise FileNotFoundError(uri)
+
         data = pd.read_pickle(uri)
         log.setRawData(data)
         return True

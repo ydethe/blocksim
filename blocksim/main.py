@@ -2,14 +2,12 @@
 
 """
 
-from typing import Tuple
 import os
-import argparse
-
-from . import logger
-from .loggers.Logger import Logger
 
 import typer
+
+from .loggers.Logger import Logger
+from . import logger
 
 
 app = typer.Typer()
