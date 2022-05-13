@@ -143,7 +143,8 @@ class TestExceptions(TestBase):
 
     def test_logger_exc(self):
         log = self.sim.getLogger()
-        self.assertRaises(FileNotFoundError, log.loadLogFile, Path("_dummy"))
+        self.assertRaises(IOError, log.loadLogFile, Path("_dummy"))
+        self.assertRaises(FileNotFoundError, log.loadLogFile, Path("_dummy.csv"))
         self.assertRaises(SystemError, log.getValue, "tps")
         log.log("tps", 0)
         log.log("y", 0)
@@ -197,8 +198,7 @@ class TestExceptions(TestBase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
-
     a = TestExceptions()
     a.setUp()
-    a.test_sim_exc()
+    # a.test_sim_exc()
+    a.test_logger_exc()

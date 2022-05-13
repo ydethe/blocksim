@@ -30,13 +30,13 @@ examples: $(PYNBPY)
 	$(Q)test -d $(BLD_DIR)/examples || mkdir -p $(BLD_DIR)/examples
 	$(Q)cp examples/quadcopter.png $(BLD_DIR)/examples
 
-doc: $(PYNBPY) $(PYPKG)
+doc: $(PYNBPY) $(PYPKG) examples
 	$(Q)echo "Generating documentation"
 	$(Q)test -d $(BLD_DIR)/blocksim || mkdir -p $(BLD_DIR)/blocksim
 	$(Q)pdoc --html --force --config latex_math=True -o $(BLD_DIR) blocksim examples
 
 classes:
-	$(Q)pyreverse -s0 blocksim -k --colorized -p blocksim -m no --ignore=exceptions.py,LogFormatter.py,DatabaseModel.py,CSVLogger.py,PickleLogger.py,PsqlLogger.py,XlsLogger.py -d build/htmldoc # In pylint package
+	$(Q)pyreverse -s0 blocksim -k --colorized -p blocksim -m no --ignore=exceptions.py,LogFormatter.py,CSVLogger.py,PickleLogger.py,XlsLogger.py -d build/htmldoc # In pylint package
 	$(Q)dot -Tpng build/htmldoc/classes_blocksim.dot -o $(BLD_DIR)/blocksim/classes.png
 
 dist/blocksim-$(BS_VER).tar.gz: $(PYPKG)
