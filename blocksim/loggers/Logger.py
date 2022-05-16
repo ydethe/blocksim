@@ -3,7 +3,7 @@
 """
 
 from collections import defaultdict
-from typing import Iterable
+from typing import Iterable, Any
 from keyword import iskeyword
 from types import FunctionType
 from datetime import datetime, timezone
@@ -72,13 +72,17 @@ class Logger(object):
         self.__index = 0
         self.__alloc = -1
 
-    def createEmptyValue(self, name: str):
+    def createEmptyValue(self, name: str, unit: str = "", description: Any = None):
         """Creates a new variable with no data
 
         Args:
             name: The name of the variable
+            unit: The physical unit of the variable
+            description: The description of the variable
 
         """
+        param = Parameter(name=name, unit=unit, description=description)
+        self.__params[name] = param
         self.__data[name] = None
 
     def setRawData(self, data: dict):
@@ -259,6 +263,9 @@ class Logger(object):
     def getParameters(self) -> Iterable[Parameter]:
         return self.__params.values()
 
+    def getParameter(self, name: str) -> Parameter:
+        return self.__params[name]
+
     def getParametersName(self) -> Iterable[str]:
         """Returns an iterable on all the variables of the logger
 
@@ -389,7 +396,7 @@ class Logger(object):
                 "Too many loggers to handle file '%s'" % self.getLoadedFile()
             )
 
-    def getValue(self, name: str) -> "array":
+    def getValue(self, name: str, raw: bool = False) -> "array":
         """Get the value of a logged variable
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos
@@ -412,6 +419,9 @@ class Logger(object):
         if len(lnames) == 0:
             raise SystemError("Logger empty")
 
+        if raw:
+            return self.getRawValue(name)
+
         expr = "def __tmp(lg):\n"
         for k in self.getParametersName():
             expr += "   %s=lg.getRawValue(name='%s')\n" % (k, k)
@@ -422,7 +432,7 @@ class Logger(object):
 
         return foo_func(self)
 
-    def getSignal(self, name: str) -> DSPSignal:
+    def getSignal(self, name: str, raw: bool = False) -> DSPSignal:
         """Get the value of a logged variable
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos
@@ -442,7 +452,7 @@ class Logger(object):
 
         """
         tps = self.getRawValue("t")
-        val = self.getValue(name)
+        val = self.getValue(name, raw=raw)
         comp_name = name.replace("_", "")
         return DSPSignal.fromTimeAndSamples(name=comp_name, tps=tps, y_serie=val)
 

@@ -32,7 +32,7 @@ class IQExtract(AComputer):
     __slots__ = []
 
     def __init__(self, name: str):
-        AComputer.__init__(self, name)
+        AComputer.__init__(self, name, logged=False)
         self.defineInput("signal", shape=(1,), dtype=np.complex128)
         self.defineOutput("iq", snames=["s_i", "s_q"], dtype=np.float64)
 

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Any
 
 
 @dataclass(init=True)
@@ -8,7 +8,7 @@ class Parameter:
 
     name: str
     unit: str
-    description: str
+    description: Any
     data: List[complex] = field(default_factory=list)
 
     def __repr__(self):

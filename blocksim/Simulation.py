@@ -240,7 +240,7 @@ class Simulation(object):
                         self.__logger.log(name=pname, val=x, unit=unit)
 
         if not nolog:
-            self.__logger.log(name="t", val=t2)
+            self.__logger.log(name="t", val=t2, unit="s")
 
         return modif
 

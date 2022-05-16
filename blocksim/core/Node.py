@@ -90,8 +90,8 @@ class Output(ABaseNode):
         self,
         name: str,
         snames: Iterable[str],
-        units: Iterable[str] = None,
         dtype=np.float64,
+        units: Iterable[str] = None,
     ):
         ABaseNode.__init__(self, name)
         self.__computer = None
@@ -162,10 +162,10 @@ class Output(ABaseNode):
         return self.__snames.copy()
 
     def iterScalarParameters(self) -> Iterator:
-        """Iterate through all the data, and yield the name and the value of the scalar
+        """Iterate through all the data, and yield the name, the unit and the value of the scalar
 
         Yields:
-            The next tuple of name and the value of the scalar
+            The next tuple of name, unit and value of the scalar
 
         """
         ns = self.getDataShape()
@@ -178,7 +178,8 @@ class Output(ABaseNode):
 
         # Iterate over all dimensions
         for iscal in product(*it):
-            yield self.__snames[iscal], self.__units[iscal], self.__tdata[iscal]
+            k = iscal[0]
+            yield self.__snames[k], self.__units[k], self.__tdata[k]
 
     def getInitialeState(self) -> "array":
         """Gets the element's initial state vector
