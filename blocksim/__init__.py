@@ -76,6 +76,7 @@ from importlib.metadata import entry_points
 
 from pluggy import PluginManager
 import control
+import numpy
 
 control.use_numpy_matrix(flag=False, warn=True)
 
@@ -104,6 +105,8 @@ formatter = LogFormatter()
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
+
+numpy.seterr(all="raise")
 
 plugin_manager = PluginManager("blocksim")
 plugin_manager.add_hookspecs(LoggerSpec)

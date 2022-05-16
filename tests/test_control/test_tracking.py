@@ -141,12 +141,35 @@ class TestTrackingSteadyState(TestBase):
         kal.matR = np.eye(1)
 
         filt = kal.getEstimatingFilter("filt", ma_freq=[3])
+        fpoints = np.arange(0, 20, 0.1)
 
         fig = plt.figure()
         gs = fig.add_gridspec(2, 1)
-        plotBode(
-            filt, spec_amp=gs[0, 0], spec_pha=gs[1, 0], fpoints=np.arange(0, 20, 0.1)
+        axe_amp, axe_pha = plotBode(
+            filt, spec_amp=gs[0, 0], spec_pha=gs[1, 0], fpoints=fpoints, pow_lim=-40
         )
+
+        #### TMP###
+        # Check with scipy functions
+
+        from scipy.signal import StateSpace
+
+        matK = kal.getOutputByName("matK")
+        matK.resetCallback(None)
+        K = kal.getConvergedGainMatrix()
+
+        n = len(kal.tracks)
+
+        Ad, Bd, Cd, Dd = kal.discretize(kal.dt)
+        Cf = np.zeros((1, n))
+        Cf[0, 3] = 1.0
+        sss = StateSpace(Ad - K @ Cd, K, Cf, Dd, dt=kal.dt)
+        sss = sss.to_tf()
+        _, mag, phase = sss.bode(w=fpoints * 2 * pi * self.dt)
+        axe_pha.plot(fpoints, phase, label="scipy bode")
+        axe_pha.legend()
+
+        #### TMP###
 
         return fig
 

@@ -8,19 +8,15 @@ from typing import Any, Tuple, Iterable
 
 from parse import compile
 import numpy as np
-from scipy.special import erfc
 from scipy.interpolate import interp2d
-from numpy import sqrt, log10
-from numpy.polynomial import Polynomial
-from numpy.polynomial.polynomial import polyval
+from numpy import log10
 from matplotlib import pyplot as plt
-from matplotlib.image import AxesImage
 from matplotlib.backend_bases import Event
 import networkx as nx
 
 from .. import logger
 from ..loggers.Logger import Logger
-from ..dsp.DSPFilter import ADSPFilter, ArbitraryDSPFilter
+from ..dsp.DSPFilter import ADSPFilter
 from ..dsp.DSPLine import DSPLine
 from ..dsp.DSPSpectrogram import DSPSpectrogram
 from ..dsp import phase_unfold

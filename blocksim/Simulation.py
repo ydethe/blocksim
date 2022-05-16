@@ -232,9 +232,12 @@ class Simulation(object):
                 if cname == "ctl" and oname == "command":
                     modif[f"{cname}.{oname}.dat"] = dat
                 otp.setData(dat, cname=cname)
-                for n, x in otp.iterScalarNameValue():
+                for sname, unit, x in otp.iterScalarParameters():
                     if comp.isLogged and not nolog:
-                        self.__logger.log(name="%s_%s_%s" % (cname, oname, n), val=x)
+                        pname = self.__logger.buildParameterNameFromComputerElements(
+                            cname, oname, sname
+                        )
+                        self.__logger.log(name=pname, val=x, unit=unit)
 
         if not nolog:
             self.__logger.log(name="t", val=t2)

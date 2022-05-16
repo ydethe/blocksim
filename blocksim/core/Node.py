@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Iterable, Iterator, List
 from itertools import product
-from uuid import UUID, uuid4
+from uuid import UUID
 
 import numpy as np
 from numpy import sqrt
@@ -69,7 +69,8 @@ class Output(ABaseNode):
     Args:
         name: Name of the Output
         snames: Name of each of the scalar components of the data.
-            Its shape defines the shap of the data
+            Its shape defines the shape of the data
+        units: List of the physical units of scalar components of the data
         dtype: Data type (typically np.float64 or np.complex128)
 
     """
@@ -80,17 +81,28 @@ class Output(ABaseNode):
         "__dtype",
         "__data",
         "__tdata",
+        "__units",
         "__snames",
         "__initial_state",
     ]
 
-    def __init__(self, name: str, snames: Iterable[str], dtype=np.float64):
+    def __init__(
+        self,
+        name: str,
+        snames: Iterable[str],
+        units: Iterable[str] = None,
+        dtype=np.float64,
+    ):
         ABaseNode.__init__(self, name)
         self.__computer = None
         self.__data = np.array([])
         self.__tdata = np.array([])
         self.__dtype = dtype
         self.__snames = np.array(snames)
+        if units is None:
+            self.__units = ["" for _ in snames]
+        else:
+            self.__units = list(units)
         self.__shape = self.__snames.shape
         self.setInitialState(np.zeros(self.__shape, dtype=dtype))
 
@@ -131,6 +143,15 @@ class Output(ABaseNode):
         )
         self.__initial_state = valid_data
 
+    def getScalarUnits(self) -> Iterable[str]:
+        """Gets the physical unit of each of the scalar components of the data
+
+        Returns:
+            The physical unit of each of the scalar components of the data
+
+        """
+        return self.__units.copy()
+
     def getScalarNames(self) -> Iterable[str]:
         """Gets the name of each of the scalar components of the data
 
@@ -138,9 +159,9 @@ class Output(ABaseNode):
             The name of each of the scalar components of the data
 
         """
-        return self.__snames
+        return self.__snames.copy()
 
-    def iterScalarNameValue(self) -> Iterator:
+    def iterScalarParameters(self) -> Iterator:
         """Iterate through all the data, and yield the name and the value of the scalar
 
         Yields:
@@ -157,7 +178,7 @@ class Output(ABaseNode):
 
         # Iterate over all dimensions
         for iscal in product(*it):
-            yield self.__snames[iscal], self.__tdata[iscal]
+            yield self.__snames[iscal], self.__units[iscal], self.__tdata[iscal]
 
     def getInitialeState(self) -> "array":
         """Gets the element's initial state vector

@@ -21,6 +21,7 @@ from ..exceptions import *
 from ..utils import deg, rad
 from ..dsp.DSPSignal import DSPSignal
 from .. import plugin_manager
+from .Parameter import Parameter
 
 
 __all__ = ["Logger"]
@@ -52,6 +53,7 @@ class Logger(object):
     __datetime_fmt = "%Y-%m-%d %H:%M-%S"
     __slots__ = [
         "__data",
+        "__params",
         "__uri",
         "__index",
         "__alloc",
@@ -66,6 +68,7 @@ class Logger(object):
         self.__uri = None
         self.__start_time = datetime.now(tz=timezone.utc)
         self.__data = defaultdict(list)
+        self.__params = dict()
         self.__index = 0
         self.__alloc = -1
 
@@ -195,12 +198,13 @@ class Logger(object):
         sze = calcsize(fmt_dict[typ])
         return typ, pck_f, unpck_f, sze
 
-    def log(self, name: str, val: float):
+    def log(self, name: str, val: float, unit: str):
         """Log a value for a variable. If *name* is '_', nothing is logged
 
         Args:
             name: Name of the parameter. Nothing is logged if *name* == '_'
             val: Value to log
+            unit: Physical unit associated with the value
 
         """
         if name == "_":
@@ -218,6 +222,10 @@ class Logger(object):
         typ, pck_f, unpck_f, sze = self._findType(val)
         dtyp = typ_map[typ]
 
+        if not name in self.__params.keys():
+            param = Parameter(name=name, unit=unit, description="")
+            self.__params[name] = param
+
         if self.__alloc > 0:
             if not name in self.__data.keys():
                 self.__data[name] = np.empty(self.__alloc, dtype=dtyp)
@@ -230,6 +238,26 @@ class Logger(object):
 
         # Handling of the logged value by the pugins
         ldata = plugin_manager.hook.log(log=self, name=name, val=val)
+
+    def buildParameterNameFromComputerElements(
+        self, cname: str, oname: str, sname: str
+    ) -> str:
+        """Determines the name of Logger parameter from the name of the AComputer, Output and scalar.
+
+        Args:
+            cname: Name of the AComputer
+            oname: Name of the AComputer's Output
+            sname: Name of the scalar in the Output
+
+        Returns:
+            The name of the parameter in the Logger
+
+        """
+        pname = "%s_%s_%s" % (cname, oname, sname)
+        return pname
+
+    def getParameters(self) -> Iterable[Parameter]:
+        return self.__params.values()
 
     def getParametersName(self) -> Iterable[str]:
         """Returns an iterable on all the variables of the logger
@@ -413,7 +441,7 @@ class Logger(object):
             True
 
         """
-        tps = self.getValue("t")
+        tps = self.getRawValue("t")
         val = self.getValue(name)
         comp_name = name.replace("_", "")
         return DSPSignal.fromTimeAndSamples(name=comp_name, tps=tps, y_serie=val)
