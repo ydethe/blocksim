@@ -1,5 +1,6 @@
 from typing import Iterable
 
+from numpy.typing import ArrayLike
 import numpy as np
 from scipy import linalg as lin
 
@@ -51,7 +52,7 @@ class ASensors(AComputer):
         otp.cov = np.eye(n)
         otp.mean = np.zeros(n)
 
-    def setCovariance(self, cov: "array", oname: str = "measurement"):
+    def setCovariance(self, cov: ArrayLike, oname: str = "measurement"):
         """Defines the covariance matrix of the gaussian noise on the output
 
         Args:
@@ -65,7 +66,7 @@ class ASensors(AComputer):
             raise ValueError(cov.shape, (n, n))
         otp.cov = cov
 
-    def setMean(self, mean: "array", oname: str = "measurement"):
+    def setMean(self, mean: ArrayLike, oname: str = "measurement"):
         """Defines the mean vector of the gaussian noise on the output
 
         Args:
@@ -79,7 +80,7 @@ class ASensors(AComputer):
             raise ValueError(mean.shape[0], n)
         otp.mean = mean
 
-    def getCovariance(self, oname: str = "measurement") -> "array":
+    def getCovariance(self, oname: str = "measurement") -> ArrayLike:
         """Gets the covariance matrix of the gaussian noise on the output
 
         Args:
@@ -92,7 +93,7 @@ class ASensors(AComputer):
         otp = self.getOutputByName(oname)
         return otp.cov
 
-    def getMean(self, oname: str = "measurement") -> "array":
+    def getMean(self, oname: str = "measurement") -> ArrayLike:
         """Gets the mean vector of the gaussian noise on the output
 
         Args:
@@ -144,8 +145,8 @@ class ProportionalSensors(ASensors):
         self,
         t1: float,
         t2: float,
-        measurement: np.array,
-        state: np.array,
+        measurement: ArrayLike,
+        state: ArrayLike,
     ) -> dict:
         meas = self.matC @ state
 
@@ -203,9 +204,9 @@ class LinearSensors(ASensors):
         self,
         t1: float,
         t2: float,
-        command: np.array,
-        measurement: np.array,
-        state: np.array,
+        command: ArrayLike,
+        measurement: ArrayLike,
+        state: ArrayLike,
     ) -> dict:
         meas = self.matC @ state + self.matD @ command
 
@@ -242,7 +243,7 @@ class StreamSensors(AComputer):
         self,
         t1: float,
         t2: float,
-        measurement: np.array,
+        measurement: ArrayLike,
     ) -> dict:
         meas = self.getOutputByName("measurement")
 

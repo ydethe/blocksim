@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 
 import pluggy
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import *
 from scipy.signal import firwin, fftconvolve
@@ -34,8 +35,8 @@ class Logger(object):
 
     Examples:
         >>> log = Logger()
-        >>> log.log('t',0)
-        >>> log.log('t',1)
+        >>> log.log(name='t',val=0,unit='')
+        >>> log.log(name='t',val=1,unit='')
         >>> log.getValue('t') # doctest: +ELLIPSIS
         array([0, 1]...
         >>> log.getValue('2*t') # doctest: +ELLIPSIS
@@ -214,21 +215,24 @@ class Logger(object):
         if name == "_":
             return
 
-        if iskeyword(name) or name == "keep_up":
-            raise NameIsPythonKeyword(name)
-
-        typ_map = {
-            b"I": np.int64,
-            b"F": np.float64,
-            b"C": np.complex128,
-            b"B": bool,
-        }
-        typ, pck_f, unpck_f, sze = self._findType(val)
-        dtyp = typ_map[typ]
-
         if not name in self.__params.keys():
-            param = Parameter(name=name, unit=unit, description="")
+            if iskeyword(name) or name == "keep_up":
+                raise NameIsPythonKeyword(name)
+
+            typ_map = {
+                b"I": np.int64,
+                b"F": np.float64,
+                b"C": np.complex128,
+                b"B": bool,
+            }
+            typ, pck_f, unpck_f, sze = self._findType(val)
+            dtyp = typ_map[typ]
+
+            param = Parameter(name=name, unit=unit, dtype=dtyp, description="")
             self.__params[name] = param
+        else:
+            param = self.__params[name]
+        dtyp = param.dtype
 
         if self.__alloc > 0:
             if not name in self.__data.keys():
@@ -239,6 +243,9 @@ class Logger(object):
 
         if name == "t":
             self.__index += 1
+            # s0 = len(self.__data["t"])
+            # for k in self.__data.keys():
+            # assert len(self.__data[k]) == s0
 
         # Handling of the logged value by the pugins
         ldata = plugin_manager.hook.log(log=self, name=name, val=val)
@@ -292,7 +299,7 @@ class Logger(object):
 
         return len(data0)
 
-    def getFlattenOutput(self, name: str, dtype=np.complex128) -> "array":
+    def getFlattenOutput(self, name: str, dtype=np.complex128) -> ArrayLike:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -316,7 +323,7 @@ class Logger(object):
 
         return res
 
-    def getValueForComputer(self, comp: AComputer, output_name: str) -> "array":
+    def getValueForComputer(self, comp: AComputer, output_name: str) -> ArrayLike:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -330,7 +337,7 @@ class Logger(object):
         val = self.getMatrixOutput(name="%s_%s" % (comp.getName(), output_name))
         return val
 
-    def getMatrixOutput(self, name: str) -> "array":
+    def getMatrixOutput(self, name: str) -> ArrayLike:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -359,7 +366,7 @@ class Logger(object):
 
         return res
 
-    def getRawValue(self, name: str) -> "array":
+    def getRawValue(self, name: str) -> ArrayLike:
         """Get the value of a logged variable
         The argument *cannot* be an expression.
 
@@ -372,7 +379,7 @@ class Logger(object):
         Examples:
             >>> log = Logger()
             >>> ref = np.linspace(0,2*np.pi,200)
-            >>> _ = [log.log('a',a) for a in ref]
+            >>> _ = [log.log(name='a',val=a,unit='') for a in ref]
             >>> r = log.getRawValue('a')
             >>> np.max(np.abs(r-ref)) < 1e-15
             True
@@ -396,7 +403,7 @@ class Logger(object):
                 "Too many loggers to handle file '%s'" % self.getLoadedFile()
             )
 
-    def getValue(self, name: str, raw: bool = False) -> "array":
+    def getValue(self, name: str, raw: bool = False) -> ArrayLike:
         """Get the value of a logged variable
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos
@@ -409,7 +416,7 @@ class Logger(object):
 
         Examples:
             >>> log = Logger()
-            >>> _ = [log.log('a',a) for a in np.linspace(0,2*np.pi,200)]
+            >>> _ = [log.log(name='a',val=a,unit='') for a in np.linspace(0,2*np.pi,200)]
             >>> r = log.getValue('np.cos(a)**2 + np.sin(a)**2')
             >>> np.max(np.abs(r-1)) < 1e-15
             True
@@ -445,7 +452,7 @@ class Logger(object):
 
         Examples:
             >>> log = Logger()
-            >>> _ = [log.log('t',a) for a in np.linspace(0,2*np.pi,200)]
+            >>> _ = [log.log(name='t',val=a,unit='') for a in np.linspace(0,2*np.pi,200)]
             >>> sig = log.getSignal('np.cos(t)**2 + np.sin(t)**2')
             >>> np.max(np.abs(sig.y_serie-1)) < 1e-15
             True
@@ -458,7 +465,7 @@ class Logger(object):
 
     def getFilteredValue(
         self, name: str, ntaps: int, cutoff: float, window: str = "hamming"
-    ) -> "array":
+    ) -> ArrayLike:
         """Get the value of a logged variable, and applies a low-pass filter
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos
@@ -475,7 +482,7 @@ class Logger(object):
         Examples:
             >>> ns=1000;fs=100;f0=10
             >>> log = Logger()
-            >>> _ = [(log.log('t',t),log.log('s',np.cos(np.pi*2*t*f0))) for t in np.arange(0,ns)/fs]
+            >>> _ = [(log.log(name='t',val=t,unit='s'),log.log(name='s',val=np.cos(np.pi*2*t*f0),unit='')) for t in np.arange(0,ns)/fs]
             >>> s = log.getValue('s')
             >>> e = np.sum(s**2)/ns
             >>> e # doctest: +ELLIPSIS

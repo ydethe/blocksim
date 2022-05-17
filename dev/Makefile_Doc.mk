@@ -10,7 +10,12 @@ BS_VER=$(shell python -c "import blocksim;print(blocksim.__version__)" | tail -n
 
 default: doc examples $(BLD_DIR)/coverage/index.html dist/blocksim-$(BS_VER).tar.gz
 
-.PHONY: install doc examples
+.PHONY: install doc examples test
+
+test:
+	$(Q)echo "Running tests"
+	$(Q)test -d $(BLD_DIR)/tests || mkdir -p $(BLD_DIR)/tests
+	$(Q)python3 -m pytest --mpl --mpl-generate-summary=html --mpl-results-always --mpl-baseline-path=tests/baseline --mpl-results-path=$(BLD_DIR)/tests/results tests --doctest-modules blocksim
 
 .coverage: $(PYPKG) $(PYTEST)
 	$(Q)echo "Running tests"
@@ -50,3 +55,9 @@ install: doc examples $(BLD_DIR)/coverage/index.html dist/blocksim-$(BS_VER).tar
 	$(Q)test -d $(DEST)/dist || mkdir -p $(DEST)/dist
 	$(Q)cp -r $(BLD_DIR)/* $(DEST)
 	$(Q)cp -r dist/* $(DEST)/dist
+
+clean:
+	$(Q)echo "Cleaning..."
+	$(Q)rm -rf .coverage build dist examples/example_*.py
+	$(Q)find . -name "__pycache__" -print0 | xargs -0 rm -rf
+	$(Q)find . -name "*.bak" -print0 | xargs -0 rm -rf

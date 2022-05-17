@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 import numpy as np
-from numpy import pi, sqrt
+from numpy import pi
 import scipy.linalg as lin
 from matplotlib import pyplot as plt
 import pytest
@@ -16,8 +16,7 @@ from blocksim.control.IMU import IMU
 from blocksim.control.Controller import PIDController
 from blocksim.control.SetPoint import Step
 from blocksim.control.Estimator import MadgwickFilter, MahonyFilter
-from blocksim.utils import deg, rad, euler_to_quat
-from blocksim.graphics import plotFromLogger
+from blocksim.utils import deg, euler_to_quat
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase

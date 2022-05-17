@@ -3,6 +3,7 @@ from typing import Iterable, Iterator, List
 from itertools import product
 from uuid import UUID
 
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import sqrt
 
@@ -36,7 +37,7 @@ class Input(ABaseNode):
             self.__shape = shape
         self.__dtype = dtype
 
-    def getDefaultInputData(self) -> "array":
+    def getDefaultInputData(self) -> ArrayLike:
         return np.zeros(self.getDataShape(), dtype=self.getDataType())
 
     def __repr__(self):
@@ -49,7 +50,7 @@ class Input(ABaseNode):
     def getDataType(self) -> int:
         return self.__dtype
 
-    def process(self, data: "array") -> "array":
+    def process(self, data: ArrayLike) -> ArrayLike:
         """Applies a transform to the incoming data.
         By default, does nothing.
 
@@ -100,7 +101,7 @@ class Output(ABaseNode):
         self.__dtype = dtype
         self.__snames = np.array(snames)
         if units is None:
-            self.__units = ["" for _ in snames]
+            self.__units = np.empty_like(self.__snames)
         else:
             self.__units = list(units)
         self.__shape = self.__snames.shape
@@ -127,7 +128,7 @@ class Output(ABaseNode):
         dat = self.getInitialeState()
         self.setData(dat)
 
-    def setInitialState(self, initial_state: "array"):
+    def setInitialState(self, initial_state: ArrayLike):
         """Sets the element's initial state vector
 
         Args:
@@ -170,18 +171,23 @@ class Output(ABaseNode):
         """
         ns = self.getDataShape()
 
-        # Creating iterables, to handle the case where
-        # the output 'setpoint' is a matrix
-        it = []
-        for k in ns:
-            it.append(range(k))
+        if isinstance(ns, int):
+            iter_ind = range(ns)
+        elif len(ns) == 1:
+            iter_ind = range(ns[0])
+        else:
+            # Creating iterables, to handle the case where
+            # the output 'setpoint' is a matrix
+            it = []
+            for k in ns:
+                it.append(range(k))
+            iter_ind = product(*it)
 
         # Iterate over all dimensions
-        for iscal in product(*it):
-            k = iscal[0]
-            yield self.__snames[k], self.__units[k], self.__tdata[k]
+        for iscal in iter_ind:
+            yield self.__snames[iscal], self.__units[iscal], self.__tdata[iscal]
 
-    def getInitialeState(self) -> "array":
+    def getInitialeState(self) -> ArrayLike:
         """Gets the element's initial state vector
 
         Returns:
@@ -196,7 +202,7 @@ class Output(ABaseNode):
     def getDataType(self):
         return self.__dtype
 
-    def setData(self, data: "array", cname: str = "?"):
+    def setData(self, data: ArrayLike, cname: str = "?"):
         """Sets the data for the Output
         data is the data **before** applying `Output.process`
 
@@ -213,7 +219,7 @@ class Output(ABaseNode):
 
     def _getUnprocessedData(
         self,
-    ) -> "array":
+    ) -> ArrayLike:
         """Gets the data for the Output
 
         Returns:
@@ -224,7 +230,7 @@ class Output(ABaseNode):
 
     def getData(
         self,
-    ) -> "array":
+    ) -> ArrayLike:
         """Gets the data for the Output
 
         Returns:
@@ -233,7 +239,7 @@ class Output(ABaseNode):
         """
         return self.__tdata.copy()
 
-    def process(self, data: "array") -> "array":
+    def process(self, data: ArrayLike) -> ArrayLike:
         """Applies a transform to the outgoing data.
         By default, does nothing.
         The **transformed** data is stored
@@ -277,7 +283,7 @@ class AWGNOutput(Output):
 
         super().resetCallback(t0)
 
-    def process(self, state: "array") -> "array":
+    def process(self, state: ArrayLike) -> ArrayLike:
         """Adds a gaussian noise to a state vector
 
         Args:
@@ -346,7 +352,7 @@ class TFOutput(Output):
         self.__yprev = y
         return y
 
-    def process(self, data: "array") -> "array":
+    def process(self, data: ArrayLike) -> ArrayLike:
         res = np.empty_like(data)
         rs = res.shape
         li = []
@@ -526,7 +532,7 @@ class AComputer(ABaseNode):
 
     def getValueFromLogger(
         self, logger: "Logger", output_name: str, dtype=np.complex128
-    ) -> "array":
+    ) -> ArrayLike:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -564,7 +570,7 @@ class AComputer(ABaseNode):
 
         return isinstance(self, AController)
 
-    def setInitialStateForOutput(self, initial_state: np.array, output_name: str):
+    def setInitialStateForOutput(self, initial_state: ArrayLike, output_name: str):
         """Sets the initial state vector for a given output
 
         Args:
@@ -575,7 +581,7 @@ class AComputer(ABaseNode):
         otp = self.getOutputByName(output_name)
         otp.setInitialState(initial_state)
 
-    def getInitialStateForOutput(self, output_name: str) -> "array":
+    def getInitialStateForOutput(self, output_name: str) -> ArrayLike:
         """Sets the initial state vector for a given output
 
         Args:
@@ -823,12 +829,12 @@ class AComputer(ABaseNode):
         logger.error("In '%s' : input name not found '%s'" % (self.getName(), name))
         raise UnknownInput(self.getName(), name)
 
-    def getDataForOutput(self, oname: str) -> "array":
+    def getDataForOutput(self, oname: str) -> ArrayLike:
         otp = self.getOutputByName(name=oname)
         return otp.getData()
 
     @abstractmethod
-    def update(self, **inputs: dict) -> dict:  # pragma: no cover
+    def update(self, t1: float, t2: float, **inputs: dict) -> dict:  # pragma: no cover
         """Method used to update a Node.
 
         Args:

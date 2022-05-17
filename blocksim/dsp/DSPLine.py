@@ -3,6 +3,7 @@ from itertools import product
 from math import factorial
 
 from lazy_property import LazyProperty
+from numpy.typing import ArrayLike
 import numpy as np
 from scipy import linalg as lin
 from numpy.lib.arraysetops import isin
@@ -36,7 +37,7 @@ class DSPLine(object):
         name: str,
         samplingStart: float = None,
         samplingPeriod: float = None,
-        y_serie: np.array = None,
+        y_serie: ArrayLike = None,
         projection: str = "rectilinear",
         default_transform=lambda x: x,
     ):
@@ -54,24 +55,25 @@ class DSPLine(object):
         return self.__name[:]
 
     @property
-    def samplingStart(self) -> str:
+    def samplingStart(self) -> float:
         return self.__samplingStart
 
     @property
-    def samplingPeriod(self) -> str:
+    def samplingPeriod(self) -> float:
         return self.__samplingPeriod
 
     @property
-    def y_serie(self) -> "array":
+    def y_serie(self) -> ArrayLike:
         return self.__y_serie.copy()
 
     @property
-    def default_transform(self) -> "array":
+    def default_transform(self) -> ArrayLike:
         return self.__default_transform
 
     @LazyProperty
     def _itp_x(self):
-        size = len(self)
+        # size = len(self)
+        size = 2
 
         if size == 1:
             kind = "nearest"
@@ -94,7 +96,8 @@ class DSPLine(object):
 
     @LazyProperty
     def _itp_y(self):
-        size = len(self)
+        # size = len(self)
+        size = 2
 
         if size == 1:
             kind = "nearest"
@@ -124,7 +127,7 @@ class DSPLine(object):
 
         return x_serie
 
-    def generateXSerie(self, index: int = None) -> "array":
+    def generateXSerie(self, index: int = None) -> ArrayLike:
         """Generates the x samples of the line
 
         Args:
@@ -187,7 +190,7 @@ class DSPLine(object):
 
         return lpeak
 
-    def __interpolate(self, new_x: np.array, complex_output: bool = True) -> "array":
+    def __interpolate(self, new_x: ArrayLike, complex_output: bool = True) -> ArrayLike:
         if complex_output:
             y_serie = 1j * self._itp_y(new_x)
             y_serie += self._itp_x(new_x)
@@ -413,7 +416,7 @@ class DSPLine(object):
         return _to_db
 
     @classmethod
-    def to_db(cls, x: "array", lim_db: float = -100) -> "array":
+    def to_db(cls, x: ArrayLike, lim_db: float = -100) -> ArrayLike:
         """Converts the samples into their power, in dB.
         If a sample's power is below *low*, the dB value in clamped to *low*.
 
@@ -426,8 +429,11 @@ class DSPLine(object):
             The power of the serie *x* (dB)
 
         """
+        lim_lin = 10 ** (lim_db / 10)
         pwr = np.real(np.conj(x) * x)
-        return np.clip(10 * np.log10(pwr), a_min=lim_db, a_max=None)
+        pwr = np.clip(pwr, a_min=lim_lin, a_max=None)
+        pwr_db = 10 * np.log10(pwr)
+        return pwr_db
 
     def __len__(self):
         return len(self.y_serie)
@@ -526,13 +532,23 @@ class DSPLine(object):
         return self * y
 
     def __truediv__(self, y):
-        if not issubclass(y.__class__, DSPLine):
+        if issubclass(y.__class__, DSPLine):
+            t_start, dt, rx, ry = self._prepareOperation(y)
+            y_serie = np.empty_like(ry.y_serie, dtype=np.complex128)
+            y_serie[:] = 0
+            iok = np.where(ry.y_serie != 0)[0]
+            y_serie[iok] = rx.y_serie[iok] / ry.y_serie[iok]
+        elif hasattr(y, "__iter__"):
+            t_start = self.samplingStart
+            dt = self.samplingPeriod
+            y_serie = np.empty_like(y, dtype=np.complex128)
+            y_serie[:] = np.nan
+            iok = np.where(y != 0)[0]
+            y_serie[iok] = self.y_serie[iok] / y[iok]
+        else:
             t_start = self.samplingStart
             dt = self.samplingPeriod
             y_serie = self.y_serie / y
-        else:
-            t_start, dt, rx, ry = self._prepareOperation(y)
-            y_serie = rx.y_serie / ry.y_serie
 
         return self.__class__(
             name=self.name,

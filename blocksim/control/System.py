@@ -2,6 +2,7 @@ from abc import abstractmethod
 from typing import Iterable
 from functools import lru_cache
 
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import sqrt
 from scipy.integrate import ode
@@ -68,8 +69,8 @@ class ASystem(AComputer):
 
     @abstractmethod
     def transition(
-        self, t: float, x: "array", u: "array"
-    ) -> "array":  # pragma: no cover
+        self, t: float, x: ArrayLike, u: ArrayLike
+    ) -> ArrayLike:  # pragma: no cover
         """Defines the transition function f(t,x,u) :
 
         $$ x' = f(t,x,u) $$
@@ -85,7 +86,7 @@ class ASystem(AComputer):
         """
         pass
 
-    def example_jacobian(self, t: float, x: "array", u: "array") -> "array":
+    def example_jacobian(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
         """Defines the jacobian of
         the transition function f(t,x,u) with respect to x:
 
@@ -106,8 +107,8 @@ class ASystem(AComputer):
         self,
         t1: float,
         t2: float,
-        command: "array",
-        state: "array",
+        command: ArrayLike,
+        state: ArrayLike,
     ) -> dict:
         self.__integ.set_initial_value(state, t1).set_f_params(command).set_jac_params(
             command
@@ -229,11 +230,11 @@ class LTISystem(ASystem):
         Ad, Bd, _, _, _ = cont2discrete(sys, dt, method, alpha)
         return Ad, Bd
 
-    def transition(self, t: float, x: "array", u: "array") -> "array":
+    def transition(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
         dX = self.matA @ x + self.matB @ u
         return dX
 
-    def jacobian(self, t: float, x: "array", u: "array") -> "array":
+    def jacobian(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
         return self.matA
 
 
@@ -308,7 +309,7 @@ class G6DOFSystem(ASystem):
         self.createParameter("J", np.eye(3) * 1e-3)
         self.createParameter("max_q_denorm", 1e-6)
 
-    def vecBodyToEarth(self, x: "array") -> "array":
+    def vecBodyToEarth(self, x: ArrayLike) -> ArrayLike:
         """Expresses a vector from the body frame to the Earth's frame
 
         Args:
@@ -323,7 +324,7 @@ class G6DOFSystem(ASystem):
         )
         return vecBodyToEarth(np.array([qw, qx, qy, qz]), x)
 
-    def vecEarthToBody(self, x: "array") -> "array":
+    def vecEarthToBody(self, x: ArrayLike) -> ArrayLike:
         """Expresses a vector from Earth's frame to the body's frame
 
         Args:
@@ -338,7 +339,7 @@ class G6DOFSystem(ASystem):
         )
         return vecEarthToBody(np.array([qw, qx, qy, qz]), x)
 
-    def transition(self, t: float, x: "array", u: "array") -> "array":
+    def transition(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = x
         force = u[:3]
         torque = u[3:6]
@@ -363,9 +364,9 @@ class G6DOFSystem(ASystem):
         self,
         t1: float,
         t2: float,
-        command: np.array,
-        state: np.array,
-        euler: np.array,
+        command: ArrayLike,
+        state: ArrayLike,
+        euler: ArrayLike,
     ) -> dict:
         # Crouch-Grossman method CG4
         # http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf
@@ -474,8 +475,8 @@ class TransferFunctionSystem(AComputer):
         self,
         name: str,
         sname: str,
-        num: "array",
-        den: "array",
+        num: ArrayLike,
+        den: ArrayLike,
         dt: float,
         dtype=np.float64,
     ):
@@ -530,9 +531,9 @@ class TransferFunctionSystem(AComputer):
         self,
         t1: float,
         t2: float,
-        command: "array",
-        state: "array",
-        inner: "array",
+        command: ArrayLike,
+        state: ArrayLike,
+        inner: ArrayLike,
     ) -> dict:
         Ad, Bd, Cd, Dd = self.discretize()
 

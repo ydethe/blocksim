@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from uuid import UUID, uuid4
 
+from numpy.typing import ArrayLike
 import numpy as np
 
 

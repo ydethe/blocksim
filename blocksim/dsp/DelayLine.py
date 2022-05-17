@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
+from numpy.typing import ArrayLike
 import numpy as np
 
 from ..core.CircularBuffer import CircularBuffer
@@ -83,6 +84,10 @@ class FiniteDelayLine(ADelayLine):
         self._l_time = CircularBuffer(size=size, dtype=np.float64, fill_with=np.nan)
         self._l_samples = CircularBuffer(size=size, dtype=dtype, fill_with=np.nan)
 
+    def reset(self):
+        self._l_time.reset()
+        self._l_samples.reset()
+
     def addSample(self, t: float, sample: np.complex128):
         self._l_time.append(t)
         self._l_samples.append(sample)
@@ -115,5 +120,7 @@ class FiniteDelayLine(ADelayLine):
             )
 
         samp = (zb - za) / (tb - ta) * (x - ta) + za
+
+        C = np.abs(samp) ** 2
 
         return samp

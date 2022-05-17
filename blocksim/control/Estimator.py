@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Iterable
 from functools import lru_cache
 
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import cos, sin, cosh, sinh, sqrt, exp, pi
 from scipy import linalg as lin
@@ -77,7 +78,7 @@ class ConvergedGainMatrix(Output):
         self.setData(self.__K)
         self.setInitialState(self.__K)
 
-    def getConvergedGainMatrix(self) -> "array":
+    def getConvergedGainMatrix(self) -> ArrayLike:
         """Returns the offline gain matrix K
 
         Returns:
@@ -129,7 +130,7 @@ class ConvergedStateCovariance(Output):
         self.setData(self.__P)
         self.setInitialState(self.__P)
 
-    def getConvergedStateCovariance(self) -> "array":
+    def getConvergedStateCovariance(self) -> ArrayLike:
         """Returns the offline covariance matrix P
 
         Returns:
@@ -260,7 +261,7 @@ class AKalmanFilter(AEstimator):
         otp.setInitialState(matK0)
 
     @abstractmethod
-    def A(self, t1: float, t2: float) -> "array":  # pragma: no cover
+    def A(self, t1: float, t2: float) -> ArrayLike:  # pragma: no cover
         """(n x n) State (or system) matrix
 
         Args:
@@ -274,7 +275,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def B(self, t1: float, t2: float) -> "array":  # pragma: no cover
+    def B(self, t1: float, t2: float) -> ArrayLike:  # pragma: no cover
         """(n x m) Input matrix
 
         Args:
@@ -288,7 +289,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def C(self, t: float) -> "array":  # pragma: no cover
+    def C(self, t: float) -> ArrayLike:  # pragma: no cover
         """(p x n) Output matrix
 
         Args:
@@ -302,7 +303,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def D(self, t: float) -> "array":  # pragma: no cover
+    def D(self, t: float) -> ArrayLike:  # pragma: no cover
         """(p x m) Feedthrough (or feedforward) matrix
 
         Args:
@@ -316,7 +317,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def Q(self, t: float) -> "array":  # pragma: no cover
+    def Q(self, t: float) -> ArrayLike:  # pragma: no cover
         """(n x n) Gaussian noise covariance for the state vector
 
         Args:
@@ -330,7 +331,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def R(self, t: float) -> "array":  # pragma: no cover
+    def R(self, t: float) -> ArrayLike:  # pragma: no cover
         """(n x n) Gaussian noise covariance for the measurement vector
 
         Args:
@@ -344,7 +345,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     def _prediction(
-        self, xest: np.array, P: np.array, u: np.array, t1: float, t2: float
+        self, xest: ArrayLike, P: ArrayLike, u: ArrayLike, t1: float, t2: float
     ):
         if np.abs(t2 - t1) < 1e-9:
             return xest.copy(), self.C(t2) @ xest + self.D(t2) @ u, P.copy()
@@ -377,12 +378,12 @@ class AKalmanFilter(AEstimator):
         self,
         t1: float,
         t2: float,
-        command: np.array,
-        measurement: np.array,
-        state: np.array,
-        output: np.array,
-        statecov: np.array,
-        matK: np.array,
+        command: ArrayLike,
+        measurement: ArrayLike,
+        state: ArrayLike,
+        output: ArrayLike,
+        statecov: ArrayLike,
+        matK: ArrayLike,
     ) -> dict:
         xest_pred, meas_pred, P_pred = self._prediction(
             state, statecov, command, t1, t2
@@ -498,26 +499,26 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         Ad, Bd, Cd, Dd, dt = cont2discrete(sys, dt, method=method, alpha=alpha)
         return Ad, Bd, Cd, Dd
 
-    def A(self, t1: float, t2: float) -> "array":
+    def A(self, t1: float, t2: float) -> ArrayLike:
         dt = t2 - t1
         Ad, Bd, Cd, Dd = self.discretize(dt)
         return Ad
 
-    def B(self, t1: float, t2: float) -> "array":
+    def B(self, t1: float, t2: float) -> ArrayLike:
         dt = t2 - t1
         Ad, Bd, Cd, Dd = self.discretize(dt)
         return Bd
 
-    def C(self, t: float) -> "array":
+    def C(self, t: float) -> ArrayLike:
         return self.matC
 
-    def D(self, test_ss_kal: float) -> "array":
+    def D(self, test_ss_kal: float) -> ArrayLike:
         return self.matD
 
-    def Q(self, t: float) -> "array":
+    def Q(self, t: float) -> ArrayLike:
         return self.matQ
 
-    def R(self, t: float) -> "array":
+    def R(self, t: float) -> ArrayLike:
         return self.matR
 
 
@@ -604,7 +605,7 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
 
         self.createParameter("dt", value=dt)
 
-    def getConvergedStateCovariance(self) -> "array":
+    def getConvergedStateCovariance(self) -> ArrayLike:
         """Returns the offline covariance matrix P
 
         Returns:
@@ -614,7 +615,7 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         otp = self.getOutputByName("statecov")
         return otp.getConvergedStateCovariance()
 
-    def getConvergedGainMatrix(self) -> "array":
+    def getConvergedGainMatrix(self) -> ArrayLike:
         """Returns the offline gain matrix K
 
         Returns:
@@ -628,12 +629,12 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         self,
         t1: float,
         t2: float,
-        command: np.array,
-        measurement: np.array,
-        state: np.array,
-        output: np.array,
-        statecov: np.array,
-        matK: np.array,
+        command: ArrayLike,
+        measurement: ArrayLike,
+        state: ArrayLike,
+        output: ArrayLike,
+        statecov: ArrayLike,
+        matK: ArrayLike,
     ) -> dict:
         xest_pred, meas_pred, P_pred = self._prediction(
             state, statecov, command, t1, t2
@@ -703,7 +704,7 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         dt: float,
         snames_state: Iterable[str],
         sname_output: str,
-        tracks: np.array,
+        tracks: ArrayLike,
     ):
         SteadyStateKalmanFilter.__init__(
             self,
@@ -817,11 +818,11 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         self,
         t1: float,
         t2: float,
-        measurement: np.array,
-        state: np.array,
-        output: np.array,
-        statecov: np.array,
-        matK: np.array,
+        measurement: ArrayLike,
+        state: ArrayLike,
+        output: ArrayLike,
+        statecov: ArrayLike,
+        matK: ArrayLike,
     ) -> dict:
         xest_pred, meas_pred, P_pred = self._prediction(
             state, statecov, np.zeros(1), t1, t2
@@ -873,7 +874,7 @@ class MadgwickFilter(AComputer):
         self.createParameter(name="mag_softiron_matrix", value=np.eye(3))
         self.createParameter(name="mag_offsets", value=np.zeros(3))
 
-    def setMagnetometerCalibration(self, offset: np.array, softiron_matrix: np.array):
+    def setMagnetometerCalibration(self, offset: ArrayLike, softiron_matrix: ArrayLike):
         """Sets the magnetometer calibration
 
         Args:
@@ -912,9 +913,9 @@ class MadgwickFilter(AComputer):
         self,
         t1: float,
         t2: float,
-        euler: np.array,
-        measurement: np.array,
-        state: np.array,
+        euler: ArrayLike,
+        measurement: ArrayLike,
+        state: ArrayLike,
     ) -> dict:
         q0, q1, q2, q3 = state
         gx, gy, gz, ax, ay, az, mx, my, mz = measurement
@@ -1141,7 +1142,7 @@ class MahonyFilter(AComputer):
         self.createParameter(name="mag_softiron_matrix", value=np.eye(3))
         self.createParameter(name="mag_offsets", value=np.zeros(3))
 
-    def setMagnetometerCalibration(self, offset: np.array, softiron_matrix: np.array):
+    def setMagnetometerCalibration(self, offset: ArrayLike, softiron_matrix: ArrayLike):
         """Sets the magnetometer calibration
 
         Args:
@@ -1180,9 +1181,9 @@ class MahonyFilter(AComputer):
         self,
         t1: float,
         t2: float,
-        euler: np.array,
-        measurement: np.array,
-        state: np.array,
+        euler: ArrayLike,
+        measurement: ArrayLike,
+        state: ArrayLike,
     ) -> dict:
         q0, q1, q2, q3 = state
         gx, gy, gz, ax, ay, az, mx, my, mz = measurement

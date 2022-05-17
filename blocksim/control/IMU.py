@@ -1,3 +1,4 @@
+from numpy.typing import ArrayLike
 import numpy as np
 
 from ..control.Sensors import ASensors
@@ -23,7 +24,7 @@ class IMU(ASensors):
         )
 
     def update(
-        self, t1: float, t2: float, state: np.array, measurement: np.array
+        self, t1: float, t2: float, state: ArrayLike, measurement: ArrayLike
     ) -> dict:
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = state
 

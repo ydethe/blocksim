@@ -21,14 +21,11 @@ from TestBase import TestBase
 class TestBOC(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=40, savefig_kwargs={"dpi": 150})
     def test_boc_spectrum(self):
-        fs = 1.023e6
-        p_samp = 10
-        n = 1
+        fc = 1.023e6
         m = 1
-        boc = BOCMapping(name="BOC", f_ref=fs, m=m, n=n, p_samp=p_samp, input_size=1)
-        prn = createGoldSequence(
-            name="PRN", sv=[3, 7], chip_rate=1.023e6, sampling_factor=p_samp * m
-        )
+        n = 1
+        prn = createGoldSequence(name="PRN", sv=[3, 7], chip_rate=fc)
+        boc = BOCMapping(name="BOC", f_ref=fc, m=m, n=n)
 
         sim = Simulation()
         sim.addComputer(prn)
@@ -40,6 +37,7 @@ class TestBOC(TestBase):
         self.log = sim.getLogger()
         mod = self.log.getFlattenOutput("BOC_output", dtype=np.complex128)
 
+        tps = boc.adaptTimeSerie(tps)
         sig = DSPSignal.fromTimeAndSamples(name="sig", tps=tps, y_serie=mod)
 
         fig = plt.figure()
@@ -62,7 +60,7 @@ class TestBOC(TestBase):
 
         res = boc.process(bits)
 
-        self.assertEqual(res.shape, (20, 5))
+        self.assertEqual(res.shape, (40, 5))
 
     @pytest.mark.mpl_image_compare(tolerance=10, savefig_kwargs={"dpi": 150})
     def test_boc_autocorr(self):
@@ -82,8 +80,6 @@ class TestBOC(TestBase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
-
     a = TestBOC()
     a.test_boc_spectrum()
     # a.test_boc_autocorr()

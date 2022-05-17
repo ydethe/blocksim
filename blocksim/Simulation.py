@@ -6,6 +6,7 @@ from typing import Iterable, Tuple
 from uuid import UUID, uuid4
 
 import tqdm
+from numpy.typing import ArrayLike
 import numpy as np
 import matplotlib.animation as animation
 from matplotlib import pyplot as plt
@@ -157,21 +158,37 @@ class Simulation(object):
             comp = self.getComputerByName(cname)
             comp.resetCallback(t0)
 
-        try:
-            dmodif = self.update(
-                clist,
-                t0,
-                t0,
-                error_on_unconnected=error_on_unconnected,
-                noexc=True,
-                nolog=False,
-            )
-            # modif = np.sum([x for x in dmodif.values() if not np.isnan(x)])
-            logger.debug(f"modif: {dmodif}")
-        except KeyboardInterrupt:
-            return
-        except BaseException as e:
-            raise e
+        self.update(
+            clist,
+            t0,
+            t0,
+            error_on_unconnected=error_on_unconnected,
+            noexc=True,
+            nolog=True,
+        )
+
+        # This loop keeps track of the state of the AComputer
+        # Then it resets the AComputer
+        # Then it restores the state of the AComputer.
+        # This allows reseting the DelayLines or CircularBuffers of any other internal state of the AComputer
+        for cname in clist:
+            comp = self.getComputerByName(cname)
+            odata = {}
+            for otp in comp.getListOutputs():
+                odata[otp.getName()] = otp.getData()
+            comp.resetCallback(t0)
+            for oname in odata.keys():
+                otp = comp.getOutputByName(oname)
+                otp.setData(odata[oname])
+
+        self.update(
+            clist,
+            t0,
+            t0,
+            error_on_unconnected=error_on_unconnected,
+            noexc=True,
+            nolog=False,
+        )
 
     def update(
         self,
@@ -181,7 +198,7 @@ class Simulation(object):
         error_on_unconnected: bool = True,
         noexc: bool = False,
         nolog: bool = False,
-    ) -> float:
+    ):
         """Steps the simulation, and logs all the outputs of the computers
 
         Args:
@@ -192,8 +209,6 @@ class Simulation(object):
                 If an input is not connected and error_on_unconnected is False, the input will be padded with zeros
 
         """
-        modif = {}
-
         for cname in clist:
             comp = self.getComputerByName(cname)
             idata = {}
@@ -214,24 +229,20 @@ class Simulation(object):
                 oname = otp.getName()
                 idata[oname] = otp.getData()
 
+            odata = None
             try:
                 odata = comp.update(t1, t2, **idata)
             except BaseException as e:
                 if noexc:
-                    continue
+                    pass
                 else:
                     logger.error(f"While updating {cname}")
                     raise e
 
             for otp in comp.getListOutputs():
                 oname = otp.getName()
-                dat = np.atleast_1d(odata[oname])
-                u = dat - otp._getUnprocessedData()
-                u2 = np.nansum(u * np.conj(u), dtype=np.float64)
-                modif[f"{cname}.{oname}"] = u2
-                if cname == "ctl" and oname == "command":
-                    modif[f"{cname}.{oname}.dat"] = dat
-                otp.setData(dat, cname=cname)
+                if not odata is None:
+                    otp.setData(odata[oname])
                 for sname, unit, x in otp.iterScalarParameters():
                     if comp.isLogged and not nolog:
                         pname = self.__logger.buildParameterNameFromComputerElements(
@@ -242,11 +253,9 @@ class Simulation(object):
         if not nolog:
             self.__logger.log(name="t", val=t2, unit="s")
 
-        return modif
-
     def simulate(
         self,
-        tps: "array",
+        tps: ArrayLike,
         progress_bar: bool = True,
         error_on_unconnected: bool = True,
         fig=None,
@@ -271,6 +280,7 @@ class Simulation(object):
         clist = list(nx.topological_sort(sg))
 
         self.__logger.reset()
+        self.__logger.allocate(size=len(tps))
 
         t0 = tps[0]
 
@@ -379,7 +389,7 @@ class Simulation(object):
 
         return sg
 
-    def getComputerOutputByName(self, name: str) -> "array":
+    def getComputerOutputByName(self, name: str) -> ArrayLike:
         """Returns the data of the computer's output
         The *name* of the data is designated by :
         <computer>.<output>[coord]

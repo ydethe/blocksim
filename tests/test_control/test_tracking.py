@@ -1,26 +1,22 @@
 import sys
 from pathlib import Path
-import unittest
 
+from numpy.typing import ArrayLike
 import numpy as np
-from numpy import exp, pi, log10, sin, cos
+from numpy import exp, pi
 import matplotlib.pyplot as plt
 import pytest
 
-from blocksim.loggers.Logger import Logger
-from blocksim.control.Estimator import SteadyStateKalmanFilter, SpectrumEstimator
+from blocksim.control.Estimator import SpectrumEstimator
 from blocksim.Simulation import Simulation
-from blocksim.control.Route import IQExtract
-from blocksim.graphics.FigureSpec import FigureSpec
 from blocksim.graphics import plotSpectrogram, plotBode
 from blocksim.dsp.DSPSignal import DSPSignal
-from blocksim.dsp import phase_unfold
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
-def generate_lin_fm(ns: int, fs: float, f1: float, f2: float) -> "array":
+def generate_lin_fm(ns: int, fs: float, f1: float, f2: float) -> ArrayLike:
     t = np.arange(ns) / fs
     tau = ns / fs
     x = exp(1j * (pi * t * (2 * f1 * tau + f2 * t - f1 * t)) / tau)
@@ -177,8 +173,8 @@ class TestTrackingSteadyState(TestBase):
 if __name__ == "__main__":
     a = TestTrackingSteadyState()
     a.setUp()
-    # a.test_tracking_steadystate_cplxe()
+    a.test_tracking_steadystate_cplxe()
     # a.test_bode_steadystate_cplxe()
-    a.test_bode3_steadystate_cplxe()
+    # a.test_bode3_steadystate_cplxe()
 
     plt.show()

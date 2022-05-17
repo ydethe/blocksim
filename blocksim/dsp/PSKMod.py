@@ -1,3 +1,4 @@
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import sqrt, sign, pi, exp, cos, sin, log2
 
@@ -53,8 +54,8 @@ class PSKMapping(ADSPComputer):
         self,
         t1: float,
         t2: float,
-        input: np.array,
-        output: np.array,
+        input: ArrayLike,
+        output: ArrayLike,
     ) -> dict:
         if len(input.shape) == 1:
             n = 1
@@ -153,8 +154,8 @@ class PSKDemapping(ADSPComputer):
         self,
         t1: float,
         t2: float,
-        input: np.array,
-        output: np.array,
+        input: ArrayLike,
+        output: ArrayLike,
     ) -> dict:
         if len(input.shape) == 1:
             n = 1

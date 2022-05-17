@@ -1,5 +1,6 @@
 from typing import Callable, List
 
+from numpy.typing import ArrayLike
 import numpy as np
 from scipy import linalg as lin
 
@@ -47,7 +48,7 @@ class DSPSpectrogram(object):
         samplingXPeriod: float = None,
         samplingYStart: float = None,
         samplingYPeriod: float = None,
-        img: np.array = None,
+        img: ArrayLike = None,
         projection: str = "rectilinear",
         default_transform=np.abs,
     ):
@@ -64,7 +65,7 @@ class DSPSpectrogram(object):
         self.unit_of_y_var = "Hz"
         self.projection = projection
 
-    def generateXSerie(self, index: int = None) -> "array":
+    def generateXSerie(self, index: int = None) -> ArrayLike:
         """Generates the x samples of the spectrogram
 
         Args:
@@ -82,7 +83,7 @@ class DSPSpectrogram(object):
         x = index * self.samplingXPeriod + self.samplingXStart
         return x
 
-    def generateYSerie(self, index: int = None) -> "array":
+    def generateYSerie(self, index: int = None) -> ArrayLike:
         """Generates the y samples of the spectrogram
 
         Args:
@@ -205,7 +206,7 @@ class DSPSpectrogram(object):
         return _to_db
 
     @classmethod
-    def to_db(cls, x: "array", lim_db: float = -100) -> "array":
+    def to_db(cls, x: ArrayLike, lim_db: float = -100) -> ArrayLike:
         """Converts the samples into their power, in dB.
         If a sample's power is below *low*, the dB value in clamped to *low*.
 

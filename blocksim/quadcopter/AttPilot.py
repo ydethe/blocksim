@@ -1,3 +1,4 @@
+from numpy.typing import ArrayLike
 import numpy as np
 import scipy.linalg as lin
 
@@ -85,10 +86,10 @@ class AttPilot(AController):
         self,
         t1: float,
         t2: float,
-        setpoint: np.array,
-        estimation: np.array,
-        command: np.array,
-        euler: np.array,
+        setpoint: ArrayLike,
+        estimation: ArrayLike,
+        command: ArrayLike,
+        euler: ArrayLike,
     ) -> dict:
         (px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz) = estimation
         roll, pitch, yaw = euler

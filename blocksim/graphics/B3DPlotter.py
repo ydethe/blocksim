@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import pi
 from scipy import linalg as lin

@@ -5,6 +5,7 @@
 from functools import wraps
 from pathlib import Path
 
+from numpy.typing import ArrayLike
 import pluggy
 
 hookspec = pluggy.HookspecMarker("blocksim")
@@ -39,7 +40,7 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def getRawValue(self, log: "Logger", name: str) -> "array":
+    def getRawValue(self, log: "Logger", name: str) -> ArrayLike:
         """If implemented, subsequent calls to `blocksim.loggers.Logger.Logger.getRawValue` will use this method.
         Otherwise, the internal dictionary of `blocksim.loggers.Logger.Logger` is used.
 

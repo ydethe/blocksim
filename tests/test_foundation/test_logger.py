@@ -27,14 +27,14 @@ class TestLogger(TestBase):
         ns = 1000
 
         for i in range(ns):
-            log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
-            log.log("t", i * dt)
-            log.log("_", 0)  # Variable named '_' is not recorded
+            log.log(name="x", val=exp(1j * i * dt * f * 2 * np.pi + 1), unit="")
+            log.log(name="t", val=i * dt, unit="t")
+            log.log(name="_", val=0, unit="")  # Variable named '_' is not recorded
 
         log.reset()
         for i in range(ns):
-            log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
-            log.log("t", i * dt)
+            log.log(name="x", val=exp(1j * i * dt * f * 2 * np.pi + 1), unit="")
+            log.log(name="t", val=i * dt, unit="s")
 
         log.export(pth)
         del log
@@ -68,14 +68,14 @@ class TestLogger(TestBase):
         ns = 1000
 
         for i in range(ns):
-            log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
-            log.log("t", i * dt)
-            log.log("_", 0)  # Variable named '_' is not recorded
+            log.log(name="x", val=exp(1j * i * dt * f * 2 * np.pi + 1), unit="")
+            log.log(name="t", val=i * dt, unit="t")
+            log.log(name="_", val=0, unit="")  # Variable named '_' is not recorded
 
         log.reset()
         for i in range(ns):
-            log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
-            log.log("t", i * dt)
+            log.log(name="x", val=exp(1j * i * dt * f * 2 * np.pi + 1), unit="")
+            log.log(name="t", val=i * dt, unit="t")
 
         log.export(pth)
         del log
@@ -104,14 +104,14 @@ class TestLogger(TestBase):
         ns = 1000
 
         for i in range(ns):
-            log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
-            log.log("t", i * dt)
-            log.log("_", 0)  # Variable named '_' is not recorded
+            log.log(name="x", val=exp(1j * i * dt * f * 2 * np.pi + 1), unit="")
+            log.log(name="t", val=i * dt, unit="s")
+            log.log(name="_", val=0, unit="")  # Variable named '_' is not recorded
 
         log.reset()
         for i in range(ns):
-            log.log("x", exp(1j * i * dt * f * 2 * np.pi + 1))
-            log.log("t", i * dt)
+            log.log(name="x", val=exp(1j * i * dt * f * 2 * np.pi + 1), unit="")
+            log.log(name="t", val=i * dt, unit="s")
 
         log.export(pth)
 

@@ -86,8 +86,7 @@ class TestBPSK(TestBase):
 
     @pytest.mark.mpl_image_compare(tolerance=40, savefig_kwargs={"dpi": 150})
     def test_bpsk_spectrum(self):
-        p_samp = 10
-        bpsk = PSKMapping(name="bpsk", mapping=[0, pi], p_samp=p_samp)
+        p_samp = 7
         prn = createGoldSequence(
             name="PRN",
             sv=[2, 6],
@@ -95,10 +94,10 @@ class TestBPSK(TestBase):
             sampling_factor=p_samp,
             bitmap=[0, 1],
         )
+        bpsk = PSKMapping(name="bpsk", mapping=[0, pi])
 
         sim = Simulation()
-        sim.addComputer(prn)
-        sim.addComputer(bpsk)
+        sim.addComputer(prn, bpsk)
         sim.connect("PRN.setpoint", "bpsk.input")
 
         tps = prn.generateXSerie()
@@ -125,3 +124,5 @@ if __name__ == "__main__":
     # a.test_bpsk()
     # a.test_bpsk_noise()
     a.test_bpsk_spectrum()
+
+    plt.show()

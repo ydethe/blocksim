@@ -1,3 +1,4 @@
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import cos, sin, pi, abs
 

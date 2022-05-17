@@ -1,5 +1,6 @@
 from typing import Iterable
 
+from numpy.typing import ArrayLike
 import numpy as np
 import scipy.linalg as lin
 
@@ -45,7 +46,7 @@ class Quadri(G6DOFSystem):
         self.createParameter("l", 22.5e-2)
         self.createParameter("Jr", 3.4e-5)
 
-    def getActions(self, x: "array", u: "array") -> Iterable["array"]:
+    def getActions(self, x: ArrayLike, u: ArrayLike) -> Iterable["array"]:
         """From the state vector and the motors speed setpoints,
         derives force and torque applied on the system
 
@@ -74,7 +75,7 @@ class Quadri(G6DOFSystem):
 
         return force, torque
 
-    def transition(self, t: float, x: "array", u: "array") -> "array":
+    def transition(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
         force, torque = self.getActions(x, u)
 
         a = np.hstack((force, torque))

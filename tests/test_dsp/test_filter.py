@@ -166,7 +166,7 @@ class TestFilter(TestBase):
         sig = s1.resample(
             samplingStart=-1, samplingPeriod=1 / fs, samplingStop=s1.samplingStop + 1
         )
-        # sig=sig.applyGaussianNoise(0.1)
+        # sig = sig.applyGaussianNoise(2e-3)
 
         tps = np.arange(ns) / fs
         freq = -bp / 2 + bp * tps / tau
@@ -310,9 +310,9 @@ class TestFilter(TestBase):
 if __name__ == "__main__":
     a = TestFilter()
     # a.test_bode()
-    a.test_filtrage()
-    a.test_filtrage_chirp()
-    # a.test_freq_estimator()
+    # a.test_filtrage()
+    # a.test_filtrage_chirp()
+    a.test_freq_estimator()
     # a.test_iir_design()
     # a.test_iir_filter()
     # a.test_transfer_function()

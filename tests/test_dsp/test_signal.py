@@ -150,8 +150,8 @@ class TestSignal(TestBase):
         ns = 1000
 
         for i in range(ns):
-            log.log("t", i * dt)
-            log.log("x", np.sin(i * dt * f * 2 * np.pi + 1))
+            log.log(name="x", val=np.sin(i * dt * f * 2 * np.pi + 1), unit="")
+            log.log(name="t", val=i * dt, unit="s")
 
         sig = DSPSignal.fromLogger(name="sin", log=log, param="x")
         err = np.max(np.abs(sig.y_serie - log.getValue("x")))
@@ -180,4 +180,5 @@ class TestSignal(TestBase):
 
 if __name__ == "__main__":
     a = TestSignal()
-    a.test_instanciation()
+    # a.test_instanciation()
+    a.test_resample()

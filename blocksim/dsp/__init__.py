@@ -8,13 +8,14 @@ from itertools import product
 from typing import List, Union
 
 from tqdm import tqdm
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import sqrt, sign, pi, exp
 from numpy.fft import fft, ifft
 from scipy import linalg as lin
 
 
-def derivative_coeff(rank: int = 1, order: int = None) -> "array":
+def derivative_coeff(rank: int = 1, order: int = None) -> ArrayLike:
     """Computes the coefficients of a derivaive estimator
 
     Args:
@@ -49,7 +50,7 @@ def derivative_coeff(rank: int = 1, order: int = None) -> "array":
     return coeffs
 
 
-def get_window(win, n: int) -> "array":
+def get_window(win, n: int) -> ArrayLike:
     """Creates the samples of a window.
     The resulting window guarantees that a CW with amplitude A will keep its amplitude after windowing
 
@@ -71,7 +72,7 @@ def get_window(win, n: int) -> "array":
     return w / nrm
 
 
-def phase_unfold(sig: "array", eps: float = 1e-9) -> "array":
+def phase_unfold(sig: ArrayLike, eps: float = 1e-9) -> ArrayLike:
     """Unfolds the phase law of the given complex signal
 
     Args:
@@ -340,7 +341,7 @@ def createGoldSequence(
     seq = (b - a) * bits + a
     sig = DSPSignal(
         name=name,
-        samplingStart=0,
+        samplingStart=samplingStart,
         samplingPeriod=1 / chip_rate / sampling_factor,
         y_serie=seq,
         dtype=np.int64,

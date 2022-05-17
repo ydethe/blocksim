@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
-import unittest
 
+from numpy.typing import ArrayLike
 import numpy as np
 
 from blocksim.exceptions import *
@@ -21,7 +21,7 @@ from TestBase import TestBase
 class DummyTestElement(AComputer):
     __slots__ = []
 
-    def __init__(self, name, name_of_outputs, name_of_inputs, name_of_states=None):
+    def __init__(self, name, name_of_outputs, name_of_inputs, name_of_states=[]):
         AComputer.__init__(self, name)
         self.defineOutput("output", snames=name_of_outputs, dtype=np.int64)
         self.defineOutput("state", snames=name_of_states, dtype=np.int64)
@@ -31,7 +31,7 @@ class DummyTestElement(AComputer):
         self.createParameter("no", 0)
 
     def update(
-        self, t1: float, t2: float, output: np.array, state: np.array, **inputs
+        self, t1: float, t2: float, output: ArrayLike, state: ArrayLike, **inputs
     ) -> dict:
         n = self.getOutputByName("state").getDataShape()[0]
         if self.ns == 2:
@@ -146,8 +146,8 @@ class TestExceptions(TestBase):
         self.assertRaises(IOError, log.loadLogFile, Path("_dummy"))
         self.assertRaises(FileNotFoundError, log.loadLogFile, Path("_dummy.csv"))
         self.assertRaises(SystemError, log.getValue, "tps")
-        log.log("tps", 0)
-        log.log("y", 0)
+        log.log(name="tps", val=0, unit="")
+        log.log(name="y", val=0, unit="")
         self.assertRaises(
             SystemError, plotFromLogger, log, id_x=None, id_y="y", spec=None
         )
@@ -200,5 +200,5 @@ class TestExceptions(TestBase):
 if __name__ == "__main__":
     a = TestExceptions()
     a.setUp()
-    # a.test_sim_exc()
-    a.test_logger_exc()
+    a.test_sim_exc()
+    # a.test_logger_exc()

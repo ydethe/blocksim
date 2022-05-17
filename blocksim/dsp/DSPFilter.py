@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from typing import Tuple
 
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import log10, exp, pi, sqrt, cos, sin, log2
 from scipy import linalg as lin
@@ -90,8 +91,8 @@ class ADSPFilter(AComputer):
         self,
         t1: float,
         t2: float,
-        unfilt: np.array,
-        filt: np.array,
+        unfilt: ArrayLike,
+        filt: ArrayLike,
     ) -> dict:
         assert len(unfilt) == 1
 
@@ -121,7 +122,7 @@ class ADSPFilter(AComputer):
             default_transform=np.real,
         )
 
-    def process(self, s: "array") -> "array":
+    def process(self, s: ArrayLike) -> ArrayLike:
         """Filters a signal without having to create a `blocksim.Simulation.Simulation`
 
         Args:
@@ -160,8 +161,8 @@ class ArbitraryDSPFilter(ADSPFilter):
         self,
         name: str,
         samplingPeriod: float,
-        num: "array",
-        den: "array" = None,
+        num: ArrayLike,
+        den: ArrayLike = None,
         dtype=np.complex128,
     ):
         ADSPFilter.__init__(self, name=name, samplingPeriod=samplingPeriod, dtype=dtype)
@@ -248,8 +249,8 @@ class ArbitraryDSPFilter(ADSPFilter):
         name: str,
         fs: float,
         numtaps: int,
-        bands: "array",
-        desired: "array",
+        bands: ArrayLike,
+        desired: ArrayLike,
         method: str = "firwin2",
         **kwargs,
     ) -> "ArbitraryDSPFilter":
@@ -384,7 +385,7 @@ class BandpassDSPFilter(ADSPFilter):
         self.createParameter(name="numtaps", value=numtaps)
         self.createParameter(name="win", value=win)
 
-    def generateCoefficients(self) -> "array":
+    def generateCoefficients(self) -> ArrayLike:
         fs = 1 / self.samplingPeriod
 
         # https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need/31077

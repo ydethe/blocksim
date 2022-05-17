@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 import unittest
 
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import cos, sin, sqrt, exp
 from matplotlib import pyplot as plt
@@ -23,7 +24,7 @@ class System(ASystem):
         ASystem.__init__(self, name, shape_command=1, snames_state=["x", "v"])
         self.setInitialStateForOutput(np.zeros(2), "state")
 
-    def transition(self, t: float, x: np.array, u: np.array) -> "array":
+    def transition(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
         k = 10
         f = 5
         m = 1

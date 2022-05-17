@@ -13,9 +13,7 @@ import importlib
 from tqdm import tqdm
 from scipy import linalg as lin
 from scipy.optimize import root_scalar
-from scipy.integrate import quad
-from scipy.interpolate import interp1d
-from scipy.optimize import minimize_scalar
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import pi, arcsin, arccos, arctan, arctan2, tan, sin, cos, sqrt, exp
 from skyfield.api import Topos, load, utc
@@ -105,7 +103,7 @@ def resource_path(resource: str, package: str = "blocksim") -> str:
     raise FileExistsError(resource)
 
 
-def verif_mat_diag(A: "array") -> bool:
+def verif_mat_diag(A: ArrayLike) -> bool:
     """Tests if a square matrix is diagonal
 
     Args:
@@ -125,7 +123,7 @@ def verif_mat_diag(A: "array") -> bool:
     return True
 
 
-def calc_cho(A: "array") -> "array":
+def calc_cho(A: ArrayLike) -> ArrayLike:
     """Returns the cholesky decomposition C of a symetric matrix A:
 
     $$ A = C.C^T $$
@@ -178,12 +176,12 @@ def rad(x: float) -> float:
 
 
 def assignVector(
-    v: "array", expected_shape: tuple, dst_name: str, src_name: str, dtype
-) -> "array":
+    v: ArrayLike, expected_shape: tuple, dst_name: str, src_name: str, dtype
+) -> ArrayLike:
     """
 
     Args:
-        v: np.array to assign
+        v: ArrayLike to assign
         expected_shape: Expected shape for v
         dst_name: Name of the element where the assignement will take place. (To allow meaningfull error messages)
         src_name: Name of the source vector. (To allow meaningfull error messages)
@@ -268,7 +266,7 @@ def assignVector(
     return res
 
 
-def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> "array":
+def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> ArrayLike:
     """
     https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix
 
@@ -302,7 +300,7 @@ def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> "array":
     return res
 
 
-def matrix_to_quat(R: "array") -> Iterable[float]:
+def matrix_to_quat(R: ArrayLike) -> Iterable[float]:
     """
 
     Examples:
@@ -338,7 +336,7 @@ def matrix_to_quat(R: "array") -> Iterable[float]:
     return np.array([-qr, qi, qj, qk])
 
 
-def matrix_to_euler(R: "array") -> Iterable[float]:
+def matrix_to_euler(R: ArrayLike) -> Iterable[float]:
     """
 
     https://www.learnopencv.com/rotation-matrix-to-euler-angles/
@@ -375,7 +373,7 @@ def matrix_to_euler(R: "array") -> Iterable[float]:
     return r, p, y
 
 
-def euler_to_matrix(roll: float, pitch: float, yaw: float) -> "array":
+def euler_to_matrix(roll: float, pitch: float, yaw: float) -> ArrayLike:
     """
 
     https://www.learnopencv.com/rotation-matrix-to-euler-angles/
@@ -490,7 +488,7 @@ def euler_to_quat(roll: float, pitch: float, yaw: float) -> Iterable[float]:
     return qr, qi, qj, qk
 
 
-def vecBodyToEarth(attitude: "array", x: "array") -> "array":
+def vecBodyToEarth(attitude: ArrayLike, x: ArrayLike) -> ArrayLike:
     """Expresses a vector from the body frame to the Earth's frame
 
     Args:
@@ -512,7 +510,7 @@ def vecBodyToEarth(attitude: "array", x: "array") -> "array":
     return R @ x
 
 
-def vecEarthToBody(attitude: "array", x: "array") -> "array":
+def vecEarthToBody(attitude: ArrayLike, x: ArrayLike) -> ArrayLike:
     """Expresses a vector from Earth's frame to the body's frame
 
     Args:
@@ -574,7 +572,7 @@ def anomaly_true_to_mean(ecc: float, v: float) -> float:
     return M
 
 
-def build_local_matrix(pos: "array", xvec: "array" = None) -> "array":
+def build_local_matrix(pos: ArrayLike, xvec: ArrayLike = None) -> ArrayLike:
     """Builds a ENV frame at a given position
 
     Args:
@@ -609,7 +607,7 @@ def build_local_matrix(pos: "array", xvec: "array" = None) -> "array":
     return env
 
 
-def geodetic_to_itrf(lon: float, lat: float, h: float) -> "array":
+def geodetic_to_itrf(lon: float, lat: float, h: float) -> ArrayLike:
     """
     Compute the Geocentric (Cartesian) Coordinates X, Y, Z
     given the Geodetic Coordinates lat, lon + Ellipsoid Height h
@@ -684,7 +682,7 @@ def time_to_jd_fraction(t_epoch: float) -> Tuple[float, float]:
     return jd, fraction
 
 
-def rotation_matrix(angle: float, axis: "array"):
+def rotation_matrix(angle: float, axis: ArrayLike):
     """Builds the 3D rotation matrix from axis and angle
 
     Args:
@@ -701,7 +699,7 @@ def rotation_matrix(angle: float, axis: "array"):
     return R
 
 
-def teme_to_itrf(t_epoch: float, pv_teme: "array") -> "array":
+def teme_to_itrf(t_epoch: float, pv_teme: ArrayLike) -> ArrayLike:
     jd, fraction = time_to_jd_fraction(t_epoch)
 
     theta, theta_dot = theta_GMST1982(jd, fraction)
@@ -723,7 +721,7 @@ def teme_to_itrf(t_epoch: float, pv_teme: "array") -> "array":
     return pv
 
 
-def itrf_to_teme(t_epoch: float, pv_itrf: "array") -> "array":
+def itrf_to_teme(t_epoch: float, pv_itrf: ArrayLike) -> ArrayLike:
     jd, fraction = time_to_jd_fraction(t_epoch)
 
     theta, theta_dot = theta_GMST1982(jd, fraction)
@@ -741,7 +739,7 @@ def itrf_to_teme(t_epoch: float, pv_itrf: "array") -> "array":
     return np.hstack((rTEME, vTEME))
 
 
-def teme_to_orbital(pv: "array"):
+def teme_to_orbital(pv: ArrayLike):
     pos = np.array(pv[:3])
     x, y, z = pos
     vel = np.array(pv[3:])
@@ -783,7 +781,7 @@ def orbital_to_teme(
     inc: float,
     mano: float,
     node: float,
-) -> "array":
+) -> ArrayLike:
     """
 
     Args:
@@ -831,7 +829,7 @@ def orbital_to_teme(
     return np.array([x, y, z, vx, vy, vz])
 
 
-def itrf_to_geodetic(position: "array") -> Tuple[float, float, float]:
+def itrf_to_geodetic(position: ArrayLike) -> Tuple[float, float, float]:
     """Converts the ITRF coordinates into latitude, longiutde, altitude (WGS84)
 
     Args:
@@ -867,7 +865,7 @@ def itrf_to_geodetic(position: "array") -> Tuple[float, float, float]:
     return lon, lat, alt
 
 
-def itrf_to_azeld(obs: "array", sat: "array") -> "array":
+def itrf_to_azeld(obs: ArrayLike, sat: ArrayLike) -> ArrayLike:
     """Converts an ITRF position & velocity into
     azimut, elevation, distance, radial velocity, slope of velocity, azimut of velocity
 
@@ -960,7 +958,7 @@ def skyfield_to_datetime(t: Time) -> datetime:
     return t.utc_datetime()
 
 
-def pdot(u: "array", v: "array") -> float:
+def pdot(u: ArrayLike, v: ArrayLike) -> float:
     """Pseudo scalar product :
 
     $$ x.x'+y.y'+z.z'-t.t' $$

@@ -2,6 +2,7 @@ import os
 from typing import Callable
 
 from tqdm import tqdm
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import arccos, arctan, exp, pi, sqrt, cos, sin, tan, log2, arcsin, arctan2
 from scipy import linalg as lin
@@ -68,7 +69,7 @@ class AntennaNetwork(AComputer):
         self.createParameter(name="wavelength", value=c / ac.freq, read_only=True)
         self.createParameter(name="num_elem", value=N, read_only=True)
 
-    def getCoefficients(self) -> "array":
+    def getCoefficients(self) -> ArrayLike:
         """Returns the coefficients applied to each antenna
 
         Returns:
@@ -124,10 +125,10 @@ class AntennaNetwork(AComputer):
         self,
         t1: float,
         t2: float,
-        txpos: "array",
-        txsig: "array",
-        rxsig: "array",
-        elempos: "array",
+        txpos: ArrayLike,
+        txsig: ArrayLike,
+        rxsig: ArrayLike,
+        elempos: ArrayLike,
     ) -> dict:
         M = build_local_matrix(txpos[:3], xvec=txpos[3:])
 

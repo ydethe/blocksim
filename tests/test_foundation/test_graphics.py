@@ -31,8 +31,8 @@ class TestGraphics(TestBase):
         self.x_ref = np.sin(self.tps_ref * f * 2 * np.pi + 1)
 
         for (t, x) in zip(self.tps_ref, self.x_ref):
-            self.log.log("t", t)
-            self.log.log("x", x)
+            self.log.log(name="t", val=t, unit="s")
+            self.log.log(name="x", val=x, unit="")
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_plot_logger(self):

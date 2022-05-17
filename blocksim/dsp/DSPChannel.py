@@ -1,3 +1,4 @@
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import arccos, exp, pi, sqrt, cos, sin, tan
 from scipy import linalg as lin
@@ -70,8 +71,8 @@ class DSPChannel(AComputer):
         antenna_temp: float,
         bandwidth: float,
         noise_factor: float,
-        alpha: "array",
-        beta: "array",
+        alpha: ArrayLike,
+        beta: ArrayLike,
         num_src: int = 1,
         nodop: bool = False,
         noatm: bool = False,
@@ -119,7 +120,12 @@ class DSPChannel(AComputer):
             dl = FiniteDelayLine(size=128, dtype=np.complex128)
             self.__delay_lines.append(dl)
 
-    def setCovariance(self, cov: "array"):
+    def resetCallback(self, t0: float):
+        super().resetCallback(t0)
+        for dl in self.__delay_lines:
+            dl.reset()
+
+    def setCovariance(self, cov: ArrayLike):
         """Sets the covariance matrix of the gaussian distribution
 
         Args:
@@ -132,7 +138,7 @@ class DSPChannel(AComputer):
             raise ValueError(cov.shape, (n, n))
         otp.cov = cov
 
-    def setMean(self, mean: "array"):
+    def setMean(self, mean: ArrayLike):
         """Sets the mean vector of the gaussian distribution
 
         Args:
@@ -145,7 +151,7 @@ class DSPChannel(AComputer):
             raise ValueError(mean.shape[0], n)
         otp.mean = mean
 
-    def getCovariance(self) -> "array":
+    def getCovariance(self) -> ArrayLike:
         """Returns the covariance matrix of the gaussian distribution
 
         Returns:
@@ -155,7 +161,7 @@ class DSPChannel(AComputer):
         otp = self.getOutputByName("rxsig")
         return otp.cov
 
-    def getMean(self) -> "array":
+    def getMean(self) -> ArrayLike:
         """Returns the mean vector of the gaussian distribution
 
         Returns:
@@ -165,7 +171,7 @@ class DSPChannel(AComputer):
         otp = self.getOutputByName("rxsig")
         return otp.mean
 
-    def atmosphericModel(self, tx_pos: "array", rx_pos: "array"):  # type: ignore
+    def atmosphericModel(self, tx_pos: ArrayLike, rx_pos: ArrayLike):  # type: ignore
         """Computes the atmospheric contribution
 
         Args:
@@ -223,11 +229,11 @@ class DSPChannel(AComputer):
         self,
         t1: float,
         t2: float,
-        txpos: "array",  # type: ignore
-        rxpos: "array",  # type: ignore
-        txsig: "array",  # type: ignore
-        rxsig: "array",  # type: ignore
-        info: "array",  # type: ignore
+        txpos: ArrayLike,  # type: ignore
+        rxpos: ArrayLike,  # type: ignore
+        txsig: ArrayLike,  # type: ignore
+        rxsig: ArrayLike,  # type: ignore
+        info: ArrayLike,  # type: ignore
     ) -> dict:
         rxsig = np.empty(self.num_src, dtype=np.complex128)
         delays = np.empty(self.num_src, dtype=np.float64)
@@ -254,8 +260,9 @@ class DSPChannel(AComputer):
 
             psig = txsig[kelem] * self.__gain_coef / sqrt(L_atm) / d * exp(1j * phi_d0)
 
-            self.__delay_lines[kelem].addSample(t2, psig)
-            rx_dl_sig = self.__delay_lines[kelem].getDelayedSample(delay)
+            dl = self.__delay_lines[kelem]
+            dl.addSample(t2, psig)
+            rx_dl_sig = dl.getDelayedSample(delay)
             rxsig[kelem] = rx_dl_sig
 
             if kelem == 0:

@@ -1,5 +1,6 @@
 from typing import Iterable
 
+from numpy.typing import ArrayLike
 import numpy as np
 import scipy.linalg as lin
 
@@ -51,10 +52,10 @@ class VTOLPilot(LQRegulator):
         self,
         t1: float,
         t2: float,
-        setpoint: np.array,
-        estimation: np.array,
-        att: np.array,
-        command: np.array,
+        setpoint: ArrayLike,
+        estimation: ArrayLike,
+        att: ArrayLike,
+        command: ArrayLike,
     ) -> dict:
         pos_d = setpoint[:3]
         yaw_d = setpoint[3]

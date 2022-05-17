@@ -2,6 +2,7 @@ from typing import Tuple, Callable, List
 
 from tqdm import tqdm
 from scipy import linalg as lin
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import exp, pi, sqrt
 from numpy.fft import fft, fftshift
@@ -38,7 +39,7 @@ class DSPSignal(DSPLine, ASetPoint):
         name: str,
         samplingStart=None,
         samplingPeriod=None,
-        y_serie: np.array = None,
+        y_serie: ArrayLike = None,
         default_transform=np.real,
         dtype=np.complex128,
     ):
@@ -64,7 +65,7 @@ class DSPSignal(DSPLine, ASetPoint):
         self,
         t1: float,
         t2: float,
-        setpoint: np.array,
+        setpoint: ArrayLike,
     ) -> dict:
         otp = self.getOutputByName("setpoint")
         typ = otp.getDataType()
@@ -162,7 +163,7 @@ class DSPSignal(DSPLine, ASetPoint):
 
     @classmethod
     def fromTimeAndSamples(
-        cls, name: str, tps: "array", y_serie: "array"
+        cls, name: str, tps: ArrayLike, y_serie: ArrayLike
     ) -> "DSPSignal":
         """Builds a signal from 2 time and samples series
 
@@ -196,7 +197,7 @@ class DSPSignal(DSPLine, ASetPoint):
 
     @classmethod
     def fromPhaseLaw(
-        cls, name: str, sampling_freq: float, pha: np.array
+        cls, name: str, sampling_freq: float, pha: ArrayLike
     ) -> "DSPSignal":
         """Builds a signal from a phase law
 
@@ -305,7 +306,7 @@ class DSPSignal(DSPLine, ASetPoint):
             y_serie=y,
         )
 
-    def getUnfoldedPhase(self, eps: float = 1e-9) -> "array":
+    def getUnfoldedPhase(self, eps: float = 1e-9) -> ArrayLike:
         """Gets the phase law from the signal
 
         Args:

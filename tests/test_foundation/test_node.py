@@ -1,9 +1,8 @@
 import sys
 from pathlib import Path
-import unittest
 
+from numpy.typing import ArrayLike
 import numpy as np
-from numpy import cos, sin, sqrt, exp
 from matplotlib import pyplot as plt
 import pytest
 
@@ -11,7 +10,6 @@ from blocksim.control.SetPoint import Step
 from blocksim.control.System import ASystem
 from blocksim.control.Controller import PIDController
 from blocksim.Simulation import Simulation
-from blocksim.graphics import plotGraph
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase, plotAnalyticsolution
@@ -33,7 +31,7 @@ class System(ASystem):
         ASystem.__init__(self, name, shape_command=1, snames_state=["x", "v"])
         self.setInitialStateForOutput(np.zeros(2), "state")
 
-    def transition(self, t: float, x: "array", u: "array") -> "array":
+    def transition(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
         k = 10
         f = 5
         m = 1

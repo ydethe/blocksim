@@ -7,6 +7,7 @@ Allows plotting from a `blocksim.loggers.Logger.Logger`, or from `blocksim.dsp.D
 from typing import Any, Tuple, Iterable
 
 from parse import compile
+from numpy.typing import ArrayLike
 import numpy as np
 from scipy.interpolate import interp2d
 from numpy import log10
@@ -352,6 +353,7 @@ def plotBode(
             If iterable, list of frequency samples to use for the plot
 
     Examples:
+        >>> from blocksim.dsp.DSPFilter import ArbitraryDSPFilter
         >>> f = ArbitraryDSPFilter(name="MTI", samplingPeriod=1e6, num=[1, -1])
         >>> fig = plt.figure()
         >>> gs = fig.add_gridspec(2, 1)

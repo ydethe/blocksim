@@ -1,3 +1,4 @@
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import sqrt, sign, pi, exp, cos, sin, log2
 
@@ -10,7 +11,7 @@ from .. import logger
 
 class BOCMapping(ADSPComputer):
     """
-    Returns a BOC sequence that, once convoluted with a PRN, gives the modulated signal
+    Returns a BOC(m,n) sequence that, once convoluted with a PRN, gives the modulated signal
     Sub carrier frequency and chip frequency are given as multiples of f_ref = 1.023 MHz
 
     Attributes:
@@ -38,16 +39,17 @@ class BOCMapping(ADSPComputer):
         f_ref: float,
         m: int,
         n: int,
-        p_samp: int = 10,
+        p_samp: int = 1,
         input_size: int = 1,
     ):
+        n_boc = m // n * 2
         ADSPComputer.__init__(
             self,
             name=name,
             input_name="input",
             output_name="output",
             input_size=input_size,
-            output_size=input_size * p_samp,
+            output_size=input_size * p_samp * n_boc,
             input_dtype=np.int64,
             output_dtype=np.complex128,
         )
@@ -56,6 +58,7 @@ class BOCMapping(ADSPComputer):
         self.createParameter(name="m", value=m, read_only=True)
         self.createParameter(name="n", value=n, read_only=True)
         self.createParameter(name="p_samp", value=p_samp, read_only=True)
+        self.createParameter(name="n_boc", value=n_boc, read_only=True)
         s_boc = self.createSequence()
         self.createParameter(name="boc_seq", value=s_boc, read_only=True)
 
@@ -63,24 +66,22 @@ class BOCMapping(ADSPComputer):
         """Creates the unitary BOC sequence
 
         Returns:
-            The sequence, sampled at fs = p_samp * m * f_ref
+            The sequence, sampled at fs = 2 * p_samp * m * f_ref
 
         """
-        Nb = (2 * self.m) // self.n
-        f_c = self.n * self.f_ref
-        f_s = self.m * self.f_ref
-        T_c = 1 / f_c
-        f_samp = self.p_samp * f_s
+        p = self.p_samp
+        n_samp = self.n_boc * p
 
-        n_samp = int(T_c * f_samp)
-        p = int(f_samp / (2 * f_s))
+        f_samp = 2 * p * self.m * self.f_ref
+
         drc = np.zeros(n_samp - p + 1)
-        for i in range(Nb):
+        for i in range(self.n_boc):
             drc[p * i] = (-1) ** i
 
         p_tb = np.ones(p)
 
         s_boc = np.convolve(p_tb, drc, mode="full")
+        assert len(s_boc) == n_samp
 
         sig = DSPSignal(
             name="BOC(%i,%i)_seq" % (self.m, self.n),
@@ -91,12 +92,15 @@ class BOCMapping(ADSPComputer):
 
         return sig
 
+    def adaptTimeSerie(self, tps: ArrayLike) -> ArrayLike:
+        return tps / (self.n_boc * self.p_samp)
+
     def update(
         self,
         t1: float,
         t2: float,
-        input: np.array,
-        output: np.array,
+        input: ArrayLike,
+        output: ArrayLike,
     ) -> dict:
         seq = self.boc_seq.y_serie
         p = len(seq)

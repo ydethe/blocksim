@@ -9,6 +9,7 @@ class Parameter:
     name: str
     unit: str
     description: Any
+    dtype: Any
     data: List[complex] = field(default_factory=list)
 
     def __repr__(self):

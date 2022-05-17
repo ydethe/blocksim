@@ -1,4 +1,5 @@
 import scipy.linalg as lin
+from numpy.typing import ArrayLike
 import numpy as np
 from numpy import pi
 
@@ -105,12 +106,12 @@ class GNSSTracker(ASensors):
         self,
         t1: float,
         t2: float,
-        measurement: np.array,
-        ephemeris: np.array,
-        ueposition: np.array,
-        state: np.array,
-        vissat: np.array,
-        obscoord: np.array,
+        measurement: ArrayLike,
+        ephemeris: ArrayLike,
+        ueposition: ArrayLike,
+        state: ArrayLike,
+        vissat: ArrayLike,
+        obscoord: ArrayLike,
     ) -> dict:
         nsat = len(state) // 6
 
