@@ -1,11 +1,10 @@
 """Definition of the spec for a logger plugin
 
 """
-
-from functools import wraps
+from typing import Any
 from pathlib import Path
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import pluggy
 
 hookspec = pluggy.HookspecMarker("blocksim")
@@ -40,7 +39,7 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def getRawValue(self, log: "Logger", name: str) -> ArrayLike:
+    def getRawValue(self, log: "Logger", name: str) -> NDArray[Any, Any]:
         """If implemented, subsequent calls to `blocksim.loggers.Logger.Logger.getRawValue` will use this method.
         Otherwise, the internal dictionary of `blocksim.loggers.Logger.Logger` is used.
 

@@ -1,6 +1,6 @@
-from typing import Iterable
+from typing import Iterable, Any
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from scipy import linalg as lin
 
@@ -94,10 +94,10 @@ class PIDController(AController):
         self,
         t1: float,
         t2: float,
-        integral: ArrayLike,
-        setpoint: ArrayLike,
-        estimation: ArrayLike,
-        command: ArrayLike,
+        integral: NDArray[Any, Any],
+        setpoint: NDArray[Any, Any],
+        estimation: NDArray[Any, Any],
+        command: NDArray[Any, Any],
     ) -> dict:
         (ix,) = integral
         x = estimation[0]
@@ -173,10 +173,10 @@ class AntiWindupPIDController(AController):
         self,
         t1: float,
         t2: float,
-        integral: ArrayLike,
-        setpoint: ArrayLike,
-        estimation: ArrayLike,
-        command: ArrayLike,
+        integral: NDArray[Any, Any],
+        setpoint: NDArray[Any, Any],
+        estimation: NDArray[Any, Any],
+        command: NDArray[Any, Any],
     ) -> dict:
         int_x, corr = integral
 
@@ -311,9 +311,9 @@ class LQRegulator(AController):
         self,
         t1: float,
         t2: float,
-        setpoint: ArrayLike,
-        estimation: ArrayLike,
-        command: ArrayLike,
+        setpoint: NDArray[Any, Any],
+        estimation: NDArray[Any, Any],
+        command: NDArray[Any, Any],
     ) -> dict:
         u = self.matN @ setpoint - self.matK @ estimation
 

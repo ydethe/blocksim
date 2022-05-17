@@ -1,12 +1,8 @@
-from typing import Callable, List
-from itertools import product
-from math import factorial
+from typing import Callable, List, Any
 
 from lazy_property import LazyProperty
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
-from scipy import linalg as lin
-from numpy.lib.arraysetops import isin
 from scipy.interpolate import interp1d
 
 from . import derivative_coeff
@@ -37,7 +33,7 @@ class DSPLine(object):
         name: str,
         samplingStart: float = None,
         samplingPeriod: float = None,
-        y_serie: ArrayLike = None,
+        y_serie: NDArray[Any, Any] = None,
         projection: str = "rectilinear",
         default_transform=lambda x: x,
     ):
@@ -63,11 +59,11 @@ class DSPLine(object):
         return self.__samplingPeriod
 
     @property
-    def y_serie(self) -> ArrayLike:
+    def y_serie(self) -> NDArray[Any, Any]:
         return self.__y_serie.copy()
 
     @property
-    def default_transform(self) -> ArrayLike:
+    def default_transform(self) -> NDArray[Any, Any]:
         return self.__default_transform
 
     @LazyProperty
@@ -127,7 +123,7 @@ class DSPLine(object):
 
         return x_serie
 
-    def generateXSerie(self, index: int = None) -> ArrayLike:
+    def generateXSerie(self, index: int = None) -> NDArray[Any, Any]:
         """Generates the x samples of the line
 
         Args:
@@ -190,7 +186,9 @@ class DSPLine(object):
 
         return lpeak
 
-    def __interpolate(self, new_x: ArrayLike, complex_output: bool = True) -> ArrayLike:
+    def __interpolate(
+        self, new_x: NDArray[Any, Any], complex_output: bool = True
+    ) -> NDArray[Any, Any]:
         if complex_output:
             y_serie = 1j * self._itp_y(new_x)
             y_serie += self._itp_x(new_x)
@@ -416,7 +414,7 @@ class DSPLine(object):
         return _to_db
 
     @classmethod
-    def to_db(cls, x: ArrayLike, lim_db: float = -100) -> ArrayLike:
+    def to_db(cls, x: NDArray[Any, Any], lim_db: float = -100) -> NDArray[Any, Any]:
         """Converts the samples into their power, in dB.
         If a sample's power is below *low*, the dB value in clamped to *low*.
 

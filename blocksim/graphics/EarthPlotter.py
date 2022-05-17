@@ -1,10 +1,8 @@
-from typing import Tuple, List
-from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import cartopy.crs as ccrs
 from cartopy.geodesic import Geodesic
-import matplotlib.pyplot as plt
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import sqrt, pi, cos, sin
 
@@ -109,7 +107,9 @@ class EarthPlotter(object):
 
         axe.plot(c_lon, c_lat, **kwargs)
 
-    def plotGroundTrack(self, axe, lon: ArrayLike, lat: ArrayLike, **kwargs):
+    def plotGroundTrack(
+        self, axe, lon: NDArray[Any, Any], lat: NDArray[Any, Any], **kwargs
+    ):
         """Draws the ground track on an axe compatible with cartopy.
 
         See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs

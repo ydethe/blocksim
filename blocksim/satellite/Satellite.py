@@ -1,26 +1,22 @@
 from abc import abstractmethod
-from typing import Tuple, List
+from typing import Tuple, List, Any
 from datetime import datetime, timedelta, timezone
 import requests
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
-from numpy import cos, sin, tan, sqrt, pi
+from numpy import cos, sin, tan, sqrt
 import scipy.linalg as lin
 from sgp4.api import Satrec, WGS84
-from sgp4.functions import days2mdhms
 
 from ..core.Node import AComputer
 from .. import logger
 from ..constants import *
 from ..utils import (
-    datetime_to_skyfield,
     orbital_to_teme,
-    skyfield_to_datetime,
     itrf_to_geodetic,
     teme_to_orbital,
     orbital_to_teme,
-    rotation_matrix,
     teme_to_itrf,
     itrf_to_teme,
     time_to_jd_fraction,
@@ -31,7 +27,7 @@ from .Trajectory import Trajectory
 __all__ = ["ASatellite", "CircleSatellite", "SGP4Satellite", "createSatellites"]
 
 
-def sgp4_to_teme(satrec: Satrec, t_epoch: float) -> ArrayLike:
+def sgp4_to_teme(satrec: Satrec, t_epoch: float) -> NDArray[Any, Any]:
     """
     TEME : https://en.wikipedia.org/wiki/Earth-centered_inertial#TEME
 
@@ -150,7 +146,7 @@ class ASatellite(AComputer):
         self.createParameter(name="orbital_precession")  # (rad/s)
         self.createParameter(name="orbit_period")  # (s)
 
-    def subpoint(self, itrf_pos_vel: ArrayLike) -> Tuple[float, float]:
+    def subpoint(self, itrf_pos_vel: NDArray[Any, Any]) -> Tuple[float, float]:
         """
         Return the latitude and longitude directly beneath this position.
 
@@ -205,7 +201,7 @@ class ASatellite(AComputer):
         return traj
 
     def update(
-        self, t1: float, t2: float, subpoint: ArrayLike, itrf: ArrayLike
+        self, t1: float, t2: float, subpoint: NDArray[Any, Any], itrf: NDArray[Any, Any]
     ) -> dict:
         outputs = {}
         outputs["itrf"] = self.getGeocentricITRFPositionAt(t2)
@@ -243,7 +239,9 @@ class ASatellite(AComputer):
         return traj
 
     @abstractmethod
-    def getGeocentricITRFPositionAt(self, td: float) -> ArrayLike:  # pragma: no cover
+    def getGeocentricITRFPositionAt(
+        self, td: float
+    ) -> NDArray[Any, Any]:  # pragma: no cover
         """Abstract method that shall compute, for a simulation time td,
         an array with 3 cartesian position (m) and 3 cartesian velocity (m/s) in ITRF frame
 
@@ -316,7 +314,7 @@ class SGP4Satellite(ASatellite):
         otp = self.getOutputByName("itrf")
         otp.setInitialState(pv0)
 
-    def getGeocentricITRFPositionAt(self, t_calc: float) -> ArrayLike:
+    def getGeocentricITRFPositionAt(self, t_calc: float) -> NDArray[Any, Any]:
         # epoch time in days from jan 0, 1950. 0 hr
         dt = (self.tsync - self.getInitialEpoch()).total_seconds() + t_calc
 
@@ -529,7 +527,7 @@ class CircleSatellite(ASatellite):
     def __init__(self, name: str, tsync: datetime):
         ASatellite.__init__(self, name, tsync)
 
-    def setInitialITRF(self, t_epoch: float, pv: ArrayLike):
+    def setInitialITRF(self, t_epoch: float, pv: NDArray[Any, Any]):
         """Set the initial position and velocity from in ITRF position / velocity
         The velocity is used only to determine the orbit's plane. It is then modified so that the orbit eccentricity be 0
         Also sets the attributes of the class
@@ -623,7 +621,7 @@ class CircleSatellite(ASatellite):
 
     @classmethod
     def fromITRF(
-        cls, name: str, tsync: datetime, pv_itrf: ArrayLike
+        cls, name: str, tsync: datetime, pv_itrf: NDArray[Any, Any]
     ) -> "CircleSatellite":
         """Instanciates a CircleSatellite from an initial position and velocity from in ITRF position / velocity
         The velocity is used only to determine the orbit's plane. It is then modified so that the orbit eccentricity be 0
@@ -702,7 +700,7 @@ class CircleSatellite(ASatellite):
 
         return sat
 
-    def getGeocentricITRFPositionAt(self, td: float) -> ArrayLike:
+    def getGeocentricITRFPositionAt(self, td: float) -> NDArray[Any, Any]:
         t_epoch = (self.tsync - self.getInitialEpoch()).total_seconds() + td
 
         th = self.__sat_puls * td

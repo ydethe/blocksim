@@ -1,4 +1,6 @@
-from numpy.typing import ArrayLike
+from typing import Any
+
+from nptyping import NDArray, Shape
 import numpy as np
 
 from ..control.Sensors import ASensors
@@ -24,7 +26,11 @@ class IMU(ASensors):
         )
 
     def update(
-        self, t1: float, t2: float, state: ArrayLike, measurement: ArrayLike
+        self,
+        t1: float,
+        t2: float,
+        state: NDArray[Any, Any],
+        measurement: NDArray[Any, Any],
     ) -> dict:
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = state
 

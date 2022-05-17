@@ -1,10 +1,9 @@
 import sys
 from pathlib import Path
-import unittest
+from typing import Any
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
-from numpy import cos, sin, sqrt, exp
 from matplotlib import pyplot as plt
 import pytest
 
@@ -16,7 +15,7 @@ from blocksim.core.Generic import GenericComputer
 from blocksim.Simulation import Simulation
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase, plotAnalyticsolution
+from TestBase import TestBase
 
 
 class System(ASystem):
@@ -24,7 +23,9 @@ class System(ASystem):
         ASystem.__init__(self, name, shape_command=1, snames_state=["x", "v"])
         self.setInitialStateForOutput(np.zeros(2), "state")
 
-    def transition(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
+    def transition(
+        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
+    ) -> NDArray[Any, Any]:
         k = 10
         f = 5
         m = 1
@@ -87,9 +88,7 @@ class TestDSPSetpoint(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    a = TestDSPSetpoint()
+    a.test_dsp_setpoint()
 
-    # a = TestDSPSetpoint()
-    # a.test_dsp_setpoint()
-
-    # plt.show()
+    plt.show()

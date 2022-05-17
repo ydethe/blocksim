@@ -1,7 +1,7 @@
-from typing import Iterable
+from typing import Iterable, Any
 from itertools import product
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from scipy.interpolate import interp1d
 
@@ -57,7 +57,7 @@ class Step(ASetPoint):
 
     __slots__ = []
 
-    def __init__(self, name: str, snames: Iterable[str], cons: ArrayLike):
+    def __init__(self, name: str, snames: Iterable[str], cons: NDArray[Any, Any]):
         dtype = cons.dtype
         ASetPoint.__init__(self, name=name, snames=snames, dtype=dtype)
         otp = self.getOutputByName("setpoint")
@@ -67,7 +67,7 @@ class Step(ASetPoint):
         self,
         t1: float,
         t2: float,
-        setpoint: ArrayLike,
+        setpoint: NDArray[Any, Any],
     ) -> dict:
         outputs = {}
         outputs["setpoint"] = setpoint
@@ -99,7 +99,7 @@ class InterpolatedSetPoint(ASetPoint):
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=dtype))
         self.createParameter("interpolators", value=dict())
 
-    def evalState(self, t: float) -> ArrayLike:
+    def evalState(self, t: float) -> NDArray[Any, Any]:
         """Perform interpolation at simulation time t
 
         Args:
@@ -129,8 +129,8 @@ class InterpolatedSetPoint(ASetPoint):
     def setInterpolatorForOutput(
         self,
         iscal: int,
-        t_interp: ArrayLike,
-        sp_interp: ArrayLike,
+        t_interp: NDArray[Any, Any],
+        sp_interp: NDArray[Any, Any],
         kind: str = "linear",
     ):
         """Sets the interpolator for the scalar iscal
@@ -166,7 +166,7 @@ class InterpolatedSetPoint(ASetPoint):
         self,
         t1: float,
         t2: float,
-        setpoint: ArrayLike,
+        setpoint: NDArray[Any, Any],
     ) -> dict:
         sp = self.evalState(t2)
 
@@ -207,7 +207,7 @@ class Sinusoid(ASetPoint):
         self.createParameter("freq", value=np.empty(shape))
         self.createParameter("pha", value=np.empty(shape))
 
-    def evalState(self, t: float) -> ArrayLike:
+    def evalState(self, t: float) -> NDArray[Any, Any]:
         """Computes the output at simulation time t
 
         Args:
@@ -239,7 +239,7 @@ class Sinusoid(ASetPoint):
         self,
         t1: float,
         t2: float,
-        setpoint: ArrayLike,
+        setpoint: NDArray[Any, Any],
     ) -> dict:
         sp = self.evalState(t2)
 
@@ -268,7 +268,7 @@ class Ramp(ASetPoint):
 
     __slots__ = []
 
-    def __init__(self, name: str, snames: Iterable[str], slopes: ArrayLike):
+    def __init__(self, name: str, snames: Iterable[str], slopes: NDArray[Any, Any]):
         dtype = slopes.dtype
         ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
         otp = self.getOutputByName("setpoint")
@@ -279,7 +279,7 @@ class Ramp(ASetPoint):
         self,
         t1: float,
         t2: float,
-        setpoint: ArrayLike,
+        setpoint: NDArray[Any, Any],
     ) -> dict:
         ns = setpoint.shape
         sp = np.empty(ns, dtype=setpoint.dtype)
@@ -336,7 +336,7 @@ class Rectangular(ASetPoint):
         ASetPoint.__init__(self, name, snames=snames, dtype=dtype)
         self.createParameter("doors", value=[])
 
-    def evalState(self, t: float) -> ArrayLike:
+    def evalState(self, t: float) -> NDArray[Any, Any]:
         """Computes the output at simulation time t
 
         Args:
@@ -370,7 +370,7 @@ class Rectangular(ASetPoint):
         self,
         t1: float,
         t2: float,
-        setpoint: ArrayLike,
+        setpoint: NDArray[Any, Any],
     ) -> dict:
         sp = self.evalState(t2)
 

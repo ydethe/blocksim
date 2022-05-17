@@ -1,6 +1,7 @@
-from numpy.typing import ArrayLike
+from typing import Any
+
+from nptyping import NDArray, Shape
 import numpy as np
-import scipy.linalg as lin
 
 from ..control.System import ASystem
 
@@ -43,7 +44,9 @@ class Motor(ASystem):
         self.createParameter("k", 2.9e-5)
         self.createParameter("Umax", 12)
 
-    def transition(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
+    def transition(
+        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
+    ) -> NDArray[Any, Any]:
         (s,) = x
         (u0,) = u
         ds = (
@@ -59,9 +62,9 @@ class Motor(ASystem):
         self,
         t1: float,
         t2: float,
-        command: ArrayLike,
-        state: ArrayLike,
-        vel: ArrayLike,
+        command: NDArray[Any, Any],
+        state: NDArray[Any, Any],
+        vel: NDArray[Any, Any],
     ) -> dict:
         outputs = super().update(t1, t2, command, state)
 

@@ -1,7 +1,8 @@
 import sys
 from pathlib import Path
+from typing import Any
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import exp, pi
 import matplotlib.pyplot as plt
@@ -16,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
 
-def generate_lin_fm(ns: int, fs: float, f1: float, f2: float) -> ArrayLike:
+def generate_lin_fm(ns: int, fs: float, f1: float, f2: float) -> NDArray[Any, Any]:
     t = np.arange(ns) / fs
     tau = ns / fs
     x = exp(1j * (pi * t * (2 * f1 * tau + f2 * t - f1 * t)) / tau)
@@ -122,7 +123,7 @@ class TestTrackingSteadyState(TestBase):
 
         return fig
 
-    @pytest.mark.mpl_image_compare(tolerance=25, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=30, savefig_kwargs={"dpi": 150})
     def test_bode3_steadystate_cplxe(self):
         nb_tracks = len(self.tracks)
 

@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 
 import pluggy
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import *
 from scipy.signal import firwin, fftconvolve
@@ -299,7 +299,7 @@ class Logger(object):
 
         return len(data0)
 
-    def getFlattenOutput(self, name: str, dtype=np.complex128) -> ArrayLike:
+    def getFlattenOutput(self, name: str, dtype=np.complex128) -> NDArray[Any, Any]:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -323,7 +323,9 @@ class Logger(object):
 
         return res
 
-    def getValueForComputer(self, comp: AComputer, output_name: str) -> ArrayLike:
+    def getValueForComputer(
+        self, comp: AComputer, output_name: str
+    ) -> NDArray[Any, Any]:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -337,7 +339,7 @@ class Logger(object):
         val = self.getMatrixOutput(name="%s_%s" % (comp.getName(), output_name))
         return val
 
-    def getMatrixOutput(self, name: str) -> ArrayLike:
+    def getMatrixOutput(self, name: str) -> NDArray[Any, Any]:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -366,7 +368,7 @@ class Logger(object):
 
         return res
 
-    def getRawValue(self, name: str) -> ArrayLike:
+    def getRawValue(self, name: str) -> NDArray[Any, Any]:
         """Get the value of a logged variable
         The argument *cannot* be an expression.
 
@@ -403,7 +405,7 @@ class Logger(object):
                 "Too many loggers to handle file '%s'" % self.getLoadedFile()
             )
 
-    def getValue(self, name: str, raw: bool = False) -> ArrayLike:
+    def getValue(self, name: str, raw: bool = False) -> NDArray[Any, Any]:
         """Get the value of a logged variable
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos
@@ -465,7 +467,7 @@ class Logger(object):
 
     def getFilteredValue(
         self, name: str, ntaps: int, cutoff: float, window: str = "hamming"
-    ) -> ArrayLike:
+    ) -> NDArray[Any, Any]:
         """Get the value of a logged variable, and applies a low-pass filter
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos

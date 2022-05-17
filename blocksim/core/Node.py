@@ -1,9 +1,9 @@
 from abc import abstractmethod
-from typing import Iterable, Iterator, List
+from typing import Iterable, Iterator, List, Any
 from itertools import product
 from uuid import UUID
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import sqrt
 
@@ -37,7 +37,7 @@ class Input(ABaseNode):
             self.__shape = shape
         self.__dtype = dtype
 
-    def getDefaultInputData(self) -> ArrayLike:
+    def getDefaultInputData(self) -> NDArray[Any, Any]:
         return np.zeros(self.getDataShape(), dtype=self.getDataType())
 
     def __repr__(self):
@@ -50,7 +50,7 @@ class Input(ABaseNode):
     def getDataType(self) -> int:
         return self.__dtype
 
-    def process(self, data: ArrayLike) -> ArrayLike:
+    def process(self, data: NDArray[Any, Any]) -> NDArray[Any, Any]:
         """Applies a transform to the incoming data.
         By default, does nothing.
 
@@ -128,7 +128,7 @@ class Output(ABaseNode):
         dat = self.getInitialeState()
         self.setData(dat)
 
-    def setInitialState(self, initial_state: ArrayLike):
+    def setInitialState(self, initial_state: NDArray[Any, Any]):
         """Sets the element's initial state vector
 
         Args:
@@ -187,7 +187,7 @@ class Output(ABaseNode):
         for iscal in iter_ind:
             yield self.__snames[iscal], self.__units[iscal], self.__tdata[iscal]
 
-    def getInitialeState(self) -> ArrayLike:
+    def getInitialeState(self) -> NDArray[Any, Any]:
         """Gets the element's initial state vector
 
         Returns:
@@ -202,7 +202,7 @@ class Output(ABaseNode):
     def getDataType(self):
         return self.__dtype
 
-    def setData(self, data: ArrayLike, cname: str = "?"):
+    def setData(self, data: NDArray[Any, Any], cname: str = "?"):
         """Sets the data for the Output
         data is the data **before** applying `Output.process`
 
@@ -219,7 +219,7 @@ class Output(ABaseNode):
 
     def _getUnprocessedData(
         self,
-    ) -> ArrayLike:
+    ) -> NDArray[Any, Any]:
         """Gets the data for the Output
 
         Returns:
@@ -230,7 +230,7 @@ class Output(ABaseNode):
 
     def getData(
         self,
-    ) -> ArrayLike:
+    ) -> NDArray[Any, Any]:
         """Gets the data for the Output
 
         Returns:
@@ -239,7 +239,7 @@ class Output(ABaseNode):
         """
         return self.__tdata.copy()
 
-    def process(self, data: ArrayLike) -> ArrayLike:
+    def process(self, data: NDArray[Any, Any]) -> NDArray[Any, Any]:
         """Applies a transform to the outgoing data.
         By default, does nothing.
         The **transformed** data is stored
@@ -283,7 +283,7 @@ class AWGNOutput(Output):
 
         super().resetCallback(t0)
 
-    def process(self, state: ArrayLike) -> ArrayLike:
+    def process(self, state: NDArray[Any, Any]) -> NDArray[Any, Any]:
         """Adds a gaussian noise to a state vector
 
         Args:
@@ -352,7 +352,7 @@ class TFOutput(Output):
         self.__yprev = y
         return y
 
-    def process(self, data: ArrayLike) -> ArrayLike:
+    def process(self, data: NDArray[Any, Any]) -> NDArray[Any, Any]:
         res = np.empty_like(data)
         rs = res.shape
         li = []
@@ -532,7 +532,7 @@ class AComputer(ABaseNode):
 
     def getValueFromLogger(
         self, logger: "Logger", output_name: str, dtype=np.complex128
-    ) -> ArrayLike:
+    ) -> NDArray[Any, Any]:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -570,7 +570,9 @@ class AComputer(ABaseNode):
 
         return isinstance(self, AController)
 
-    def setInitialStateForOutput(self, initial_state: ArrayLike, output_name: str):
+    def setInitialStateForOutput(
+        self, initial_state: NDArray[Any, Any], output_name: str
+    ):
         """Sets the initial state vector for a given output
 
         Args:
@@ -581,7 +583,7 @@ class AComputer(ABaseNode):
         otp = self.getOutputByName(output_name)
         otp.setInitialState(initial_state)
 
-    def getInitialStateForOutput(self, output_name: str) -> ArrayLike:
+    def getInitialStateForOutput(self, output_name: str) -> NDArray[Any, Any]:
         """Sets the initial state vector for a given output
 
         Args:
@@ -829,7 +831,7 @@ class AComputer(ABaseNode):
         logger.error("In '%s' : input name not found '%s'" % (self.getName(), name))
         raise UnknownInput(self.getName(), name)
 
-    def getDataForOutput(self, oname: str) -> ArrayLike:
+    def getDataForOutput(self, oname: str) -> NDArray[Any, Any]:
         otp = self.getOutputByName(name=oname)
         return otp.getData()
 

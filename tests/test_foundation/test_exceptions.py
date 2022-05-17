@@ -1,14 +1,14 @@
 import sys
 from pathlib import Path
+from typing import Any
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 
 from blocksim.exceptions import *
-from blocksim.loggers.Logger import Logger
 from blocksim.Simulation import Simulation
 from blocksim.control.System import LTISystem, G6DOFSystem
-from blocksim.control.SetPoint import Rectangular, Step
+from blocksim.control.SetPoint import Step
 from blocksim.core.Node import AComputer
 from blocksim.control.Sensors import LinearSensors
 from blocksim.utils import quat_to_euler
@@ -31,7 +31,12 @@ class DummyTestElement(AComputer):
         self.createParameter("no", 0)
 
     def update(
-        self, t1: float, t2: float, output: ArrayLike, state: ArrayLike, **inputs
+        self,
+        t1: float,
+        t2: float,
+        output: NDArray[Any, Any],
+        state: NDArray[Any, Any],
+        **inputs
     ) -> dict:
         n = self.getOutputByName("state").getDataShape()[0]
         if self.ns == 2:

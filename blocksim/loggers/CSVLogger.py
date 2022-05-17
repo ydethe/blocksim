@@ -1,13 +1,11 @@
-from typing import Iterable
-from datetime import datetime
+from typing import Any
 from pathlib import Path
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import pluggy
 import pandas as pd
 from singleton3 import Singleton
 
-# from ..LoggerSpec import if_suitable
 from .Logger import Logger
 from .. import logger
 from ..exceptions import *
@@ -43,7 +41,7 @@ class Logger(object, metaclass=Singleton):
         return True
 
     @hookimpl
-    def getRawValue(self, log: "Logger", name: str) -> ArrayLike:
+    def getRawValue(self, log: "Logger", name: str) -> NDArray[Any, Any]:
         return
 
     @hookimpl

@@ -1,10 +1,10 @@
-from numpy.typing import ArrayLike
+from typing import Any
+
+from nptyping import NDArray, Shape
 import numpy as np
-from numpy import arccos, exp, pi, sqrt, cos, sin, tan
-from scipy import linalg as lin
+from numpy import exp, pi, sqrt, cos, tan
 
 from ..core.Node import AComputer, AWGNOutput
-from .DSPSignal import DSPSignal
 
 from .DelayLine import FiniteDelayLine
 from ..constants import kb, c, Req
@@ -71,8 +71,8 @@ class DSPChannel(AComputer):
         antenna_temp: float,
         bandwidth: float,
         noise_factor: float,
-        alpha: ArrayLike,
-        beta: ArrayLike,
+        alpha: NDArray[Any, Any],
+        beta: NDArray[Any, Any],
         num_src: int = 1,
         nodop: bool = False,
         noatm: bool = False,
@@ -125,7 +125,7 @@ class DSPChannel(AComputer):
         for dl in self.__delay_lines:
             dl.reset()
 
-    def setCovariance(self, cov: ArrayLike):
+    def setCovariance(self, cov: NDArray[Any, Any]):
         """Sets the covariance matrix of the gaussian distribution
 
         Args:
@@ -138,7 +138,7 @@ class DSPChannel(AComputer):
             raise ValueError(cov.shape, (n, n))
         otp.cov = cov
 
-    def setMean(self, mean: ArrayLike):
+    def setMean(self, mean: NDArray[Any, Any]):
         """Sets the mean vector of the gaussian distribution
 
         Args:
@@ -151,7 +151,7 @@ class DSPChannel(AComputer):
             raise ValueError(mean.shape[0], n)
         otp.mean = mean
 
-    def getCovariance(self) -> ArrayLike:
+    def getCovariance(self) -> NDArray[Any, Any]:
         """Returns the covariance matrix of the gaussian distribution
 
         Returns:
@@ -161,7 +161,7 @@ class DSPChannel(AComputer):
         otp = self.getOutputByName("rxsig")
         return otp.cov
 
-    def getMean(self) -> ArrayLike:
+    def getMean(self) -> NDArray[Any, Any]:
         """Returns the mean vector of the gaussian distribution
 
         Returns:
@@ -171,7 +171,7 @@ class DSPChannel(AComputer):
         otp = self.getOutputByName("rxsig")
         return otp.mean
 
-    def atmosphericModel(self, tx_pos: ArrayLike, rx_pos: ArrayLike):  # type: ignore
+    def atmosphericModel(self, tx_pos: NDArray[Any, Any], rx_pos: NDArray[Any, Any]):  # type: ignore
         """Computes the atmospheric contribution
 
         Args:
@@ -229,11 +229,11 @@ class DSPChannel(AComputer):
         self,
         t1: float,
         t2: float,
-        txpos: ArrayLike,  # type: ignore
-        rxpos: ArrayLike,  # type: ignore
-        txsig: ArrayLike,  # type: ignore
-        rxsig: ArrayLike,  # type: ignore
-        info: ArrayLike,  # type: ignore
+        txpos: NDArray[Any, Any],  # type: ignore
+        rxpos: NDArray[Any, Any],  # type: ignore
+        txsig: NDArray[Any, Any],  # type: ignore
+        rxsig: NDArray[Any, Any],  # type: ignore
+        info: NDArray[Any, Any],  # type: ignore
     ) -> dict:
         rxsig = np.empty(self.num_src, dtype=np.complex128)
         delays = np.empty(self.num_src, dtype=np.float64)

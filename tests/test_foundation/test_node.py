@@ -1,7 +1,8 @@
 import sys
 from pathlib import Path
+from typing import Any
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from matplotlib import pyplot as plt
 import pytest
@@ -31,7 +32,9 @@ class System(ASystem):
         ASystem.__init__(self, name, shape_command=1, snames_state=["x", "v"])
         self.setInitialStateForOutput(np.zeros(2), "state")
 
-    def transition(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
+    def transition(
+        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
+    ) -> NDArray[Any, Any]:
         k = 10
         f = 5
         m = 1

@@ -5,17 +5,17 @@ BOC and PSK modulator are available, as well as antenna network, Klobuchar model
 
 from math import factorial
 from itertools import product
-from typing import List, Union
+from typing import List, Union, Any
 
 from tqdm import tqdm
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import sqrt, sign, pi, exp
 from numpy.fft import fft, ifft
 from scipy import linalg as lin
 
 
-def derivative_coeff(rank: int = 1, order: int = None) -> ArrayLike:
+def derivative_coeff(rank: int = 1, order: int = None) -> NDArray[Any, Any]:
     """Computes the coefficients of a derivaive estimator
 
     Args:
@@ -50,7 +50,7 @@ def derivative_coeff(rank: int = 1, order: int = None) -> ArrayLike:
     return coeffs
 
 
-def get_window(win, n: int) -> ArrayLike:
+def get_window(win, n: int) -> NDArray[Any, Any]:
     """Creates the samples of a window.
     The resulting window guarantees that a CW with amplitude A will keep its amplitude after windowing
 
@@ -72,7 +72,7 @@ def get_window(win, n: int) -> ArrayLike:
     return w / nrm
 
 
-def phase_unfold(sig: ArrayLike, eps: float = 1e-9) -> ArrayLike:
+def phase_unfold(sig: NDArray[Any, Any], eps: float = 1e-9) -> NDArray[Any, Any]:
     """Unfolds the phase law of the given complex signal
 
     Args:

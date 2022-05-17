@@ -1,4 +1,6 @@
-from numpy.typing import ArrayLike
+from typing import Any
+
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import log10, exp, pi, sqrt, cos, sin
 from scipy.signal import firwin2, firwin, lfilter_zi, lfilter
@@ -27,8 +29,8 @@ class DSPAWGN(AComputer):
     def __init__(
         self,
         name: str,
-        mean: ArrayLike,
-        cov: ArrayLike,
+        mean: NDArray[Any, Any],
+        cov: NDArray[Any, Any],
         dtype=np.float64,
     ):
         AComputer.__init__(self, name=name)
@@ -48,7 +50,7 @@ class DSPAWGN(AComputer):
         self.setMean(mean)
         self.setCovariance(cov)
 
-    def setCovariance(self, cov: ArrayLike):
+    def setCovariance(self, cov: NDArray[Any, Any]):
         """Sets the covariance matrix of the gaussian distribution
 
         Args:
@@ -61,7 +63,7 @@ class DSPAWGN(AComputer):
             raise ValueError(cov.shape, (n, n))
         otp.cov = cov
 
-    def setMean(self, mean: ArrayLike):
+    def setMean(self, mean: NDArray[Any, Any]):
         """Sets the mean vector of the gaussian distribution
 
         Args:
@@ -74,7 +76,7 @@ class DSPAWGN(AComputer):
             raise ValueError(mean.shape[0], n)
         otp.mean = mean
 
-    def getCovariance(self) -> ArrayLike:
+    def getCovariance(self) -> NDArray[Any, Any]:
         """Returns the covariance matrix of the gaussian distribution
 
         Returns:
@@ -84,7 +86,7 @@ class DSPAWGN(AComputer):
         otp = self.getOutputByName("noisy")
         return otp.cov
 
-    def getMean(self) -> ArrayLike:
+    def getMean(self) -> NDArray[Any, Any]:
         """Returns the mean vector of the gaussian distribution
 
         Returns:
@@ -98,8 +100,8 @@ class DSPAWGN(AComputer):
         self,
         t1: float,
         t2: float,
-        noiseless: ArrayLike,
-        noisy: ArrayLike,
+        noiseless: NDArray[Any, Any],
+        noisy: NDArray[Any, Any],
     ) -> dict:
         noisy = noiseless
 

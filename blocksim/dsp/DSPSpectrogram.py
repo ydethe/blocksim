@@ -1,11 +1,10 @@
-from typing import Callable, List
+from typing import Callable, List, Any
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
-from scipy import linalg as lin
 
-from .. import logger
 from .DSPLine import DSPLine
+from .. import logger
 from .Peak import Peak
 
 __all__ = ["DSPSpectrogram"]
@@ -48,7 +47,7 @@ class DSPSpectrogram(object):
         samplingXPeriod: float = None,
         samplingYStart: float = None,
         samplingYPeriod: float = None,
-        img: ArrayLike = None,
+        img: NDArray[Any, Any] = None,
         projection: str = "rectilinear",
         default_transform=np.abs,
     ):
@@ -65,7 +64,7 @@ class DSPSpectrogram(object):
         self.unit_of_y_var = "Hz"
         self.projection = projection
 
-    def generateXSerie(self, index: int = None) -> ArrayLike:
+    def generateXSerie(self, index: int = None) -> NDArray[Any, Any]:
         """Generates the x samples of the spectrogram
 
         Args:
@@ -83,7 +82,7 @@ class DSPSpectrogram(object):
         x = index * self.samplingXPeriod + self.samplingXStart
         return x
 
-    def generateYSerie(self, index: int = None) -> ArrayLike:
+    def generateYSerie(self, index: int = None) -> NDArray[Any, Any]:
         """Generates the y samples of the spectrogram
 
         Args:
@@ -206,7 +205,7 @@ class DSPSpectrogram(object):
         return _to_db
 
     @classmethod
-    def to_db(cls, x: ArrayLike, lim_db: float = -100) -> ArrayLike:
+    def to_db(cls, x: NDArray[Any, Any], lim_db: float = -100) -> NDArray[Any, Any]:
         """Converts the samples into their power, in dB.
         If a sample's power is below *low*, the dB value in clamped to *low*.
 

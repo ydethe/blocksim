@@ -1,18 +1,15 @@
-import os
-from typing import Callable
+from typing import Any
 
-from tqdm import tqdm
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
-from numpy import arccos, arctan, exp, pi, sqrt, cos, sin, tan, log2, arcsin, arctan2
-from scipy import linalg as lin
+from numpy import pi, cos, sin
 
 from ..core.Node import AComputer
 from .DSPSpectrogram import DSPSpectrogram
 
 from .. import logger
-from ..constants import c, Req, mu
-from ..utils import build_local_matrix, cexp, rotation_matrix
+from ..constants import c
+from ..utils import build_local_matrix, cexp
 
 __all__ = ["AntennaNetwork"]
 
@@ -69,7 +66,7 @@ class AntennaNetwork(AComputer):
         self.createParameter(name="wavelength", value=c / ac.freq, read_only=True)
         self.createParameter(name="num_elem", value=N, read_only=True)
 
-    def getCoefficients(self) -> ArrayLike:
+    def getCoefficients(self) -> NDArray[Any, Any]:
         """Returns the coefficients applied to each antenna
 
         Returns:
@@ -125,10 +122,10 @@ class AntennaNetwork(AComputer):
         self,
         t1: float,
         t2: float,
-        txpos: ArrayLike,
-        txsig: ArrayLike,
-        rxsig: ArrayLike,
-        elempos: ArrayLike,
+        txpos: NDArray[Any, Any],
+        txsig: NDArray[Any, Any],
+        rxsig: NDArray[Any, Any],
+        elempos: NDArray[Any, Any],
     ) -> dict:
         M = build_local_matrix(txpos[:3], xvec=txpos[3:])
 

@@ -1,4 +1,6 @@
-from numpy.typing import ArrayLike
+from typing import Any
+
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy.fft import ifft, fftshift
 from scipy.signal import get_window
@@ -27,7 +29,7 @@ class DSPSpectrum(DSPLine):
         name: str,
         samplingStart: float = None,
         samplingPeriod: float = None,
-        y_serie: ArrayLike = None,
+        y_serie: NDArray[Any, Any] = None,
         default_transform=np.abs,
     ):
         DSPLine.__init__(

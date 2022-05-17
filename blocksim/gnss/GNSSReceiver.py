@@ -1,7 +1,7 @@
-from typing import List, Tuple
+from typing import List, Tuple, Any
 from datetime import datetime, timedelta, timezone
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import sqrt
 from numpy import pi
@@ -70,7 +70,9 @@ class GNSSReceiver(AComputer):
         self.createParameter("optim", value="trust-constr")
         self.createParameter(name="tsync", value=tsync)
 
-    def getSatellitePositionFromEphem(self, ephem: ArrayLike, isat: int) -> ArrayLike:
+    def getSatellitePositionFromEphem(
+        self, ephem: NDArray[Any, Any], isat: int
+    ) -> NDArray[Any, Any]:
         """Given the array of all satellites ephemeris,
         returns the position for satellite number isat
 
@@ -84,7 +86,9 @@ class GNSSReceiver(AComputer):
         """
         return ephem[6 * isat : 6 * isat + 3]
 
-    def getSatelliteVelocityFromEphem(self, ephem: ArrayLike, isat: int) -> ArrayLike:
+    def getSatelliteVelocityFromEphem(
+        self, ephem: NDArray[Any, Any], isat: int
+    ) -> NDArray[Any, Any]:
         """Given the array of all satellites ephemeris,
         returns the velocity for satellite number isat
 
@@ -98,7 +102,7 @@ class GNSSReceiver(AComputer):
         """
         return ephem[6 * isat + 3 : 6 * isat + 6]
 
-    def getPseudorangeFromMeas(self, meas: ArrayLike, isat: int) -> float:
+    def getPseudorangeFromMeas(self, meas: NDArray[Any, Any], isat: int) -> float:
         """Given the array of all measurements,
         returns the pseudo-range for satellite number isat
 
@@ -112,7 +116,7 @@ class GNSSReceiver(AComputer):
         """
         return meas[2 * isat]
 
-    def getRadialVelocityFromMeas(self, meas: ArrayLike, isat: int) -> float:
+    def getRadialVelocityFromMeas(self, meas: NDArray[Any, Any], isat: int) -> float:
         """Given the array of all measurements,
         returns the pseudo-range rate for satellite number isat
 
@@ -126,7 +130,9 @@ class GNSSReceiver(AComputer):
         """
         return meas[2 * isat + 1]
 
-    def getDOP(self, ephem: ArrayLike, pv_ue: ArrayLike) -> Tuple[float]:
+    def getDOP(
+        self, ephem: NDArray[Any, Any], pv_ue: NDArray[Any, Any]
+    ) -> Tuple[float]:
         """Computes the DOPs
 
         Args:
@@ -203,7 +209,7 @@ class GNSSReceiver(AComputer):
         return sqrt(Q[0, 0]), sqrt(Q[1, 1]), sqrt(Q[2, 2]), sp, sv
 
     def computeFromRadialVelocities(
-        self, ephem: ArrayLike, meas: ArrayLike
+        self, ephem: NDArray[Any, Any], meas: NDArray[Any, Any]
     ) -> Tuple[np.array, float]:
         """Runs a PVT algorithm that uses only pseudo-range rate
 
@@ -302,7 +308,7 @@ class GNSSReceiver(AComputer):
         return np.hstack((pos, np.zeros(3))), Xu[3]
 
     def computeFromPRandVR(
-        self, ephem: ArrayLike, meas: ArrayLike
+        self, ephem: NDArray[Any, Any], meas: NDArray[Any, Any]
     ) -> Tuple[np.array, float]:
         """Runs a PVT algorithm that uses peudo-range and pseudo-range rate
 
@@ -414,7 +420,7 @@ class GNSSReceiver(AComputer):
         return np.hstack((pos, np.zeros(3))), Xu[3], Xu[4]
 
     def computeFromPseudoRanges(
-        self, ephem: ArrayLike, meas: ArrayLike
+        self, ephem: NDArray[Any, Any], meas: NDArray[Any, Any]
     ) -> Tuple[np.array, float]:
         """Runs a PVT algorithm that uses only peudo-range
 
@@ -545,12 +551,12 @@ class GNSSReceiver(AComputer):
         self,
         t1: float,
         t2: float,
-        measurements: ArrayLike,
-        ephemeris: ArrayLike,
-        realpos: ArrayLike,
-        estdop: ArrayLike,
-        estpos: ArrayLike,
-        estclkerror: ArrayLike,
+        measurements: NDArray[Any, Any],
+        ephemeris: NDArray[Any, Any],
+        realpos: NDArray[Any, Any],
+        estdop: NDArray[Any, Any],
+        estpos: NDArray[Any, Any],
+        estclkerror: NDArray[Any, Any],
     ) -> dict:
         realpos = self.__itrf_pv
 

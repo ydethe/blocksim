@@ -1,4 +1,6 @@
-from numpy.typing import ArrayLike
+from typing import Any
+
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import sqrt, sign, pi, exp, cos, sin, log2
 
@@ -92,15 +94,15 @@ class BOCMapping(ADSPComputer):
 
         return sig
 
-    def adaptTimeSerie(self, tps: ArrayLike) -> ArrayLike:
+    def adaptTimeSerie(self, tps: NDArray[Any, Any]) -> NDArray[Any, Any]:
         return tps / (self.n_boc * self.p_samp)
 
     def update(
         self,
         t1: float,
         t2: float,
-        input: ArrayLike,
-        output: ArrayLike,
+        input: NDArray[Any, Any],
+        output: NDArray[Any, Any],
     ) -> dict:
         seq = self.boc_seq.y_serie
         p = len(seq)

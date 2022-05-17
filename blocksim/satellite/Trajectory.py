@@ -1,7 +1,7 @@
-from typing import Tuple
+from typing import Tuple, Any
 
 import pandas as pd
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import pi
 
@@ -30,10 +30,10 @@ class Trajectory(object):
         self,
         name: str,
         color: tuple,
-        t: ArrayLike = np.array([]),
-        x: ArrayLike = np.array([]),
-        y: ArrayLike = np.array([]),
-        z: ArrayLike = np.array([]),
+        t: NDArray[Any, Any] = np.array([]),
+        x: NDArray[Any, Any] = np.array([]),
+        y: NDArray[Any, Any] = np.array([]),
+        z: NDArray[Any, Any] = np.array([]),
     ):
         self.name = name
         self.t = t

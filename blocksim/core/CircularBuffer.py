@@ -1,7 +1,7 @@
-from collections import deque
+from typing import Any
 import logging
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 
 from .. import logger
@@ -40,7 +40,7 @@ class CircularBuffer(object):
         self.__offset = 0  # Index where the next element will be stored
         self.__nb_inserted_element = 0
 
-    def _getBuffer(self) -> ArrayLike:
+    def _getBuffer(self) -> NDArray[Any, Any]:
         return self.__buffer.copy()
 
     def doubleBufferSize(self):
@@ -255,7 +255,7 @@ class CircularBuffer(object):
         for k in range(self.__size):
             yield self.__buffer[(k + self.__offset) % self.__size]
 
-    def getAsArray(self) -> ArrayLike:
+    def getAsArray(self) -> NDArray[Any, Any]:
         """Returns the content of the buffer in chronological order
 
         Returns:

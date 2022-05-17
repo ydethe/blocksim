@@ -1,8 +1,8 @@
 from abc import abstractmethod
-from typing import Iterable
+from typing import Iterable, Any
 from functools import lru_cache
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import sqrt
 from scipy.integrate import ode
@@ -69,8 +69,8 @@ class ASystem(AComputer):
 
     @abstractmethod
     def transition(
-        self, t: float, x: ArrayLike, u: ArrayLike
-    ) -> ArrayLike:  # pragma: no cover
+        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
+    ) -> NDArray[Any, Any]:  # pragma: no cover
         """Defines the transition function f(t,x,u) :
 
         $$ x' = f(t,x,u) $$
@@ -86,7 +86,9 @@ class ASystem(AComputer):
         """
         pass
 
-    def example_jacobian(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
+    def example_jacobian(
+        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
+    ) -> NDArray[Any, Any]:
         """Defines the jacobian of
         the transition function f(t,x,u) with respect to x:
 
@@ -107,8 +109,8 @@ class ASystem(AComputer):
         self,
         t1: float,
         t2: float,
-        command: ArrayLike,
-        state: ArrayLike,
+        command: NDArray[Any, Any],
+        state: NDArray[Any, Any],
     ) -> dict:
         self.__integ.set_initial_value(state, t1).set_f_params(command).set_jac_params(
             command
@@ -230,11 +232,15 @@ class LTISystem(ASystem):
         Ad, Bd, _, _, _ = cont2discrete(sys, dt, method, alpha)
         return Ad, Bd
 
-    def transition(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
+    def transition(
+        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
+    ) -> NDArray[Any, Any]:
         dX = self.matA @ x + self.matB @ u
         return dX
 
-    def jacobian(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
+    def jacobian(
+        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
+    ) -> NDArray[Any, Any]:
         return self.matA
 
 
@@ -309,7 +315,7 @@ class G6DOFSystem(ASystem):
         self.createParameter("J", np.eye(3) * 1e-3)
         self.createParameter("max_q_denorm", 1e-6)
 
-    def vecBodyToEarth(self, x: ArrayLike) -> ArrayLike:
+    def vecBodyToEarth(self, x: NDArray[Any, Any]) -> NDArray[Any, Any]:
         """Expresses a vector from the body frame to the Earth's frame
 
         Args:
@@ -324,7 +330,7 @@ class G6DOFSystem(ASystem):
         )
         return vecBodyToEarth(np.array([qw, qx, qy, qz]), x)
 
-    def vecEarthToBody(self, x: ArrayLike) -> ArrayLike:
+    def vecEarthToBody(self, x: NDArray[Any, Any]) -> NDArray[Any, Any]:
         """Expresses a vector from Earth's frame to the body's frame
 
         Args:
@@ -339,7 +345,9 @@ class G6DOFSystem(ASystem):
         )
         return vecEarthToBody(np.array([qw, qx, qy, qz]), x)
 
-    def transition(self, t: float, x: ArrayLike, u: ArrayLike) -> ArrayLike:
+    def transition(
+        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
+    ) -> NDArray[Any, Any]:
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = x
         force = u[:3]
         torque = u[3:6]
@@ -364,9 +372,9 @@ class G6DOFSystem(ASystem):
         self,
         t1: float,
         t2: float,
-        command: ArrayLike,
-        state: ArrayLike,
-        euler: ArrayLike,
+        command: NDArray[Any, Any],
+        state: NDArray[Any, Any],
+        euler: NDArray[Any, Any],
     ) -> dict:
         # Crouch-Grossman method CG4
         # http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf
@@ -475,8 +483,8 @@ class TransferFunctionSystem(AComputer):
         self,
         name: str,
         sname: str,
-        num: ArrayLike,
-        den: ArrayLike,
+        num: NDArray[Any, Any],
+        den: NDArray[Any, Any],
         dt: float,
         dtype=np.float64,
     ):
@@ -531,9 +539,9 @@ class TransferFunctionSystem(AComputer):
         self,
         t1: float,
         t2: float,
-        command: ArrayLike,
-        state: ArrayLike,
-        inner: ArrayLike,
+        command: NDArray[Any, Any],
+        state: NDArray[Any, Any],
+        inner: NDArray[Any, Any],
     ) -> dict:
         Ad, Bd, Cd, Dd = self.discretize()
 

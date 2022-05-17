@@ -1,9 +1,9 @@
 from abc import abstractmethod
-from typing import Tuple
+from typing import Tuple, Any
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
-from numpy import log10, exp, pi, sqrt, cos, sin, log2
+from numpy import log10, log2
 from scipy import linalg as lin
 from scipy.signal import (
     firwin2,
@@ -91,8 +91,8 @@ class ADSPFilter(AComputer):
         self,
         t1: float,
         t2: float,
-        unfilt: ArrayLike,
-        filt: ArrayLike,
+        unfilt: NDArray[Any, Any],
+        filt: NDArray[Any, Any],
     ) -> dict:
         assert len(unfilt) == 1
 
@@ -122,7 +122,7 @@ class ADSPFilter(AComputer):
             default_transform=np.real,
         )
 
-    def process(self, s: ArrayLike) -> ArrayLike:
+    def process(self, s: NDArray[Any, Any]) -> NDArray[Any, Any]:
         """Filters a signal without having to create a `blocksim.Simulation.Simulation`
 
         Args:
@@ -161,8 +161,8 @@ class ArbitraryDSPFilter(ADSPFilter):
         self,
         name: str,
         samplingPeriod: float,
-        num: ArrayLike,
-        den: ArrayLike = None,
+        num: NDArray[Any, Any],
+        den: NDArray[Any, Any] = None,
         dtype=np.complex128,
     ):
         ADSPFilter.__init__(self, name=name, samplingPeriod=samplingPeriod, dtype=dtype)
@@ -249,8 +249,8 @@ class ArbitraryDSPFilter(ADSPFilter):
         name: str,
         fs: float,
         numtaps: int,
-        bands: ArrayLike,
-        desired: ArrayLike,
+        bands: NDArray[Any, Any],
+        desired: NDArray[Any, Any],
         method: str = "firwin2",
         **kwargs,
     ) -> "ArbitraryDSPFilter":
@@ -385,7 +385,7 @@ class BandpassDSPFilter(ADSPFilter):
         self.createParameter(name="numtaps", value=numtaps)
         self.createParameter(name="win", value=win)
 
-    def generateCoefficients(self) -> ArrayLike:
+    def generateCoefficients(self) -> NDArray[Any, Any]:
         fs = 1 / self.samplingPeriod
 
         # https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need/31077

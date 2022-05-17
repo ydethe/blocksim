@@ -1,5 +1,7 @@
+from typing import Any
+
 import scipy.linalg as lin
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import pi
 
@@ -7,8 +9,8 @@ from ..control.Sensors import ASensors
 from ..core.Node import AWGNOutput
 
 from .. import logger
-from ..constants import c as clum, mu
-from ..utils import pdot, itrf_to_azeld
+from ..constants import mu
+from ..utils import itrf_to_azeld
 
 
 class GNSSTracker(ASensors):
@@ -106,12 +108,12 @@ class GNSSTracker(ASensors):
         self,
         t1: float,
         t2: float,
-        measurement: ArrayLike,
-        ephemeris: ArrayLike,
-        ueposition: ArrayLike,
-        state: ArrayLike,
-        vissat: ArrayLike,
-        obscoord: ArrayLike,
+        measurement: NDArray[Any, Any],
+        ephemeris: NDArray[Any, Any],
+        ueposition: NDArray[Any, Any],
+        state: NDArray[Any, Any],
+        vissat: NDArray[Any, Any],
+        obscoord: NDArray[Any, Any],
     ) -> dict:
         nsat = len(state) // 6
 

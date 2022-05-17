@@ -1,11 +1,10 @@
-from typing import Iterable
+from typing import Any
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 import scipy.linalg as lin
 
 from ..control.Controller import LQRegulator
-from ..control.System import ASystem
 
 
 class VTOLPilot(LQRegulator):
@@ -52,10 +51,10 @@ class VTOLPilot(LQRegulator):
         self,
         t1: float,
         t2: float,
-        setpoint: ArrayLike,
-        estimation: ArrayLike,
-        att: ArrayLike,
-        command: ArrayLike,
+        setpoint: NDArray[Any, Any],
+        estimation: NDArray[Any, Any],
+        att: NDArray[Any, Any],
+        command: NDArray[Any, Any],
     ) -> dict:
         pos_d = setpoint[:3]
         yaw_d = setpoint[3]

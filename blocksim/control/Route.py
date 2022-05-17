@@ -1,10 +1,8 @@
-from typing import Iterable
+from typing import Iterable, Any
 from itertools import product
-from types import FunctionType
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
-from scipy import linalg as lin
 
 from ..core.Node import AComputer
 
@@ -37,7 +35,9 @@ class IQExtract(AComputer):
         self.defineInput("signal", shape=(1,), dtype=np.complex128)
         self.defineOutput("iq", snames=["s_i", "s_q"], dtype=np.float64)
 
-    def update(self, t1: float, t2: float, signal: ArrayLike, iq: ArrayLike) -> dict:
+    def update(
+        self, t1: float, t2: float, signal: NDArray[Any, Any], iq: NDArray[Any, Any]
+    ) -> dict:
         (z,) = signal
 
         outputs = {}
@@ -92,7 +92,11 @@ class Clip(AComputer):
         self.createParameter("clipping_values", value=clipping_values)
 
     def update(
-        self, t1: float, t2: float, signal: ArrayLike, clipped: ArrayLike
+        self,
+        t1: float,
+        t2: float,
+        signal: NDArray[Any, Any],
+        clipped: NDArray[Any, Any],
     ) -> dict:
         res = np.empty(clipped.shape, clipped.dtype)
 
@@ -163,7 +167,7 @@ class Split(AComputer):
         self,
         t1: float,
         t2: float,
-        signal: ArrayLike,
+        signal: NDArray[Any, Any],
         **lotp,
     ) -> dict:
         outputs = {}
@@ -221,7 +225,7 @@ class Group(AComputer):
         self,
         t1: float,
         t2: float,
-        grouped: ArrayLike,
+        grouped: NDArray[Any, Any],
         **inputs,
     ) -> dict:
         res = []
@@ -287,8 +291,8 @@ class Multiplier(AComputer):
         self,
         t1: float,
         t2: float,
-        signal: ArrayLike,
-        multiplied: ArrayLike,
+        signal: NDArray[Any, Any],
+        multiplied: NDArray[Any, Any],
     ) -> dict:
         res = signal * self.coeff
 

@@ -1,4 +1,6 @@
-from numpy.typing import ArrayLike
+from typing import Any
+
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import sqrt, sign
 
@@ -59,8 +61,8 @@ class FECCoder(ADSPComputer):
         self,
         t1: float,
         t2: float,
-        raw: ArrayLike,
-        coded: ArrayLike,
+        raw: NDArray[Any, Any],
+        coded: NDArray[Any, Any],
     ) -> dict:
         strm = self.flatten(raw)
         fec_strm = conv_encode(strm, self.__trellis)
@@ -115,8 +117,8 @@ class FECDecoder(ADSPComputer):
         self,
         t1: float,
         t2: float,
-        coded: ArrayLike,
-        raw: ArrayLike,
+        coded: NDArray[Any, Any],
+        raw: NDArray[Any, Any],
     ) -> dict:
         strm = self.flatten(coded)
         bits = viterbi_decode(

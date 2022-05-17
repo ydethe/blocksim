@@ -1,6 +1,6 @@
-from typing import Callable
+from typing import Callable, Any
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 
 from .Node import AComputer
@@ -57,8 +57,8 @@ class GenericComputer(AComputer):
         self,
         t1: float,
         t2: float,
-        xin: ArrayLike,
-        xout: ArrayLike,
+        xin: NDArray[Any, Any],
+        xout: NDArray[Any, Any],
     ) -> dict:
         outputs = {}
         outputs["xout"] = self.callable(xin)

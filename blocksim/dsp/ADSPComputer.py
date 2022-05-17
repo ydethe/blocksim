@@ -1,4 +1,6 @@
-from numpy.typing import ArrayLike
+from typing import Any
+
+from nptyping import NDArray, Shape
 import numpy as np
 
 from ..core.Node import AComputer
@@ -54,7 +56,7 @@ class ADSPComputer(AComputer):
             dtype=output_dtype,
         )
 
-    def process(self, data: ArrayLike) -> ArrayLike:
+    def process(self, data: NDArray[Any, Any]) -> NDArray[Any, Any]:
         """Batch processes an input stream by calling update.
 
         Args:
@@ -92,7 +94,7 @@ class ADSPComputer(AComputer):
 
         return outputs[self.output_name].astype(typ)
 
-    def flatten(self, data: ArrayLike) -> ArrayLike:
+    def flatten(self, data: NDArray[Any, Any]) -> NDArray[Any, Any]:
         """Given a batch block of input, returns a 1D array for processing
         The first column of the block is copied, then the second and so on
 
@@ -123,7 +125,7 @@ class ADSPComputer(AComputer):
 
         return strm
 
-    def unflatten(self, strm: ArrayLike) -> ArrayLike:
+    def unflatten(self, strm: NDArray[Any, Any]) -> NDArray[Any, Any]:
         """Given a 1D flatten data, returns the matching data block
         The attribute *output_size* gives the size of the columns
 
@@ -178,8 +180,8 @@ class DummyDSPComputer(ADSPComputer):
         self,
         t1: float,
         t2: float,
-        input: ArrayLike,
-        output: ArrayLike,
+        input: NDArray[Any, Any],
+        output: NDArray[Any, Any],
     ) -> dict:
         if len(input.shape) == 1:
             n = 1

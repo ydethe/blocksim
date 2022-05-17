@@ -7,7 +7,7 @@ Allows plotting from a `blocksim.loggers.Logger.Logger`, or from `blocksim.dsp.D
 from typing import Any, Tuple, Iterable
 
 from parse import compile
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 from scipy.interpolate import interp2d
 from numpy import log10

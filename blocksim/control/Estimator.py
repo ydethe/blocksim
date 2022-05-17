@@ -1,20 +1,19 @@
-from abc import ABC, abstractmethod
-from typing import Iterable
+from abc import abstractmethod
+from typing import Iterable, Any
 from functools import lru_cache
 
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
-from numpy import cos, sin, cosh, sinh, sqrt, exp, pi
+from numpy import exp, pi
 from scipy import linalg as lin
-from scipy.signal import firwin, cont2discrete, TransferFunction
+from scipy.signal import cont2discrete, TransferFunction
 
 from ..exceptions import *
-from .System import LTISystem
 from ..core.Node import AComputer, Input, Output
 from ..loggers.Logger import Logger
 from ..dsp.DSPSpectrogram import DSPSpectrogram
 from ..dsp.DSPFilter import ArbitraryDSPFilter
-from ..utils import quat_to_euler, euler_to_quat, assignVector
+from ..utils import quat_to_euler, assignVector
 
 
 __all__ = [
@@ -78,7 +77,7 @@ class ConvergedGainMatrix(Output):
         self.setData(self.__K)
         self.setInitialState(self.__K)
 
-    def getConvergedGainMatrix(self) -> ArrayLike:
+    def getConvergedGainMatrix(self) -> NDArray[Any, Any]:
         """Returns the offline gain matrix K
 
         Returns:
@@ -130,7 +129,7 @@ class ConvergedStateCovariance(Output):
         self.setData(self.__P)
         self.setInitialState(self.__P)
 
-    def getConvergedStateCovariance(self) -> ArrayLike:
+    def getConvergedStateCovariance(self) -> NDArray[Any, Any]:
         """Returns the offline covariance matrix P
 
         Returns:
@@ -261,7 +260,7 @@ class AKalmanFilter(AEstimator):
         otp.setInitialState(matK0)
 
     @abstractmethod
-    def A(self, t1: float, t2: float) -> ArrayLike:  # pragma: no cover
+    def A(self, t1: float, t2: float) -> NDArray[Any, Any]:  # pragma: no cover
         """(n x n) State (or system) matrix
 
         Args:
@@ -275,7 +274,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def B(self, t1: float, t2: float) -> ArrayLike:  # pragma: no cover
+    def B(self, t1: float, t2: float) -> NDArray[Any, Any]:  # pragma: no cover
         """(n x m) Input matrix
 
         Args:
@@ -289,7 +288,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def C(self, t: float) -> ArrayLike:  # pragma: no cover
+    def C(self, t: float) -> NDArray[Any, Any]:  # pragma: no cover
         """(p x n) Output matrix
 
         Args:
@@ -303,7 +302,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def D(self, t: float) -> ArrayLike:  # pragma: no cover
+    def D(self, t: float) -> NDArray[Any, Any]:  # pragma: no cover
         """(p x m) Feedthrough (or feedforward) matrix
 
         Args:
@@ -317,7 +316,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def Q(self, t: float) -> ArrayLike:  # pragma: no cover
+    def Q(self, t: float) -> NDArray[Any, Any]:  # pragma: no cover
         """(n x n) Gaussian noise covariance for the state vector
 
         Args:
@@ -331,7 +330,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def R(self, t: float) -> ArrayLike:  # pragma: no cover
+    def R(self, t: float) -> NDArray[Any, Any]:  # pragma: no cover
         """(n x n) Gaussian noise covariance for the measurement vector
 
         Args:
@@ -345,7 +344,12 @@ class AKalmanFilter(AEstimator):
         pass
 
     def _prediction(
-        self, xest: ArrayLike, P: ArrayLike, u: ArrayLike, t1: float, t2: float
+        self,
+        xest: NDArray[Any, Any],
+        P: NDArray[Any, Any],
+        u: NDArray[Any, Any],
+        t1: float,
+        t2: float,
     ):
         if np.abs(t2 - t1) < 1e-9:
             return xest.copy(), self.C(t2) @ xest + self.D(t2) @ u, P.copy()
@@ -378,12 +382,12 @@ class AKalmanFilter(AEstimator):
         self,
         t1: float,
         t2: float,
-        command: ArrayLike,
-        measurement: ArrayLike,
-        state: ArrayLike,
-        output: ArrayLike,
-        statecov: ArrayLike,
-        matK: ArrayLike,
+        command: NDArray[Any, Any],
+        measurement: NDArray[Any, Any],
+        state: NDArray[Any, Any],
+        output: NDArray[Any, Any],
+        statecov: NDArray[Any, Any],
+        matK: NDArray[Any, Any],
     ) -> dict:
         xest_pred, meas_pred, P_pred = self._prediction(
             state, statecov, command, t1, t2
@@ -499,26 +503,26 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         Ad, Bd, Cd, Dd, dt = cont2discrete(sys, dt, method=method, alpha=alpha)
         return Ad, Bd, Cd, Dd
 
-    def A(self, t1: float, t2: float) -> ArrayLike:
+    def A(self, t1: float, t2: float) -> NDArray[Any, Any]:
         dt = t2 - t1
         Ad, Bd, Cd, Dd = self.discretize(dt)
         return Ad
 
-    def B(self, t1: float, t2: float) -> ArrayLike:
+    def B(self, t1: float, t2: float) -> NDArray[Any, Any]:
         dt = t2 - t1
         Ad, Bd, Cd, Dd = self.discretize(dt)
         return Bd
 
-    def C(self, t: float) -> ArrayLike:
+    def C(self, t: float) -> NDArray[Any, Any]:
         return self.matC
 
-    def D(self, test_ss_kal: float) -> ArrayLike:
+    def D(self, test_ss_kal: float) -> NDArray[Any, Any]:
         return self.matD
 
-    def Q(self, t: float) -> ArrayLike:
+    def Q(self, t: float) -> NDArray[Any, Any]:
         return self.matQ
 
-    def R(self, t: float) -> ArrayLike:
+    def R(self, t: float) -> NDArray[Any, Any]:
         return self.matR
 
 
@@ -605,7 +609,7 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
 
         self.createParameter("dt", value=dt)
 
-    def getConvergedStateCovariance(self) -> ArrayLike:
+    def getConvergedStateCovariance(self) -> NDArray[Any, Any]:
         """Returns the offline covariance matrix P
 
         Returns:
@@ -615,7 +619,7 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         otp = self.getOutputByName("statecov")
         return otp.getConvergedStateCovariance()
 
-    def getConvergedGainMatrix(self) -> ArrayLike:
+    def getConvergedGainMatrix(self) -> NDArray[Any, Any]:
         """Returns the offline gain matrix K
 
         Returns:
@@ -629,12 +633,12 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         self,
         t1: float,
         t2: float,
-        command: ArrayLike,
-        measurement: ArrayLike,
-        state: ArrayLike,
-        output: ArrayLike,
-        statecov: ArrayLike,
-        matK: ArrayLike,
+        command: NDArray[Any, Any],
+        measurement: NDArray[Any, Any],
+        state: NDArray[Any, Any],
+        output: NDArray[Any, Any],
+        statecov: NDArray[Any, Any],
+        matK: NDArray[Any, Any],
     ) -> dict:
         xest_pred, meas_pred, P_pred = self._prediction(
             state, statecov, command, t1, t2
@@ -704,7 +708,7 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         dt: float,
         snames_state: Iterable[str],
         sname_output: str,
-        tracks: ArrayLike,
+        tracks: NDArray[Any, Any],
     ):
         SteadyStateKalmanFilter.__init__(
             self,
@@ -818,11 +822,11 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         self,
         t1: float,
         t2: float,
-        measurement: ArrayLike,
-        state: ArrayLike,
-        output: ArrayLike,
-        statecov: ArrayLike,
-        matK: ArrayLike,
+        measurement: NDArray[Any, Any],
+        state: NDArray[Any, Any],
+        output: NDArray[Any, Any],
+        statecov: NDArray[Any, Any],
+        matK: NDArray[Any, Any],
     ) -> dict:
         xest_pred, meas_pred, P_pred = self._prediction(
             state, statecov, np.zeros(1), t1, t2
@@ -874,7 +878,9 @@ class MadgwickFilter(AComputer):
         self.createParameter(name="mag_softiron_matrix", value=np.eye(3))
         self.createParameter(name="mag_offsets", value=np.zeros(3))
 
-    def setMagnetometerCalibration(self, offset: ArrayLike, softiron_matrix: ArrayLike):
+    def setMagnetometerCalibration(
+        self, offset: NDArray[Any, Any], softiron_matrix: NDArray[Any, Any]
+    ):
         """Sets the magnetometer calibration
 
         Args:
@@ -913,9 +919,9 @@ class MadgwickFilter(AComputer):
         self,
         t1: float,
         t2: float,
-        euler: ArrayLike,
-        measurement: ArrayLike,
-        state: ArrayLike,
+        euler: NDArray[Any, Any],
+        measurement: NDArray[Any, Any],
+        state: NDArray[Any, Any],
     ) -> dict:
         q0, q1, q2, q3 = state
         gx, gy, gz, ax, ay, az, mx, my, mz = measurement
@@ -1142,7 +1148,9 @@ class MahonyFilter(AComputer):
         self.createParameter(name="mag_softiron_matrix", value=np.eye(3))
         self.createParameter(name="mag_offsets", value=np.zeros(3))
 
-    def setMagnetometerCalibration(self, offset: ArrayLike, softiron_matrix: ArrayLike):
+    def setMagnetometerCalibration(
+        self, offset: NDArray[Any, Any], softiron_matrix: NDArray[Any, Any]
+    ):
         """Sets the magnetometer calibration
 
         Args:
@@ -1181,9 +1189,9 @@ class MahonyFilter(AComputer):
         self,
         t1: float,
         t2: float,
-        euler: ArrayLike,
-        measurement: ArrayLike,
-        state: ArrayLike,
+        euler: NDArray[Any, Any],
+        measurement: NDArray[Any, Any],
+        state: NDArray[Any, Any],
     ) -> dict:
         q0, q1, q2, q3 = state
         gx, gy, gz, ax, ay, az, mx, my, mz = measurement

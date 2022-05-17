@@ -1,4 +1,6 @@
-from numpy.typing import ArrayLike
+from typing import Any
+
+from nptyping import NDArray, Shape
 import numpy as np
 from numpy import sqrt, sign, pi, exp
 from numpy.fft import fft, ifft
@@ -53,8 +55,8 @@ class OFDMMapping(ADSPComputer):
         self,
         t1: float,
         t2: float,
-        input: ArrayLike,
-        output: ArrayLike,
+        input: NDArray[Any, Any],
+        output: NDArray[Any, Any],
     ) -> dict:
         if len(input.shape) == 1:
             nsymb = 1
@@ -135,8 +137,8 @@ class OFDMDemapping(ADSPComputer):
         self,
         t1: float,
         t2: float,
-        input: ArrayLike,
-        output: ArrayLike,
+        input: NDArray[Any, Any],
+        output: NDArray[Any, Any],
     ) -> dict:
         if len(input.shape) == 1:
             nsymb = 1

@@ -2,11 +2,11 @@
 
 """
 
-from typing import Iterable, Tuple
+from typing import Iterable, Tuple, Any
 from uuid import UUID, uuid4
 
 import tqdm
-from numpy.typing import ArrayLike
+from nptyping import NDArray, Shape
 import numpy as np
 import matplotlib.animation as animation
 from matplotlib import pyplot as plt
@@ -255,7 +255,7 @@ class Simulation(object):
 
     def simulate(
         self,
-        tps: ArrayLike,
+        tps: NDArray[Any, Any],
         progress_bar: bool = True,
         error_on_unconnected: bool = True,
         fig=None,
@@ -389,7 +389,7 @@ class Simulation(object):
 
         return sg
 
-    def getComputerOutputByName(self, name: str) -> ArrayLike:
+    def getComputerOutputByName(self, name: str) -> NDArray[Any, Any]:
         """Returns the data of the computer's output
         The *name* of the data is designated by :
         <computer>.<output>[coord]
