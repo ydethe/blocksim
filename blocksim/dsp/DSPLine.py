@@ -5,6 +5,7 @@ from nptyping import NDArray, Shape
 import numpy as np
 from numpy.polynomial import Polynomial
 from scipy.interpolate import interp1d
+from scipy import linalg as lin
 
 from . import derivative_coeff
 from .. import logger
@@ -144,8 +145,10 @@ class DSPLine(object):
         x = index * self.samplingPeriod + self.samplingStart
         return x
 
-    def polyfit(self, deg: int = 1) -> Polynomial:
+    def polyfit(self, deg: int) -> Polynomial:
         """Fits a polynomial to the DSPLine. All the samples are considered in the computation.
+        See https://numpy.org/doc/stable/reference/generated/numpy.polynomial.polynomial.Polynomial.html
+        for the Polynomial object documentation.
 
         Args:
             deg: Degree of the fitted polynomial
@@ -153,10 +156,26 @@ class DSPLine(object):
         Returns:
             A numpy Polynomial
 
+        Examples:
+            >>> a = 2 - 3j
+            >>> b = -4 + 1j
+            >>> x = np.arange(10)
+            >>> y = a * x + b
+            >>> line = DSPLine(name="line", samplingStart=0, samplingPeriod=1, y_serie=y)
+            >>> p = line.polyfit(deg=1)
+            >>> p
+            Polynomial([-4.+1.j,  2.-3.j], domain=[0., 9.], window=[0., 9.])
+
         """
-        px = Polynomial.fit(x=self._x_serie, y=np.real(self.y_serie), deg=deg)
-        py = Polynomial.fit(x=self._x_serie, y=np.imag(self.y_serie), deg=deg)
-        return Polynomial(px.coef + py.coef * 1j)
+        x = self.generateXSerie()
+        x0 = x[0]
+        x1 = x[-1]
+
+        A = np.vander(x, N=deg + 1, increasing=True)
+        iA = lin.pinv(A)
+        c = iA @ self.y_serie
+
+        return Polynomial(coef=c, domain=[x0, x1], window=[x0, x1])
 
     def findPeaksWithTransform(
         self, transform: Callable = None, nb_peaks: int = 3

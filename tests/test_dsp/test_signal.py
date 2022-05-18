@@ -6,6 +6,7 @@ import numpy as np
 from numpy import testing, pi, exp
 from matplotlib import pyplot as plt
 import pytest
+from blocksim.dsp.DSPLine import DSPLine
 
 from blocksim.graphics import plotDSPLine
 from blocksim.loggers.Logger import Logger
@@ -177,8 +178,21 @@ class TestSignal(TestBase):
 
         self.assertFalse(sig.hasOutputComplex)
 
+    def test_polyfit(self):
+        a = 2 - 3j
+        b = -4 + 1j
+        x = np.arange(10)
+        y = a * x + b
+        line = DSPLine(
+            name="line", samplingStart=x[0], samplingPeriod=x[1] - x[0], y_serie=y
+        )
+        p = line.polyfit(deg=1)
+        err = np.max(np.abs(y - p(x)))
+        self.assertAlmostEqual(err, 0, delta=1e-10)
+
 
 if __name__ == "__main__":
     a = TestSignal()
     # a.test_instanciation()
-    a.test_resample()
+    # a.test_resample()
+    a.test_polyfit()
