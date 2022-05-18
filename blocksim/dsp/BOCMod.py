@@ -80,7 +80,7 @@ class BOCMapping(ADSPComputer):
         for i in range(self.n_boc):
             drc[p * i] = (-1) ** i
 
-        p_tb = np.ones(p)
+        p_tb = np.ones(self.p_samp)
 
         s_boc = np.convolve(p_tb, drc, mode="full")
         assert len(s_boc) == n_samp

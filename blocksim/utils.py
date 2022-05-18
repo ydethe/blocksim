@@ -882,12 +882,12 @@ def itrf_to_azeld(obs: NDArray[Any, Any], sat: NDArray[Any, Any]) -> NDArray[Any
     Returns:
         A tuple containing:
 
-        * Azimut (deg)
-        * Elevation (deg)
+        * Azimut (rad)
+        * Elevation (rad)
         * Distance (m)
         * Radial velocity (m/s)
-        * Slope of velocity (deg)
-        * Azimut of velocity (deg)
+        * Slope of velocity (rad)
+        * Azimut of velocity (rad)
 
     """
     # Local ENV for the observer
@@ -906,8 +906,8 @@ def itrf_to_azeld(obs: NDArray[Any, Any], sat: NDArray[Any, Any]) -> NDArray[Any
         z = -dist
         logger.warning("Near nadir elevation")
 
-    el = arcsin(z / dist) * 180 / pi
-    az = arctan2(x, y) * 180 / pi
+    el = arcsin(z / dist)
+    az = arctan2(x, y)
 
     # Local ENV for the satellite
     sat_env = build_local_matrix(sat[:3] - obs[:3])
@@ -920,8 +920,8 @@ def itrf_to_azeld(obs: NDArray[Any, Any], sat: NDArray[Any, Any]) -> NDArray[Any
     if np.abs(nv) < 1e-6:
         vs = 0.0
     else:
-        vs = arcsin(vr / nv) * 180 / pi
-    va = arctan2(ve, vn) * 180 / pi
+        vs = arcsin(vr / nv)
+    va = arctan2(ve, vn)
 
     return az, el, dist, vr, vs, va
 

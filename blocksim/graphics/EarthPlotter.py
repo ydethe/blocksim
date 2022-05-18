@@ -1,3 +1,4 @@
+from ctypes.wintypes import PUINT
 from typing import Any
 
 import cartopy.crs as ccrs
@@ -63,7 +64,7 @@ class EarthPlotter(object):
 
         Args:
             axe: A matplotlib axe, compatible with cartopy
-            coord: The position of the point, in longitude/latitude (deg)
+            coord: The position of the point, in longitude/latitude (rad)
             **kwargs: Matplotlib options for the plot
 
         """
@@ -74,7 +75,7 @@ class EarthPlotter(object):
         if not "marker" in kwargs.keys():
             kwargs["marker"] = "*"
 
-        axe.plot(g_lon, g_lat, linestyle="", **kwargs)
+        axe.plot(g_lon * 180 / pi, g_lat * 180 / pi, linestyle="", **kwargs)
 
     def plotDeviceReach(
         self, axe, coord: tuple, elev_min: float, sat_alt: float, **kwargs
@@ -85,7 +86,7 @@ class EarthPlotter(object):
 
         Args:
             axe: A matplotlib axe, compatible with cartopy
-            coord: The position of the point, in longitude/latitude (deg)
+            coord: The position of the point, in longitude/latitude (rad)
             elev_min: Minimum elevation angle (rad)
             sat_alt: Satellite altitude, **assuming circular orbit** (m)
             **kwargs: Matplotlib options for the plot
@@ -101,7 +102,7 @@ class EarthPlotter(object):
         rad = alpha_lim * Req
 
         g = Geodesic()
-        val = g.circle(g_lon, g_lat, radius=rad)
+        val = g.circle(g_lon * 180 / pi, g_lat * 180 / pi, radius=rad)
         c_lon = val[:, 0]
         c_lat = val[:, 1]
 
@@ -116,11 +117,13 @@ class EarthPlotter(object):
 
         Args:
             axe: A matplotlib axe, compatible with cartopy
-            lon: Array of longitudes (deg)
-            lat: Array of latitudes (deg)
+            lon: Array of longitudes (rad)
+            lat: Array of latitudes (rad)
             **kwargs: Matplotlib options for the plot
 
         """
+        lon *= 180 / pi
+        lat *= 180 / pi
         dlon = np.abs(np.diff(lon))
         list_ilmax = np.where(dlon > 180)[0]
         ns = len(lon)

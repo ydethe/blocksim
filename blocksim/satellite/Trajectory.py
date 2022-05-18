@@ -58,7 +58,7 @@ class Trajectory(object):
         """Converts the Trajectory into a pandas.DataFrame
 
         Returns:
-            A DataFrame containing the time stamp, longitude, latitude and altitude data (s, deg and m)
+            A DataFrame containing the time stamp, longitude, latitude and altitude data (s, rad and m)
 
         """
         ns = len(self)
@@ -68,8 +68,8 @@ class Trajectory(object):
         for k in range(ns):
             pos = (self.x[k], self.y[k], self.z[k])
             lo, la, alt[k] = itrf_to_geodetic(pos)
-            lon[k] = lo * 180 / pi
-            lat[k] = la * 180 / pi
+            lon[k] = lo
+            lat[k] = la
         df = pd.DataFrame(
             {"t": self.t, "longitude": lon, "latitude": lat, "altitude": alt}
         )
@@ -167,7 +167,7 @@ class Trajectory(object):
         """Returns latitude and longitude array
 
         Returns:
-            A tuple of longitude and latitude array in deg
+            A tuple of longitude and latitude array in rad
 
         """
         df = self.GeodesicToDataFrame()

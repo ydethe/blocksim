@@ -29,16 +29,16 @@ class GNSSReceiver(AComputer):
     Attributes:
         algo: Type of algorithm to use. Can be 'ranging' or 'doppler'
         optim: Defaults to "trust-constr"
-        lon: True longitude of the receiver (deg)
-        lat: True latitude of the receiver (deg)
+        lon: True longitude of the receiver (rad)
+        lat: True latitude of the receiver (rad)
         alt: True altitude of the receiver (m)
         tsync: Datetime object that gives the date and time at simulation time 0
 
     Args:
         name: Name of the element
         nsat: Number of satellites flollowed by the tracker
-        lon: True longitude of the receiver (deg)
-        lat: True latitude of the receiver (deg)
+        lon: True longitude of the receiver (rad)
+        lat: True latitude of the receiver (rad)
         alt: True altitude of the receiver (m)
         tsync: Date where the calculation takes place
 
@@ -520,15 +520,13 @@ class GNSSReceiver(AComputer):
 
         Xu = X0 + mult * res.x
         pos = Xu[:3]
-        dv = Xu[3]
+        dp = Xu[3]
 
-        return np.hstack((pos, np.zeros(3))), dv
+        return np.hstack((pos, np.zeros(3))), dp
 
     def resetCallback(self, t0: float):
         super().resetCallback(t0)
-        x, y, z = geodetic_to_itrf(
-            lon=self.lon * pi / 180, lat=self.lat * pi / 180, h=self.alt
-        )
+        x, y, z = geodetic_to_itrf(lon=self.lon, lat=self.lat, h=self.alt)
         self.__itrf_pv = np.array([x, y, z, 0.0, 0.0, 0.0])
 
     def getAbsoluteTime(self, t: float) -> datetime:

@@ -31,12 +31,12 @@ class TestSatellite(TestBase):
         obs = np.array([1, 0, 0, 0, 0, 0], dtype=np.float64)
         sat = np.array([2, 1, 0, 0, 1, 0], dtype=np.float64)
         az, el, dist, vr, vs, va = itrf_to_azeld(obs, sat)
-        self.assertAlmostEqual(az, 90, delta=1e-10)
-        self.assertAlmostEqual(el, 45, delta=1e-10)
+        self.assertAlmostEqual(az, pi / 2, delta=1e-10)
+        self.assertAlmostEqual(el, pi / 4, delta=1e-10)
         self.assertAlmostEqual(dist, sqrt(2), delta=1e-10)
         self.assertAlmostEqual(vr, sqrt(2) / 2, delta=1e-10)
-        self.assertAlmostEqual(vs, 45, delta=1e-10)
-        self.assertAlmostEqual(va, 90, delta=1e-10)
+        self.assertAlmostEqual(vs, pi / 4, delta=1e-10)
+        self.assertAlmostEqual(va, pi / 2, delta=1e-10)
 
     def test_azeld2(self):
         obs = np.array([6378137.0, -10000, 0, 0, 0, 0])
@@ -54,6 +54,14 @@ class TestSatellite(TestBase):
 
         self.assertAlmostEqual(dist2, dist + vr * dt, delta=5e-3)
         self.assertAlmostEqual(vr2, (dist3 - dist) / (2 * dt), delta=1e-7)
+
+    def test_geosynchronous(self):
+        pth = Path(__file__).parent / "geo_sat.tle"
+        sat = SGP4Satellite.fromTLE(tle_file=str(pth))
+        pv_sat = sat.getGeocentricITRFPositionAt(0)
+        pv_ue = np.array([Req, 0, 0, 0, 0, 0])
+        az, el, dist, vr, vs, va = itrf_to_azeld(pv_ue, pv_sat)
+        self.assertAlmostEqual(vr, 0, delta=1e-2)
 
     def test_sgp4(self):
         ts = load.timescale()
@@ -237,13 +245,13 @@ class TestSatellite(TestBase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
-
     a = TestSatellite()
     # a.test_teme_itrf()
     # a.test_satellite()
     # a.test_iss()
-    # a.test_ground_track()
-    a.test_circle_satellite()
+    # a.test_ground_track()*
+    # a.test_geosynchronous()
+    # a.test_circle_satellite()
+    a.test_azeld()
 
-    plt.show()
+    # plt.show()

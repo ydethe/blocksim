@@ -2,13 +2,14 @@ from typing import Any
 
 from nptyping import NDArray, Shape
 import numpy as np
-from numpy import exp, pi, sqrt, cos, tan
+from numpy import arccos, exp, pi, sqrt, cos, tan, arctan2
+from scipy import linalg as lin
 
 from ..core.Node import AComputer, AWGNOutput
 
 from .DelayLine import FiniteDelayLine
-from ..constants import kb, c, Req
-from ..utils import itrf_to_azeld, itrf_to_geodetic
+from ..constants import kb, c, Req, mu
+from ..utils import itrf_to_azeld, itrf_to_geodetic, build_local_matrix
 from .klobuchar import klobuchar
 
 __all__ = ["DSPChannel"]
@@ -28,8 +29,10 @@ class DSPChannel(AComputer):
     * snr (lin)
     * dist (m)
     * vrad (m/s)
-    * azim (deg)
-    * elev (deg)
+    * azim (rad)
+    * elev (rad)
+    * theta (rad)
+    * psi (rad)
     * losses (lin)
     * delay (s)
 
@@ -89,7 +92,18 @@ class DSPChannel(AComputer):
         self.addOutput(otp)
         self.defineOutput(
             name="info",
-            snames=["cn0", "snr", "dist", "vrad", "azim", "elev", "losses", "delay"],
+            snames=[
+                "cn0",
+                "snr",
+                "dist",
+                "vrad",
+                "azim",
+                "elev",
+                "theta",
+                "psi",
+                "losses",
+                "delay",
+            ],
             dtype=np.float64,
         )
 
@@ -183,8 +197,8 @@ class DSPChannel(AComputer):
 
             * dist: distance between RX and TX (m)
             * vrad: radial velocity between  RX and TX (m/s)
-            * azim: azimut angle (deg)
-            * elev: elevation angle (deg)
+            * azim: azimut angle (rad)
+            * elev: elevation angle (rad)
             * L_atm: atmospheric attenuation (lin)
             * dt_atm: atmospheric delay (s)
 
@@ -196,7 +210,7 @@ class DSPChannel(AComputer):
         # https://gnss-sdr.org/docs/sp-blocks/pvt/#saastamoinen
         # https://www.cv.nrao.edu/~demerson/ionosphere/atten/atten.htm
         # https://www.itu.int/dms_pubrec/itu-r/rec/p/R-REC-P.618-8-200304-S!!PDF-E.pdf
-        z = pi / 2 - elev * pi / 180
+        z = pi / 2 - elev
         h_rel = 50.0
         p = 1013.15 * (1 - 2.2557e-5 * h) ** 5.2568
         T = 15 - 6.5e-3 * h + 273.15
@@ -208,8 +222,8 @@ class DSPChannel(AComputer):
         dt_iono = klobuchar(
             phi=lat,
             lbd=lon,
-            elev=elev * pi / 180,
-            azimuth=azim * pi / 180,
+            elev=elev,
+            azimuth=azim,
             tow=0,
             alpha=self.alpha,
             beta=self.beta,
@@ -240,25 +254,27 @@ class DSPChannel(AComputer):
         for kelem in range(self.num_src):
             txpos_k = txpos[6 * kelem : 6 * kelem + 6]
             if self.noatm:
-                azim, elev, d, vrad, _, _ = itrf_to_azeld(rxpos, txpos_k)
+                azim, elev, dist, vrad, _, _ = itrf_to_azeld(rxpos, txpos_k)
                 L_atm = 1
                 dt_atm = 0
             else:
-                d, vrad, azim, elev, L_atm, dt_atm = self.atmosphericModel(
+                dist, vrad, azim, elev, L_atm, dt_atm = self.atmosphericModel(
                     txpos_k, rxpos
                 )
 
             if self.nodop:
                 phi_d0 = 0.0
                 vrad = 0.0
-                d = 1.0
+                dist = 1.0
             else:
-                phi_d0 = -2 * pi * (d + c * dt_atm) / self.wavelength
+                phi_d0 = -2 * pi * (dist + c * dt_atm) / self.wavelength
 
-            delay = d / c + dt_atm
+            delay = dist / c + dt_atm
             delays[kelem] = delay
 
-            psig = txsig[kelem] * self.__gain_coef / sqrt(L_atm) / d * exp(1j * phi_d0)
+            psig = (
+                txsig[kelem] * self.__gain_coef / sqrt(L_atm) / dist * exp(1j * phi_d0)
+            )
 
             dl = self.__delay_lines[kelem]
             dl.addSample(t2, psig)
@@ -270,12 +286,18 @@ class DSPChannel(AComputer):
                 N = self.getCovariance()[0, 0]
                 SNR = C / N
                 CN0 = SNR * self.bandwidth
-                # r = lin.norm(txpos_k)
-                # Rh = lin.norm(rxpos)
-                # ctheta = (r**2 + d**2 - Rh**2) / (2 * d * r)
-                # ctheta = np.clip(ctheta, a_min=-1, a_max=1)
-                # theta = arccos(ctheta)
-                info = np.array([CN0, SNR, d, vrad, azim, elev, L_atm, dt_atm])
+
+                M = build_local_matrix(txpos_k[:3], xvec=txpos_k[3:])
+                u = rxpos[:3] - txpos_k[:3]
+                d = lin.norm(u)
+                v = (M.T @ u) / d
+                ath2 = np.clip(-v[2], a_min=-1, a_max=1)
+                theta = arccos(ath2)
+                psi = arctan2(v[1], v[0])
+
+                info = np.array(
+                    [CN0, SNR, dist, vrad, azim, elev, theta, psi, L_atm, dt_atm]
+                )
 
         outputs = {}
         outputs["rxsig"] = np.array([np.sum(rxsig)], dtype=np.complex128)

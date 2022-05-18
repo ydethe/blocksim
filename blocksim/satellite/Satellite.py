@@ -1,5 +1,6 @@
 from abc import abstractmethod
-from typing import Tuple, List, Any
+from typing import Tuple, List, Union, Any
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 import requests
 
@@ -8,6 +9,7 @@ import numpy as np
 from numpy import cos, sin, tan, sqrt
 import scipy.linalg as lin
 from sgp4.api import Satrec, WGS84
+from sgp4.functions import days2mdhms
 
 from ..core.Node import AComputer
 from .. import logger
@@ -386,14 +388,19 @@ class SGP4Satellite(ASatellite):
 
     @classmethod
     def fromTLE(
-        cls, tsync: datetime, tle_file: str, iline: int = 0, name_prefix: str = ""
+        cls,
+        tle_file: Union[str, Path],
+        tsync: datetime = None,
+        iline: int = 0,
+        name_prefix: str = "",
     ) -> "SGP4Satellite":
         """Builds a SGP4Satellite from a TLE file
         Returns None if the file was incorrect
         See https://en.wikipedia.org/wiki/Two-line_element_set
 
         Args:
-            tsync: Time that corresponds to the simulation time zero
+            tsync: Time that corresponds to the simulation time zero.
+                If None, tsync is the time of the TLE
             tle_file: TLE file path or URL
             iline: Number of the object in the TLE (in case of a multi object TLE file)
             name_prefix: Prefix to use to modify the satellites' name
@@ -431,6 +438,21 @@ class SGP4Satellite(ASatellite):
         line2 = lines[iline * 3 + 2]
 
         satrec = Satrec.twoline2rv(line1, line2)
+
+        if tsync is None:
+            month, day, hour, minute, second = days2mdhms(
+                2000 + satrec.epochyr, satrec.epochdays, round_to_microsecond=9
+            )
+            tsync = datetime(
+                year=2000 + satrec.epochyr,
+                month=month,
+                day=day,
+                hour=hour,
+                minute=minute,
+                second=int(second),
+                microsecond=int(1e6 * (second - int(second))),
+                tzinfo=timezone.utc,
+            )
 
         sat = cls(name_prefix + name, tsync)
         sat.__setSGP4(satrec)
@@ -644,7 +666,11 @@ class CircleSatellite(ASatellite):
 
     @classmethod
     def fromTLE(
-        cls, tsync: datetime, tle_file: str, iline: int = 0, name_prefix: str = ""
+        cls,
+        tle_file: Union[str, Path],
+        tsync: datetime = None,
+        iline: int = 0,
+        name_prefix: str = "",
     ) -> "CircleSatellite":
         """Builds a CircleSatellite from a TLE file
         The velocity is used only to determine the orbit's plane. It is then modified so that the orbit eccentricity be 0
@@ -652,7 +678,8 @@ class CircleSatellite(ASatellite):
         See https://en.wikipedia.org/wiki/Two-line_element_set
 
         Args:
-            tsync: Time that corresponds to the simulation time zero
+            tsync: Time that corresponds to the simulation time zero.
+                If None, tsync is the time of the TLE
             tle_file: TLE file path or URL
             iline: Number of the object in the TLE (in case of a multi object TLE file)
             name_prefix: Prefix to use to modify the satellites' name
@@ -690,6 +717,22 @@ class CircleSatellite(ASatellite):
         line2 = lines[iline * 3 + 2]
 
         satrec = Satrec.twoline2rv(line1, line2)
+
+        if tsync is None:
+            month, day, hour, minute, second = days2mdhms(
+                2000 + satrec.epochyr, satrec.epochdays, round_to_microsecond=9
+            )
+            tsync = datetime(
+                year=2000 + satrec.epochyr,
+                month=month,
+                day=day,
+                hour=hour,
+                minute=minute,
+                second=int(second),
+                microsecond=int(1e6 * (second - int(second))),
+                tzinfo=timezone.utc,
+            )
+
         dt = (tsync - ASatellite.getInitialEpoch()).total_seconds()
         pv_teme = sgp4_to_teme(satrec, dt)
         pv_itrf = teme_to_itrf(dt, pv_teme)
@@ -708,15 +751,15 @@ class CircleSatellite(ASatellite):
         cth = cos(th)
         sth = sin(th)
 
-        if hasattr(td, "__iter__"):
-            ns = len(td)
-            newpv_teme = np.outer(self.__R1, cth) + np.outer(self.__R2, sth)
-            newpv = np.empty_like(newpv_teme)
-            for k in range(ns):
-                newpv[:, k] = teme_to_itrf(t_epoch=t_epoch, pv_teme=newpv_teme[:, k])
-        else:
-            newpv_teme = self.__R1 * cth + self.__R2 * sth
-            newpv = teme_to_itrf(t_epoch=t_epoch, pv_teme=newpv_teme)
+        # if hasattr(td, "__iter__"):
+        #     ns = len(td)
+        #     newpv_teme = np.outer(self.__R1, cth) + np.outer(self.__R2, sth)
+        #     newpv = np.empty_like(newpv_teme)
+        #     for k in range(ns):
+        #         newpv[:, k] = teme_to_itrf(t_epoch=t_epoch, pv_teme=newpv_teme[:, k])
+        # else:
+        newpv_teme = self.__R1 * cth + self.__R2 * sth
+        newpv = teme_to_itrf(t_epoch=t_epoch, pv_teme=newpv_teme)
 
         return newpv
 
@@ -743,7 +786,9 @@ def createSatellites(
     iline = 0
     satellites = []
     while True:
-        sat = prop.fromTLE(tsync, tle_file, iline=iline, name_prefix=name_prefix)
+        sat = prop.fromTLE(
+            tsync=tsync, tle_file=tle_file, iline=iline, name_prefix=name_prefix
+        )
         if sat is None:
             break
         sat.getName

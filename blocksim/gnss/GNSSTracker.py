@@ -56,7 +56,7 @@ class GNSSTracker(ASensors):
         mean: Mean of the gaussian noise. Dimension (n,1)
         cov: Covariance of the gaussian noise. Dimension (n,n)
         cho: Cholesky decomposition of cov, computed after a first call to *updateAllOutput*. Dimension (n,n)
-        elev_mask: Elevation mask to determine if a satellite is visible (deg)
+        elev_mask: Elevation mask to determine if a satellite is visible (rad)
         dp: Systematic error on the ranging measurement (m)
         dv: Systematic error on the radial velocity measurement (m/s)
 
@@ -142,8 +142,8 @@ class GNSSTracker(ASensors):
             j_s = -mu / r_s**4 * (r_s * v_s - 3 * d_r_s * p_s)
             jrad = -3 * arad * vrad / dist + 3 * v_s @ a_s / dist + j_s @ u
 
-            obscoord[6 * k] = azim * pi / 180
-            obscoord[6 * k + 1] = elev * pi / 180
+            obscoord[6 * k] = azim
+            obscoord[6 * k + 1] = elev
             obscoord[6 * k + 2] = dist
             obscoord[6 * k + 3] = vrad
             obscoord[6 * k + 4] = arad

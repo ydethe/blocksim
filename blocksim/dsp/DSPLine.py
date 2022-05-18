@@ -3,6 +3,7 @@ from typing import Callable, List, Any
 from lazy_property import LazyProperty
 from nptyping import NDArray, Shape
 import numpy as np
+from numpy.polynomial import Polynomial
 from scipy.interpolate import interp1d
 
 from . import derivative_coeff
@@ -142,6 +143,20 @@ class DSPLine(object):
             index += n
         x = index * self.samplingPeriod + self.samplingStart
         return x
+
+    def polyfit(self, deg: int = 1) -> Polynomial:
+        """Fits a polynomial to the DSPLine. All the samples are considered in the computation.
+
+        Args:
+            deg: Degree of the fitted polynomial
+
+        Returns:
+            A numpy Polynomial
+
+        """
+        px = Polynomial.fit(x=self._x_serie, y=np.real(self.y_serie), deg=deg)
+        py = Polynomial.fit(x=self._x_serie, y=np.imag(self.y_serie), deg=deg)
+        return Polynomial(px.coef + py.coef * 1j)
 
     def findPeaksWithTransform(
         self, transform: Callable = None, nb_peaks: int = 3

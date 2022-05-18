@@ -40,7 +40,9 @@ class TestGNSS(TestBase):
 
         x_ref, y_ref, z_ref = geodetic_to_itrf(rad(lon), rad(lat), alt)
 
-        rec = GNSSReceiver(name="UE", nsat=nsat, lon=lon, lat=lat, alt=alt, tsync=tsync)
+        rec = GNSSReceiver(
+            name="UE", nsat=nsat, lon=rad(lon), lat=rad(lat), alt=alt, tsync=tsync
+        )
         rec.algo = "ranging"
         rec.optim = "trust-constr"
 
@@ -65,7 +67,7 @@ class TestGNSS(TestBase):
         uere = 0.0
         ueve = 0.0
         tkr = GNSSTracker(name="tkr", nsat=nsat)
-        tkr.elev_mask = 5.0
+        tkr.elev_mask = rad(5.0)
         tkr.dp = 300.0 * 0
         tkr.dv = 50.0 * 0
         cov = np.zeros((2 * nsat, 2 * nsat))
@@ -382,8 +384,6 @@ class TestGNSS(TestBase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
-
     a = TestGNSS()
     a.setUp()
     a.test_gnss_ranging()
@@ -391,5 +391,5 @@ if __name__ == "__main__":
     # a.setUp()
     # a.test_gnss_doppler()
 
-    a.setUp()
-    a.test_gnss_dv()
+    # a.setUp()
+    # a.test_gnss_dv()
