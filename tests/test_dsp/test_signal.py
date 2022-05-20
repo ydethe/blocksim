@@ -1,3 +1,4 @@
+from os import fsdecode
 import sys
 from pathlib import Path
 import unittest
@@ -190,9 +191,51 @@ class TestSignal(TestBase):
         err = np.max(np.abs(y - p(x)))
         self.assertAlmostEqual(err, 0, delta=1e-10)
 
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_superheterodyne(self):
+        fs = 1000.0
+        B = 100
+        tau = 0.2
+        fc = 2e2
+        ntau = int(tau * fs)
+        ns = 3 * ntau
+        tps = np.arange(ns) / fs
+        x = np.zeros(ns)
+        x[ntau : 2 * ntau] = np.cos(
+            2 * pi * fc * tps[:ntau] + pi * B * tps[:ntau] * (tps[:ntau] - tau) / tau
+        )
+        re = DSPSignal(name="re", samplingStart=0, samplingPeriod=1 / fs, y_serie=x)
+        cp = re.superheterodyneIQ(carrier_freq=fc, bandwidth=B)
+        rep = DSPSignal.fromLinearFM(
+            name="rep",
+            samplingStart=0,
+            samplingPeriod=1 / fs,
+            tau=tau,
+            fstart=-B / 2,
+            fend=B / 2,
+        )
+
+        fig = plt.figure()
+        gs = fig.add_gridspec(2, 1)
+
+        axe = plotDSPLine(cp, spec=gs[0, 0], transform=lambda x: np.abs(x) ** 2)
+        axe.set_ylabel("Linear Power of BB signal")
+
+        axe = plotDSPLine(
+            cp.correlate(rep, win="hamming"),
+            spec=gs[1, 0],
+            transform=DSPSignal.to_db_lim(-80),
+        )
+        axe.set_ylabel("Correlated signal")
+
+        return fig
+
 
 if __name__ == "__main__":
     a = TestSignal()
     # a.test_instanciation()
     # a.test_resample()
-    a.test_polyfit()
+    # a.test_polyfit()
+    a.test_superheterodyne()
+
+    plt.show()

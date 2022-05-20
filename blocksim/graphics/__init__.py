@@ -26,14 +26,35 @@ from .FigureSpec import FigureSpec
 from ..satellite.Trajectory import Trajectory
 
 
-def getUnitAbbrev(mult: float) -> str:
+def getUnitAbbrev(
+    samp: float, unit: str, force_mult: int = None
+) -> Tuple[float, float, str, str]:
     """Given a scale factor, gives the prefix for the unit to display
 
     Args:
-        mult: Scale factor
+        samp: Sample
+        unit: Physical unit
+        force_mult: Multiplier to use
 
     Returns:
-        str: Prefix
+        scaled_samp: Scaled sample
+        mult: Division coefficient of samp
+        lbl: Scale factor label
+        unit: Unit to display
+
+    Example:
+        >>> getUnitAbbrev(0.1, 's')
+        (100.0, 0.001, 'm', 's')
+        >>> getUnitAbbrev(13.6, 's')
+        (13.6, 1, '', 's')
+        >>> getUnitAbbrev(76, 's') # doctest: +ELLIPSIS
+        (1.266..., 60, '', 'min')
+        >>> getUnitAbbrev(1.5e-3, 'm')
+        (1.5, 0.001, 'm', 'm')
+        >>> getUnitAbbrev(1.5e-3, 's')
+        (1.5, 0.001, 'm', 's')
+        >>> getUnitAbbrev(90, 's')
+        (1.5, 60, '', 'min')
 
     """
     d = {
@@ -47,7 +68,32 @@ def getUnitAbbrev(mult: float) -> str:
         1e-9: "n",
         1e-12: "p",
     }
-    return d[mult]
+    d_time = {
+        1: "s",
+        60: "min",
+        3600: "h",
+        86400: "day",
+        86400 * 30: "month",
+        860400 * 30 * 12: "yr",
+    }
+    if unit == "s" and samp >= 1:
+        if force_mult is None:
+            for mult in reversed(d_time.keys()):
+                if samp / mult >= 1:
+                    break
+        else:
+            mult = force_mult
+        unit = d_time[mult]
+        lbl = ""
+    else:
+        if force_mult is None:
+            xm = np.abs(samp)
+            pm = (int(log10(xm)) // 3) * 3
+            mult = 10**pm
+        else:
+            mult = force_mult
+        lbl = d[mult]
+    return samp / mult, mult, lbl, unit
 
 
 def format_parameter(samp: float, unit: str) -> str:
@@ -64,13 +110,14 @@ def format_parameter(samp: float, unit: str) -> str:
     Examples:
         >>> format_parameter(1.5e-3, 'm')
         '1.5 mm'
+        >>> format_parameter(1.5e-3, 's')
+        '1.5 ms'
+        >>> format_parameter(90, 's')
+        '1.5 min'
 
     """
-    xm = np.abs(samp)
-    pm = (int(log10(xm)) // 3) * 3
-    x_unit_mult = 10**pm
-    x_unit_lbl = getUnitAbbrev(x_unit_mult)
-    txt = "%.3g %s%s" % (samp / x_unit_mult, x_unit_lbl, unit)
+    scaled_samp, mult, lbl, unit = getUnitAbbrev(samp, unit)
+    txt = "%.3g %s%s" % (scaled_samp, lbl, unit)
     return txt
 
 
@@ -242,23 +289,19 @@ def plotSpectrogram(
     transform = kwargs.pop("transform", spg.default_transform)
     find_peaks = kwargs.pop("find_peaks", 0)
 
-    if "x_unit_mult" in kwargs.keys():
-        x_unit_mult = kwargs.pop("x_unit_mult")
-    else:
-        x_samp = spg.generateXSerie()
-        xm = np.max(np.abs(x_samp))
-        pm = (int(log10(xm)) // 3) * 3
-        x_unit_mult = 10**pm
-    x_unit_lbl = getUnitAbbrev(x_unit_mult)
+    x_samp = spg.generateXSerie()
+    xm = np.max(np.abs(x_samp))
+    x_unit_mult = kwargs.pop("x_unit_mult", None)
+    _, x_unit_mult, x_unit_lbl, x_unit = getUnitAbbrev(
+        xm, spg.unit_of_x_var, force_mult=x_unit_mult
+    )
 
-    if "y_unit_mult" in kwargs.keys():
-        y_unit_mult = kwargs.pop("y_unit_mult")
-    else:
-        y_samp = spg.generateYSerie()
-        ym = np.max(np.abs(y_samp))
-        pm = (int(log10(ym)) // 3) * 3
-        y_unit_mult = 10**pm
-    y_unit_lbl = getUnitAbbrev(y_unit_mult)
+    y_samp = spg.generateYSerie()
+    ym = np.max(np.abs(y_samp))
+    y_unit_mult = kwargs.pop("y_unit_mult", None)
+    _, y_unit_mult, y_unit_lbl, y_unit = getUnitAbbrev(
+        ym, spg.unit_of_y_var, force_mult=y_unit_mult
+    )
     # lbl = kwargs.pop("label", spg.name)
 
     Z = transform(spg.img)
@@ -288,9 +331,13 @@ def plotSpectrogram(
         axe.clabel(ret, inline=True, fontsize=10)
 
     if spg.name_of_x_var != "":
-        axe.set_xlabel("%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, spg.unit_of_x_var))
+        axe.set_xlabel(
+            "%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, x_unit_lbl + x_unit)
+        )
     if spg.name_of_y_var != "":
-        axe.set_ylabel("%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, spg.unit_of_y_var))
+        axe.set_ylabel(
+            "%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, y_unit_lbl + y_unit)
+        )
 
     if find_peaks > 0:
         lpeaks = spg.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
@@ -433,23 +480,17 @@ def plotDSPLine(line: DSPLine, spec: "SubplotSpec" = None, **kwargs) -> "AxesSub
     transform = kwargs.pop("transform", line.default_transform)
     find_peaks = kwargs.pop("find_peaks", 0)
 
-    if "x_unit_mult" in kwargs.keys():
-        x_unit_mult = kwargs.pop("x_unit_mult")
-    else:
-        xm = np.max(np.abs(x_samp))
-        lxm = log10(xm)
-        ilxm = int(np.round(lxm, 0))
-        ilxm3 = ilxm // 3
-        pm = ilxm3 * 3
-        x_unit_mult = 10**pm
-    axe.x_unitilxm3_mult = x_unit_mult
-    x_unit_lbl = getUnitAbbrev(x_unit_mult)
+    x_unit_mult = kwargs.pop("x_unit_mult", None)
+    xm = np.max(np.abs(x_samp))
+    scaled_samp, x_unit_mult, x_unit_lbl, x_unit = getUnitAbbrev(
+        xm, line.unit_of_x_var, force_mult=x_unit_mult
+    )
     lbl = kwargs.pop("label", line.name)
 
     (ret,) = axe.plot(
         x_samp / x_unit_mult, transform(line.y_serie), label=lbl, **kwargs
     )
-    axe.set_xlabel("%s (%s%s)" % (line.name_of_x_var, x_unit_lbl, line.unit_of_x_var))
+    axe.set_xlabel("%s (%s%s)" % (line.name_of_x_var, x_unit_lbl, x_unit))
 
     if find_peaks > 0:
         lpeaks = line.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
@@ -459,8 +500,7 @@ def plotDSPLine(line: DSPLine, spec: "SubplotSpec" = None, **kwargs) -> "AxesSub
                 [x / x_unit_mult], [p.value], linestyle="", marker="o", color="red"
             )
             axe.annotate(
-                "(%.1f %s%s,%.1f)"
-                % (x / x_unit_mult, x_unit_lbl, line.unit_of_x_var, p.value),
+                "(%.1f %s%s,%.1f)" % (x / x_unit_mult, x_unit_lbl, x_unit, p.value),
                 xy=(x / x_unit_mult, p.value),
                 fontsize="x-small",
             )

@@ -243,11 +243,11 @@ class DSPChannel(AComputer):
         self,
         t1: float,
         t2: float,
-        txpos: NDArray[Any, Any],  # type: ignore
-        rxpos: NDArray[Any, Any],  # type: ignore
-        txsig: NDArray[Any, Any],  # type: ignore
-        rxsig: NDArray[Any, Any],  # type: ignore
-        info: NDArray[Any, Any],  # type: ignore
+        txpos: NDArray[Any, Any],
+        rxpos: NDArray[Any, Any],
+        txsig: NDArray[Any, Any],
+        rxsig: NDArray[Any, Any],
+        info: NDArray[Any, Any],
     ) -> dict:
         rxsig = np.empty(self.num_src, dtype=np.complex128)
         delays = np.empty(self.num_src, dtype=np.float64)

@@ -485,9 +485,9 @@ class DSPSignal(DSPLine, ASetPoint):
         logger.debug("Decimation : %i" % q)
         eff_bp = 1 / self.samplingPeriod / q
 
-        from .DSPFilter import DSPFilter
+        from .DSPFilter import BandpassDSPFilter
 
-        filt = DSPFilter(
+        filt = BandpassDSPFilter(
             name="decim",
             f_low=0.0,
             f_high=eff_bp,
