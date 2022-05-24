@@ -203,7 +203,7 @@ class DSPChannel(AComputer):
             * dt_atm: atmospheric delay (s)
 
         """
-        azim, elev, dist, vrad, _, _ = itrf_to_azeld(rx_pos, tx_pos)
+        azim, elev, dist, _, _, vrad = itrf_to_azeld(rx_pos, tx_pos)
         lon, lat, h = itrf_to_geodetic(rx_pos)
 
         # Saastamoinen troposhperic model
@@ -254,7 +254,7 @@ class DSPChannel(AComputer):
         for kelem in range(self.num_src):
             txpos_k = txpos[6 * kelem : 6 * kelem + 6]
             if self.noatm:
-                azim, elev, dist, vrad, _, _ = itrf_to_azeld(rxpos, txpos_k)
+                azim, elev, dist, _, _, vrad = itrf_to_azeld(rxpos, txpos_k)
                 L_atm = 1
                 dt_atm = 0
             else:

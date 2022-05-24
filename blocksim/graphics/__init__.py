@@ -121,6 +121,19 @@ def format_parameter(samp: float, unit: str) -> str:
     return txt
 
 
+def createAxeFromSpec(spec: "SubplotSpec" = None, **kwargs) -> "AxesSubplot":
+    if spec is None:
+        fig = plt.figure()
+        gs = fig.add_gridspec(1, 1)
+        spec = gs[0, 0]
+
+    gs = spec.get_gridspec()
+    fig = gs.figure
+    axe = fig.add_subplot(spec, **kwargs)
+    axe.grid(True)
+    return axe
+
+
 def plotFromLogger(
     log: Logger, id_x: str, id_y: str, spec: "SubplotSpec" = None, **kwargs
 ) -> "AxesSubplot":
@@ -137,15 +150,10 @@ def plotFromLogger(
         The Axes used by matplotlib
 
     """
-    if spec is None:
-        fig = plt.figure()
-        gs = fig.add_gridspec(1, 1)
-        spec = gs[0, 0]
-
-    gs = spec.get_gridspec()
-    fig = gs.figure
-    axe = fig.add_subplot(spec)
-    axe.grid(True)
+    sharex = kwargs.pop("sharex", None)
+    sharey = kwargs.pop("sharey", None)
+    axe_opt = {"sharex": sharex, "sharey": sharey}
+    axe = createAxeFromSpec(spec, **axe_opt)
 
     if type(id_x) == type(""):
         val_x = log.getValue(id_x)
@@ -271,20 +279,15 @@ def plotSpectrogram(
         The matplotlib image generated
 
     """
-    if spec is None:
-        fig = plt.figure()
-        gs = fig.add_gridspec(1, 1)
-        spec = gs[0, 0]
-
     if fill == "plot_surface":
         proj = "3d"
     else:
         proj = spg.projection
 
-    gs = spec.get_gridspec()
-    fig = gs.figure
-    axe = fig.add_subplot(spec, projection=proj)
-    axe.grid(True)
+    sharex = kwargs.pop("sharex", None)
+    sharey = kwargs.pop("sharey", None)
+    axe_opt = {"sharex": sharex, "sharey": sharey, "projection": proj}
+    axe = createAxeFromSpec(spec, **axe_opt)
 
     transform = kwargs.pop("transform", spg.default_transform)
     find_peaks = kwargs.pop("find_peaks", 0)
@@ -389,6 +392,7 @@ def plotBode(
     spec_pha: "SubplotSpec",
     fpoints: int = 200,
     pow_lim: float = -100.0,
+    **kwargs
 ) -> Tuple["AxesSubplot", "AxesSubplot"]:
     """Plots the bode diagram of a filter
 
@@ -398,6 +402,9 @@ def plotBode(
         spec_pha: The matplotlib SubplotSpec that defines the phase axis to draw on. Obtained by fig.add_gridspec and slicing
         fpoints: If int, number of frequency samples to use for the plot
             If iterable, list of frequency samples to use for the plot
+        kwargs: Plotting options. The following extra keys are allowed:
+
+            * x_unit_mult to have a more readable unit prefix
 
     Examples:
         >>> from blocksim.dsp.DSPFilter import ArbitraryDSPFilter
@@ -409,15 +416,8 @@ def plotBode(
     """
     from scipy.signal import TransferFunction, freqz
 
-    gs = spec_amp.get_gridspec()
-    fig = gs.figure
-    axe_amp = fig.add_subplot(spec_amp)
-    axe_amp.grid(True)
-
-    gs = spec_pha.get_gridspec()
-    fig = gs.figure
-    axe_pha = fig.add_subplot(spec_pha, sharex=axe_amp)
-    axe_pha.grid(True)
+    axe_amp = createAxeFromSpec(spec_amp)
+    axe_pha = createAxeFromSpec(spec_pha)
 
     fs = 1 / filt.samplingPeriod
 
@@ -431,15 +431,21 @@ def plotBode(
     num, den = TransferFunction._z_to_zinv(b, a)
     _, y = freqz(num, den, worN=freq, fs=fs)
 
-    axe_amp.plot(freq, DSPLine.to_db(y, lim_db=pow_lim))
+    x_unit_mult = kwargs.get("x_unit_mult", None)
+    xm = np.max(np.abs(freq))
+    scaled_samp, x_unit_mult, x_unit_lbl, x_unit = getUnitAbbrev(
+        xm, "Hz", force_mult=x_unit_mult
+    )
+
+    axe_amp.plot(freq / x_unit_mult, DSPLine.to_db(y, lim_db=pow_lim))
     axe_amp.grid(True)
     axe_amp.set_ylabel("Amplitude (dB)")
 
     pha = phase_unfold(y)
 
-    axe_pha.plot(freq, 180 / np.pi * pha)
+    axe_pha.plot(freq / x_unit_mult, 180 / np.pi * pha)
     axe_pha.grid(True)
-    axe_pha.set_xlabel("Frequency (Hz)")
+    axe_pha.set_xlabel("Frequency (%s%s)" % (x_unit_lbl, x_unit))
     axe_pha.set_ylabel("Phase (deg)")
 
     return axe_amp, axe_pha
@@ -466,15 +472,10 @@ def plotDSPLine(line: DSPLine, spec: "SubplotSpec" = None, **kwargs) -> "AxesSub
             * x_unit_mult to have a more readable unit prefix
 
     """
-    if spec is None:
-        fig = plt.figure()
-        gs = fig.add_gridspec(1, 1)
-        spec = gs[0, 0]
-
-    gs = spec.get_gridspec()
-    fig = gs.figure
-    axe = fig.add_subplot(spec)
-    axe.grid(True)
+    sharex = kwargs.pop("sharex", None)
+    sharey = kwargs.pop("sharey", None)
+    axe_opt = {"sharex": sharex, "sharey": sharey}
+    axe = createAxeFromSpec(spec, **axe_opt)
 
     x_samp = line.generateXSerie()
     transform = kwargs.pop("transform", line.default_transform)
@@ -558,26 +559,20 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":
     return fig
 
 
-def plotGraph(G, axe_spec=None, **kwds) -> "Axes":
+def plotGraph(G, spec=None, **kwds) -> "Axes":
     """See https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pylab.draw.html#networkx.drawing.nx_pylab.draw
 
     Args:
         G: graph to draw
-        axe_spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
+        spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
         kwds: See https://networkx.org/documentation/stable/reference/generated/networkx.drawing.layout.kamada_kawai_layout.html#networkx.drawing.layout.kamada_kawai_layout
 
     Returns
         The actual axe used for plotting
 
     """
-    if axe_spec is None:
-        fig = plt.figure()
-        gs = fig.add_gridspec(1, 1)
-        axe_spec = gs[0, 0]
-
-    gs = axe_spec.get_gridspec()
-    fig = gs.figure
-    axe = fig.add_subplot(axe_spec)
+    axe = createAxeFromSpec(spec)
+    axe.grid(False)
     axe.set_aspect("equal")
 
     if not "node_size" in kwds.keys():
@@ -610,7 +605,7 @@ def plot3DEarth(trajectories: Iterable[Trajectory]) -> "B3DPlotter":
     return app
 
 
-def plotBER(fic, axe_spec=None, **kwds) -> "Axes":
+def plotBER(fic, spec=None, **kwds) -> "Axes":
     """Helper function that plots a BER curve from a log file where the lines are :
 
     "[{level}] - SNR = {snr} dB, it={it}, Bits Received = {bit_rx}, Bit errors = {bit_err}, BER = {ber}"
@@ -636,15 +631,10 @@ def plotBER(fic, axe_spec=None, **kwds) -> "Axes":
         snr.append(float(dat["snr"]))
         ber.append(float(dat["ber"]))
 
-    if axe_spec is None:
-        fig = plt.figure()
-        gs = fig.add_gridspec(1, 1)
-        axe_spec = gs[0, 0]
-
-    gs = axe_spec.get_gridspec()
-    fig = gs.figure
-    axe = fig.add_subplot(axe_spec)
-    axe.grid(True)
+    sharex = kwds.pop("sharex", None)
+    sharey = kwds.pop("sharey", None)
+    axe_opt = {"sharex": sharex, "sharey": sharey}
+    axe = createAxeFromSpec(spec, **axe_opt)
 
     axe.grid(b=True, which="minor", color="#999999", linestyle="-", alpha=0.2)
     axe.semilogy(snr, ber, label="Simu BER", **kwds)

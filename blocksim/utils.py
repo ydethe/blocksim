@@ -57,6 +57,9 @@ __all__ = [
     "teme_to_itrf",
     "itrf_to_teme",
     "itrf_to_azeld",
+    "azeld_to_itrf",
+    "itrf_to_llavpa",
+    "llavpa_to_itrf",
     "datetime_to_skyfield",
     "skyfield_to_datetime",
     "pdot",
@@ -836,7 +839,7 @@ def orbital_to_teme(
 
 
 def itrf_to_geodetic(position: NDArray[Any, Any]) -> Tuple[float, float, float]:
-    """Converts the ITRF coordinates into latitude, longiutde, altitude (WGS84)
+    """Converts the ITRF coordinates into latitude, longitude, altitude (WGS84)
 
     Args:
         position: x, y, z position in ITRF frame (m)
@@ -871,9 +874,53 @@ def itrf_to_geodetic(position: NDArray[Any, Any]) -> Tuple[float, float, float]:
     return lon, lat, alt
 
 
-def itrf_to_azeld(obs: NDArray[Any, Any], sat: NDArray[Any, Any]) -> NDArray[Any, Any]:
+def azeld_to_itrf(
+    azeld: NDArray[Any, Any], obs: NDArray[Any, Any]
+) -> NDArray[Any, Any]:
     """Converts an ITRF position & velocity into
     azimut, elevation, distance, radial velocity, slope of velocity, azimut of velocity
+
+    Args:
+        azeld: Array with:
+
+            * Azimut (rad)
+            * Elevation (rad)
+            * Distance (m)
+            * Radial velocity (m/s)
+            * Slope of velocity (rad)
+            * Azimut of velocity (rad)
+        obs: Position (m) & velocity (m/s) of terrestrial observer in ITRF
+
+    Returns:
+        Position (m) & velocity (m/s) of the observed satellite in ITRF
+
+    """
+    # Local ENV for the observer
+    obs_env = build_local_matrix(obs[:3])
+
+    az, el, dist, azr, elr, vr = azeld
+    x = dist * cos(el) * sin(az)
+    y = dist * cos(el) * cos(az)
+    z = dist * sin(el)
+    deltap = obs_env @ np.array([x, y, z])
+    sat = obs[:3] + deltap
+
+    # Local ENV for the satellite
+    rxy = sqrt(x**2 + y**2)
+    vz = rxy * elr + vr * z / dist
+    vx = -(vz * x * z - azr * rxy**2 * y - dist * vr * x) / (y**2 + x**2)
+    vy = -(vz * y * z - dist * vr * y + azr * rxy**2 * x) / (y**2 + x**2)
+    deltav = obs_env @ np.array([vx, vy, vz])
+    vsat = obs[3:] + deltav
+
+    return np.hstack((sat, vsat))
+
+
+def itrf_to_azeld(
+    obs: NDArray[Any, Any], sat: NDArray[Any, Any]
+) -> Tuple[float, float, float, float, float, float]:
+    """Converts an ITRF position & velocity into
+    azimut, elevation, distance, azimut rate, elevation rate, radial velocity
 
     Args:
         obs: Position (m) & velocity (m/s) of terrestrial observer in ITRF
@@ -884,18 +931,18 @@ def itrf_to_azeld(obs: NDArray[Any, Any], sat: NDArray[Any, Any]) -> NDArray[Any
 
         * Azimut (rad)
         * Elevation (rad)
-        * Distance (m)
-        * Radial velocity (m/s)
-        * Slope of velocity (rad)
-        * Azimut of velocity (rad)
+        * Range (m)
+        * Azimut rate (rad/s)
+        * Elevation rate (rad/s)
+        * Range rate (m/s)
 
     """
     # Local ENV for the observer
     obs_env = build_local_matrix(obs[:3])
-
     deltap = sat[:3] - obs[:3]
     deltav = sat[3:] - obs[3:]
     x, y, z = obs_env.T @ deltap
+    vx, vy, vz = obs_env.T @ deltav
 
     dist = lin.norm(deltap)
 
@@ -910,20 +957,79 @@ def itrf_to_azeld(obs: NDArray[Any, Any], sat: NDArray[Any, Any]) -> NDArray[Any
     az = arctan2(x, y)
 
     # Local ENV for the satellite
-    sat_env = build_local_matrix(sat[:3] - obs[:3])
-    ve, vn, vr = sat_env.T @ deltav
-    nv = lin.norm(deltav)
+    rxy = sqrt(x**2 + y**2)
+    deltav = sat[3:] - obs[3:]
+    vr = deltav @ deltap / dist
+    azr = (-x * vy + y * vx) / rxy**2
+    elr = (vz - vr * z / dist) / rxy
 
-    # vr_verif = deltav @ deltap / dist
-    # assert(lin.norm(vr-vr_verif)<1e-3)
+    return az, el, dist, azr, elr, vr
+
+
+def itrf_to_llavpa(
+    pv: NDArray[Any, Any]
+) -> Tuple[float, float, float, float, float, float]:
+    """Converts an ITRF position & velocity into
+    longitude, latitude, altitude (WGS84) and velocity, slope of velocity, azimut of velocity
+    Velocity is the speed of sat in ITRF frame
+
+    Args:
+        pv: Position (m) & velocity (m/s) of the object in ITRF
+
+    Returns:
+        A tuple containing:
+
+        * Longitude (rad)
+        * Latitude (rad)
+        * Altitude (m)
+        * Velocity (m/s)
+        * Slope of velocity (rad)
+        * Azimut of velocity (rad)
+
+    """
+    lon, lat, alt = itrf_to_geodetic(pv)
+
+    # Local ENV for the satellite
+    M = build_local_matrix(pv[:3])
+    ve, vn, vv = M.T @ pv[3:]
+    nv = lin.norm((ve, vn, vv))
 
     if np.abs(nv) < 1e-6:
         vs = 0.0
     else:
-        vs = arcsin(vr / nv)
+        vs = arcsin(vv / nv)
     va = arctan2(ve, vn)
 
-    return az, el, dist, vr, vs, va
+    return lon, lat, alt, nv, vs, va
+
+
+def llavpa_to_itrf(llavpa: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    """Converts a LLAVPA into ITRF
+    A LLAVPA is an array with
+    longitude, latitude, altitude (WGS84) and velocity, slope of velocity, azimut of velocity
+    Velocity is the speed of sat in ITRF frame
+
+    Args:
+        llavpa: lon,lat,alt,vel,vs,va
+
+    Returns:
+        An ITRF position and velocity
+
+    """
+    lon, lat, alt = llavpa[:3]
+    pos = geodetic_to_itrf(lon, lat, alt)
+
+    # Local ENV for the satellite
+    M = build_local_matrix(pos)
+
+    nv, vs, va = llavpa[3:]
+    ve = cos(vs) * sin(va) * nv
+    vn = cos(vs) * cos(va) * nv
+    vv = sin(vs) * nv
+
+    vel = M @ np.array([ve, vn, vv])
+
+    return np.hstack((pos, vel))
 
 
 def datetime_to_skyfield(td: datetime) -> Time:

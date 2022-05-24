@@ -21,6 +21,7 @@ from blocksim.satellite.Satellite import (
 from blocksim.utils import *
 from blocksim.satellite.Trajectory import Trajectory
 from blocksim.graphics.EarthPlotter import EarthPlotter
+from blocksim.utils import itrf_to_llavpa
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
@@ -30,30 +31,59 @@ class TestSatellite(TestBase):
     def test_azeld(self):
         obs = np.array([1, 0, 0, 0, 0, 0], dtype=np.float64)
         sat = np.array([2, 1, 0, 0, 1, 0], dtype=np.float64)
-        az, el, dist, vr, vs, va = itrf_to_azeld(obs, sat)
+        az, el, dist, azr, elr, vr = itrf_to_azeld(obs, sat)
         self.assertAlmostEqual(az, pi / 2, delta=1e-10)
         self.assertAlmostEqual(el, pi / 4, delta=1e-10)
         self.assertAlmostEqual(dist, sqrt(2), delta=1e-10)
         self.assertAlmostEqual(vr, sqrt(2) / 2, delta=1e-10)
-        self.assertAlmostEqual(vs, pi / 4, delta=1e-10)
-        self.assertAlmostEqual(va, pi / 2, delta=1e-10)
 
     def test_azeld2(self):
         obs = np.array([6378137.0, -10000, 0, 0, 0, 0])
         ps = np.array([-1.48138924e07, -2.10421715e07, -1.46534295e07])
         vs = np.array([2.70050410e03, -1.76191617e02, -2.47601263e03])
         sat = np.hstack((ps, vs))
-        _, _, dist, vr, _, _ = itrf_to_azeld(obs, sat)
+        az, el, dist, azr, elr, vr = itrf_to_azeld(obs, sat)
 
         dt = 0.1
         sat2 = np.hstack((ps + vs * dt, vs))
-        _, _, dist2, vr2, _, _ = itrf_to_azeld(obs, sat2)
+        az2, el2, dist2, azr2, elr2, vr2 = itrf_to_azeld(obs, sat2)
 
         sat2 = np.hstack((ps + 2 * vs * dt, vs))
-        _, _, dist3, vr3, _, _ = itrf_to_azeld(obs, sat2)
+        az3, el3, dist3, azr3, elr3, vr3 = itrf_to_azeld(obs, sat2)
+
+        self.assertAlmostEqual(az2, az + azr * dt, delta=1e-10)
+        self.assertAlmostEqual(azr2, (az3 - az) / (2 * dt), delta=1e-10)
+
+        self.assertAlmostEqual(el2, el + elr * dt, delta=1e-10)
+        self.assertAlmostEqual(elr2, (el3 - el) / (2 * dt), delta=1e-10)
 
         self.assertAlmostEqual(dist2, dist + vr * dt, delta=5e-3)
         self.assertAlmostEqual(vr2, (dist3 - dist) / (2 * dt), delta=1e-7)
+
+    def test_azeld3(self):
+        obs = np.array([6378137.0, -10000, 0, 0, 0, 0])
+        ps = np.array([-1.48138924e07, -2.10421715e07, -1.46534295e07])
+        vs = np.array([2.70050410e03, -1.76191617e02, -2.47601263e03])
+        sat = np.hstack((ps, vs))
+        azeld = itrf_to_azeld(obs, sat)
+
+        pv2 = azeld_to_itrf(azeld, obs)
+        err_p = lin.norm(pv2[:3] - ps)
+        err_v = lin.norm(pv2[3:] - vs)
+        self.assertAlmostEqual(err_p, 0, delta=1e-8)
+        self.assertAlmostEqual(err_v, 0, delta=1e-10)
+
+    def test_llavpa(self):
+        ps = np.array([-1.48138924e07, -2.10421715e07, -1.46534295e07])
+        vs = np.array([2.70050410e03, -1.76191617e02, -2.47601263e03])
+        sat = np.hstack((ps, vs))
+        llavpa = itrf_to_llavpa(sat)
+
+        pv2 = llavpa_to_itrf(llavpa)
+        err_p = lin.norm(pv2[:3] - ps)
+        err_v = lin.norm(pv2[3:] - vs)
+        self.assertAlmostEqual(err_p, 0, delta=2e-2)
+        self.assertAlmostEqual(err_v, 0, delta=1e-5)
 
     def test_geosynchronous(self):
         pth = Path(__file__).parent / "geo_sat.tle"
@@ -253,5 +283,8 @@ if __name__ == "__main__":
     # a.test_geosynchronous()
     # a.test_circle_satellite()
     a.test_azeld()
+    # a.test_azeld2()
+    a.test_azeld3()
+    # a.test_llavpa()
 
     # plt.show()

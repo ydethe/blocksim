@@ -129,7 +129,7 @@ class GNSSTracker(ASensors):
             p_t = ueposition[:3]
 
             # Calcul elevation
-            azim, elev, dist, vrad, _, _ = itrf_to_azeld(ueposition, spv)
+            azim, elev, dist, _, _, vrad = itrf_to_azeld(ueposition, spv)
 
             # Calcul arad et jrad
             dst = p_s[:3] - p_t[:3]
