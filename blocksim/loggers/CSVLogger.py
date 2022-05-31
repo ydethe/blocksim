@@ -1,5 +1,4 @@
 from typing import Any
-from pathlib import Path
 
 from nptyping import NDArray, Shape
 import pluggy
@@ -18,7 +17,7 @@ hookimpl = pluggy.HookimplMarker("blocksim")
 
 class Logger(object, metaclass=Singleton):
     @hookimpl
-    def test_suitable(self, uri: Path) -> bool:
+    def test_suitable(self, uri: str) -> bool:
         if uri is None:
             return False
 
@@ -26,7 +25,7 @@ class Logger(object, metaclass=Singleton):
         return istat
 
     @hookimpl
-    def loadLogFile(self, log: "Logger", uri: Path) -> bool:
+    def loadLogFile(self, log: "Logger", uri: str) -> bool:
         if not self.test_suitable(uri):
             return False
 
@@ -50,7 +49,7 @@ class Logger(object, metaclass=Singleton):
         return
 
     @hookimpl
-    def export(self, log: "Logger", uri: Path) -> int:
+    def export(self, log: "Logger", uri: str) -> int:
         if not self.test_suitable(uri):
             return -1
 

@@ -2,7 +2,6 @@
 
 """
 from typing import Any
-from pathlib import Path
 
 from nptyping import NDArray, Shape
 import pluggy
@@ -14,7 +13,7 @@ class LoggerSpec(object):
     """Specification for all plugins that extend the `blocksim.loggers.Logger.Logger` capacities"""
 
     @hookspec
-    def test_suitable(self, uri: Path) -> bool:
+    def test_suitable(self, uri: str) -> bool:
         """Tests weeather a log:'Logger' can handle a fic
 
         Args:
@@ -26,7 +25,7 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def loadLogFile(self, log: "Logger", uri: Path) -> bool:
+    def loadLogFile(self, log: "Logger", uri: str) -> bool:
         """Load log file
 
         Args:
@@ -53,7 +52,7 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def export(self, log: "Logger", uri: Path) -> int:
+    def export(self, log: "Logger", uri: str) -> int:
         """Export the log into a file
 
         Args:

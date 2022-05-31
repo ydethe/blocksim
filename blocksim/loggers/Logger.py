@@ -146,9 +146,9 @@ class Logger(object):
             uri: The path or URI where the data will be written
 
         """
-        self.__uri = Path(uri)
+        self.__uri = uri
 
-        ldata = plugin_manager.hook.loadLogFile(log=self, uri=self.__uri)
+        ldata = plugin_manager.hook.loadLogFile(log=self, uri=str(self.__uri))
         lok = [x for x in ldata if x]
         if len(lok) == 0:
             raise IOError("No logger to handle '%s'" % self.__uri)
@@ -528,9 +528,9 @@ class Logger(object):
             SystemError if no handler has been identified or if too many handlers were identified
 
         """
-        self.__uri = Path(uri)
+        self.__uri = uri
 
-        lstat = plugin_manager.hook.export(log=self, uri=self.__uri)
+        lstat = plugin_manager.hook.export(log=self, uri=str(self.__uri))
 
         lok = [x for x in lstat if x >= 0]
 
