@@ -156,34 +156,43 @@ def analyse_DV(
     """
     from ..constants import c
     from .DSPSpectrogram import DSPSpectrogram
+    from ..graphics import getUnitAbbrev
 
     if nv % 2 == 0:
         nv += 1
 
-    # Number of samples shift at each period
-    vrad_max = max(np.abs(vrad0 + vamb / 2), np.abs(vrad0 - vamb / 2))
-    ns_shift = period * vrad_max / c / rxsig.samplingPeriod
-    if ns_shift > 1:
-        raise AssertionError("Too much sample shift: %.3f" % ns_shift)
+    dt = rxsig.samplingPeriod
+
+    if period < damb / c:
+        disp_p, _, lbl_p, unit_p = getUnitAbbrev(samp=period, unit="s")
+        disp_d, _, lbl_d, unit_d = getUnitAbbrev(samp=damb / c, unit="s")
+        raise AssertionError(
+            f"Period window is shorter than distance window ({disp_p:.2f} {lbl_p}{unit_p} vs {disp_d:.2f} {lbl_d}{unit_d})"
+        )
 
     # Number of sample in a period
-    nsig = int(period / rxsig.samplingPeriod + 1)
+    nb_samples_in_period = int(period / dt)
 
     # Number of samples in a distance window
-    nd = int(damb / c / rxsig.samplingPeriod + 1)
+    nb_samples_in_damb = int(damb / c / dt)
 
-    # Sample index of the center distance window
-    n0 = int(dist0 / c / rxsig.samplingPeriod)
+    # Sample index of the center distance in the first window
+    n0 = int(dist0 / c / dt)
 
-    kmin = max(n0 - nd // 2, 0)
-    kmax = min(n0 - nd // 2 + nd, nsig - 1)
-    img = np.empty((kmax - kmin, nv), dtype=np.complex128)
+    kmin = n0 - nb_samples_in_damb // 2
+    kmax = kmin + nb_samples_in_damb
+    img = np.empty((nb_samples_in_damb, nv), dtype=np.complex128)
 
     tab_v = np.linspace(vrad0 - vamb / 2, vrad0 + vamb / 2, nv)
     if progress_bar:
         v_gen = tqdm(tab_v)
     else:
         v_gen = tab_v
+
+    # from matplotlib import pyplot as plt
+    # from ..graphics import plotDSPLine
+    # fig=plt.figure()
+    # axe=fig.add_subplot(111)
 
     for kv, vrad in enumerate(v_gen):
         fd = -vrad / wavelength
@@ -193,17 +202,19 @@ def analyse_DV(
 
         # Correlation
         corr = dop_free.correlate(seq, win=corr_window)
+        # if kv ==0:
+        #     plotDSPLine(corr,spec=axe)
+        #     plt.show()
 
         # Integration
         zi = corr.integrate(
             period=period,
             n_integration=n_integration,
-            offset=kmin * rxsig.samplingPeriod,
+            offset=-corr.samplingStart,
             coherent=coherent,
-            window_duration=(kmax - kmin) * rxsig.samplingPeriod,
         )
 
-        img[:, kv] = zi.y_serie
+        img[:, kv] = zi.y_serie[kmin:kmax]
 
     spg = DSPSpectrogram(
         name="spg",

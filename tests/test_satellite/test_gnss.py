@@ -320,9 +320,9 @@ class TestGNSS(TestBase):
 
         log = self.sim.getLogger()
 
-        x = log.getValue("UE_estpos_x")[-1]
-        y = log.getValue("UE_estpos_y")[-1]
-        z = log.getValue("UE_estpos_z")[-1]
+        x = log.getValue("UE_estpos_px")[-1]
+        y = log.getValue("UE_estpos_py")[-1]
+        z = log.getValue("UE_estpos_pz")[-1]
         dp_est = log.getValue("UE_estclkerror_dp")[-1]
         vissat = log.getValue("tkr_vissat_n")[-1]
         meas = log.getMatrixOutput("tkr_measurement")[:, -1]
@@ -352,9 +352,9 @@ class TestGNSS(TestBase):
         pr = log.getRawValue("tkr_measurement_pr2")
         vr = log.getRawValue("tkr_measurement_vr2")
 
-        x = log.getRawValue("UE_estpos_x")[-1]
-        y = log.getRawValue("UE_estpos_y")[-1]
-        z = log.getRawValue("UE_estpos_z")[-1]
+        x = log.getRawValue("UE_estpos_px")[-1]
+        y = log.getRawValue("UE_estpos_py")[-1]
+        z = log.getRawValue("UE_estpos_pz")[-1]
         dv_est = log.getRawValue("UE_estclkerror_dv")[-1]
 
         self.assertAlmostEqual(x, self.x_ref, delta=0.5)
@@ -370,9 +370,9 @@ class TestGNSS(TestBase):
 
         log = self.sim.getLogger()
 
-        x = log.getValue("UE_estpos_x")[-1]
-        y = log.getValue("UE_estpos_y")[-1]
-        z = log.getValue("UE_estpos_z")[-1]
+        x = log.getValue("UE_estpos_px")[-1]
+        y = log.getValue("UE_estpos_py")[-1]
+        z = log.getValue("UE_estpos_pz")[-1]
         dp_est = log.getValue("UE_estclkerror_dp")[-1]
         dv_est = log.getValue("UE_estclkerror_dv")[-1]
 
@@ -388,8 +388,8 @@ if __name__ == "__main__":
     a.setUp()
     a.test_gnss_ranging()
 
-    # a.setUp()
-    # a.test_gnss_doppler()
+    a.setUp()
+    a.test_gnss_doppler()
 
-    # a.setUp()
-    # a.test_gnss_dv()
+    a.setUp()
+    a.test_gnss_dv()

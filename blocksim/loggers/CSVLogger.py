@@ -33,10 +33,15 @@ class Logger(object, metaclass=Singleton):
         if not uri.exists():
             raise FileNotFoundError(uri)
 
+        log.reset()
         data = pd.read_csv(uri, sep=";", na_values="")
         for k in data.columns:
+            unit = ""
+            typ = data[k].dtype
             if data[k].dtype == "O":
                 data[k] = data[k].apply(np.complex128)
+                typ = np.complex128
+            log.createEmptyValue(name=k, unit=unit, description="", dtype=typ)
         log.setRawData(data)
         return True
 
@@ -55,5 +60,5 @@ class Logger(object, metaclass=Singleton):
         return 0
 
     @hookimpl
-    def log(self, log: "Logger", name: str, val: float) -> int:
+    def log(self, log: "Logger", name: str, val: float, tindex: int) -> int:
         return 1

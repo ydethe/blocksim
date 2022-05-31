@@ -19,6 +19,7 @@ class DSPSpectrum(DSPLine):
         samplingStart: First frequency of the sample of the spectrum (Hz)
         samplingPeriod: Frequency spacing of the spectrum (Hz)
         y_serie: Complex samples of the spectrum
+        projection: Axe projection. Can only be 'rectilinear'
         default_transform: Function to apply to the samples before plotting.
           Shall be vectorized
 
@@ -30,6 +31,7 @@ class DSPSpectrum(DSPLine):
         samplingStart: float = None,
         samplingPeriod: float = None,
         y_serie: NDArray[Any, Any] = None,
+        projection: str = "rectilinear",
         default_transform=np.abs,
     ):
         DSPLine.__init__(
@@ -38,6 +40,7 @@ class DSPSpectrum(DSPLine):
             samplingStart=samplingStart,
             samplingPeriod=samplingPeriod,
             y_serie=y_serie,
+            projection=projection,
             default_transform=default_transform,
         )
 

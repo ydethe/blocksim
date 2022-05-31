@@ -46,6 +46,7 @@ class TestRadar(TestBase):
             y_sig[k * ns : k * ns + ns_rep] = rep.y_serie * k
         sig = (
             DSPSignal.fromTimeAndSamples(name="sig", tps=tps, y_serie=y_sig)
+            .applyDelay(tau * 1.5, pad=True)
             .applyDopplerFrequency(fdop=fdop)
             .applyGaussianNoise(pwr=5)
         )
@@ -80,8 +81,8 @@ class TestRadar(TestBase):
 
         trf = DSPSignal.to_db_lim(-80)
         (peak,) = spg.findPeaksWithTransform(transform=trf, nb_peaks=1)
-        self.assertAlmostEqual(peak.coord[0], 0, delta=0.05)  # radial velocity
-        self.assertAlmostEqual(peak.coord[1], 0, delta=1e-5)  # delay
+        self.assertAlmostEqual(peak.coord[0], 0, delta=0.1)  # radial velocity
+        self.assertAlmostEqual(peak.coord[1], 15e-6, delta=5e-10)  # delay
         self.assertAlmostEqual(peak.value, 27.85, delta=1e-2)
 
         fig = plt.figure()
@@ -98,8 +99,6 @@ class TestRadar(TestBase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
-
     a = TestRadar()
     a.setUp()
     a.test_analyse_dv()

@@ -14,7 +14,7 @@ from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.graphics import plotDSPLine
 from blocksim.Simulation import Simulation
 
-from blocksim.utils import geodetic_to_itrf
+from blocksim.utils import geodetic_to_itrf, azelalt_to_itrf, itrf_to_azeld
 from blocksim.constants import Req, c
 from blocksim.dsp.DSPChannel import DSPChannel
 from blocksim.graphics.EarthPlotter import EarthPlotter
@@ -54,25 +54,13 @@ class TestChannel(TestBase):
         self.assertAlmostEqual(lat * 180 / pi, -0.0843360495637092, delta=1e-9)
 
         # Find a point with 45° elevation
-        r = Req + 630e3
         elev_min = pi / 4
-        d_lim = sqrt(r**2 - Req**2 * cos(elev_min) ** 2) - Req * sin(elev_min)
-        self.assertAlmostEqual(d_lim, 854085.3604003, delta=1e-6)
-        alpha_lim = np.arccos((Req**2 + r**2 - d_lim**2) / (2 * r * Req))
-        rad = alpha_lim * Req
-        self.assertAlmostEqual(rad, 550321.5722903715, delta=1e-3)
-
-        from cartopy.geodesic import Geodesic
-
-        g = Geodesic()
-        val = g.circle(lon * 180 / pi, lat * 180 / pi, radius=rad)
-        c_lon = val[0, 0] * pi / 180
-        c_lat = val[0, 1] * pi / 180
-
-        pos = geodetic_to_itrf(c_lon, c_lat, 0.0)
-        pos_ref = np.array([-2388997.88859598, -5888920.68052473, 540338.96059696])
-        err = np.max(np.abs(pos - pos_ref))
-        self.assertAlmostEqual(err, 0, delta=1e-6)
+        pos = azelalt_to_itrf(azelalt=(-pi, elev_min, 0), sat=pv)
+        az, el, dist, azr, elr, vr = itrf_to_azeld(
+            obs=np.hstack((pos, np.zeros(3))), sat=pv
+        )
+        self.assertAlmostEqual(az, -pi, delta=2e-8)
+        self.assertAlmostEqual(el, elev_min, delta=2e-7)
 
         stp = Step(
             name="stp",

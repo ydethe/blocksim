@@ -1,3 +1,4 @@
+import re
 from typing import Callable, Any
 
 from nptyping import NDArray, Shape
@@ -27,6 +28,7 @@ class DSPSignal(DSPLine, ASetPoint):
         samplingStart: First date of the sample of the signal (s)
         samplingPeriod: Time spacing of the signal (s)
         y_serie: Complex samples of the signal
+        projection: Axe projection. Can only be 'rectilinear'
         default_transform: Function to apply to the samples before plotting.
             Shall be vectorized
 
@@ -39,6 +41,7 @@ class DSPSignal(DSPLine, ASetPoint):
         samplingPeriod=None,
         y_serie: NDArray[Any, Any] = None,
         default_transform=np.real,
+        projection: str = "rectilinear",
         dtype=np.complex128,
     ):
         ASetPoint.__init__(
@@ -53,6 +56,7 @@ class DSPSignal(DSPLine, ASetPoint):
             samplingStart=samplingStart,
             samplingPeriod=samplingPeriod,
             y_serie=y_serie,
+            projection=projection,
             default_transform=default_transform,
         )
 
@@ -115,6 +119,7 @@ class DSPSignal(DSPLine, ASetPoint):
         tau: float,
         fstart: float,
         fend: float,
+        repeats: int = 1,
     ) -> "DSPSignal":
         """Builds a signal from a linear frequency modulation (chirp)
 
@@ -125,6 +130,7 @@ class DSPSignal(DSPLine, ASetPoint):
             tau: Duration of the signal (s)
             fstart: Frequency at the beginning of the modulation (Hz)
             fend: Frequency at the end of the modulation (Hz)
+            repeats: Number of pulses to concatenate
 
         Returns:
             The DSPSignal
@@ -138,7 +144,7 @@ class DSPSignal(DSPLine, ASetPoint):
             name=name,
             samplingStart=samplingStart,
             samplingPeriod=samplingPeriod,
-            y_serie=x,
+            y_serie=np.repeat(x, repeats=repeats),
         )
         return sig
 
@@ -519,54 +525,48 @@ class DSPSignal(DSPLine, ASetPoint):
         n_integration: int = -1,
         offset: float = 0,
         coherent: bool = True,
-        window_duration: float = -1,
     ) -> "DSPSignal":
-        """Coeherent integration of the signal
+        """Coherent integration of the signal
 
         Args:
-            period: Size of the window in the time domain (s)
-            n_integration: Number of period to sum. A value of -1 means to sum everything
-            offset: Time of the beginning of the first window (s)
-              Zero means that the first window starts when the signal starts
-            window_duration: Duration of the windows (s)
-              -1 means that *window_duration* equals *period*
+            period: Duration of the period window (s)
+            n_integration: Number of period windows to sum. A value of -1 means to sum everything
+            offset: Time between the beginning of the signal and the first period window (s)
 
         Returns:
             Integrated signal
 
         """
-        if window_duration == -1:
-            window_duration = period
-
-        s_start = self.samplingStart
-        s_stop = self.samplingStop
+        # Time of the first period window
+        s_start = self.samplingStart + offset
         dt = self.samplingPeriod
 
-        p_len = int(period / dt)
+        nb_samples_in_period = int(period / dt)
+        n_integration_max = int(np.floor((self.samplingStop - s_start) / period))
         if n_integration == -1:
-            n_win = int(np.floor((s_stop - s_start) / period))
+            nb_integrated_periods = n_integration_max
         else:
-            n_win = n_integration
+            nb_integrated_periods = min(n_integration_max, n_integration)
 
-        n_samp = slice(0, n_win * p_len)
+        nb_offset_samples = int(offset / dt)
+        n_samp = slice(
+            nb_offset_samples,
+            nb_offset_samples + nb_integrated_periods * nb_samples_in_period,
+        )
         yp = self.y_serie[n_samp]
 
-        a = yp.reshape((n_win, p_len))
+        a = yp.reshape((nb_integrated_periods, nb_samples_in_period))
         if coherent:
-            res = a.sum(axis=0) / n_win
+            res = a.sum(axis=0) / nb_integrated_periods
         else:
             m = np.real(a * np.conj(a))
-            res = sqrt(m.sum(axis=0) / n_win)
-
-        kstart = int(np.floor(offset / dt))
-        kend = int(np.ceil((offset + window_duration) / dt))
-        wslice = slice(kstart, kend)
+            res = sqrt(m.sum(axis=0) / nb_integrated_periods)
 
         res = DSPSignal(
             name=self.name,
-            samplingStart=0,
+            samplingStart=s_start,
             samplingPeriod=dt,
-            y_serie=res[wslice],
+            y_serie=res,
             default_transform=self.default_transform,
         )
 

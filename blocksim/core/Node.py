@@ -14,7 +14,7 @@ from .ABaseNode import ABaseNode
 from .CircularBuffer import CircularBuffer
 
 
-__all__ = ["Input", "Output", "AWGNOutput", "TFOutput", "AComputer"]
+__all__ = ["Input", "Output", "AWGNOutput", "TFOutput", "AComputer", "DummyComputer"]
 
 
 class Input(ABaseNode):

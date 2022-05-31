@@ -177,6 +177,60 @@ class DSPLine(object):
 
         return Polynomial(coef=c, domain=[x0, x1], window=[x0, x1])
 
+    def applyDelay(self, delay: float, pad: bool = False) -> "DSPLine":
+        """Applies a delay (in X axis unit) to the DSPLine
+
+        Args:
+            delay: Delay to be applied
+            pad: Flag to pad the shifted samples with 0 in case of positive delay
+
+        Returns:
+            The delayed DSPLine
+
+        """
+        if pad and delay > 0:
+            t_start = self.samplingStart
+            ns = int(delay / self.samplingPeriod)
+            pad_samples = np.zeros(ns, dtype=self.y_serie.dtype)
+            ech = np.hstack((pad_samples, self.y_serie))
+        else:
+            t_start = self.samplingStart + delay
+            ech = self.y_serie
+
+        dsig = self.__class__(
+            name=self.name,
+            samplingStart=t_start,
+            samplingPeriod=self.samplingPeriod,
+            y_serie=ech,
+            projection=self.projection,
+            default_transform=self.default_transform,
+        )
+        dsig.name_of_x_var = self.name_of_x_var
+        dsig.unit_of_x_var = self.unit_of_x_var
+        return dsig
+
+    def repeat(self, repeats: int) -> "DSPLine":
+        """Repeats the samples *repeats* time
+
+        Args:
+            repeats: Number of repetitions
+
+        Returns:
+            The repeated DSPLine
+
+        """
+        dsig = self.__class__(
+            name=self.name,
+            samplingStart=self.samplingStart,
+            samplingPeriod=self.samplingPeriod,
+            y_serie=np.tile(self.y_serie, reps=repeats),
+            projection=self.projection,
+            default_transform=self.default_transform,
+        )
+        dsig.name_of_x_var = self.name_of_x_var
+        dsig.unit_of_x_var = self.unit_of_x_var
+        return dsig
+
     def findPeaksWithTransform(
         self, transform: Callable = None, nb_peaks: int = 3
     ) -> List[Peak]:
@@ -303,13 +357,16 @@ class DSPLine(object):
             yp = self.y_serie[iok]
             samplingStart = self.generateXSerie(istart)
 
-        return self.__class__(
+        res = self.__class__(
             name=self.name,
             samplingStart=samplingStart,
             samplingPeriod=self.samplingPeriod,
             y_serie=yp,
             default_transform=self.default_transform,
         )
+        res.name_of_x_var = self.name_of_x_var
+        res.unit_of_x_var = self.unit_of_x_var
+        return res
 
     def isInSyncWith(self, y) -> bool:
         """Tests whether the line is synced with y.
@@ -416,6 +473,9 @@ class DSPLine(object):
             if len(res) != nech:
                 raise AssertionError("Wrong resampling: %i, %i" % (len(res), nech))
 
+        res.name_of_x_var = self.name_of_x_var
+        res.unit_of_x_var = self.unit_of_x_var
+
         return res
 
     @classmethod
@@ -502,13 +562,16 @@ class DSPLine(object):
         for p in range(-k, k + 1):
             dy += coeffs[p + k] * self.y_serie[p + k : ns + p + k]
 
-        return self.__class__(
+        res = self.__class__(
             name=self.name,
             samplingStart=self.samplingStart + k * self.samplingPeriod,
             samplingPeriod=self.samplingPeriod,
             y_serie=dy / self.samplingPeriod**rank,
             default_transform=self.default_transform,
         )
+        res.name_of_x_var = self.name_of_x_var
+        res.unit_of_x_var = self.unit_of_x_var
+        return res
 
     def _prepareOperation(self, y: "DSPLine"):
         t_start = min(self.samplingStart, y.samplingStart)
@@ -535,22 +598,28 @@ class DSPLine(object):
             dt = self.samplingPeriod
             y_serie = self.y_serie + y
 
-        return self.__class__(
+        res = self.__class__(
             name=self.name,
             samplingStart=t_start,
             samplingPeriod=dt,
             y_serie=y_serie,
             default_transform=self.default_transform,
         )
+        res.name_of_x_var = self.name_of_x_var
+        res.unit_of_x_var = self.unit_of_x_var
+        return res
 
     def __neg__(self) -> "DSPLine":
-        return self.__class__(
+        res = self.__class__(
             name=self.name,
             samplingStart=self.samplingStart,
             samplingPeriod=self.samplingPeriod,
             y_serie=-self.y_serie,
             default_transform=self.default_transform,
         )
+        res.name_of_x_var = self.name_of_x_var
+        res.unit_of_x_var = self.unit_of_x_var
+        return res
 
     def __rsub__(self, y) -> "DSPLine":
         z = -self
@@ -582,13 +651,16 @@ class DSPLine(object):
             dt = self.samplingPeriod
             y_serie = self.y_serie / y
 
-        return self.__class__(
+        res = self.__class__(
             name=self.name,
             samplingStart=t_start,
             samplingPeriod=dt,
             y_serie=y_serie,
             default_transform=self.default_transform,
         )
+        res.name_of_x_var = self.name_of_x_var
+        res.unit_of_x_var = self.unit_of_x_var
+        return res
 
     def __mul__(self, y: "DSPLine") -> "DSPLine":
         if issubclass(y.__class__, DSPLine):
@@ -601,10 +673,13 @@ class DSPLine(object):
             dt = self.samplingPeriod
             y_serie = self.y_serie * y
 
-        return self.__class__(
+        res = self.__class__(
             name=self.name,
             samplingStart=t_start,
             samplingPeriod=dt,
             y_serie=y_serie,
             default_transform=self.default_transform,
         )
+        res.name_of_x_var = self.name_of_x_var
+        res.unit_of_x_var = self.unit_of_x_var
+        return res

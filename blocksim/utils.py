@@ -12,7 +12,7 @@ import importlib
 
 from tqdm import tqdm
 from scipy import linalg as lin
-from scipy.optimize import root_scalar
+from scipy.optimize import root_scalar, root, minimize
 from nptyping import NDArray, Shape
 import numpy as np
 from numpy import pi, arcsin, arccos, arctan, arctan2, tan, sin, cos, sqrt, exp
@@ -23,6 +23,7 @@ from skyfield.sgp4lib import TEME_to_ITRF, theta_GMST1982
 from . import logger
 from .constants import *
 from .exceptions import *
+from .constants import Req
 
 
 __all__ = [
@@ -58,6 +59,7 @@ __all__ = [
     "itrf_to_teme",
     "itrf_to_azeld",
     "azeld_to_itrf",
+    "azelalt_to_itrf",
     "itrf_to_llavpa",
     "llavpa_to_itrf",
     "datetime_to_skyfield",
@@ -906,14 +908,98 @@ def azeld_to_itrf(
     sat = obs[:3] + deltap
 
     # Local ENV for the satellite
-    rxy = sqrt(x**2 + y**2)
+    rxy2 = x**2 + y**2
+    rxy = sqrt(rxy2)
     vz = rxy * elr + vr * z / dist
-    vx = -(vz * x * z - azr * rxy**2 * y - dist * vr * x) / (y**2 + x**2)
-    vy = -(vz * y * z - dist * vr * y + azr * rxy**2 * x) / (y**2 + x**2)
+    vx = -(vz * x * z - azr * rxy2 * y - dist * vr * x) / rxy2
+    vy = -(vz * y * z - dist * vr * y + azr * rxy2 * x) / rxy2
     deltav = obs_env @ np.array([vx, vy, vz])
     vsat = obs[3:] + deltav
 
     return np.hstack((sat, vsat))
+
+
+def azelalt_to_itrf(
+    azelalt: NDArray[Any, Any], sat: NDArray[Any, Any]
+) -> NDArray[Any, Any]:
+    """Converts to an ITRF position & velocity from azimut, elevation
+    so that the observer is at the specified altitude
+
+    Args:
+        azelalt: Array with:
+
+            * Azimut (rad)
+            * Elevation (rad)
+            * Altitude (m)
+        sat: Position (m) & velocity (m/s) of the observed satellite in ITRF
+
+    Returns:
+        Position (m) of the observed satellite in ITRF
+
+    """
+    from blocksim.utils import deg
+    from cartopy.geodesic import Geodesic
+
+    class _tmp:
+        success = False
+
+    def _fun(C, az, el, alt):
+        lon, lat = C + c0
+        X = geodetic_to_itrf(lon, lat, alt)
+        obs = np.hstack((X, np.zeros(3)))
+        azj, elj, _, _, _, _ = itrf_to_azeld(obs, sat)
+        J = (azj - az) ** 2 + (elj - el) ** 2
+        return J
+
+    az, el, alt = azelalt
+
+    # Quick'n dirty search for an initial guess:
+    # 1. Get the satellite subpoint
+    lon, lat, hs = itrf_to_geodetic(sat)
+
+    # 2. Find the radius of the ground circle such that
+    # an observer on this circle sees the satellite at elevation el
+    r = Req + hs
+    d_lim = sqrt(r**2 - Req**2 * cos(el) ** 2) - Req * sin(el)
+    alpha_lim = np.arccos((Req**2 + r**2 - d_lim**2) / (2 * r * Req))
+    rad = alpha_lim * Req
+
+    # 3. Compute the ground circle
+    g = Geodesic()
+    val = g.circle(lon * 180 / pi, lat * 180 / pi, radius=rad, n_samples=360)
+
+    # 4. Find on the ground circle the position that corresponds to the azimut
+    iaz = int((az + pi) * 180 / pi)
+    c_lon = val[iaz, 0] * pi / 180
+    c_lat = val[iaz, 1] * pi / 180
+
+    # Check
+    Xc = geodetic_to_itrf(c_lon, c_lat, alt)
+    azeld = itrf_to_azeld(obs=np.hstack((Xc, np.zeros(3))), sat=sat)
+
+    c0 = np.array([c_lon, c_lat])
+    sol = _tmp()
+
+    J0 = _fun(np.zeros(2), az, el, alt)
+    J = J0 + 1
+
+    c1 = np.zeros(2)
+    # Nelder-Mead, L-BFGS-B, TNC, SLSQP, Powell, and trust-constr
+    while J > J0:
+        sol = minimize(
+            method="SLSQP",
+            fun=_fun,
+            x0=c1,
+            bounds=[(0, 2 * pi), (-pi / 2, pi / 2)],
+            args=(az, el, alt),
+        )
+        c1 = sol.x / 2
+        J = _fun(sol.x, az, el, alt)
+
+    lon, lat = sol.x + c0
+    X = geodetic_to_itrf(lon, lat, alt)
+
+    return X
 
 
 def itrf_to_azeld(

@@ -11,6 +11,7 @@ from nptyping import NDArray, Shape
 import numpy as np
 from scipy.interpolate import interp2d
 from numpy import log10
+from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
 from matplotlib.backend_bases import Event
 import networkx as nx
@@ -119,6 +120,42 @@ def format_parameter(samp: float, unit: str) -> str:
     scaled_samp, mult, lbl, unit = getUnitAbbrev(samp, unit)
     txt = "%.3g %s%s" % (scaled_samp, lbl, unit)
     return txt
+
+
+def createFigure(
+    num: int = None,
+    figsize: Tuple[int, int] = None,
+    dpi: int = None,
+    facecolor: str = None,
+    edgecolor: str = None,
+    frameon: bool = True,
+    FigureClass=Figure,
+    clear: bool = False,
+    **kwargs
+) -> "Figure":
+    """Creates a matplotlib figure to draw on.
+    See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html for more details
+
+    Args:
+        num: A unique identifier for the figure.
+            If a figure with that identifier already exists, this figure is made active and returned.
+            If there is no figure with the identifier or num is not given, a new figure is created, made active and returned.
+        figsize: Width, height in inches
+        dpi: The resolution of the figure in dots-per-inch
+        facecolor: The background color
+        edgecolor: The border color
+        frameon: If False, suppress drawing the figure frame
+        FigureClass: Optionally use a custom Figure instance
+        clear: If True and the figure already exists, then it is cleared
+        **kwargs
+
+    Returns:
+        The created figure
+
+    """
+    return plt.figure(
+        num, figsize, dpi, facecolor, edgecolor, frameon, FigureClass, clear, **kwargs
+    )
 
 
 def createAxeFromSpec(spec: "SubplotSpec" = None, **kwargs) -> "AxesSubplot":
@@ -334,13 +371,9 @@ def plotSpectrogram(
         axe.clabel(ret, inline=True, fontsize=10)
 
     if spg.name_of_x_var != "":
-        axe.set_xlabel(
-            "%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, x_unit_lbl + x_unit)
-        )
+        axe.set_xlabel("%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, x_unit))
     if spg.name_of_y_var != "":
-        axe.set_ylabel(
-            "%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, y_unit_lbl + y_unit)
-        )
+        axe.set_ylabel("%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, y_unit))
 
     if find_peaks > 0:
         lpeaks = spg.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
@@ -643,3 +676,7 @@ def plotBER(fic, spec=None, **kwds) -> "Axes":
     axe.set_ylabel("BER")
 
     return axe
+
+
+def showFigures():
+    plt.show()

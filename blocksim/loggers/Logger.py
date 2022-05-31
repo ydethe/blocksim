@@ -73,16 +73,19 @@ class Logger(object):
         self.__index = 0
         self.__alloc = -1
 
-    def createEmptyValue(self, name: str, unit: str = "", description: Any = None):
+    def createEmptyValue(
+        self, name: str, unit: str = "", dtype=np.float64, description: Any = None
+    ):
         """Creates a new variable with no data
 
         Args:
             name: The name of the variable
             unit: The physical unit of the variable
+            dtype: Scalar type. For example : np.float64
             description: The description of the variable
 
         """
-        param = Parameter(name=name, unit=unit, description=description)
+        param = Parameter(name=name, unit=unit, description=description, dtype=dtype)
         self.__params[name] = param
         self.__data[name] = None
 
@@ -203,13 +206,15 @@ class Logger(object):
         sze = calcsize(fmt_dict[typ])
         return typ, pck_f, unpck_f, sze
 
-    def log(self, name: str, val: float, unit: str):
+    def log(self, name: str, val: float, unit: str, tindex: int = None):
         """Log a value for a variable. If *name* is '_', nothing is logged
 
         Args:
             name: Name of the parameter. Nothing is logged if *name* == '_'
             val: Value to log
             unit: Physical unit associated with the value
+            tindex: Index where the value should be written in the inner data dictionary.
+                If Logger.allocate has not been called before, raises an error
 
         """
         if name == "_":
@@ -235,20 +240,25 @@ class Logger(object):
         dtyp = param.dtype
 
         if self.__alloc > 0:
+            if tindex is None:
+                tindex = self.__index
+
             if not name in self.__data.keys():
                 self.__data[name] = np.empty(self.__alloc, dtype=dtyp)
-            self.__data[name][self.__index] = dtyp(val)
+            self.__data[name][tindex] = dtyp(val)
         else:
+            if not tindex is None:
+                raise ValueError("tindex specified in a non allocated Logger")
+            else:
+                tindex = self.__index
+
             self.__data[name].append(dtyp(val))
 
         if name == "t":
             self.__index += 1
-            # s0 = len(self.__data["t"])
-            # for k in self.__data.keys():
-            # assert len(self.__data[k]) == s0
 
         # Handling of the logged value by the pugins
-        ldata = plugin_manager.hook.log(log=self, name=name, val=val)
+        ldata = plugin_manager.hook.log(log=self, name=name, val=val, tindex=tindex)
 
     def buildParameterNameFromComputerElements(
         self, cname: str, oname: str, sname: str

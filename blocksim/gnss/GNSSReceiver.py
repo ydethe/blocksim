@@ -49,15 +49,12 @@ class GNSSReceiver(AComputer):
     def __init__(
         self, name: str, nsat: int, lon: float, lat: float, alt: float, tsync: datetime
     ):
+        COORD = ["px", "py", "pz", "vx", "vy", "vz"]
         AComputer.__init__(self, name)
         self.defineInput("measurements", shape=(2 * nsat,), dtype=np.float64)
         self.defineInput("ephemeris", shape=(6 * nsat,), dtype=np.float64)
-        self.defineOutput(
-            "realpos", snames=["x", "y", "z", "vx", "vy", "vz"], dtype=np.float64
-        )
-        self.defineOutput(
-            "estpos", snames=["x", "y", "z", "vx", "vy", "vz"], dtype=np.float64
-        )
+        self.defineOutput("realpos", snames=COORD, dtype=np.float64)
+        self.defineOutput("estpos", snames=COORD, dtype=np.float64)
         self.defineOutput(
             "estdop", snames=["sx", "sy", "sz", "sp", "sv"], dtype=np.float64
         )
@@ -132,7 +129,7 @@ class GNSSReceiver(AComputer):
 
     def getDOP(
         self, ephem: NDArray[Any, Any], pv_ue: NDArray[Any, Any]
-    ) -> Tuple[float]:
+    ) -> Tuple[float, float, float, float, float]:
         """Computes the DOPs
 
         Args:
@@ -193,24 +190,26 @@ class GNSSReceiver(AComputer):
             return np.nan, np.nan, np.nan, np.nan, np.nan
 
         B = B[:nval, :]
-
-        Q = lin.inv(B.T @ B)
+        _, R = lin.qr(B, mode="full")
+        Q = lin.inv(R.T @ R)
+        sv = 0.0
+        sp = 0.0
 
         if self.algo == "doppler":
             sv = sqrt(Q[3, 3])
-            sp = 0
         elif self.algo == "ranging":
             sp = sqrt(Q[3, 3])
-            sv = 0
         elif self.algo == "doppler-ranging":
             sp = sqrt(Q[3, 3])
             sv = sqrt(Q[4, 4])
+        else:
+            raise ValueError(f"Unknown GNSSReceiver algorithm : '{self.algo}'")
 
         return sqrt(Q[0, 0]), sqrt(Q[1, 1]), sqrt(Q[2, 2]), sp, sv
 
     def computeFromRadialVelocities(
         self, ephem: NDArray[Any, Any], meas: NDArray[Any, Any]
-    ) -> Tuple[np.array, float]:
+    ) -> Tuple[NDArray[Any, Any], float]:
         """Runs a PVT algorithm that uses only pseudo-range rate
 
         Args:

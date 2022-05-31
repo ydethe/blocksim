@@ -94,7 +94,6 @@ __email__ = "yann.blaudin-de-the@thalesaleniaspace.com"
 # création de l'objet logger qui va nous servir à écrire dans les logs
 logger = logging.getLogger("blocksim_logger")
 
-# on met le niveau du logger à DEBUG, comme ça il écrit tout
 logger.setLevel(os.environ.get("LOGLEVEL", "INFO"))
 
 # création d'un formateur qui va ajouter le temps, le niveau

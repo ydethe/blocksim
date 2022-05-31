@@ -66,13 +66,15 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def log(self, log: "Logger", name: str, val: float) -> int:
+    def log(self, log: "Logger", name: str, val: float, tindex: int) -> int:
         """Export the log into a file
 
         Args:
             log: The `blocksim.loggers.Logger.Logger` that contains the data
             name: Name of the parameter. Nothing is logged if *name* == '_'
             val: Value to log
+            tindex: Index where the value should be written in the inner data dictionary.
+                If Logger.allocate has not been called before, raises an error
 
         Return:
             A positive or null value if the export was successful
