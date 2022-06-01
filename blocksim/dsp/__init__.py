@@ -130,7 +130,7 @@ def analyse_DV(
     nv: int,
     n_integration: int = -1,
     coherent: bool = True,
-    progress_bar: bool = True,
+    progress_bar: bool = False,
     corr_window: str = "hamming",
 ) -> "DSPSpectrogram":
     """Distance / velocity analysis for acquisition

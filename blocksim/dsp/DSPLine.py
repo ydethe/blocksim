@@ -145,6 +145,21 @@ class DSPLine(object):
         x = index * self.samplingPeriod + self.samplingStart
         return x
 
+    def quickPlot(self, **kwargs) -> "AxesSubplot":
+        """Plots a value on a matplotlib axe
+
+        Args:
+            kwargs: Plotting options
+
+        Returns:
+            The Axes used by matplotlib
+
+        """
+        from ..graphics import quickPlot
+
+        axe = quickPlot(self, **kwargs)
+        return axe
+
     def polyfit(self, deg: int) -> Polynomial:
         """Fits a polynomial to the DSPLine. All the samples are considered in the computation.
         See https://numpy.org/doc/stable/reference/generated/numpy.polynomial.polynomial.Polynomial.html
@@ -177,25 +192,18 @@ class DSPLine(object):
 
         return Polynomial(coef=c, domain=[x0, x1], window=[x0, x1])
 
-    def applyDelay(self, delay: float, pad: bool = False) -> "DSPLine":
+    def applyDelay(self, delay: float) -> "DSPLine":
         """Applies a delay (in X axis unit) to the DSPLine
 
         Args:
             delay: Delay to be applied
-            pad: Flag to pad the shifted samples with 0 in case of positive delay
 
         Returns:
             The delayed DSPLine
 
         """
-        if pad and delay > 0:
-            t_start = self.samplingStart
-            ns = int(delay / self.samplingPeriod)
-            pad_samples = np.zeros(ns, dtype=self.y_serie.dtype)
-            ech = np.hstack((pad_samples, self.y_serie))
-        else:
-            t_start = self.samplingStart + delay
-            ech = self.y_serie
+        t_start = self.samplingStart + delay
+        ech = self.y_serie
 
         dsig = self.__class__(
             name=self.name,

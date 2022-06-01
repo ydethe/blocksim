@@ -46,7 +46,7 @@ class TestRadar(TestBase):
             y_sig[k * ns : k * ns + ns_rep] = rep.y_serie * k
         sig = (
             DSPSignal.fromTimeAndSamples(name="sig", tps=tps, y_serie=y_sig)
-            .applyDelay(tau * 1.5, pad=True)
+            .applyDelay(tau * 1.5)
             .applyDopplerFrequency(fdop=fdop)
             .applyGaussianNoise(pwr=5)
         )

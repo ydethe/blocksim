@@ -549,11 +549,16 @@ class DSPSignal(DSPLine, ASetPoint):
             nb_integrated_periods = min(n_integration_max, n_integration)
 
         nb_offset_samples = int(offset / dt)
-        n_samp = slice(
-            nb_offset_samples,
-            nb_offset_samples + nb_integrated_periods * nb_samples_in_period,
-        )
-        yp = self.y_serie[n_samp]
+        if nb_offset_samples < 0:
+            n_samp = nb_integrated_periods * nb_samples_in_period
+            pad_samples = np.zeros(-nb_offset_samples, dtype=self.y_serie.dtype)
+            yp = np.hstack((pad_samples, self.y_serie[: n_samp + nb_offset_samples]))
+        else:
+            n_samp = slice(
+                nb_offset_samples,
+                nb_offset_samples + nb_integrated_periods * nb_samples_in_period,
+            )
+            yp = self.y_serie[n_samp]
 
         a = yp.reshape((nb_integrated_periods, nb_samples_in_period))
         if coherent:

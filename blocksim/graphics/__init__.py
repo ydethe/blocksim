@@ -678,5 +678,44 @@ def plotBER(fic, spec=None, **kwds) -> "Axes":
     return axe
 
 
+def quickPlot(*args, **kwargs) -> "AxesSubplot":
+    """Quickly plots data
+
+    Args:
+        args: List of plottables. A plottable can be either:
+
+        * A DSPLine instance
+        * A two-elements (X,Y) tuple, with X (resp. Y) the X (resp. Y) serie to use for plotting
+        * A single Y serie
+        kwargs: Plotting options
+
+    Returns:
+        The axe used to plot
+
+    """
+    axe = kwargs.pop("axe", None)
+    if axe is None:
+        fig = createFigure()
+        gs = fig.add_gridspec(1, 1)
+        proj = kwargs.pop("projection", "rectilinear")
+        axe = createAxeFromSpec(spec=gs[0, 0], projection=proj)
+
+    for a in args:
+        if isinstance(a, DSPLine):
+            xech = a.generateXSerie()
+            yech = a.y_serie
+        elif isinstance(a, tuple):
+            xech = np.array(a[0])
+            yech = np.array(a[1])
+        else:
+            yech = np.array(a)
+            ns = len(yech)
+            xech = np.arange(ns)
+
+        axe.plot(xech, yech, **kwargs)
+
+    return axe
+
+
 def showFigures():
     plt.show()
