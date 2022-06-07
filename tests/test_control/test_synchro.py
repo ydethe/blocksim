@@ -90,4 +90,4 @@ if __name__ == "__main__":
     a = TestSynchro()
     a.test_synchro()
 
-    plt.show()
+    showFigures()()

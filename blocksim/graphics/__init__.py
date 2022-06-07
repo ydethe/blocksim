@@ -704,15 +704,18 @@ def quickPlot(*args, **kwargs) -> "AxesSubplot":
         if isinstance(a, DSPLine):
             xech = a.generateXSerie()
             yech = a.y_serie
+            transform = a.default_transform
         elif isinstance(a, tuple):
             xech = np.array(a[0])
             yech = np.array(a[1])
+            transform = lambda x: x
         else:
             yech = np.array(a)
             ns = len(yech)
             xech = np.arange(ns)
+            transform = lambda x: x
 
-        axe.plot(xech, yech, **kwargs)
+        axe.plot(xech, transform(yech), **kwargs)
 
     return axe
 

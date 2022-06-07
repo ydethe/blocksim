@@ -52,4 +52,4 @@ if __name__ == "__main__":
     a = TestDSPSpectrogram()
     a.test_2d_peak()
 
-    plt.show()
+    showFigures()()

@@ -98,4 +98,4 @@ if __name__ == "__main__":
     a = TestSimpleControl()
     a.test_simple_control()
 
-    plt.show()
+    showFigures()()

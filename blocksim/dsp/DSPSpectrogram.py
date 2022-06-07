@@ -100,6 +100,30 @@ class DSPSpectrogram(object):
         y = index * self.samplingYPeriod + self.samplingYStart
         return y
 
+    def quickPlot(self, **kwargs) -> "AxesSubplot":
+        """Quickly plots the spectrogram
+
+        Args:
+            kwargs: Plotting options
+
+        Returns:
+            The Axes used by matplotlib
+
+        """
+        from ..graphics import plotSpectrogram, createFigure, createAxeFromSpec
+
+        axe = kwargs.pop("axe", None)
+        if axe is None:
+            fig = createFigure()
+            gs = fig.add_gridspec(1, 1)
+            proj = kwargs.pop("projection", "rectilinear")
+            axe = createAxeFromSpec(spec=gs[0, 0], projection=proj)
+
+        fill = kwargs.pop("fill", "pcolormesh")
+        axe = plotSpectrogram(self, spec=axe, fill=fill, **kwargs)
+
+        return axe
+
     def findPeaksWithTransform(
         self, transform: Callable = None, nb_peaks: int = 1
     ) -> List[Peak]:

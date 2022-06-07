@@ -91,4 +91,4 @@ if __name__ == "__main__":
     a = TestDSPSetpoint()
     a.test_dsp_setpoint()
 
-    plt.show()
+    showFigures()()

@@ -278,4 +278,4 @@ if __name__ == "__main__":
     # a.test_ti_kal()
     a.test_awc_kal()
 
-    plt.show()
+    showFigures()()

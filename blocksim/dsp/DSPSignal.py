@@ -310,6 +310,20 @@ class DSPSignal(DSPLine, ASetPoint):
             y_serie=y,
         )
 
+    def gaborBandwidth(self) -> float:
+        r"""Computes the Gabor bandwidth B of the signal.
+
+        Returns:
+            Gabor bandwidth (Hz)
+
+        """
+        sp = self.fft()
+        H = sp.y_serie
+        f = sp.generateXSerie()
+        H2 = np.real(np.conj(H) * H)
+        B2 = np.sum(f**2 * H2) / np.sum(H2)
+        return sqrt(B2)
+
     def getUnfoldedPhase(self, eps: float = 1e-9) -> NDArray[Any, Any]:
         """Gets the phase law from the signal
 

@@ -103,4 +103,4 @@ if __name__ == "__main__":
     a.setUp()
     a.test_analyse_dv()
 
-    plt.show()
+    showFigures()()

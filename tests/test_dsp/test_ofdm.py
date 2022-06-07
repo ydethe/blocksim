@@ -105,4 +105,4 @@ if __name__ == "__main__":
     # a.test_ofdm_mapping()
     a.test_ofdm_demapping()
 
-    # plt.show()
+    # showFigures()()

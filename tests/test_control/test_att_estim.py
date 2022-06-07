@@ -480,4 +480,4 @@ if __name__ == "__main__":
     a.test_madgwick_cl()
     # a.test_madgwick_pitch()
 
-    plt.show()
+    showFigures()()

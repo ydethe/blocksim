@@ -40,4 +40,4 @@ if __name__ == "__main__":
     a.setUp()
     a.test_antenna_diagram()
 
-    plt.show()
+    showFigures()()

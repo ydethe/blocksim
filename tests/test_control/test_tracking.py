@@ -178,4 +178,4 @@ if __name__ == "__main__":
     # a.test_bode_steadystate_cplxe()
     # a.test_bode3_steadystate_cplxe()
 
-    plt.show()
+    showFigures()()

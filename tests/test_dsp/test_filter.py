@@ -318,4 +318,4 @@ if __name__ == "__main__":
     # a.test_transfer_function()
     # a.test_fir_design()
 
-    plt.show()
+    showFigures()()

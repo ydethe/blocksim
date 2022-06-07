@@ -197,4 +197,4 @@ if __name__ == "__main__":
     # a.test_att_yaw()
     a.test_att_torque()
 
-    plt.show()
+    showFigures()()

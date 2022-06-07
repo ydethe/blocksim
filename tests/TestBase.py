@@ -71,6 +71,6 @@ class TestBase(unittest.TestCase):
         fig = plotVerif(self.log, fig_title, *axes)
 
         if "SHOW_PLOT" in os.environ.keys():
-            plt.show()
+            showFigures()()
 
         return fig

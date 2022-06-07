@@ -126,4 +126,4 @@ if __name__ == "__main__":
     a.test_gold_autocorr()
     a.test_gold_crosscorr()
 
-    plt.show()
+    showFigures()()

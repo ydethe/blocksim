@@ -125,4 +125,4 @@ if __name__ == "__main__":
     # a.test_bpsk_noise()
     a.test_bpsk_spectrum()
 
-    plt.show()
+    showFigures()()

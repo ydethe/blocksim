@@ -331,4 +331,4 @@ if __name__ == "__main__":
     a.test_cmd_att_angles()
     # a.test_cmd_att_sval()
 
-    plt.show()
+    showFigures()()

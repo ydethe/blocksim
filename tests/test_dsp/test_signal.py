@@ -238,4 +238,4 @@ if __name__ == "__main__":
     # a.test_polyfit()
     a.test_superheterodyne()
 
-    plt.show()
+    showFigures()()

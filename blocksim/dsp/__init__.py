@@ -189,11 +189,6 @@ def analyse_DV(
     else:
         v_gen = tab_v
 
-    # from matplotlib import pyplot as plt
-    # from ..graphics import plotDSPLine
-    # fig=plt.figure()
-    # axe=fig.add_subplot(111)
-
     for kv, vrad in enumerate(v_gen):
         fd = -vrad / wavelength
 
@@ -202,9 +197,6 @@ def analyse_DV(
 
         # Correlation
         corr = dop_free.correlate(seq, win=corr_window)
-        # if kv ==0:
-        #     plotDSPLine(corr,spec=axe)
-        #     plt.show()
 
         # Integration
         zi = corr.integrate(

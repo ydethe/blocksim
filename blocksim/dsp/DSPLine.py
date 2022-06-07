@@ -146,7 +146,7 @@ class DSPLine(object):
         return x
 
     def quickPlot(self, **kwargs) -> "AxesSubplot":
-        """Plots a value on a matplotlib axe
+        """Quickly plots the line on a matplotlib axe
 
         Args:
             kwargs: Plotting options

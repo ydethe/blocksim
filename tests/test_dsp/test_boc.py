@@ -85,4 +85,4 @@ if __name__ == "__main__":
     # a.test_boc_autocorr()
     # a.test_boc_parallel()
 
-    plt.show()
+    showFigures()()

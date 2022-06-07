@@ -310,4 +310,4 @@ if __name__ == "__main__":
     a.setUp()
     a.test_quad_complexe_att()
 
-    plt.show()
+    showFigures()()

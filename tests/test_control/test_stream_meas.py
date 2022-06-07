@@ -49,4 +49,4 @@ if __name__ == "__main__":
     a = TestStreamMeas()
     a.test_stream_csv_meas()
 
-    plt.show()
+    showFigures()()
