@@ -6,6 +6,7 @@ from typing import Iterable, Tuple, Any
 from uuid import UUID, uuid4
 from multiprocessing import Pool, Queue, Process, Manager
 from time import time
+from datetime import datetime
 
 import tqdm
 from nptyping import NDArray, Shape
@@ -171,6 +172,8 @@ class Simulation(object):
         t0: float,
         error_on_unconnected: bool = True,
     ):
+        self.__logger.setStartTime(datetime.utcnow())
+
         for cname in clist:
             comp = self.getComputerByName(cname)
             comp.resetCallback(t0)
