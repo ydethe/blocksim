@@ -1,9 +1,8 @@
-from ctypes.wintypes import PUINT
 from typing import Any
 
 import cartopy.crs as ccrs
 from cartopy.geodesic import Geodesic
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
 from numpy import sqrt, pi, cos, sin
 

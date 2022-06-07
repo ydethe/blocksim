@@ -65,7 +65,7 @@ class DSPLine(object):
         return self.__y_serie.copy()
 
     @property
-    def default_transform(self) -> NDArray[Any, Any]:
+    def default_transform(self):
         return self.__default_transform
 
     @LazyProperty
