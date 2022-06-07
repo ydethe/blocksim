@@ -186,10 +186,11 @@ class GNSSReceiver(AComputer):
                 B[nval, 4] = 1
                 nval += 1
 
-        if nval < 4:
+        B = B[:nval, :]
+        nsat, n = B.shape
+        if nsat < n:
             return np.nan, np.nan, np.nan, np.nan, np.nan
 
-        B = B[:nval, :]
         _, R = lin.qr(B, mode="full")
         Q = lin.inv(R.T @ R)
         sv = 0.0

@@ -7,8 +7,6 @@ from typing import Iterable, Any
 from keyword import iskeyword
 from types import FunctionType
 from datetime import datetime, timezone
-import os
-from pathlib import Path
 
 import pluggy
 from nptyping import NDArray, Shape
@@ -129,7 +127,7 @@ class Logger(object):
         """
         return self.__start_time
 
-    def getLoadedFile(self) -> Path:
+    def getLoadedFile(self) -> str:
         """Get the name of the file or the URI associated to the logger
 
         Returns:
@@ -138,7 +136,7 @@ class Logger(object):
         """
         return self.__uri
 
-    def loadLogFile(self, uri: Path):
+    def loadLogFile(self, uri: str):
         """Loads a specified file or URI into the logger.
         Looks up among all plugins which one can handle the extension of **fig**
 
@@ -146,7 +144,7 @@ class Logger(object):
             uri: The path or URI where the data will be written
 
         """
-        self.__uri = uri
+        self.__uri = str(uri)
 
         ldata = plugin_manager.hook.loadLogFile(log=self, uri=str(self.__uri))
         lok = [x for x in ldata if x]
@@ -514,7 +512,7 @@ class Logger(object):
         y = fftconvolve(sig, a, mode="same")
         return y
 
-    def export(self, uri: Path) -> int:
+    def export(self, uri: str) -> int:
         """Exports the logger to a specified file or URI into the logger.
         Looks up among all plugins which one can handle the extension of **fig**
 
@@ -528,7 +526,7 @@ class Logger(object):
             SystemError if no handler has been identified or if too many handlers were identified
 
         """
-        self.__uri = uri
+        self.__uri = str(uri)
 
         lstat = plugin_manager.hook.export(log=self, uri=str(self.__uri))
 

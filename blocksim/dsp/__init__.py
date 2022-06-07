@@ -215,6 +215,7 @@ def analyse_DV(
         samplingYStart=zi.samplingStart,
         samplingYPeriod=zi.samplingPeriod,
         img=img,
+        default_transform=np.abs,
     )
     spg.name_of_x_var = "Radial Velocity (%.1f m/s delta)" % vrad0
     spg.unit_of_x_var = "m/s"

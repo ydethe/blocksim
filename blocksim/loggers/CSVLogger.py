@@ -1,6 +1,7 @@
 from typing import Any
+import os
 
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import pluggy
 import pandas as pd
 from singleton3 import Singleton
@@ -29,7 +30,7 @@ class Logger(object, metaclass=Singleton):
         if not self.test_suitable(uri):
             return False
 
-        if not uri.exists():
+        if not os.path.exists(uri):
             raise FileNotFoundError(uri)
 
         log.reset()

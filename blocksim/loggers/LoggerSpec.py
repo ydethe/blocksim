@@ -3,7 +3,7 @@
 """
 from typing import Any
 
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import pluggy
 
 hookspec = pluggy.HookspecMarker("blocksim")
