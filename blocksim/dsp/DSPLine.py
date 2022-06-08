@@ -9,7 +9,8 @@ from scipy import linalg as lin
 
 from . import derivative_coeff
 from .. import logger
-from .Peak import Peak
+from ..Peak import Peak
+from ..utils import find1dpeak
 
 __all__ = ["DSPLine"]
 
@@ -243,7 +244,7 @@ class DSPLine(object):
         self, transform: Callable = None, nb_peaks: int = 3
     ) -> List[Peak]:
         """Finds the peaks in a DSPLine.
-        The search is performed on the tranformed samples (with the argument *transform*, or the attribute *default_transform*)
+        The search is performed on the transformed samples (with the argument *transform*, or the attribute *default_transform*)
 
         Args:
             transform: A callable applied on samples before looking for the peaks
@@ -256,29 +257,16 @@ class DSPLine(object):
         if transform is None:
             transform = self.default_transform
 
+        x0 = self.generateXSerie()
         dat = transform(self.y_serie)
-        n = len(dat)
-        lpeak = []
-        ep = 1
-        for p0 in range(ep, n - ep):
-            if dat[p0 - ep] < dat[p0] and dat[p0] > dat[p0 + ep]:
-                b = (dat[p0 + ep] - dat[p0 - ep]) / (2 * ep)
-                c = -(-dat[p0 + ep] - dat[p0 - ep] + 2 * dat[p0]) / (2 * ep**2)
-                dp = -b / (2 * c)
-                dval = -(b**2) / (4 * c)
-                x0 = self.generateXSerie(p0 + dp)
-                p = Peak(
-                    coord_label=(self.name_of_x_var,),
-                    coord_unit=(self.unit_of_x_var,),
-                    coord=(x0,),
-                    value=dat[p0] + dval,
-                )
-                lpeak.append(p)
 
-        lpeak.sort(key=lambda x: x.value, reverse=True)
-
-        if len(lpeak) > nb_peaks:
-            lpeak = lpeak[:nb_peaks]
+        lpeak = find1dpeak(
+            nb_peaks=nb_peaks,
+            xd=x0,
+            yd=dat,
+            name_of_x_var=self.name_of_x_var,
+            unit_of_x_var=self.unit_of_x_var,
+        )
 
         return lpeak
 

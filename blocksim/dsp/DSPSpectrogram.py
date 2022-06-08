@@ -5,7 +5,8 @@ import numpy as np
 
 from .DSPLine import DSPLine
 from .. import logger
-from .Peak import Peak
+from ..Peak import Peak
+from ..utils import find2dpeak
 
 __all__ = ["DSPSpectrogram"]
 
@@ -141,61 +142,17 @@ class DSPSpectrogram(object):
         if transform is None:
             transform = self.default_transform
 
-        ep = 2
-        eq = 2
-        iDtr = 1 / (2 * ep**2 * eq**2)
-        iA = iDtr * np.array(
-            [
-                [0, -ep * eq**2, 0, 0, ep * eq**2],
-                [0, 0, -(ep**2) * eq, ep**2 * eq, 0],
-                [-2 * eq**2, eq**2, 0, 0, eq**2],
-                [-2 * ep**2, 0, ep**2, ep**2, 0],
-            ]
-        )
-
         dat = transform(self.img)
-        Np, Nq = dat.shape
-        lpeak = []
-        for p0 in range(ep, Np - ep):
-            for q0 in range(eq, Nq - eq):
-                Z00 = dat[p0, q0]
-                B = np.array(
-                    [
-                        Z00,
-                        dat[p0 - ep, q0],
-                        dat[p0, q0 - eq],
-                        dat[p0, q0 + eq],
-                        dat[p0 + ep, q0],
-                    ]
-                )
-                if np.any(B[1:] >= Z00):
-                    continue
-
-                X0 = iA @ B
-                b, c, d, f = X0
-
-                dp = -b / (2 * d)
-                dq = -c / (2 * f)
-                dval = (-(b**2) * f - c**2 * d) / (4 * d * f)
-
-                if -ep / 2 <= dp and dp < ep / 2 and -eq / 2 <= dq and dq < eq / 2:
-                    p = Peak(
-                        coord_label=(self.name_of_x_var, self.name_of_y_var),
-                        coord_unit=(self.unit_of_x_var, self.unit_of_y_var),
-                        coord=(
-                            self.generateXSerie(q0 + dq),
-                            self.generateYSerie(p0 + dp),
-                        ),
-                        value=Z00 + dval,
-                    )
-                    lpeak.append(p)
-                else:
-                    raise AssertionError(dp, dq)
-
-        lpeak.sort(key=lambda x: x.value, reverse=True)
-
-        if len(lpeak) > nb_peaks:
-            lpeak = lpeak[:nb_peaks]
+        lpeak = find2dpeak(
+            nb_peaks=nb_peaks,
+            xd=self.generateXSerie(),
+            yd=self.generateYSerie(),
+            zd=dat,
+            name_of_x_var=self.name_of_x_var,
+            unit_of_x_var=self.unit_of_x_var,
+            name_of_y_var=self.name_of_y_var,
+            unit_of_y_var=self.unit_of_y_var,
+        )
 
         return lpeak
 

@@ -94,6 +94,10 @@ def getUnitAbbrev(
         else:
             mult = force_mult
         lbl = d[mult]
+
+    if unit == "":
+        unit = "-"
+
     return samp / mult, mult, lbl, unit
 
 
@@ -510,10 +514,10 @@ def plotDSPLine(line: DSPLine, spec: "SubplotSpec" = None, **kwargs) -> "AxesSub
     axe_opt = {"sharex": sharex, "sharey": sharey}
     axe = createAxeFromSpec(spec, **axe_opt)
 
-    x_samp = line.generateXSerie()
     transform = kwargs.pop("transform", line.default_transform)
     find_peaks = kwargs.pop("find_peaks", 0)
 
+    x_samp = line.generateXSerie()
     x_unit_mult = kwargs.pop("x_unit_mult", None)
     xm = np.max(np.abs(x_samp))
     scaled_samp, x_unit_mult, x_unit_lbl, x_unit = getUnitAbbrev(

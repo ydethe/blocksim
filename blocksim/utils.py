@@ -7,11 +7,12 @@ import sys
 import glob
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Iterable, Tuple, Any
+from typing import Iterable, Tuple, Any, List
 import importlib
 
 from tqdm import tqdm
 from scipy import linalg as lin
+from scipy.interpolate import interp1d
 from scipy.optimize import root_scalar, root, minimize
 from nptyping import NDArray, Shape
 import numpy as np
@@ -24,9 +25,12 @@ from . import logger
 from .constants import *
 from .exceptions import *
 from .constants import Req
+from .Peak import Peak
 
 
 __all__ = [
+    "find1dpeak",
+    "find2dpeak",
     "casedpath",
     "resource_path",
     "calc_cho",
@@ -106,6 +110,153 @@ def resource_path(resource: str, package: str = "blocksim") -> str:
             return path
 
     raise FileExistsError(resource)
+
+
+def find1dpeak(
+    nb_peaks: int, xd: "array", yd: "array", name_of_x_var: str, unit_of_x_var: str
+) -> List[Peak]:
+    """Finds the peaks in a serie.
+
+    Args:
+        nb_peaks: Max number of peaks to seach. Only the highest are kept
+        xd: Array of X samples
+        yd: Array of Y samples
+        name_of_x_var: Name of the X coordinate
+        unit_of_x_var: Unit of the X coordinate
+
+    Returns:
+        The list of detected peaks, sorted by descreasing value of the peak
+
+    """
+    n = len(yd)
+    lpeak = []
+    ep = 1
+    _x_itp = interp1d(
+        x=np.arange(n),
+        y=xd,
+        kind="linear",
+        copy=False,
+        bounds_error=True,
+        assume_sorted=True,
+    )
+    for p0 in range(ep, n - ep):
+        if yd[p0 - ep] < yd[p0] and yd[p0] > yd[p0 + ep]:
+            b = (yd[p0 + ep] - yd[p0 - ep]) / (2 * ep)
+            c = -(-yd[p0 + ep] - yd[p0 - ep] + 2 * yd[p0]) / (2 * ep**2)
+            dp = -b / (2 * c)
+            dval = -(b**2) / (4 * c)
+            x0 = _x_itp(p0 + dp)
+            p = Peak(
+                coord_label=(name_of_x_var,),
+                coord_unit=(unit_of_x_var,),
+                coord=(x0,),
+                value=yd[p0] + dval,
+            )
+            lpeak.append(p)
+
+    lpeak.sort(key=lambda x: x.value, reverse=True)
+
+    if len(lpeak) > nb_peaks:
+        lpeak = lpeak[:nb_peaks]
+
+    return lpeak
+
+
+def find2dpeak(
+    nb_peaks: int,
+    xd: "array",
+    yd: "array",
+    zd: "array",
+    name_of_x_var: str,
+    unit_of_x_var: str,
+    name_of_y_var: str,
+    unit_of_y_var: str,
+) -> List[Peak]:
+    """Finds the peaks
+
+    Args:
+        nb_peaks: Max number of peaks to seach. Only the highest are kept
+        xd: Array of X samples
+        yd: Array of Y samples
+        zd: Matrix of Z samples
+        name_of_x_var: Name of the X coordinate
+        unit_of_x_var: Unit of the X coordinate
+        name_of_y_var: Name of the Y coordinate
+        unit_of_y_var: Unit of the Y coordinate
+
+    Returns:
+        The list of detected peaks, sorted by descreasing value of the peak
+
+    """
+    ep = 2
+    eq = 2
+    Np, Nq = zd.shape
+    _x_itp = interp1d(
+        x=np.arange(Nq),
+        y=xd,
+        kind="linear",
+        copy=False,
+        bounds_error=True,
+        assume_sorted=True,
+    )
+    _y_itp = interp1d(
+        x=np.arange(Np),
+        y=yd,
+        kind="linear",
+        copy=False,
+        bounds_error=True,
+        assume_sorted=True,
+    )
+    iDtr = 1 / (2 * ep**2 * eq**2)
+    iA = iDtr * np.array(
+        [
+            [0, -ep * eq**2, 0, 0, ep * eq**2],
+            [0, 0, -(ep**2) * eq, ep**2 * eq, 0],
+            [-2 * eq**2, eq**2, 0, 0, eq**2],
+            [-2 * ep**2, 0, ep**2, ep**2, 0],
+        ]
+    )
+
+    lpeak = []
+    for p0 in range(ep, Np - ep):
+        for q0 in range(eq, Nq - eq):
+            Z00 = zd[p0, q0]
+            B = np.array(
+                [
+                    Z00,
+                    zd[p0 - ep, q0],
+                    zd[p0, q0 - eq],
+                    zd[p0, q0 + eq],
+                    zd[p0 + ep, q0],
+                ]
+            )
+            if np.any(B[1:] >= Z00):
+                continue
+
+            X0 = iA @ B
+            b, c, d, f = X0
+
+            dp = -b / (2 * d)
+            dq = -c / (2 * f)
+            dval = (-(b**2) * f - c**2 * d) / (4 * d * f)
+
+            if -ep / 2 <= dp and dp < ep / 2 and -eq / 2 <= dq and dq < eq / 2:
+                p = Peak(
+                    coord_label=(name_of_x_var, name_of_y_var),
+                    coord_unit=(unit_of_x_var, unit_of_y_var),
+                    coord=(_x_itp(q0 + dq), _y_itp(p0 + dp)),
+                    value=Z00 + dval,
+                )
+                lpeak.append(p)
+            else:
+                raise AssertionError(dp, dq)
+
+    lpeak.sort(key=lambda x: x.value, reverse=True)
+
+    if len(lpeak) > nb_peaks:
+        lpeak = lpeak[:nb_peaks]
+
+    return lpeak
 
 
 def verif_mat_diag(A: NDArray[Any, Any]) -> bool:
