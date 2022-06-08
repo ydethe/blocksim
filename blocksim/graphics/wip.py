@@ -1,14 +1,14 @@
 from abc import ABCMeta, abstractmethod
-from cmath import inf
 from enum import Enum
 from typing import Callable, Tuple
 
+from singleton3 import Singleton
 import numpy as np
 from numpy import pi
 import cartopy.crs as ccrs
 from matplotlib import pyplot as plt
 
-from ..utils import find1dpeak, find2dpeak
+from ..utils import find1dpeak
 from ..dsp.DSPLine import DSPLine
 from ..dsp.DSPSpectrogram import DSPSpectrogram
 from .B3DPlotter import B3DPlotter
@@ -215,10 +215,13 @@ class PlottableDSPSpectrogram(APlottable):
         name_of_y_var = mline.name_of_y_var
         y_unit = mline.unit_of_y_var
 
-        plot_mth = getattr(maxe, fill)
-        if fill == "plot_surface":
+        if axe.projection == AxeProjection.DIM3D:
+            plot_mth = maxe.plot_surface
             kwargs.pop("levels", None)
-        elif fill == "pcolormesh":
+        else:
+            plot_mth = getattr(maxe, fill)
+
+        if fill == "pcolormesh":
             kwargs.pop("levels", None)
         elif fill == "contourf":
             pass
@@ -231,7 +234,10 @@ class PlottableDSPSpectrogram(APlottable):
         else:
             X, Y = np.meshgrid(x_samp, y_samp)
 
-        args = (X, Y, Z)
+        if axe.projection == AxeProjection.PLATECARREE:
+            args = (X * 180 / pi, Y * 180 / pi, Z)
+        else:
+            args = (X, Y, Z)
 
         lpeaks = mline.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
 
@@ -347,15 +353,29 @@ class AxeFactory(object):
         self.plottable_factories.append(line_factory)
 
     def plot(self, plottable, **kwargs) -> APlottable:
-        fill = kwargs.get("fill", "")
-        if self.projection == AxeProjection.PLATECARREE and not isinstance(
-            plottable, tuple
-        ):
-            raise AssertionError(
-                f"With '{self.projection}' axe projection, only (lon,lat) data is accepted. Got {plottable}"
-            )
-        elif self.projection == AxeProjection.DIM3D and not (
-            isinstance(plottable, DSPSpectrogram) and fill == "plot_surface"
+        if self.projection == AxeProjection.PLATECARREE:
+            if not isinstance(plottable, tuple) and not isinstance(
+                plottable, DSPSpectrogram
+            ):
+                raise AssertionError(
+                    f"With '{self.projection}' axe projection, only (lon,lat) or rectilinear DSPSpectrogram data are accepted. Got {plottable}"
+                )
+            elif isinstance(plottable, DSPSpectrogram):
+                if not plottable.projection == "rectilinear":
+                    raise AssertionError(
+                        f"With '{self.projection}' axe projection and DSPSpectrogram data, only the rectilinear projection is accepted. Got {plottable.projection}"
+                    )
+
+        if (
+            self.projection == AxeProjection.POLAR
+            or self.projection == AxeProjection.NORTH_POLAR
+        ) and (isinstance(plottable, DSPLine) or isinstance(plottable, DSPSpectrogram)):
+            if plottable.projection != "polar":
+                raise AssertionError(
+                    f"With '{self.projection}' axe projection, only polar projecions are allowed. Got {plottable.projection}"
+                )
+        if self.projection == AxeProjection.DIM3D and not isinstance(
+            plottable, DSPSpectrogram
         ):
             raise AssertionError(
                 f"With '{self.projection}' axe projection, only DSPSpectrogram is accepted. Got {plottable}"
@@ -415,26 +435,9 @@ class AxeFactory(object):
         return self.mpl_axe
 
 
-class FigureFactory(object):
+class BFigure(object):
 
     __slots__ = ["title", "grid_spec", "projection", "axe_factories"]
-
-    @classmethod
-    def create(
-        cls, title: str, projection: FigureProjection = FigureProjection.MPL
-    ) -> "FigureFactory":
-        """
-        Args:
-            title: Title of the figure
-            projection: Projection to use
-
-        """
-        res = cls()
-        res.title = title
-        res.grid_spec = None
-        res.projection = projection
-
-        return res
 
     def __init__(self) -> None:
         self.axe_factories = []
@@ -447,8 +450,45 @@ class FigureFactory(object):
     def registerAxeFactory(self, axe_factory: AxeFactory):
         self.axe_factories.append(axe_factory)
 
+    def render(self) -> "Figure":
+        if self.projection == FigureProjection.MPL:
+            fig = _render_mpl(self)
+        else:
+            fig = _render_earth3d(self)
 
-def _render_earth3d(fig: FigureFactory) -> "B3DPlotter":
+        return fig
+
+
+class FigureFactory(object, metaclass=Singleton):  # type: ignore
+
+    __slots__ = ["figures"]
+
+    def __init__(self):
+        self.figures = []
+
+    @classmethod
+    def create(
+        cls, title: str, projection: FigureProjection = FigureProjection.MPL
+    ) -> BFigure:
+        """
+        Args:
+            title: Title of the figure
+            projection: Projection to use
+
+        """
+        factory = cls()
+
+        res = BFigure()
+        res.title = title
+        res.grid_spec = None  # type: ignore
+        res.projection = projection
+
+        factory.figures.append(res)
+
+        return res
+
+
+def _render_earth3d(fig: BFigure) -> "B3DPlotter":
     app = B3DPlotter()
     app.plotEarth()
 
@@ -461,7 +501,7 @@ def _render_earth3d(fig: FigureFactory) -> "B3DPlotter":
     return app
 
 
-def _render_mpl(fig: FigureFactory) -> "Figure":
+def _render_mpl(fig: BFigure) -> "Figure":
     mfig = plt.figure()
     mfig.suptitle(fig.title)
 
@@ -539,24 +579,23 @@ def _render_mpl(fig: FigureFactory) -> "Figure":
             elif info["fill"] == "contour":
                 maxe.clabel(ret, inline=True, fontsize=10)
 
-        if x_label != "":
-            maxe.set_xlabel(x_label)
-        if y_label != "":
-            maxe.set_ylabel(y_label)
+        if (
+            axe.projection == AxeProjection.RECTILINEAR
+            or axe.projection == AxeProjection.DIM3D
+        ):
+            if x_label != "":
+                maxe.set_xlabel(x_label)
+            if y_label != "":
+                maxe.set_ylabel(y_label)
 
     mfig.tight_layout()
 
     return mfig
 
 
-def render(fig: FigureFactory):
-    if fig.projection == FigureProjection.MPL:
-        fig = _render_mpl(fig)
-    else:
-        fig = _render_earth3d(fig)
-
-    return fig
-
-
 def showFigures():
+    factory = FigureFactory()
+    for f in factory.figures:
+        f.render()
+
     plt.show()
