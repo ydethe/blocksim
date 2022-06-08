@@ -16,51 +16,85 @@ from . import getUnitAbbrev
 
 
 class AxeProjection(Enum):
+    #: For rectilinear plots (the most frequent use case)
     RECTILINEAR = 0
+    #: For trigonometric polar plots
     POLAR = 1
+    #: For north azimuthal plots
     NORTH_POLAR = 2
+    #: For Mercator cartography
     PLATECARREE = 3
+    #: For 3D plots
     DIM3D = 4
 
 
 class FigureProjection(Enum):
+    #: For matplotlib plots
     MPL = 0
+    #: For panda3d 3d plots
     EARTH3D = 1
 
 
-class GridElementFactory(object):
+class BGridElement(object):
+    """This class stores the position of an axe in a grid
+
+    Args:
+        gs: Grid that gives axes' positions in a BFigure
+        coord: Positoin of the BGridElement in the grid
+
+    """
 
     __slots__ = ["gs", "coord"]
 
-    @classmethod
-    def create(cls, gs: "GridSpecFactory", coord: slice) -> "GridElementFactory":
-        ret = cls()
-        ret.gs = gs
-        ret.coord = coord
-        return ret
+    def __init__(self, gs: "BGridSpec", coord: slice):
+        self.gs = gs
+        self.coord = coord
 
-    def get_gridspec(self) -> "GridSpecFactory":
+    def get_gridspec(self) -> "BGridSpec":
+        """Returns the BGridSpec associated with the BGridElement
+
+        Returns:
+            The BGridSpec associated with the BGridElement
+
+        """
         return self.gs
 
 
-class GridSpecFactory(object):
+class BGridSpec(object):
+    """This class stores the layout of the axes in a BFigure
+
+    Args:
+        figure: The BFigure associated with the BGridSpec
+        nrow: Number of rows of the layout
+        ncol: Number of columns of the layout
+
+    """
 
     __slots__ = ["figure", "nrow", "ncol"]
 
-    @classmethod
-    def create(cls, figure: "FigureFactory", nrow: int, ncol: int) -> "GridSpecFactory":
-        ret = cls()
-        ret.figure = figure
-        ret.nrow = nrow
-        ret.ncol = ncol
-        return ret
+    def __init__(self, figure: "BFigure", nrow: int, ncol: int):
+        self.figure = figure
+        self.nrow = nrow
+        self.ncol = ncol
 
-    def __getitem__(self, ind) -> GridElementFactory:
-        ge = GridElementFactory.create(gs=self, coord=ind)
+    def __getitem__(self, ind) -> BGridElement:
+        ge = BGridElement(gs=self, coord=ind)
         return ge
 
 
 class APlottable(metaclass=ABCMeta):
+    """This base abstract class describes all the entity able to be plotted:
+
+    * DSPLine
+    * DSPSpectrogram
+    * tuple of arrays
+    * simple arrays
+
+    Args:
+        plottable: one of the instance above
+        kwargs: The dictionary of options for plotting (color, width,etc)
+
+    """
 
     __slots__ = ["plottable", "kwargs"]
 
@@ -70,9 +104,44 @@ class APlottable(metaclass=ABCMeta):
 
     @abstractmethod
     def _make_mline(self) -> Tuple["array", "array", str, str, str, str]:
+        """This makes the job of turning a generic plotable into a tuple of useful values
+
+        Returns:
+            An numpy array of X coordinates
+            An numpy array of Y coordinates
+            The name of the X coordinate
+            The physical unit of the X variable
+            The name of the Y coordinate
+            The physical unit of the Y variable
+
+        """
         pass
 
-    def render(self, axe: "AxeFactory") -> dict:
+    def render(self, axe: "BAxe") -> dict:
+        """Makes the final preparation before plotting with matplotlib
+
+        Args:
+            axe: The axe associated with the plottable
+
+        Returns:
+            A dictionary with:
+
+            * plottable: this instance
+            * plot_method: the callable plot method to use to plot the data
+            * fill: for 3D plots, the fill method
+            * args: the data to be plotted with matplotlib. 2 or 3 elements tuple with numpy arrays
+            * mpl_kwargs: the plotting options useable with matplotlib
+            * peaks: the peaks found in the data
+            * name_of_x_var: name of the X variable
+            * unit_of_x_var: unit of the X variable
+            * name_of_y_var: name of the Y variable
+            * unit_of_y_var: unit of the Y variable
+            * xmin: smallest X value
+            * xmax: largest X value
+            * ymin: smallest Y value
+            * ymax: largest Y value
+
+        """
         maxe = axe.mpl_axe
         (
             xd,
@@ -119,7 +188,40 @@ class APlottable(metaclass=ABCMeta):
         }
         return info
 
-    def scaleAndLabelData(self, info, amp_x, amp_y):
+    def scaleAndLabelData(
+        self, info: dict, amp_x: float, amp_y: float
+    ) -> Tuple[dict, str, str]:
+        """This method, knowing the maximum aplitude of data in the axe,
+        scales the data by a power of 3.n so that the prefux k (kilo), M (mega), etc can be used
+
+        Args:
+            info: The data computed by APlottable.render
+            amp_x: The amplitude of X coordinates
+            amp_y: The amplitude of Y coordinates
+
+        Returns:
+            A dictionary with:
+
+                * plottable: this instance
+                * plot_method: the callable plot method to use to plot the data
+                * fill: for 3D plots, the fill method
+                * args: the data to be plotted with matplotlib. 2 or 3 elements tuple with numpy arrays
+                * mpl_kwargs: the plotting options useable with matplotlib
+                * peaks: the peaks found in the data
+                * name_of_x_var: name of the X variable
+                * unit_of_x_var: unit of the X variable
+                * name_of_y_var: name of the Y variable
+                * unit_of_y_var: unit of the Y variable
+                * xmin: smallest X value
+                * xmax: largest X value
+                * ymin: smallest Y value
+                * ymax: largest Y value
+                * scaled_args: the scaled data to be plotted with matplotlib. 2 or 3 elements tuple with numpy arrays
+                * scaled_peaks: the peaks found in the data with scaled coordinates
+            The label to use for X axis
+            The label to use for Y axis
+
+        """
         xd, yd = info["args"]
 
         _, x_mult, x_lbl, x_unit = getUnitAbbrev(amp_x, unit=info["unit_of_x_var"])
@@ -143,6 +245,7 @@ class APlottable(metaclass=ABCMeta):
 
 
 class PlottableDSPLine(APlottable):
+    """Specialisation of `APlottable` for `blocksim.dsp.DSPLine.DSPLine`"""
 
     __slots__ = []
 
@@ -159,6 +262,7 @@ class PlottableDSPLine(APlottable):
 
 
 class PlottableArray(APlottable):
+    """Specialisation of `APlottable` to handle simple numpy arrays"""
 
     __slots__ = []
 
@@ -176,6 +280,7 @@ class PlottableArray(APlottable):
 
 
 class PlottableTuple(APlottable):
+    """Specialisation of `APlottable` to handle a 2 elements tuple of numpy arrays"""
 
     __slots__ = []
 
@@ -192,13 +297,14 @@ class PlottableTuple(APlottable):
 
 
 class PlottableDSPSpectrogram(APlottable):
+    """Specialisation of `APlottable` for `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`"""
 
     __slots__ = []
 
     def _make_mline(self) -> Tuple["array", "array", str, str, str, str]:
         pass
 
-    def render(self, axe: "AxeFactory") -> dict:
+    def render(self, axe: "BAxe") -> dict:
         mline = self.plottable
         maxe = axe.mpl_axe
 
@@ -282,8 +388,25 @@ class PlottableDSPSpectrogram(APlottable):
 
 
 class PlottableFactory(object):
+    """Factory class that instanciates the adapted daughter class of `APlottable` to handle the object to plot"""
+
     @staticmethod
     def create(mline, kwargs: dict) -> APlottable:
+        """Creates the adapted daughter class of `APlottable` to handle the object to plot
+
+        Args:
+            mline: Object to plot. Can be:
+
+            * a `blocksim.dsp.DSPLine.DSPLine`
+            * a `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`
+            * a 2 elements tuple of numpy arrays
+            * a simple numpy arrays
+            kwargs: The plotting options for the object
+
+        Returns:
+            The APlottable instance suited to the object
+
+        """
         if isinstance(mline, DSPLine):
             ret = PlottableDSPLine(mline, kwargs)
 
@@ -299,7 +422,15 @@ class PlottableFactory(object):
         return ret
 
 
-class AxeFactory(object):
+class BAxe(object):
+    """Class that describes the axe. Not yet a matplotlib axe
+
+    Args:
+        title: Title of the axe
+        spec: Position in the BGridSpec
+        projection: Projection to use
+
+    """
 
     __slots__ = [
         "figure",
@@ -311,48 +442,54 @@ class AxeFactory(object):
         "mpl_axe",
     ]
 
-    @classmethod
-    def create(
-        cls,
+    def __init__(
+        self,
         title: str,
-        spec: GridElementFactory,
+        spec: BGridElement,
         projection: AxeProjection = AxeProjection.RECTILINEAR,
         **kwargs,
-    ) -> "AxeFactory":
-        """
-        Args:
-            title: Title of the axe
-            spec: Position in the GridSpec
-            projection: Projection to use
-
-        """
+    ):
         gs = spec.get_gridspec()
         if gs.figure.projection == FigureProjection.EARTH3D and (
             gs.ncol != 1 or gs.nrow != 1
         ):
             raise AssertionError(
-                f"Cannot use GridSpec different from (1,1) with figure projection 'earth3d'. Got ({gs.nrow},{gs.ncol})"
+                f"Cannot use BGridSpec different from (1,1) with figure projection 'earth3d'. Got ({gs.nrow},{gs.ncol})"
             )
 
-        res = cls()
-        res.figure = gs.figure
-        res.title = title
-        res.spec = spec
-        res.projection = projection
-        res.kwargs = kwargs
-        res.mpl_axe = None
+        self.figure = gs.figure
+        self.title = title
+        self.spec = spec
+        self.projection = projection
+        self.kwargs = kwargs
+        self.mpl_axe = None
 
-        gs.figure.registerAxeFactory(res)
+        gs.figure.registerAxeFactory(self)
 
-        return res
-
-    def __init__(self) -> None:
         self.plottable_factories = []
 
-    def registerPlottableFactory(self, line_factory: APlottable):
-        self.plottable_factories.append(line_factory)
+    def registerPlottableFactory(self, plottable: APlottable):
+        """Registers the APlottable in the list of objects handled by the axe
+
+        Args:
+            plottable: APlottable object
+
+        """
+        self.plottable_factories.append(plottable)
 
     def plot(self, plottable, **kwargs) -> APlottable:
+        """Records the plot command (without executing it) and does some checks
+
+        Args:
+            plottable: Object to plot. Can be:
+
+            * a `blocksim.dsp.DSPLine.DSPLine`
+            * a `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`
+            * a 2 elements tuple of numpy arrays
+            * a simple numpy arrays
+            kwargs: The plotting options for the object
+
+        """
         if self.projection == AxeProjection.PLATECARREE:
             if not isinstance(plottable, tuple) and not isinstance(
                 plottable, DSPSpectrogram
@@ -386,6 +523,16 @@ class AxeFactory(object):
         return res
 
     def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "AxesSubplot":
+        """Creates a matplotlib axe according to the BAxe.plot commands
+
+        Args:
+            mfig: Matplotlib figure
+            mgs: Matplotlib grid_spec
+
+        Returns:
+            The created matplotlib axe
+
+        """
         if not self.mpl_axe is None:
             return self.mpl_axe
 
@@ -436,21 +583,53 @@ class AxeFactory(object):
 
 
 class BFigure(object):
+    """Class that describes the figure. Not yet a matplotlib figure
+
+    Args:
+        title: Title of the figure
+        projection: Projection to use
+
+    """
 
     __slots__ = ["title", "grid_spec", "projection", "axe_factories"]
 
-    def __init__(self) -> None:
+    def __init__(self, title: str, projection: FigureProjection):
+        self.title = title
+        self.grid_spec = None
+        self.projection = projection
         self.axe_factories = []
 
-    def add_gridspec(self, nrow: int, ncol: int) -> GridSpecFactory:
-        res = GridSpecFactory.create(self, nrow, ncol)
+    def add_gridspec(self, nrow: int, ncol: int) -> BGridSpec:
+        """Defines the axes layout in the figure
+
+        Args:
+            nrow: Number of rows
+            ncol: Nimber of columns
+
+        Returns:
+            The layout
+
+        """
+        res = BGridSpec(self, nrow, ncol)
         self.grid_spec = res
         return res
 
-    def registerAxeFactory(self, axe_factory: AxeFactory):
-        self.axe_factories.append(axe_factory)
+    def registerAxeFactory(self, baxe: BAxe):
+        """Registers a new BAxe in the list of related BAxe
+
+        Args:
+            baxe: The BAxe to add
+
+        """
+        self.axe_factories.append(baxe)
 
     def render(self) -> "Figure":
+        """Actually renders the figure with matplotlib
+
+        Returns:
+            The matplotlib figure
+
+        """
         if self.projection == FigureProjection.MPL:
             fig = _render_mpl(self)
         else:
@@ -460,6 +639,7 @@ class BFigure(object):
 
 
 class FigureFactory(object, metaclass=Singleton):  # type: ignore
+    """Class to instanciate BFigures and keep track of all created figures."""
 
     __slots__ = ["figures"]
 
@@ -470,18 +650,19 @@ class FigureFactory(object, metaclass=Singleton):  # type: ignore
     def create(
         cls, title: str, projection: FigureProjection = FigureProjection.MPL
     ) -> BFigure:
-        """
+        """Creates a BFigure, and record it in the list of BFigures
+
         Args:
             title: Title of the figure
             projection: Projection to use
 
+        Returns:
+            The created BFigure
+
         """
         factory = cls()
 
-        res = BFigure()
-        res.title = title
-        res.grid_spec = None  # type: ignore
-        res.projection = projection
+        res = BFigure(title=title, projection=projection)
 
         factory.figures.append(res)
 
@@ -594,6 +775,7 @@ def _render_mpl(fig: BFigure) -> "Figure":
 
 
 def showFigures():
+    """Renders and shows all BFigure"""
     factory = FigureFactory()
     for f in factory.figures:
         f.render()

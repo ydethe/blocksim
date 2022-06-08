@@ -19,7 +19,7 @@ class Peak:
     value: float
 
     def __repr__(self):
-        from ..graphics import format_parameter
+        from .graphics import format_parameter
 
         res = "%s(" % self.__class__.__name__
         for lbl, c, unt in zip(self.coord_label, self.coord, self.coord_unit):
