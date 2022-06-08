@@ -709,7 +709,7 @@ def _render_mpl(fig: BFigure, tight_layout: bool = False) -> "Figure":
         for plottable in axe.plottable_factories:
             info = plottable.render(axe)
 
-            if info["unit_of_x_var"] != "":
+            if info["unit_of_x_var"] != "" and info["unit_of_x_var"] != "-":
                 if unit_of_x_var is None:
                     unit_of_x_var = info["unit_of_x_var"]
                 else:
@@ -718,7 +718,7 @@ def _render_mpl(fig: BFigure, tight_layout: bool = False) -> "Figure":
                             "Inconsistent X unit between lines in a same axe"
                         )
 
-            if info["unit_of_y_var"] != "":
+            if info["unit_of_y_var"] != "" and info["unit_of_y_var"] != "-":
                 if unit_of_y_var is None:
                     unit_of_y_var = info["unit_of_y_var"]
                 else:
