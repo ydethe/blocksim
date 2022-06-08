@@ -623,7 +623,7 @@ class BFigure(object):
         """
         self.axe_factories.append(baxe)
 
-    def render(self) -> "Figure":
+    def render(self, tight_layout: bool = False) -> "Figure":
         """Actually renders the figure with matplotlib
 
         Returns:
@@ -631,7 +631,7 @@ class BFigure(object):
 
         """
         if self.projection == FigureProjection.MPL:
-            fig = _render_mpl(self)
+            fig = _render_mpl(self, tight_layout=tight_layout)
         else:
             fig = _render_earth3d(self)
 
@@ -682,7 +682,7 @@ def _render_earth3d(fig: BFigure) -> "B3DPlotter":
     return app
 
 
-def _render_mpl(fig: BFigure) -> "Figure":
+def _render_mpl(fig: BFigure, tight_layout: bool = False) -> "Figure":
     mfig = plt.figure()
     mfig.suptitle(fig.title)
 
@@ -769,15 +769,16 @@ def _render_mpl(fig: BFigure) -> "Figure":
             if y_label != "":
                 maxe.set_ylabel(y_label)
 
-    mfig.tight_layout()
+    if tight_layout:
+        mfig.tight_layout()
 
     return mfig
 
 
-def showFigures():
+def showFigures(tight_layout: bool = False):
     """Renders and shows all BFigure"""
     factory = FigureFactory()
     for f in factory.figures:
-        f.render()
+        f.render(tight_layout=tight_layout)
 
     plt.show()
