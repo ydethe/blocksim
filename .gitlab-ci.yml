@@ -23,6 +23,7 @@ test:
     - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
     - python3 -m ipykernel install --user --name=sim
     - make -f dev/Makefile_Doc.mk
+    - make -f dev/Makefile_Doc.mk classes
   artifacts:
     when: always
     paths:
