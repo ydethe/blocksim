@@ -816,6 +816,10 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
             samplingYPeriod=df,
             img=img,
         )
+        spg.name_of_x_var = "Time"
+        spg.unit_of_x_var = "s"
+        spg.name_of_y_var = "Frequency"
+        spg.unit_of_y_var = "Hz"
 
         return spg
 

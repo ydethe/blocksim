@@ -565,7 +565,8 @@ class BAxe(object):
         )
         self.mpl_axe = maxe
 
-        maxe.set_title(self.title)
+        if self.title != "":
+            maxe.set_title(self.title)
 
         if self.projection == AxeProjection.PLATECARREE:
             maxe.stock_img()
