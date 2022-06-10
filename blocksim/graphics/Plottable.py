@@ -400,7 +400,7 @@ class PlottableArray(APlottable):
         kwargs: The dictionary of options for plotting (color, width,etc)
 
     Examples:
-        >>> PlottableArray(plottable=np.arange(10), kwargs={})
+        >>> _ = PlottableArray(plottable=np.arange(10), kwargs={})
 
     """
 
@@ -434,7 +434,7 @@ class PlottableDictTuple(APlottable):
     Examples:
         >>> xdesc = {"data": np.arange(10), "name": "Time", "unit": "s"}
         >>> ydesc = {"data": np.arange(10), "name": "Time", "unit": "s"}
-        >>> PlottableDictTuple(plottable=(xdesc, ydesc), kwargs={})
+        >>> _ = PlottableDictTuple(plottable=(xdesc, ydesc), kwargs={})
 
     """
 
@@ -468,7 +468,7 @@ class PlottableTuple(APlottable):
         kwargs: The dictionary of options for plotting (color, width,etc)
 
     Examples:
-        >>> PlottableTuple(plottable=(np.arange(10),np.arange(10)*2-1), kwargs={})
+        >>> _ = PlottableTuple(plottable=(np.arange(10),np.arange(10)*2-1), kwargs={})
 
     """
 
