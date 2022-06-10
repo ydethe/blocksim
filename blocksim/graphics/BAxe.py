@@ -9,8 +9,8 @@ from cartopy.geodesic import Geodesic
 from ..dsp.DSPLine import DSPLine
 from ..dsp.DSPSpectrogram import DSPSpectrogram
 from ..constants import Req
-from ..satellite.Trajectory import Trajectory, Cube
-from .enums import AxeProjection, FigureProjection
+from ..satellite.Trajectory import Trajectory
+from .GraphicSpec import AxeProjection, FigureProjection
 from .BLayout import BGridElement
 from .Plottable import *
 

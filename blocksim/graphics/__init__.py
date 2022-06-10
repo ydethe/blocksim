@@ -11,7 +11,6 @@ from numpy import log10
 
 from matplotlib import pyplot as plt
 
-
 from .. import logger
 from ..loggers.Logger import Logger
 from ..dsp.DSPFilter import ADSPFilter
@@ -192,7 +191,7 @@ def createFigureFromSpec(spec: "FigureSpec", log: Logger, fig=None) -> "BFigure"
         The matplotlib figure
 
     """
-    from .enums import AxeProjection
+    from .GraphicSpec import AxeProjection
     from .BFigure import FigureFactory
 
     n = len(spec.axes)
@@ -386,7 +385,7 @@ def quickPlot(*args, **kwargs) -> "BFigure":
         The axe used to plot
 
     """
-    from .enums import AxeProjection
+    from .GraphicSpec import AxeProjection
     from .BFigure import FigureFactory
 
     axe = kwargs.pop("axe", None)

@@ -12,7 +12,7 @@ import pytest
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.Simulation import Simulation
 from blocksim.constants import Req, omega, mu
-from blocksim.graphics.enums import AxeProjection
+from blocksim.graphics.GraphicSpec import AxeProjection
 from blocksim.satellite.Satellite import (
     SGP4Satellite,
     CircleSatellite,

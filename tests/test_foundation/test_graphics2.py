@@ -7,7 +7,7 @@ from blocksim.dsp.DSPLine import DSPLine
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp.DSPSpectrogram import DSPSpectrogram
 from blocksim.graphics.BFigure import FigureFactory
-from blocksim.graphics.enums import (
+from blocksim.graphics.GraphicSpec import (
     AxeProjection,
     FigureProjection,
 )

@@ -9,7 +9,7 @@ from numpy import pi
 from ..utils import find1dpeak
 from ..dsp.DSPLine import DSPLine
 from ..dsp.DSPSpectrogram import DSPSpectrogram
-from .enums import AxeProjection, FigureProjection
+from .GraphicSpec import AxeProjection, FigureProjection
 from ..satellite.Trajectory import Trajectory, Cube
 from . import getUnitAbbrev
 

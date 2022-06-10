@@ -5,7 +5,7 @@ import unittest
 import pytest
 
 from blocksim.graphics.BFigure import FigureFactory
-from blocksim.graphics.enums import AxeProjection
+from blocksim.graphics.GraphicSpec import AxeProjection
 from blocksim.utils import load_antenna_config
 from blocksim.dsp.AntennaNetwork import AntennaNetwork
 

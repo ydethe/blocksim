@@ -1,9 +1,10 @@
 from pathlib import Path
 import sys
+import unittest
 
 from blocksim.satellite.Trajectory import Cube
 from blocksim.graphics.BFigure import FigureFactory
-from blocksim.graphics.enums import FigureProjection
+from blocksim.graphics.GraphicSpec import FigureProjection
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
@@ -93,6 +94,11 @@ class TestB3DPlotter(TestBase):
 
 
 if __name__ == "__main__":
+    # unittest.main()
+    # exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = TestB3DPlotter()
     app = a.test_3d_plot()
 

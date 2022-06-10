@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from .B3DPlotter import B3DPlotter
-from .enums import AxeProjection, FigureProjection
+from .GraphicSpec import AxeProjection, FigureProjection
 from .BLayout import BGridSpec, BGridElement
 from .BAxe import BAxe
 
