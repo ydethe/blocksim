@@ -16,14 +16,16 @@ from . import getUnitAbbrev
 
 
 class APlottable(metaclass=ABCMeta):
-    """This base abstract class describes all the entity able to be plotted:
+    """This base abstract class describes all the entities able to be plotted:
 
-    * DSPLine
-    * DSPSpectrogram
+    * `blocksim.satellite.Trajectory.Cube` instances
+    * networkx graphs
+    * `blocksim.dsp.DSPLine.DSPLine`
+    * simple arrays
     * tuple of dictionaries
     * tuple of arrays
-    * simple arrays
-    * networckx graphs
+    * `blocksim.satellite.Trajectory.Trajectory` instances
+    * `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`
 
     Args:
         plottable: one of the instance above
