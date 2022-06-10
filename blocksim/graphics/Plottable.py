@@ -537,7 +537,7 @@ class PlottableTrajectory(APlottable):
                 "plot_method": app.plotTrajectory,
                 "fill": "",
                 "args": (self.plottable,),
-                "mpl_kwargs": {},
+                "mpl_kwargs": self.kwargs,
                 "peaks": [],
                 "name_of_x_var": "x",  # UNUSED
                 "unit_of_x_var": "m",  # UNUSED

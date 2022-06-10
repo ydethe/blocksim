@@ -106,22 +106,29 @@ class B3DPlotter(ShowBase):
         self.sun_light.setPos(pos)
         self.render.setLight(self.sun_light)
 
-    def plotTrajectory(self, traj: Trajectory):
+    def plotTrajectory(self, traj: Trajectory, color: list = None):
         """Plots a Trajectory around the 3D Earth
 
         Args:
             traj: The Trajectory to plot
+            color: The color as a 4-elements tuple (if not given, takes the one specified in traj):
+
+                * r between 0 and 1
+                * g between 0 and 1
+                * b between 0 and 1
+                * alpha between 0 and 1
 
         """
+        if color is None:
+            color = traj.color
+
         self.plotCube(
             itrf_position=(traj.x[0], traj.y[0], traj.z[0]),
             size=100000,
-            color=traj.color,
+            color=color,
         )
         if len(traj) > 1:
-            self.plotLine(
-                color=traj.color, itrf_positions=list(zip(traj.x, traj.y, traj.z))
-            )
+            self.plotLine(color=color, itrf_positions=list(zip(traj.x, traj.y, traj.z)))
 
     def plotLine(self, color: list, itrf_positions: list) -> "NodePath":
         """Plots a custom 3D line

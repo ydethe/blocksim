@@ -12,16 +12,15 @@ from TestBase import TestBase
 
 class TestB3DPlotter(TestBase):
     def test_3d_plot(self):
-        from datetime import datetime, timedelta, timezone
+        from datetime import datetime, timezone
 
         import numpy as np
-        from numpy import sqrt, cos, sin, pi
+        from numpy import pi
         from scipy import linalg as lin
 
         from blocksim.constants import Req
         from blocksim.gnss.GNSSReceiver import GNSSReceiver
         from blocksim.satellite.Satellite import SGP4Satellite
-        from blocksim.graphics.B3DPlotter import B3DPlotter
 
         # Parametres orbite
         t_init = datetime(
@@ -57,8 +56,8 @@ class TestB3DPlotter(TestBase):
             name="rec",
             tsync=t_init,
             nsat=1,
-            lat=8.50510613183644,
-            lon=-59.68293668545234,
+            lat=8.50510613183644 * pi / 180,
+            lon=-59.68293668545234 * pi / 180,
             alt=0,
         )
         device.resetCallback(0.0)
@@ -74,9 +73,6 @@ class TestB3DPlotter(TestBase):
         psat = satellite.getGeocentricITRFPositionAt(0)[:3]
         psat_sim = sim.getGeocentricITRFPositionAt(0)[:3]
         dsat = device.getGeocentricITRFPositionAt(0)[:3]
-        u1 = dsat / lin.norm(dsat)
-        u2 = (psat - dsat) / lin.norm(psat - dsat)
-        print(180 / pi * np.arcsin(u1 @ u2))
 
         fig = FigureFactory.create(projection=FigureProjection.EARTH3D)
         self.assertRaises(AssertionError, fig.add_gridspec, 2, 1)
