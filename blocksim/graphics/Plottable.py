@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 from typing import Tuple
-import matplotlib as mpl
 
 import networkx as nx
 from networkx.classes.graph import Graph
@@ -18,14 +17,19 @@ from . import getUnitAbbrev
 class APlottable(metaclass=ABCMeta):
     """This base abstract class describes all the entities able to be plotted:
 
-    * `blocksim.satellite.Trajectory.Cube` instances
-    * networkx graphs
-    * `blocksim.dsp.DSPLine.DSPLine`
-    * simple arrays
-    * tuple of dictionaries
-    * tuple of arrays
-    * `blocksim.satellite.Trajectory.Trajectory` instances
-    * `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`
+    * `blocksim.satellite.Trajectory.Cube` instances. See `PlottableCube`
+    * networkx graphs. See `PlottableGraph`
+    * `blocksim.dsp.DSPLine.DSPLine`. See `PlottableDSPLine`
+    * simple arrays. See `PlottableArray`
+    * tuple of dictionaries, see `PlottableDictTuple`. The dictionaries keys are:
+
+        * data
+        * name
+        * unit
+
+    * tuple of arrays. See `PlottableTuple`
+    * `blocksim.satellite.Trajectory.Trajectory` instances. See `PlottableTrajectory`
+    * `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`. See `PlottableDSPSpectrogram`
 
     Args:
         plottable: one of the instance above
@@ -195,6 +199,20 @@ class APlottable(metaclass=ABCMeta):
 
 
 class PlottableCube(APlottable):
+    """Allows plotting a `blocksim.satellite.Trajectory.Cube`
+    Only possible in `blocksim.graphics.enums.FigureProjection.EARTH3D`.
+    Available plotting options:
+
+    * color
+
+    See `blocksim.graphics.B3DPlotter.B3DPlotter.plotCube`
+
+    Args:
+        plottable: a `blocksim.satellite.Trajectory.Cube` instance
+        kwargs: The dictionary of options for plotting (color, width,etc)
+
+    """
+
     def _make_mline(self) -> Tuple["array", "array", str, str, str, str]:
         pass
 
@@ -238,10 +256,13 @@ class PlottableCube(APlottable):
 
 
 class PlottableGraph(APlottable):
-    """
+    """Allows plotting a networkx MultiDiGraph
+    Only possible in `blocksim.graphics.enums.FigureProjection.MPL`.
+    Available plotting options:
+    see https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pylab.draw_networkx.html
 
     Args:
-        plottable: one of the instance above
+        plottable: a networkx MultiDiGraph instance
         kwargs: The dictionary of options for plotting (color, width,etc)
 
     """
@@ -347,7 +368,13 @@ class PlottableGraph(APlottable):
 
 
 class PlottableDSPLine(APlottable):
-    """Specialisation of `APlottable` for `blocksim.dsp.DSPLine.DSPLine`"""
+    """Specialisation of `APlottable` for `blocksim.dsp.DSPLine.DSPLine`
+
+    Args:
+        plottable: a `blocksim.dsp.DSPLine.DSPLine` instance
+        kwargs: The dictionary of options for plotting (color, width,etc)
+
+    """
 
     __slots__ = []
 
@@ -367,7 +394,16 @@ class PlottableDSPLine(APlottable):
 
 
 class PlottableArray(APlottable):
-    """Specialisation of `APlottable` to handle simple numpy arrays"""
+    """Specialisation of `APlottable` to handle simple numpy arrays,
+
+    Args:
+        plottable: a numpy array
+        kwargs: The dictionary of options for plotting (color, width,etc)
+
+    Examples:
+        >>> PlottableArray(plottable=np.arange(10), kwargs={})
+
+    """
 
     __slots__ = []
 
@@ -391,6 +427,15 @@ class PlottableDictTuple(APlottable):
     * data (mandatory)
     * name (optional)
     * unit (optional)
+
+    Args:
+        plottable: a 2 elements tuple of dictionaries
+        kwargs: The dictionary of options for plotting (color, width,etc)
+
+    Examples:
+        >>> xdesc = {"data": np.arange(10), "name": "Time", "unit": "s"}
+        >>> ydesc = {"data": np.arange(10), "name": "Time", "unit": "s"}
+        >>> PlottableDictTuple(plottable=(xdesc, ydesc), kwargs={})
 
     """
 
@@ -417,7 +462,16 @@ class PlottableDictTuple(APlottable):
 
 
 class PlottableTuple(APlottable):
-    """Specialisation of `APlottable` to handle a 2 elements tuple of numpy arrays"""
+    """Specialisation of `APlottable` to handle a 2 elements tuple of numpy arrays
+
+    Args:
+        plottable: a 2 elements tuple of numpy arrays
+        kwargs: The dictionary of options for plotting (color, width,etc)
+
+    Examples:
+        >>> PlottableTuple(plottable=(np.arange(10),np.arange(10)*2-1), kwargs={})
+
+    """
 
     __slots__ = []
 
@@ -441,6 +495,16 @@ class PlottableTuple(APlottable):
 
 
 class PlottableTrajectory(APlottable):
+    """Specialisation of `APlottable` to handle `blocksim.satellite.Trajectory.Trajectory`
+
+    Args:
+        plottable: a `blocksim.satellite.Trajectory.Trajectory` instance
+        kwargs: The dictionary of options for plotting (color, width,etc)
+
+    """
+
+    __slots__ = []
+
     def _make_mline(self) -> Tuple["array", "array", str, str, str, str]:
         # Only used if axe.figure.projection==FigureProjection.MPL
         lon, lat = self.plottable.getGroundTrack()
@@ -502,7 +566,13 @@ class PlottableTrajectory(APlottable):
 
 
 class PlottableDSPSpectrogram(APlottable):
-    """Specialisation of `APlottable` for `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`"""
+    """Specialisation of `APlottable` for `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`
+
+    Args:
+        plottable: a `blocksim.dsp.DSPSpectrogram.DSPSpectrogram` instance
+        kwargs: The dictionary of options for plotting (color, width,etc)
+
+    """
 
     __slots__ = []
 
@@ -608,14 +678,14 @@ class PlottableFactory(object):
 
             * a `blocksim.dsp.DSPLine.DSPLine`
             * a `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`
+            * a 2 elements tuple of numpy arrays
+            * a simple numpy arrays
+            * a networkx DiGraph
             * a 2 elements tuple of dictionaries, with keys:
 
                 * data
                 * name
                 * unit
-            * a 2 elements tuple of numpy arrays
-            * a simple numpy arrays
-            * a networkx DiGraph
 
             kwargs: The plotting options for the object
 

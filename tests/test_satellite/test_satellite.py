@@ -239,7 +239,7 @@ class TestSatellite(TestBase):
         )
         self.assertEqual(len(traj), 100)
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=24, savefig_kwargs={"dpi": 150})
     def test_ground_track(self):
         pt = (-74.0542275 * pi / 180, 40.7004153 * pi / 180)
 
