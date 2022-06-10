@@ -1,34 +1,33 @@
 """A set of useful functions
 
 """
-
+from datetime import datetime
 import os
 import sys
 import glob
 import re
-from datetime import datetime, timedelta, timezone
 from typing import Iterable, Tuple, Any, List
 import importlib
+from dataclasses import dataclass
 
-from tqdm import tqdm
 from scipy import linalg as lin
 from scipy.interpolate import interp1d
-from scipy.optimize import root_scalar, root, minimize
-from nptyping import NDArray, Shape
+from scipy.optimize import root_scalar, minimize
+from nptyping import NDArray
 import numpy as np
 from numpy import pi, arcsin, arccos, arctan, arctan2, tan, sin, cos, sqrt, exp
-from skyfield.api import Topos, load, utc
+from skyfield.api import load, utc
 from skyfield.timelib import Time
-from skyfield.sgp4lib import TEME_to_ITRF, theta_GMST1982
+from skyfield.sgp4lib import theta_GMST1982
 
 from . import logger
 from .constants import *
 from .exceptions import *
 from .constants import Req
-from .Peak import Peak
 
 
 __all__ = [
+    "Peak",
     "find1dpeak",
     "find2dpeak",
     "casedpath",
@@ -72,6 +71,34 @@ __all__ = [
     "cexp",
     "load_antenna_config",
 ]
+
+
+@dataclass(init=True)
+class Peak:
+    """Represents a peak in a plot or a 3D plot
+
+    Examples:
+        >>> p = Peak(coord_label=("x",), coord_unit=("m",),coord=(1,), value=3.5)
+        >>> print(p)
+        Peak(x=1 m, value=3.5)
+
+    """
+
+    coord_label: tuple
+    coord_unit: tuple
+    coord: tuple
+    value: float
+
+    def __repr__(self):
+        from .graphics import format_parameter
+
+        res = "%s(" % self.__class__.__name__
+        for lbl, c, unt in zip(self.coord_label, self.coord, self.coord_unit):
+            txt = format_parameter(c, unt)
+            res += "%s=%s, " % (lbl, txt)
+        res += "value=%.3g)" % self.value
+
+        return res
 
 
 def casedpath(path):
@@ -128,6 +155,9 @@ def find1dpeak(
         The list of detected peaks, sorted by descreasing value of the peak
 
     """
+    if nb_peaks == 0:
+        return []
+
     n = len(yd)
     lpeak = []
     ep = 1
@@ -188,6 +218,9 @@ def find2dpeak(
         The list of detected peaks, sorted by descreasing value of the peak
 
     """
+    if nb_peaks == 0:
+        return []
+
     ep = 2
     eq = 2
     Np, Nq = zd.shape

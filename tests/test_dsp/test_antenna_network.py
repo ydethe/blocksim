@@ -1,13 +1,11 @@
 from pathlib import Path
 import sys
-from pickle import dump, load
+import unittest
 
 import pytest
-import numpy as np
-from matplotlib import pyplot as plt
 
-from blocksim.graphics import plotSpectrogram
-
+from blocksim.graphics.BFigure import FigureFactory
+from blocksim.graphics.enums import AxeProjection
 from blocksim.utils import load_antenna_config
 from blocksim.dsp.AntennaNetwork import AntennaNetwork
 
@@ -24,20 +22,25 @@ class TestAntennaNetwork(TestBase):
 
         ant = AntennaNetwork(ac)
 
-        fig = plt.figure()
-        gs = fig.add_gridspec(1, 1)
-
         diag = ant.antennaDiagram()
 
-        plotSpectrogram(diag, spec=gs[0, 0], levels=50, fill="contour")
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0], projection=AxeProjection.POLAR)
+        axe.plot(diag, levels=50, fill="contour")
 
-        return fig
+        return fig.render()
 
 
 if __name__ == "__main__":
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = TestAntennaNetwork()
 
     a.setUp()
     a.test_antenna_diagram()
 
-    showFigures()()
+    showFigures()

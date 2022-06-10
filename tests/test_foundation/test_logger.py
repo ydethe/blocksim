@@ -1,13 +1,10 @@
 from datetime import datetime
 import sys
-import os
 from pathlib import Path
 import unittest
 
 import numpy as np
-from numpy import pi, exp, sin
-from matplotlib import pyplot as plt
-import pytest
+from numpy import exp
 
 from blocksim import logger
 from blocksim.loggers.Logger import Logger
@@ -143,6 +140,9 @@ class TestLogger(TestBase):
 
 
 if __name__ == "__main__":
+    unittest.main()
+    exit(0)
+
     a = TestLogger()
     a.setUp()
     a.test_save_load_csv()

@@ -74,7 +74,7 @@ class ADSPFilter(AComputer):
         return gd
 
     @abstractmethod
-    def generateCoefficients(self) -> Tuple["array"]:  # pragma: no cover
+    def generateCoefficients(self) -> Tuple["array", "array"]:  # pragma: no cover
         r"""Shall return a and b coefficient of numerator and denominator respectively
         Coefficients for both the numerator and denominator should be specified in descending exponent order
         (e.g. \( z^2 + 3.z + 5 \) would be represented as [1, 3, 5]).

@@ -1,21 +1,17 @@
-from typing import List, Tuple, Any
-from datetime import datetime, timedelta, timezone
+from typing import Tuple, Any
+from datetime import datetime, timedelta
 
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
 from numpy import sqrt
-from numpy import pi
 import scipy.linalg as lin
 from scipy.optimize import minimize, Bounds
-from skyfield.api import Topos, load
-from skyfield import framelib
 
-from ..core.Node import AComputer, Output
+from ..core.Node import AComputer
 
 from .. import logger
-from ..utils import datetime_to_skyfield, skyfield_to_datetime, build_local_matrix
-from ..constants import c as clum
-from ..utils import pdot, geodetic_to_itrf
+from ..utils import build_local_matrix
+from ..utils import geodetic_to_itrf
 
 
 class GNSSReceiver(AComputer):
@@ -66,6 +62,9 @@ class GNSSReceiver(AComputer):
         self.createParameter("algo", value="ranging")
         self.createParameter("optim", value="trust-constr")
         self.createParameter(name="tsync", value=tsync)
+
+    def getGeocentricITRFPositionAt(self, t: float) -> NDArray[Any, Any]:
+        return self.__itrf_pv.copy()
 
     def getSatellitePositionFromEphem(
         self, ephem: NDArray[Any, Any], isat: int

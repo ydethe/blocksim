@@ -1,17 +1,13 @@
 import sys
 from pathlib import Path
-import unittest
 
-import pytest
 import numpy as np
-from numpy import pi, exp, log10, sqrt
-from matplotlib import pyplot as plt
+from numpy import pi, exp
 
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp.DSPAWGN import DSPAWGN
 from blocksim.control.Route import Group
 from blocksim.Simulation import Simulation
-
 from blocksim.dsp.PSKMod import PSKMapping, PSKDemapping
 
 sys.path.insert(0, str(Path(__file__).parent.parent))

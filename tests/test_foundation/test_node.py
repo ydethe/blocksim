@@ -1,10 +1,10 @@
 import sys
 from pathlib import Path
 from typing import Any
+import unittest
 
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
-from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.control.SetPoint import Step
@@ -86,16 +86,16 @@ class TestSimpleControl(TestBase):
         err = np.max(np.abs(x - x_ref))
         self.assertAlmostEqual(err, 0, delta=1e-10)
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [{"var": "sys_state_x"}, {"var": "stp_setpoint_c"}],
         )
+        return fig.render()
 
 
 if __name__ == "__main__":
-    # unittest.main()
+    unittest.main()
+    exit(0)
 
     a = TestSimpleControl()
     a.test_simple_control()
-
-    showFigures()()

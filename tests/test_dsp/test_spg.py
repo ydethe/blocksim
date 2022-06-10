@@ -3,11 +3,10 @@ from pathlib import Path
 import unittest
 
 import numpy as np
-from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.dsp.DSPSpectrogram import DSPSpectrogram
-from blocksim.graphics import plotSpectrogram
+from blocksim.graphics.BFigure import FigureFactory
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase, plotAnalyticsolution
@@ -38,18 +37,21 @@ class TestDSPSpectrogram(TestBase):
             default_transform=lambda x: x,
         )
 
-        fig = plt.figure()
+        fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(spg, find_peaks=2)
 
-        plotSpectrogram(spg=spg, spec=gs[0, 0], find_peaks=2)
-
-        return fig
+        return fig.render()
 
 
 if __name__ == "__main__":
-    # unittest.main()
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
 
     a = TestDSPSpectrogram()
     a.test_2d_peak()
 
-    showFigures()()
+    showFigures()

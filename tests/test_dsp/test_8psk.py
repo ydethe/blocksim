@@ -11,7 +11,7 @@ from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp.DSPAWGN import DSPAWGN
 from blocksim.control.Route import Group
 from blocksim.Simulation import Simulation
-
+from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp.PSKMod import PSKMapping, PSKDemapping
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -43,11 +43,12 @@ class Test8PSK(TestBase):
 
         self.assertAlmostEqual(np.max(np.abs(data - data2)), 0, delta=1e-9)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
         psk_co.plotConstellation(axe)
 
-        return axe.figure
+        return fig.render()
 
     def test_8psk_noise(self):
         mapping = [
@@ -122,8 +123,13 @@ class Test8PSK(TestBase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
 
     a = Test8PSK()
     a.test_8psk()
     a.test_8psk_noise()
+
+    showFigures()

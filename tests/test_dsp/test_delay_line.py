@@ -4,11 +4,9 @@ import unittest
 
 import pytest
 import numpy as np
-from numpy import log10, sqrt, exp, pi, cos
-from matplotlib import pyplot as plt
+from numpy import exp, pi, cos
 
 from blocksim import logger
-
 from blocksim.dsp.DelayLine import InfiniteDelayLine, FiniteDelayLine
 
 sys.path.insert(0, str(Path(__file__).parent.parent))

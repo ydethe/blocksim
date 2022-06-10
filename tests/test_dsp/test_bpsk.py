@@ -4,13 +4,12 @@ import unittest
 
 import pytest
 import numpy as np
-from numpy import pi, exp, log10, sqrt
+from numpy import pi
 from scipy import linalg as lin
-from matplotlib import pyplot as plt
 
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp.DSPAWGN import DSPAWGN
-from blocksim.graphics import plotDSPLine
+from blocksim.graphics.BFigure import FigureFactory
 from blocksim.Simulation import Simulation
 
 from blocksim.dsp import createGoldSequence
@@ -107,22 +106,25 @@ class TestBPSK(TestBase):
         mod = self.log.getFlattenOutput("bpsk_output", dtype=np.complex128)
 
         sig = DSPSignal.fromTimeAndSamples(name="sig", tps=tps, y_serie=mod)
-
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-
         sp = sig.fft()
-        plotDSPLine(sp, axe, transform=sp.to_db)
 
-        return fig
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(sp, transform=sp.to_db)
+
+        return fig.render()
 
 
 if __name__ == "__main__":
-    # unittest.main()
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
 
     a = TestBPSK()
     # a.test_bpsk()
     # a.test_bpsk_noise()
     a.test_bpsk_spectrum()
 
-    showFigures()()
+    showFigures()

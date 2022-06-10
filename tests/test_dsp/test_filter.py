@@ -5,13 +5,11 @@ from math import factorial
 import unittest
 
 import numpy as np
-from numpy import pi, exp, sin, cos
-from scipy import linalg as lin
-from scipy.signal import lfilter
-from matplotlib import pyplot as plt
+from numpy import pi, exp
 import pytest
 
-from blocksim.graphics import plotBode, plotDSPLine
+from blocksim.graphics.BFigure import FigureFactory
+from blocksim.graphics import plotBode
 from blocksim.dsp import derivative_coeff
 from blocksim.dsp.DSPFilter import ArbitraryDSPFilter, BandpassDSPFilter
 from blocksim.dsp.DSPSignal import DSPSignal
@@ -36,12 +34,13 @@ class TestFilter(TestBase):
             win=("chebwin", -60),
         )
 
-        fig = plt.figure()
+        fig = FigureFactory.create()
         gs = fig.add_gridspec(2, 1)
+        axe_amp = fig.add_baxe(title="Amplitude", spec=gs[0, 0])
+        axe_pha = fig.add_baxe(title="Phase", spec=gs[1, 0], sharex=axe_amp)
+        plotBode(filt, axe_amp=axe_amp, axe_pha=axe_pha)
 
-        plotBode(filt, gs[0, 0], gs[1, 0])
-
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_filtrage(self):
@@ -88,15 +87,14 @@ class TestFilter(TestBase):
         err = np.max(np.abs(crop.y_serie))
         self.assertAlmostEqual(err, 0, delta=0.2)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(y, label="simu")
+        axe.plot(s2, label="theoric")
+        axe.plot(y_direct, label="direct")
 
-        plotDSPLine(y, axe, label="simu")
-        plotDSPLine(s2, axe, label="theoric")
-        plotDSPLine(y_direct, axe, label="direct")
-        axe.legend(loc="best")
-
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_filtrage_chirp(self):
@@ -142,12 +140,12 @@ class TestFilter(TestBase):
         y = DSPSignal.fromLogger(name="filt", log=log, param="filter_filt_sample")
         y = y.forceSamplingStart(y.generateXSerie(0) - filt.getGroupDelay())
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(y, transform=np.abs)
 
-        plotDSPLine(y, axe, transform=np.abs)
-
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_freq_estimator(self):
@@ -171,19 +169,24 @@ class TestFilter(TestBase):
         tps = np.arange(ns) / fs
         freq = -bp / 2 + bp * tps / tau
 
-        fig = plt.figure()
-        gs = fig.add_gridspec(1, 1)
-
         taps = derivative_coeff(rank=1, order=10)
         filt = ArbitraryDSPFilter(name="filt", samplingPeriod=1 / fs, num=taps * fs)
 
         psig = filt.apply(sig)
         res = -psig / sig / (2 * pi * 1j)
-        axe = plotDSPLine(line=res, spec=gs[0, 0], transform=np.real)
-        axe.plot(tps, freq)
-        axe.set_ylabel("Frequency (Hz)")
 
-        return fig
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(res, transform=np.real)
+        axe.plot(
+            plottable=(
+                {"data": tps, "unit": "s", "name": "Time"},
+                {"data": freq, "unit": "Hz", "name": "Frequency"},
+            )
+        )
+
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_fir_design(self):
@@ -191,9 +194,10 @@ class TestFilter(TestBase):
         desired = (0, 1, 0)
         bands = (0, 1.5, 2, 3, 3.5, 5)
 
-        fig = plt.figure()
-        axe_amp = fig.add_subplot(211)
-        axe_pha = fig.add_subplot(212, sharex=axe_amp)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(2, 1)
+        axe_amp = fig.add_baxe(title="Amplitude", spec=gs[0, 0])
+        axe_pha = fig.add_baxe(title="Phase", spec=gs[1, 0], sharex=axe_amp)
 
         for method in ["firwin2", "remez", "ls"]:
             filt = ArbitraryDSPFilter.fromFIRSpecification(
@@ -204,12 +208,13 @@ class TestFilter(TestBase):
                 bands=bands,
                 desired=desired,
             )
-            plotBode(filt, spec_amp=axe_amp, spec_pha=axe_pha)
-        axe_amp.legend(["firwin2", "remez", "ls"])
+            plotBode(filt, axe_amp=axe_amp, axe_pha=axe_pha, label=method)
 
-        axe_amp.plot((2, 3), (0, 0), linestyle="--", color="black", linewidth=2)
+        axe_amp.plot(
+            plottable=((2, 3), (0, 0)), linestyle="--", color="black", linewidth=2
+        )
 
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_iir_design(self):
@@ -221,23 +226,25 @@ class TestFilter(TestBase):
         gpass = 1
         gstop = 40
 
-        fig = plt.figure()
-        gs = fig.add_gridspec(2, 1)
-
         filt = ArbitraryDSPFilter.fromIIRSpecification(
             name="filt", wp=wp, ws=ws, gpass=gpass, gstop=gstop, fs=fs
         )
         num, den = filt.generateCoefficients()
-        axe_amp, axe_pha = plotBode(filt, spec_amp=gs[0, 0], spec_pha=gs[1, 0])
+
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(2, 1)
+        axe_amp = fig.add_baxe(title="Amplitude", spec=gs[0, 0])
+        axe_pha = fig.add_baxe(title="Phase", spec=gs[1, 0], sharex=axe_amp)
+        plotBode(filt, axe_amp=axe_amp, axe_pha=axe_pha)
 
         sys = dlti(num, den, dt=1 / fs)
         w, mag, phase = sys.bode()
-        axe_amp.plot(w / (2 * pi), mag, label="scipy")  # Bode magnitude plot
-        axe_pha.plot(w / (2 * pi), phase, label="scipy")  # Bode phase plot
-        axe_amp.legend()
-        axe_pha.legend()
+        axe_amp.plot(
+            plottable=(w / (2 * pi), mag), label="scipy"
+        )  # Bode magnitude plot
+        axe_pha.plot(plottable=(w / (2 * pi), phase), label="scipy")  # Bode phase plot
 
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_iir_filter(self):
@@ -267,15 +274,14 @@ class TestFilter(TestBase):
 
         z = filt.apply(sig)
 
-        fig = plt.figure()
+        fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(sig, label="noisy signal")
+        axe.plot(z, label="filt.apply")
+        axe.plot(plottable=(t, z_sp[:, 0]), label="dlti.output")
 
-        axe = plotDSPLine(sig, spec=gs[0, 0])
-        plotDSPLine(z, spec=axe)
-        axe.plot(t, z_sp[:, 0])
-        axe.legend(("noisy signal", "filt.apply", "dlti.output"), loc="best")
-
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_transfer_function(self):
@@ -286,36 +292,39 @@ class TestFilter(TestBase):
         dt = 1 / 100.0
         num = [1.4, -1.8, 1.4]
         den = [1, 0, 0]
-        # num = [-2, 1]
-        # den = [1, 0, 1]
 
         filt = ArbitraryDSPFilter(name="filt", samplingPeriod=dt, num=num, den=den)
         sys = dlti(num, den, dt=dt)
 
-        fig = plt.figure()
+        fig = FigureFactory.create()
         gs = fig.add_gridspec(2, 1)
-        axe_amp, axe_pha = plotBode(
-            filt, spec_amp=gs[0, 0], spec_pha=gs[1, 0], fpoints=100
-        )
+        axe_amp = fig.add_baxe(title="Amplitude", spec=gs[0, 0])
+        axe_pha = fig.add_baxe(title="Phase", spec=gs[1, 0], sharex=axe_amp)
+        plotBode(filt, axe_amp=axe_amp, axe_pha=axe_pha, fpoints=100)
 
         w, mag, phase = sys.bode(n=100)
-        axe_amp.plot(w / (2 * pi), mag, label="scipy")  # Bode magnitude plot
-        axe_pha.plot(w / (2 * pi), phase, label="scipy")  # Bode phase plot
-        axe_amp.legend()
-        axe_pha.legend()
+        axe_amp.plot(
+            plottable=(w / (2 * pi), mag), label="scipy"
+        )  # Bode magnitude plot
+        axe_pha.plot(plottable=(w / (2 * pi), phase), label="scipy")  # Bode phase plot
 
-        return fig
+        return fig.render()
 
 
 if __name__ == "__main__":
+    # unittest.main()
+    # exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = TestFilter()
     # a.test_bode()
     # a.test_filtrage()
     # a.test_filtrage_chirp()
-    a.test_freq_estimator()
+    # a.test_freq_estimator()
     # a.test_iir_design()
-    # a.test_iir_filter()
+    a.test_iir_filter()
     # a.test_transfer_function()
     # a.test_fir_design()
 
-    showFigures()()
+    showFigures()

@@ -1,12 +1,27 @@
 from typing import Tuple, Any
 
 import pandas as pd
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
-from numpy import pi
 
 from ..loggers.Logger import Logger
 from ..utils import itrf_to_geodetic
+
+
+class Cube(object):
+    """Description of a cube, to be pltted on a 3D view
+
+    Args:
+        position: ITRF coordinate of the center (m)
+        size: size of the cube (m)
+
+    """
+
+    __slots__ = ["position", "size"]
+
+    def __init__(self, position: NDArray[Any, Any], size: float):
+        self.position = position
+        self.size = size
 
 
 class Trajectory(object):

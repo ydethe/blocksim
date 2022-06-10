@@ -1,16 +1,17 @@
 import sys
 from pathlib import Path
 from typing import Any
+import unittest
 
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
 from numpy import exp, pi
-import matplotlib.pyplot as plt
 import pytest
 
 from blocksim.control.Estimator import SpectrumEstimator
 from blocksim.Simulation import Simulation
-from blocksim.graphics import plotSpectrogram, plotBode
+from blocksim.graphics.BFigure import FigureFactory
+from blocksim.graphics import plotBode
 from blocksim.dsp.DSPSignal import DSPSignal
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -86,18 +87,18 @@ class TestTrackingSteadyState(TestBase):
         log = sim.getLogger()
         spg = kal.getSpectrogram(log)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        plotSpectrogram(spg, axe)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(spg)
         axe.plot(
-            self.t,
-            self.fchirp,
+            plottable=(self.t, self.fchirp),
             linewidth=2,
             color="white",
             linestyle="--",
         )
 
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=10, savefig_kwargs={"dpi": 150})
     def test_bode_steadystate_cplxe(self):
@@ -115,13 +116,13 @@ class TestTrackingSteadyState(TestBase):
 
         filt = kal.getEstimatingFilter("filt")
 
-        fig = plt.figure()
+        fig = FigureFactory.create()
         gs = fig.add_gridspec(2, 1)
-        axe_amp, axe_pha = plotBode(
-            filt, spec_amp=gs[0, 0], spec_pha=gs[1, 0], fpoints=np.arange(0, 20, 0.1)
-        )
+        axe_amp = fig.add_baxe(title="Amplitude", spec=gs[0, 0])
+        axe_pha = fig.add_baxe(title="Phase", spec=gs[1, 0], sharex=axe_amp)
+        plotBode(filt, axe_amp=axe_amp, axe_pha=axe_pha, fpoints=np.arange(0, 20, 0.1))
 
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=30, savefig_kwargs={"dpi": 150})
     def ntest_bode3_steadystate_cplxe(self):
@@ -140,11 +141,11 @@ class TestTrackingSteadyState(TestBase):
         filt = kal.getEstimatingFilter("filt", ma_freq=[3])
         fpoints = np.arange(0, 20, 0.1)
 
-        fig = plt.figure()
+        fig = FigureFactory.create()
         gs = fig.add_gridspec(2, 1)
-        axe_amp, axe_pha = plotBode(
-            filt, spec_amp=gs[0, 0], spec_pha=gs[1, 0], fpoints=fpoints, pow_lim=-40
-        )
+        axe_amp = fig.add_baxe(title="Amplitude", spec=gs[0, 0])
+        axe_pha = fig.add_baxe(title="Phase", spec=gs[1, 0], sharex=axe_amp)
+        plotBode(filt, axe_amp=axe_amp, axe_pha=axe_pha, fpoints=fpoints, pow_lim=-40)
 
         #### TMP###
         # Check with scipy functions
@@ -163,19 +164,23 @@ class TestTrackingSteadyState(TestBase):
         sss = StateSpace(Ad - K @ Cd, K, Cf, Dd, dt=kal.dt)
         sss = sss.to_tf()
         _, mag, phase = sss.bode(w=fpoints * 2 * pi * self.dt)
-        axe_pha.plot(fpoints, phase, label="scipy bode")
-        axe_pha.legend()
+        axe_pha.plot(plottable=(fpoints, phase), label="scipy bode")
 
         #### TMP###
 
-        return fig
+        return fig.render()
 
 
 if __name__ == "__main__":
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = TestTrackingSteadyState()
     a.setUp()
     a.test_tracking_steadystate_cplxe()
     # a.test_bode_steadystate_cplxe()
     # a.test_bode3_steadystate_cplxe()
 
-    showFigures()()
+    showFigures()

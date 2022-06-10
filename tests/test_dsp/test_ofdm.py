@@ -4,12 +4,11 @@ import unittest
 
 import pytest
 import numpy as np
-from numpy import log10, sqrt
-from matplotlib import pyplot as plt
+from numpy import sqrt
 
 from blocksim import logger
-
 from blocksim.dsp.OFDMA import OFDMMapping, OFDMDemapping
+from blocksim.graphics.BFigure import FigureFactory
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
@@ -65,13 +64,12 @@ class TestOFDM(TestBase):
         ofdm_payload = ofdm_co.process(self.data)
         sig = ofdm_dec.flatten(ofdm_payload)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        axe.grid(True)
-
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
         axe.plot(np.real(sig))
 
-        return fig
+        return fig.render()
 
     def test_ofdm_demapping(self):
         ofdm_co = OFDMMapping(
@@ -98,11 +96,14 @@ class TestOFDM(TestBase):
 
 
 if __name__ == "__main__":
-    # unittest.main()
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
 
     a = TestOFDM()
     a.setUp()
     # a.test_ofdm_mapping()
     a.test_ofdm_demapping()
 
-    # showFigures()()
+    # showFigures()

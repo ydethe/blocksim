@@ -70,7 +70,7 @@ class TestSynchro(TestBase):
         err = self.log.getValue("np.abs(sys_state_x-cpt_measurement_x)")
         self.assertAlmostEqual(np.max(err), 0.0, delta=0.0)
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [
                 {"var": "sys_state_x", "label": "simulation"},
@@ -82,12 +82,16 @@ class TestSynchro(TestBase):
                 },
             ],
         )
+        return fig.render()
 
 
 if __name__ == "__main__":
-    # unittest.main()
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
 
     a = TestSynchro()
     a.test_synchro()
 
-    showFigures()()
+    showFigures()

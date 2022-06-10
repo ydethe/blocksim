@@ -44,12 +44,13 @@ class Test6DOFSys(TestBase):
         tf = tps[-1]
         self.assertAlmostEqual(pz[-1], g0 * tf**2 / 2, delta=1e-8)
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [{"var": "sys_state_px"}],
             [{"var": "sys_state_py"}],
             [{"var": "sys_state_pz"}],
         )
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_att_cplxe(self):
@@ -74,12 +75,13 @@ class Test6DOFSys(TestBase):
         sim.simulate(tps, progress_bar=False)
         self.log = sim.getLogger()
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [{"var": "deg(sys_euler_roll)"}],
             [{"var": "deg(sys_euler_pitch)"}],
             [{"var": "deg(sys_euler_yaw)"}],
         )
+        return fig.render()
 
     def test_att_roll(self):
         sys = G6DOFSystem("sys")
@@ -188,13 +190,18 @@ class Test6DOFSys(TestBase):
 
 
 if __name__ == "__main__":
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = Test6DOFSys()
     a.setUp()
     # a.test_trans()
-    # a.test_att_cplxe()
+    a.test_att_cplxe()
     # a.test_att_roll()
     # a.test_att_pitch()
     # a.test_att_yaw()
-    a.test_att_torque()
+    # a.test_att_torque()
 
-    showFigures()()
+    showFigures()

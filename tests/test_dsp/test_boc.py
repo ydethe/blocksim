@@ -4,13 +4,10 @@ import unittest
 
 import pytest
 import numpy as np
-from numpy import pi, exp, log10, sqrt
-from matplotlib import pyplot as plt
 
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.Simulation import Simulation
-from blocksim.graphics import plotDSPLine
-
+from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp.BOCMod import BOCMapping
 from blocksim.dsp import createGoldSequence
 
@@ -40,15 +37,14 @@ class TestBOC(TestBase):
         tps = boc.adaptTimeSerie(tps)
         sig = DSPSignal.fromTimeAndSamples(name="sig", tps=tps, y_serie=mod)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-
         sp = sig.fft()
-        plotDSPLine(sp, axe, label="BOC(%i,%i)" % (boc.m, boc.n), transform=sp.to_db)
 
-        axe.legend()
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(sp, label="BOC(%i,%i)" % (boc.m, boc.n), transform=sp.to_db)
 
-        return fig
+        return fig.render()
 
     def test_boc_parallel(self):
         fs = 1.023e6
@@ -70,19 +66,25 @@ class TestBOC(TestBase):
         m = 1
         boc = BOCMapping(name="BOC", f_ref=fs, m=m, n=n, p_samp=p_samp, input_size=1)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-
         y = boc.boc_seq.autoCorrelation()
-        plotDSPLine(y, axe, transform=np.real)
 
-        return fig
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(y, transform=np.real)
+
+        return fig.render()
 
 
 if __name__ == "__main__":
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = TestBOC()
     a.test_boc_spectrum()
     # a.test_boc_autocorr()
     # a.test_boc_parallel()
 
-    showFigures()()
+    showFigures()

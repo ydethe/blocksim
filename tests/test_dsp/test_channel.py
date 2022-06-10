@@ -1,23 +1,21 @@
 from pathlib import Path
 import sys
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime
 
 import pytest
 from skyfield.api import utc
 import numpy as np
-from numpy import exp, pi, log10, sqrt, cos, sin
+from numpy import exp, pi
 from matplotlib import pyplot as plt
 
 from blocksim.control.SetPoint import Step
 from blocksim.dsp.DSPSignal import DSPSignal
-from blocksim.graphics import plotDSPLine
+from blocksim.graphics.BFigure import FigureFactory
 from blocksim.Simulation import Simulation
-
-from blocksim.utils import geodetic_to_itrf, azelalt_to_itrf, itrf_to_azeld
+from blocksim.utils import azelalt_to_itrf, itrf_to_azeld
 from blocksim.constants import Req, c
 from blocksim.dsp.DSPChannel import DSPChannel
-from blocksim.graphics.EarthPlotter import EarthPlotter
 from blocksim.satellite.Satellite import SGP4Satellite
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -104,21 +102,25 @@ class TestChannel(TestBase):
         rxsig = log.getSignal("chn_rxsig_y")
         sp = rxsig.fft()
 
-        fig = plt.figure()
-        axe = fig.add_subplot(211)
-        axe.grid(True)
-        plotDSPLine(rxsig, axe, transform=rxsig.to_db_lim(-200))
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(2, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(rxsig, transform=rxsig.to_db_lim(-200))
 
-        axe = fig.add_subplot(212)
-        axe.grid(True)
-        plotDSPLine(sp, axe)
+        axe = fig.add_baxe(title="", spec=gs[1, 0])
+        axe.plot(sp)
 
-        return fig
+        return fig.render()
 
 
 if __name__ == "__main__":
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = TestChannel()
     a.setUp()
     a.test_channel()
 
-    showFigures()()
+    showFigures()

@@ -1,15 +1,13 @@
-from os import fsdecode
 import sys
 from pathlib import Path
 import unittest
 
 import numpy as np
 from numpy import testing, pi, exp
-from matplotlib import pyplot as plt
 import pytest
-from blocksim.dsp.DSPLine import DSPLine
 
-from blocksim.graphics import plotDSPLine
+from blocksim.dsp.DSPLine import DSPLine
+from blocksim.graphics.BFigure import FigureFactory
 from blocksim.loggers.Logger import Logger
 from blocksim.dsp.DSPSignal import DSPSignal
 
@@ -44,13 +42,14 @@ class TestSignal(TestBase):
         z = y2 - y1
         self.assertAlmostEqual(np.max(np.abs(z)), 0, delta=1e-8)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
 
-        plotDSPLine(y1, axe, find_peaks=1, x_unit_mult=1e-6, linewidth=3, color="red")
-        plotDSPLine(y2, axe, x_unit_mult=1e-6, color="black")
+        axe.plot(y1, find_peaks=1, linewidth=3, color="red")
+        axe.plot(y2, color="black")
 
-        return fig
+        return fig.render()
 
     def test_convolution(self):
         fs = 20e6
@@ -114,17 +113,16 @@ class TestSignal(TestBase):
             samplingStop=s1.samplingStop + 2 / fs,
         )
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        axe.grid(True)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
 
-        plotDSPLine(s1, axe, linestyle="--", marker="x", label="orig.")
+        axe.plot(s1, linestyle="--", marker="x", label="orig.")
         tref = np.arange(int(50 * fs / f0)) / (50 * fs)
-        axe.plot(tref * 1000, np.cos(2 * pi * f0 * tref))
-        plotDSPLine(s2, axe, linestyle="--", marker="+", label="oodsp")
-        axe.legend()
+        axe.plot(plottable=(tref * 1000, np.cos(2 * pi * f0 * tref)))
+        axe.plot(s2, linestyle="--", marker="+", label="oodsp")
 
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_delay(self):
@@ -136,13 +134,13 @@ class TestSignal(TestBase):
         x1 = exp(1j * 2 * pi * f0 * t1)
         s1 = DSPSignal(name="s1", samplingStart=0, samplingPeriod=1 / fs, y_serie=x1)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        axe.grid(True)
-        plotDSPLine(s1.delay(1 / 60), axe)
-        plotDSPLine(s1, axe)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(s1.delay(1 / 60))
+        axe.plot(s1)
 
-        return fig
+        return fig.render()
 
     def test_from_logger(self):
         log = Logger()
@@ -215,27 +213,34 @@ class TestSignal(TestBase):
             fend=B / 2,
         )
 
-        fig = plt.figure()
+        fig = FigureFactory.create()
         gs = fig.add_gridspec(2, 1)
 
-        axe = plotDSPLine(cp, spec=gs[0, 0], transform=lambda x: np.abs(x) ** 2)
-        axe.set_ylabel("Linear Power of BB signal")
+        axe = fig.add_baxe(title="Linear Power of BB signal", spec=gs[0, 0])
+        axe.plot(cp, transform=lambda x: np.abs(x) ** 2)
 
-        axe = plotDSPLine(
+        axe = fig.add_baxe(title="Correlated signal", spec=gs[1, 0])
+        axe.plot(
             cp.correlate(rep, win="hamming"),
-            spec=gs[1, 0],
             transform=DSPSignal.to_db_lim(-80),
         )
-        axe.set_ylabel("Correlated signal")
 
-        return fig
+        return fig.render()
 
 
 if __name__ == "__main__":
+    # unittest.main()
+    # exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = TestSignal()
     # a.test_instanciation()
     # a.test_resample()
     # a.test_polyfit()
-    a.test_superheterodyne()
+    # a.test_superheterodyne()
+    # a.test_correlation()
+    # a.test_delay()
+    a.test_phase_unfold()
 
-    showFigures()()
+    showFigures()

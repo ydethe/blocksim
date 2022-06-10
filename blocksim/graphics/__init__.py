@@ -4,27 +4,19 @@ Allows plotting from a `blocksim.loggers.Logger.Logger`, or from `blocksim.dsp.D
 
 """
 
-from typing import Any, Tuple, Iterable
+from typing import Tuple
 
-from parse import compile
-from nptyping import NDArray, Shape
 import numpy as np
-from scipy.interpolate import interp2d
 from numpy import log10
-from matplotlib.figure import Figure
+
 from matplotlib import pyplot as plt
-from matplotlib.backend_bases import Event
-import networkx as nx
+
 
 from .. import logger
 from ..loggers.Logger import Logger
 from ..dsp.DSPFilter import ADSPFilter
 from ..dsp.DSPLine import DSPLine
-from ..dsp.DSPSpectrogram import DSPSpectrogram
 from ..dsp import phase_unfold
-from .AxeSpec import AxeSpec
-from .FigureSpec import FigureSpec
-from ..satellite.Trajectory import Trajectory
 
 
 def getUnitAbbrev(
@@ -88,6 +80,8 @@ def getUnitAbbrev(
         lbl = ""
     else:
         if force_mult is None:
+            if samp == 0:
+                samp = 1
             xm = np.abs(samp)
             pm = (int(log10(xm)) // 3) * 3
             mult = 10**pm
@@ -126,335 +120,175 @@ def format_parameter(samp: float, unit: str) -> str:
     return txt
 
 
-def createFigure(
-    num: int = None,
-    figsize: Tuple[int, int] = None,
-    dpi: int = None,
-    facecolor: str = None,
-    edgecolor: str = None,
-    frameon: bool = True,
-    FigureClass=Figure,
-    clear: bool = False,
-    **kwargs
-) -> "Figure":
-    """Creates a matplotlib figure to draw on.
-    See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html for more details
-
-    Args:
-        num: A unique identifier for the figure.
-            If a figure with that identifier already exists, this figure is made active and returned.
-            If there is no figure with the identifier or num is not given, a new figure is created, made active and returned.
-        figsize: Width, height in inches
-        dpi: The resolution of the figure in dots-per-inch
-        facecolor: The background color
-        edgecolor: The border color
-        frameon: If False, suppress drawing the figure frame
-        FigureClass: Optionally use a custom Figure instance
-        clear: If True and the figure already exists, then it is cleared
-        **kwargs
-
-    Returns:
-        The created figure
-
-    """
-    return plt.figure(
-        num, figsize, dpi, facecolor, edgecolor, frameon, FigureClass, clear, **kwargs
-    )
-
-
-def createAxeFromSpec(spec: "SubplotSpec" = None, **kwargs) -> "AxesSubplot":
-    if spec is None:
-        fig = plt.figure()
-        gs = fig.add_gridspec(1, 1)
-        spec = gs[0, 0]
-
-    gs = spec.get_gridspec()
-    fig = gs.figure
-    axe = fig.add_subplot(spec, **kwargs)
-    axe.grid(True)
-    return axe
-
-
 def plotFromLogger(
-    log: Logger, id_x: str, id_y: str, spec: "SubplotSpec" = None, **kwargs
-) -> "AxesSubplot":
+    log: Logger, id_x: str, id_y: str, axe: "BAxe", **kwargs
+) -> "APlottable":
     """Plots a value on a matplotlib axe
 
     Args:
         log: The Logger to read into
         id_x: Name or expression for the X axis
         id_y: Name or expression for the Y axis
-        spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
-        kwargs: matplotlib plotting options for the 'plot' method
+        axe: The BAxe to draw on. Obtained by fig.add_baxe
+        kwargs: matplotlib plotting options for the 'plot' method.
 
     Returns:
-        The Axes used by matplotlib
+        The created APlottable
 
     """
-    sharex = kwargs.pop("sharex", None)
-    sharey = kwargs.pop("sharey", None)
-    axe_opt = {"sharex": sharex, "sharey": sharey}
-    axe = createAxeFromSpec(spec, **axe_opt)
-
     if type(id_x) == type(""):
         val_x = log.getValue(id_x)
+        name_x = id_x
+        if id_x in log.getParametersName():
+            p = log.getParameter(id_x)
+            unit_x = p.unit
+        else:
+            unit_x = ""
     elif hasattr(id_x, "__iter__"):
         val_x = id_x
+        name_x = ""
+        unit_x = ""
     else:
         raise SystemError("[ERROR]Unacceptable argument for id_x : %s" % (str(id_x)))
 
     if type(id_y) == type(""):
         val_y = log.getValue(id_y)
+        name_y = id_y
+        if id_y in log.getParametersName():
+            p = log.getParameter(id_y)
+            unit_y = p.unit
+        else:
+            unit_y = ""
     elif hasattr(id_y, "__iter__"):
         val_y = id_y
+        name_y = ""
+        unit_y = ""
     else:
         raise SystemError("[ERROR]Unacceptable argument for id_y : %s" % (str(id_y)))
 
     if not "label" in kwargs.keys():
         kwargs["label"] = id_y
 
-    (line,) = axe.plot(val_x, val_y, **kwargs)
+    line = axe.plot(
+        (
+            {"data": val_x, "name": name_x, "unit": unit_x},
+            {"data": val_y, "name": name_y, "unit": unit_y},
+        ),
+        **kwargs,
+    )
 
-    line.x_unit_mult = 1.0
-
-    return axe
+    return line
 
 
-def createFigureFromSpec(spec: FigureSpec, log: Logger, fig=None) -> "Figure":
+def createFigureFromSpec(spec: "FigureSpec", log: Logger, fig=None) -> "BFigure":
     """Parses a FigureSpec to build a matplotlib figure, and returns it
 
     Args:
         spec: A FigureSpec instance
         log: The Logger to read into
-        fig: A matplotlib figure. If None, the function creates ones
+        fig: A BFigure. If None, the function creates ones
 
     Returns:
         The matplotlib figure
 
     """
+    from .enums import AxeProjection
+    from .BFigure import FigureFactory
+
     n = len(spec.axes)
 
     if fig is None:
-        fig = plt.figure()
+        title = spec.props.get("title", "")
+        fig = FigureFactory.create(title=title)
 
-    fig.suptitle = spec.props["title"]
+    nrow = spec.props.get("nrow", 1)
+    ncol = spec.props.get("ncol", 1)
+
+    gs = fig.add_gridspec(nrow, ncol)
+
     l_axes = []
 
-    for k in range(1, n + 1):
-        nrow = spec.axes[k - 1].props["nrow"]
-        ncol = spec.axes[k - 1].props["ncol"]
-        ind = spec.axes[k - 1].props["ind"]
-        shx = spec.axes[k - 1].props["sharex"]
-        title = spec.axes[k - 1].props["title"]
-        proj = spec.axes[k - 1].props.pop("projection", "rectilinear")
-
+    for k in range(n):
+        coord = spec.axes[k].props["coord"]
+        shx = spec.axes[k].props["sharex"]
         if shx is None:
-            axe = fig.add_subplot(nrow, ncol, ind, projection=proj)
-            axe.grid(True)
+            sharex = None
         else:
-            axe = fig.add_subplot(
-                nrow, ncol, ind, projection=proj, sharex=l_axes[shx - 1]
-            )
-            axe.grid(True)
+            sharex = l_axes[shx]
+        title = spec.axes[k].props["title"]
+        sproj = spec.axes[k].props.pop("projection", "rectilinear")
+        if sproj == "rectilinear":
+            proj = AxeProjection.RECTILINEAR
+        elif sproj == "polar":
+            proj = AxeProjection.POLAR
+        elif sproj == "north_polar":
+            proj = AxeProjection.NORTH_POLAR
+        elif sproj == "map":
+            proj = AxeProjection.PLATECARREE
+        else:
+            raise AssertionError(f"Projection not supported '{sproj}'")
+
+        axe = fig.add_baxe(title=title, spec=gs[coord], projection=proj, sharex=sharex)
         l_axes.append(axe)
 
-        spec.axes[k - 1].props["_axe"] = axe
+        # spec.axes[k].props["_axe"] = axe
 
-        if not title is None:
-            axe.set_title(title)
-
-        disp_leg = False
-        for d in spec.axes[k - 1].lines:
+        for d in spec.axes[k].lines:
             lp = d.copy()
             lp.pop("varx", None)
             lp.pop("vary", None)
-            lp.pop("_line", None)
-            lp.pop("_xdata", None)
-            lp.pop("_ydata", None)
+            # lp.pop("_line", None)
+            # lp.pop("_xdata", None)
+            # lp.pop("_ydata", None)
 
             varx = d["varx"]
             vary = d["vary"]
             if "label" in d.keys():
-                axe = plotFromLogger(log, varx, vary, axe, **lp)
-                disp_leg = True
+                line = plotFromLogger(log, varx, vary, axe=axe, **lp)
             elif type(vary) == type(""):
-                axe = plotFromLogger(log, varx, vary, axe, label=vary, **lp)
-                disp_leg = True
+                line = plotFromLogger(log, varx, vary, axe=axe, label=vary, **lp)
             else:
-                axe = plotFromLogger(log, varx, vary, axe, **lp)
+                line = plotFromLogger(log, varx, vary, axe=axe, **lp)
 
-            line = axe.get_lines()[-1]
-            d["_line"] = line
-            xdata, ydata = line.get_data()
-            d["_xdata"] = xdata
-            d["_ydata"] = ydata
-
-        if disp_leg:
-            axe.legend()
-
-    fig.tight_layout()
+            # line = axe.plottable_factories[-1]
+            # d["_line"] = line
+            # xdata, ydata = line.get_data()
+            # d["_xdata"] = xdata
+            # d["_ydata"] = ydata
 
     return fig
 
 
-def plotSpectrogram(
-    spg: DSPSpectrogram, spec: "SubplotSpec" = None, fill: str = "pcolormesh", **kwargs
-) -> "AxesSubplot":
-    """Plots a line with the following refinements :
-
-    * a callable *transform* is applied to all samples
-    * the label of the plot is the name given at instanciation
-
-    See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
-    Args:
-        spg: DSPSpectrogram to plot
-        spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
-        fill: Method to plot the DSPSpectrogram. Can be 'plot_surface', 'pcolormesh', 'contour' or 'contourf'
-        kwargs: Plotting options. The following extra keys are allowed:
-
-            * transform for a different transform from the one given at instanciation
-            * find_peaks to search peaks
-            * x_unit_mult to have a more readable unit prefix
-
-    Returns:
-        The matplotlib image generated
-
-    """
-    if fill == "plot_surface":
-        proj = "3d"
-    else:
-        proj = spg.projection
-
-    sharex = kwargs.pop("sharex", None)
-    sharey = kwargs.pop("sharey", None)
-    axe_opt = {"sharex": sharex, "sharey": sharey, "projection": proj}
-    axe = createAxeFromSpec(spec, **axe_opt)
-
-    transform = kwargs.pop("transform", spg.default_transform)
-    find_peaks = kwargs.pop("find_peaks", 0)
-
-    x_samp = spg.generateXSerie()
-    xm = np.max(np.abs(x_samp))
-    x_unit_mult = kwargs.pop("x_unit_mult", None)
-    _, x_unit_mult, x_unit_lbl, x_unit = getUnitAbbrev(
-        xm, spg.unit_of_x_var, force_mult=x_unit_mult
-    )
-
-    y_samp = spg.generateYSerie()
-    ym = np.max(np.abs(y_samp))
-    y_unit_mult = kwargs.pop("y_unit_mult", None)
-    _, y_unit_mult, y_unit_lbl, y_unit = getUnitAbbrev(
-        ym, spg.unit_of_y_var, force_mult=y_unit_mult
-    )
-    # lbl = kwargs.pop("label", spg.name)
-
-    Z = transform(spg.img)
-    if fill == "plot_surface" and spg.projection == "polar":
-        P, R = np.meshgrid(
-            spg.generateXSerie() / x_unit_mult, spg.generateYSerie() / y_unit_mult
-        )
-        X, Y = R * np.cos(P), R * np.sin(P)
-    else:
-        X, Y = np.meshgrid(
-            spg.generateXSerie() / x_unit_mult, spg.generateYSerie() / y_unit_mult
-        )
-
-    if fill == "plot_surface":
-        kwargs.pop("levels", None)
-        ret = axe.plot_surface(X, Y, Z, **kwargs)
-        axe.figure.colorbar(ret, ax=axe)
-    elif fill == "pcolormesh":
-        kwargs.pop("levels", None)
-        ret = axe.pcolormesh(X, Y, Z, **kwargs)
-        axe.figure.colorbar(ret, ax=axe)
-    elif fill == "contourf":
-        ret = axe.contourf(X, Y, Z, **kwargs)
-        axe.figure.colorbar(ret, ax=axe)
-    elif fill == "contour":
-        ret = axe.contour(X, Y, Z, **kwargs)
-        axe.clabel(ret, inline=True, fontsize=10)
-
-    if spg.name_of_x_var != "":
-        axe.set_xlabel("%s (%s%s)" % (spg.name_of_x_var, x_unit_lbl, x_unit))
-    if spg.name_of_y_var != "":
-        axe.set_ylabel("%s (%s%s)" % (spg.name_of_y_var, y_unit_lbl, y_unit))
-
-    if find_peaks > 0:
-        lpeaks = spg.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
-        for p in lpeaks:
-            x, y = p.coord
-            axe.plot(
-                [x / x_unit_mult],
-                [y / y_unit_mult],
-                marker="o",
-                color="red",
-                linestyle="",
-            )
-            axe.annotate(
-                "(%.1f,%.1f,%.1f)" % (x / x_unit_mult, y / y_unit_mult, p.value),
-                xy=(x / x_unit_mult, y / y_unit_mult),
-                fontsize="x-small",
-            )
-
-    def on_click(event: Event) -> Any:  # pragma: no cover
-        # event.name (str): the event name
-        # event.canvas (FigureCanvasBase): the FigureCanvas instance generating the event
-        # event.guiEvent: the GUI event that triggered the Matplotlib event
-        # event.x, event.y (int): mouse x and y position in pixels from left and bottom of canvas
-        # event.inaxes (Axes or None): the Axes instance over which the mouse is, if any; else None
-        # event.xdata, event.ydata (float or None): mouse x and y position in data coordinates, if the mouse is over an axes
-        # event.button (None or MouseButton or {'up', 'down'}): the button pressed: None, MouseButton, 'up', or 'down' (up and down are used for scroll events)
-        # event.key (None or str): the key pressed: None, any character, 'shift', 'win', or 'control'
-        # event.step (float): The number of scroll steps (positive for 'up', negative for 'down'). This applies only to 'scroll_event' and defaults to 0 otherwise.
-        # event.dblclick (bool): Whether the event is a double-click. This applies only to 'button_press_event' and is False otherwise. In particular, it's not used in 'button_release_event'.
-        if event.inaxes != axe:
-            return
-
-        axe.axe_d.lines = []
-        axe.axe_v.lines = []
-
-        dval = spg.generateXSerie() / x_unit_mult
-        vval = spg.generateYSerie() / y_unit_mult
-
-        itp = interp2d(x=dval, y=vval, z=Z, kind="cubic", copy=False, bounds_error=True)
-        zdata = itp(event.xdata, event.ydata)
-        print(zdata)
-
-    return axe
-
-
 def plotBode(
     filt: ADSPFilter,
-    spec_amp: "SubplotSpec",
-    spec_pha: "SubplotSpec",
+    axe_amp: "BAxe",
+    axe_pha: "BAxe",
     fpoints: int = 200,
     pow_lim: float = -100.0,
-    **kwargs
-) -> Tuple["AxesSubplot", "AxesSubplot"]:
+    **kwargs,
+) -> Tuple["PlottableDictTuple", "PlottableDictTuple"]:
     """Plots the bode diagram of a filter
 
     Args:
         filt: Filter to analyse
-        spec_amp: The matplotlib SubplotSpec that defines the amplitude axis to draw on. Obtained by fig.add_gridspec and slicing
-        spec_pha: The matplotlib SubplotSpec that defines the phase axis to draw on. Obtained by fig.add_gridspec and slicing
+        axe_amp: The BAxe amplitude axis to draw on. Obtained by fig.add_baxe
+        axe_pha: The BAxe phase axis to draw on. Obtained by fig.add_baxe
         fpoints: If int, number of frequency samples to use for the plot
             If iterable, list of frequency samples to use for the plot
-        kwargs: Plotting options. The following extra keys are allowed:
-
-            * x_unit_mult to have a more readable unit prefix
+        kwargs: Plotting options.
 
     Examples:
+        >>> from blocksim.graphics.BFigure import FigureFactory
         >>> from blocksim.dsp.DSPFilter import ArbitraryDSPFilter
         >>> f = ArbitraryDSPFilter(name="MTI", samplingPeriod=1e6, num=[1, -1])
-        >>> fig = plt.figure()
+        >>> fig = fig = FigureFactory.create()
         >>> gs = fig.add_gridspec(2, 1)
-        >>> _ = plotBode(f, spec_amp=gs[0, 0], spec_pha=gs[1, 0])
+        >>> axe_amp=fig.add_baxe('Amplitude', spec=gs[0,0])
+        >>> axe_pha=fig.add_baxe('Amplitude', spec=gs[1,0])
+        >>> _ = plotBode(f, axe_amp=axe_amp,axe_pha=axe_pha)
 
     """
     from scipy.signal import TransferFunction, freqz
-
-    axe_amp = createAxeFromSpec(spec_amp)
-    axe_pha = createAxeFromSpec(spec_pha)
 
     fs = 1 / filt.samplingPeriod
 
@@ -468,87 +302,34 @@ def plotBode(
     num, den = TransferFunction._z_to_zinv(b, a)
     _, y = freqz(num, den, worN=freq, fs=fs)
 
-    x_unit_mult = kwargs.get("x_unit_mult", None)
-    xm = np.max(np.abs(freq))
-    scaled_samp, x_unit_mult, x_unit_lbl, x_unit = getUnitAbbrev(
-        xm, "Hz", force_mult=x_unit_mult
+    line_amp = axe_amp.plot(
+        plottable=(
+            {"data": freq, "unit": "Hz", "name": "Frequency"},
+            {
+                "data": DSPLine.to_db(y, lim_db=pow_lim),
+                "name": "Amplitude",
+                "unit": "dB",
+            },
+        ),
+        **kwargs,
     )
-
-    axe_amp.plot(freq / x_unit_mult, DSPLine.to_db(y, lim_db=pow_lim))
-    axe_amp.grid(True)
-    axe_amp.set_ylabel("Amplitude (dB)")
 
     pha = phase_unfold(y)
-
-    axe_pha.plot(freq / x_unit_mult, 180 / np.pi * pha)
-    axe_pha.grid(True)
-    axe_pha.set_xlabel("Frequency (%s%s)" % (x_unit_lbl, x_unit))
-    axe_pha.set_ylabel("Phase (deg)")
-
-    return axe_amp, axe_pha
-
-
-def plotDSPLine(line: DSPLine, spec: "SubplotSpec" = None, **kwargs) -> "AxesSubplot":
-    """Plots a DSPLine with the following refinements :
-
-    * a callable *transform* is applied to all samples
-    * the X and Y axes are labeled according to *x_unit_mult*
-    * the X axe is labeled according to the class attributes name_of_x_var and unit_of_x_var
-    * the *find_peaks* highest peaks are displayed (default : 0)
-    * the label of the plot is the name given at instanciation
-
-    See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
-
-    Args:
-        line: DSPLine to be plotted
-        spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
-        kwargs: Plotting options. The following extra keys are allowed:
-
-            * transform for a different transform from the one given at instanciation
-            * find_peaks to search peaks
-            * x_unit_mult to have a more readable unit prefix
-
-    """
-    sharex = kwargs.pop("sharex", None)
-    sharey = kwargs.pop("sharey", None)
-    axe_opt = {"sharex": sharex, "sharey": sharey}
-    axe = createAxeFromSpec(spec, **axe_opt)
-
-    transform = kwargs.pop("transform", line.default_transform)
-    find_peaks = kwargs.pop("find_peaks", 0)
-
-    x_samp = line.generateXSerie()
-    x_unit_mult = kwargs.pop("x_unit_mult", None)
-    xm = np.max(np.abs(x_samp))
-    scaled_samp, x_unit_mult, x_unit_lbl, x_unit = getUnitAbbrev(
-        xm, line.unit_of_x_var, force_mult=x_unit_mult
+    line_pha = axe_pha.plot(
+        plottable=(
+            {"data": freq, "unit": "Hz", "name": "Frequency"},
+            {
+                "data": 180 / np.pi * pha,
+                "name": "Phase",
+                "unit": "deg",
+            },
+        )
     )
-    lbl = kwargs.pop("label", line.name)
 
-    (ret,) = axe.plot(
-        x_samp / x_unit_mult, transform(line.y_serie), label=lbl, **kwargs
-    )
-    axe.set_xlabel("%s (%s%s)" % (line.name_of_x_var, x_unit_lbl, x_unit))
-
-    if find_peaks > 0:
-        lpeaks = line.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
-        for p in lpeaks:
-            (x,) = p.coord
-            axe.plot(
-                [x / x_unit_mult], [p.value], linestyle="", marker="o", color="red"
-            )
-            axe.annotate(
-                "(%.1f %s%s,%.1f)" % (x / x_unit_mult, x_unit_lbl, x_unit, p.value),
-                xy=(x / x_unit_mult, p.value),
-                fontsize="x-small",
-            )
-
-    ret.x_unit_mult = x_unit_mult
-
-    return axe
+    return line_amp, line_pha
 
 
-def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":
+def plotVerif(log: Logger, fig_title: str, *axes) -> "BFigure":
     """Plots a set of axes and curves on a single figure
 
     Args:
@@ -563,24 +344,22 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":
         The resulting figure
 
     """
+    from .GraphicSpec import AxeSpec, FigureSpec
+
     l_aspec = []
     for ind, l_lines in enumerate(axes):
         aProp = dict()
 
         aProp["title"] = "Axe %i" % (ind + 1)
-        aProp["nrow"] = len(axes)
-        aProp["ncol"] = 1
-        aProp["ind"] = ind + 1
-        aProp["sharex"] = ind if ind > 0 else None
+        aProp["coord"] = (ind, 0)
+        aProp["sharex"] = ind - 1 if ind > 0 else None
 
         lSpec = []
         for l in l_lines:
             if "title" in l.keys():
                 aProp["title"] = l.pop("title", "Axe %i" % (ind + 1))
                 aProp["sharex"] = l.pop("sharex", None)
-                aProp["nrow"] = l["nrow"]
-                aProp["ncol"] = l["ncol"]
-                aProp["ind"] = l["ind"]
+                aProp["coord"] = l["coord"], 0
             else:
                 l["vary"] = l.pop("var")
                 l["varx"] = "t"
@@ -590,139 +369,46 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "Figure":
 
         l_aspec.append(aSpec)
 
-    spec = FigureSpec({"title": fig_title}, axes=l_aspec)
+    spec = FigureSpec({"title": fig_title, "nrow": len(axes), "ncol": 1}, axes=l_aspec)
     fig = createFigureFromSpec(spec, log)
 
     return fig
 
 
-def plotGraph(G, spec=None, **kwds) -> "Axes":
-    """See https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pylab.draw.html#networkx.drawing.nx_pylab.draw
-
-    Args:
-        G: graph to draw
-        spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
-        kwds: See https://networkx.org/documentation/stable/reference/generated/networkx.drawing.layout.kamada_kawai_layout.html#networkx.drawing.layout.kamada_kawai_layout
-
-    Returns
-        The actual axe used for plotting
-
-    """
-    axe = createAxeFromSpec(spec)
-    axe.grid(False)
-    axe.set_aspect("equal")
-
-    if not "node_size" in kwds.keys():
-        kwds["node_size"] = 1000
-    pos = nx.kamada_kawai_layout(G)
-    nx.draw_networkx(G, pos=pos, ax=axe, **kwds)
-
-    return axe
-
-
-def plot3DEarth(trajectories: Iterable[Trajectory]) -> "B3DPlotter":
-    """Shows a 3D tracetory around a 3D Earth
-
-    Args:
-        trajectories: list of Trajectory objects to plot
-
-    Returns:
-        A B3DPlotter instance. Call app.run() to show the window
-
-    """
-    from .B3DPlotter import B3DPlotter
-
-    app = B3DPlotter()
-
-    app.buildEarth()
-
-    for traj in trajectories:
-        app.plotTrajectory(traj)
-
-    return app
-
-
-def plotBER(fic, spec=None, **kwds) -> "Axes":
-    """Helper function that plots a BER curve from a log file where the lines are :
-
-    "[{level}] - SNR = {snr} dB, it={it}, Bits Received = {bit_rx}, Bit errors = {bit_err}, BER = {ber}"
-
-    Args:
-        fic: ASCII file to read
-        axe_spec: The matplotlib SubplotSpec that defines the axis to draw on. Obtained by fig.add_gridspec and slicing
-        kwds: plotting options
-
-    Returns:
-        The actual axe used for plotting
-
-    """
-    p = compile(
-        "[{level}] - SNR = {snr} dB, it={it}, Bits Received = {bit_rx}, Bit errors = {bit_err}, BER = {ber}"
-    )
-
-    f = open(fic, "r")
-    snr = []
-    ber = []
-    for line in f:
-        dat = p.parse(line)
-        snr.append(float(dat["snr"]))
-        ber.append(float(dat["ber"]))
-
-    sharex = kwds.pop("sharex", None)
-    sharey = kwds.pop("sharey", None)
-    axe_opt = {"sharex": sharex, "sharey": sharey}
-    axe = createAxeFromSpec(spec, **axe_opt)
-
-    axe.grid(b=True, which="minor", color="#999999", linestyle="-", alpha=0.2)
-    axe.semilogy(snr, ber, label="Simu BER", **kwds)
-    axe.legend()
-    axe.set_xlabel("$SNR$ (dB)")
-    axe.set_ylabel("BER")
-
-    return axe
-
-
-def quickPlot(*args, **kwargs) -> "AxesSubplot":
+def quickPlot(*args, **kwargs) -> "BFigure":
     """Quickly plots data
 
     Args:
-        args: List of plottables. A plottable can be either:
-
-        * A DSPLine instance
-        * A two-elements (X,Y) tuple, with X (resp. Y) the X (resp. Y) serie to use for plotting
-        * A single Y serie
+        args: List of plottables, handled by `blocksim.graphics.Plottable.PlottableFactory`
         kwargs: Plotting options
 
     Returns:
         The axe used to plot
 
     """
+    from .enums import AxeProjection
+    from .BFigure import FigureFactory
+
     axe = kwargs.pop("axe", None)
+    title = kwargs.pop("title", "")
     if axe is None:
-        fig = createFigure()
+        fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
-        proj = kwargs.pop("projection", "rectilinear")
-        axe = createAxeFromSpec(spec=gs[0, 0], projection=proj)
+        proj = kwargs.pop("projection", AxeProjection.RECTILINEAR)
+        axe = fig.add_baxe(title=title, spec=gs[0, 0], projection=proj)
 
     for a in args:
-        if isinstance(a, DSPLine):
-            xech = a.generateXSerie()
-            yech = a.y_serie
-            transform = a.default_transform
-        elif isinstance(a, tuple):
-            xech = np.array(a[0])
-            yech = np.array(a[1])
-            transform = lambda x: x
-        else:
-            yech = np.array(a)
-            ns = len(yech)
-            xech = np.arange(ns)
-            transform = lambda x: x
-
-        axe.plot(xech, transform(yech), **kwargs)
+        axe.plot(a, **kwargs)
 
     return axe
 
 
-def showFigures():
+def showFigures(tight_layout: bool = False):
+    from .BFigure import FigureFactory
+
+    """Renders and shows all BFigure"""
+    factory = FigureFactory()
+    for f in factory.figures:
+        f.render(tight_layout=tight_layout)
+
     plt.show()

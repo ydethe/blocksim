@@ -3,10 +3,10 @@ from pathlib import Path
 import unittest
 
 import numpy as np
-from numpy import pi, exp
-from matplotlib import pyplot as plt
+from numpy import pi
 import pytest
 
+from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp import phase_unfold
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -29,13 +29,17 @@ class TestUtils(TestBase):
 
         pha = phase_unfold(y)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        axe.plot(tps * 1e6, pha * 180 / np.pi)
-        axe.grid(True)
-        axe.set_xlabel("Time (µs)")
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(
+            plottable=(
+                {"data": tps, "name": "Time", "unit": "s"},
+                {"data": pha * 180 / np.pi, "unit": "deg", "name": "Phase"},
+            )
+        )
 
-        return fig
+        return fig.render()
 
     def test_phase_unfold_odd(self):
         y = np.zeros(10, dtype=np.complex128)
@@ -48,4 +52,12 @@ class TestUtils(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+    # exit(0)
+
+    from blocksim.graphics import showFigures
+
+    a = TestUtils()
+    a.test_phase_unfold()
+
+    showFigures()

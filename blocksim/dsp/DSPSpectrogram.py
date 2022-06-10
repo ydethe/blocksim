@@ -1,12 +1,10 @@
 from typing import Callable, List, Any
 
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
 
-from .DSPLine import DSPLine
 from .. import logger
-from ..Peak import Peak
-from ..utils import find2dpeak
+from ..utils import find2dpeak, Peak
 
 __all__ = ["DSPSpectrogram"]
 
@@ -26,7 +24,7 @@ class DSPSpectrogram(object):
         unit_of_x_var: Unit of x variable. Default: "s"
         name_of_y_var: Name of y variable. Default: "Frequency"
         unit_of_y_var: Unit of y variable. Default: "Hz"
-        projection: Axe projection. Can be 'rectilinear' or 'polar'
+        projection: Axe projection. Can be 'rectilinear', 'north_polar' or 'polar'
 
     Args:
         name: Name of the spectrogram
@@ -167,7 +165,7 @@ class DSPSpectrogram(object):
             The function to map on a complex map
 
         Examples:
-            >>> f = DSPLine.to_db_lim(low=-80)
+            >>> f = DSPSpectrogram.to_db_lim(low=-80)
             >>> f(1e-3)
             -60.0
             >>> f(1e-4)

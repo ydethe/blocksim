@@ -3,7 +3,6 @@ from pathlib import Path
 import unittest
 
 import numpy as np
-from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.loggers.Logger import Logger
@@ -12,8 +11,8 @@ from blocksim.graphics import (
     createFigureFromSpec,
     plotVerif,
 )
-from blocksim.graphics.AxeSpec import AxeSpec
-from blocksim.graphics.FigureSpec import FigureSpec
+from blocksim.graphics.GraphicSpec import AxeSpec, FigureSpec
+from blocksim.graphics.BFigure import FigureFactory
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
@@ -41,10 +40,9 @@ class TestGraphics(TestBase):
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
         self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
 
-        fig = plt.figure()
-        fig.suptitle = "Essai logger"
-        axe = fig.add_subplot(111)
-        axe.grid(True)
+        fig = FigureFactory.create(title="Essai logger")
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
 
         fc = 5.0
         dt = self.tps_ref[1] - self.tps_ref[0]
@@ -56,18 +54,14 @@ class TestGraphics(TestBase):
         t = self.log.getValue("t")
         plotFromLogger(self.log, t + 1, "x", axe, label="brut,translated")
 
-        axe.legend(loc="best")
-
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_figure_from_spec(self):
         aProp = dict()
 
         aProp["title"] = "Axe 1"
-        aProp["nrow"] = 1
-        aProp["ncol"] = 1
-        aProp["ind"] = 1
+        aProp["coord"] = 0
         aProp["sharex"] = None
 
         x = np.arange(10)
@@ -75,21 +69,13 @@ class TestGraphics(TestBase):
         lSpec = [{"varx": x, "vary": y}]
 
         aSpec = AxeSpec(aProp, lSpec)
-        spec = FigureSpec({"title": "Figure title"}, axes=[aSpec])
+        spec = FigureSpec({"title": "Figure title", "nrow": 1, "ncol": 1}, axes=[aSpec])
         fig = createFigureFromSpec(spec=spec, log=None, fig=None)
 
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_plot_verif(self):
-        aProp = dict()
-
-        aProp["title"] = "Axe 1"
-        aProp["nrow"] = 1
-        aProp["ncol"] = 1
-        aProp["ind"] = 1
-        aProp["sharex"] = None
-
         t = self.log.getValue("t")
 
         fig = plotVerif(
@@ -98,12 +84,14 @@ class TestGraphics(TestBase):
             [
                 {
                     "title": "Axe title",
-                    "nrow": 1,
-                    "ncol": 1,
-                    "ind": 1,
+                    "coord": 0,
                 },
                 {"var": 1 + t},
             ],
         )
 
-        return fig
+        return fig.render()
+
+
+if __name__ == "__main__":
+    unittest.main()

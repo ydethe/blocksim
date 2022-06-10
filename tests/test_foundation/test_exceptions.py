@@ -1,8 +1,9 @@
 import sys
 from pathlib import Path
 from typing import Any
+import unittest
 
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
 
 from blocksim.exceptions import *
@@ -154,10 +155,10 @@ class TestExceptions(TestBase):
         log.log(name="tps", val=0, unit="")
         log.log(name="y", val=0, unit="")
         self.assertRaises(
-            SystemError, plotFromLogger, log, id_x=None, id_y="y", spec=None
+            SystemError, plotFromLogger, log, id_x=None, id_y="y", axe=None
         )
         self.assertRaises(
-            SystemError, plotFromLogger, log, id_x="tps", id_y=None, spec=None
+            SystemError, plotFromLogger, log, id_x="tps", id_y=None, axe=None
         )
 
     def test_aelem_exc(self):
@@ -203,6 +204,9 @@ class TestExceptions(TestBase):
 
 
 if __name__ == "__main__":
+    unittest.main()
+    exit(0)
+
     a = TestExceptions()
     a.setUp()
     a.test_sim_exc()

@@ -1,7 +1,7 @@
 from typing import Callable, List, Any
 
 from lazy_property import LazyProperty
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
 from numpy.polynomial import Polynomial
 from scipy.interpolate import interp1d
@@ -9,8 +9,7 @@ from scipy import linalg as lin
 
 from . import derivative_coeff
 from .. import logger
-from ..Peak import Peak
-from ..utils import find1dpeak
+from ..utils import find1dpeak, Peak
 
 __all__ = ["DSPLine"]
 
@@ -23,7 +22,7 @@ class DSPLine(object):
         samplingStart: First x coord of the sample of the line
         samplingPeriod: x coord spacing of the line
         y_serie: Complex samples of the line
-        projection: Axe projection. Can be 'rectilinear' or 'polar'
+        projection: Axe projection. Can be 'rectilinear', 'north_polar' or 'polar'
         default_transform: Function to apply to the samples before plotting.
             Shall be vectorized
 

@@ -5,14 +5,14 @@ from datetime import datetime, timezone
 from skyfield.api import load
 from skyfield.framelib import itrs
 import numpy as np
-from numpy import cos, sin, sqrt, exp, pi, testing
+from numpy import sqrt, pi, testing
 from scipy import linalg as lin
-from matplotlib import pyplot as plt
 import pytest
 
+from blocksim.graphics.BFigure import FigureFactory
 from blocksim.Simulation import Simulation
-
 from blocksim.constants import Req, omega, mu
+from blocksim.graphics.enums import AxeProjection
 from blocksim.satellite.Satellite import (
     SGP4Satellite,
     CircleSatellite,
@@ -20,7 +20,6 @@ from blocksim.satellite.Satellite import (
 )
 from blocksim.utils import *
 from blocksim.satellite.Trajectory import Trajectory
-from blocksim.graphics.EarthPlotter import EarthPlotter
 from blocksim.utils import itrf_to_llavpa
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -115,9 +114,11 @@ class TestSatellite(TestBase):
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_circle_satellite(self):
-        fig = plt.figure()
-        sp = EarthPlotter()
-        axe = sp.createAxe(fig, 1, 1, 1)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(
+            title="", spec=gs[0, 0], projection=AxeProjection.PLATECARREE
+        )
 
         tle_pth = Path(__file__).parent / "gs1_gs2.tle"
         # 2021/04/15 12:00:00.0
@@ -134,7 +135,7 @@ class TestSatellite(TestBase):
                 dat = s.update(t1=t, t2=t, itrf=None, subpoint=None)
                 x, y, z, vx, vy, vz = dat["itrf"]
                 traj.addPosition(t, x, y, z)
-            sp.plotTrajectory(axe, traj, linewidth=4)
+            axe.plot(traj, linewidth=4)
 
         sats = createSatellites(tle_file=tle_pth, tsync=t0, prop=CircleSatellite)
         for s in sats:
@@ -143,9 +144,9 @@ class TestSatellite(TestBase):
                 dat = s.update(t1=t, t2=t, itrf=None, subpoint=None)
                 x, y, z, vx, vy, vz = dat["itrf"]
                 traj.addPosition(t, x, y, z)
-            sp.plotTrajectory(axe, traj)
+            axe.plot(traj)
 
-        return fig
+        return fig.render()
 
     def test_satellite(self):
         t_init = datetime(
@@ -240,7 +241,7 @@ class TestSatellite(TestBase):
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_ground_track(self):
-        pt = (-74.0542275, 40.7004153)
+        pt = (-74.0542275 * pi / 180, 40.7004153 * pi / 180)
 
         pth = Path(__file__).parent / "iss.tle"
         t0 = datetime.strptime("Feb 5 2022  01:00AM", "%b %d %Y %I:%M%p")
@@ -264,27 +265,34 @@ class TestSatellite(TestBase):
             color="red",
         )
 
-        fig = plt.figure()
-        ep = EarthPlotter()
-        axe = ep.createAxe(fig)
-        ep.plotTrajectory(axe, traj, color="red")
-        ep.plotDeviceReach(axe, coord=pt, elev_min=pi / 8, sat_alt=600e3)
-        ep.plotPoint(axe, coord=pt)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(
+            title="", spec=gs[0, 0], projection=AxeProjection.PLATECARREE
+        )
+        axe.plot(traj, color="red")
+        axe.plotDeviceReach(coord=pt, elev_min=pi / 8, sat_alt=600e3, color="blue")
+        axe.plot(plottable=([pt[0]], [pt[1]]), linestyle="", marker="o", color="blue")
 
-        return fig
+        return fig.render()
 
 
 if __name__ == "__main__":
+    # unittest.main()
+    # exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = TestSatellite()
     # a.test_teme_itrf()
     # a.test_satellite()
     # a.test_iss()
-    # a.test_ground_track()*
+    a.test_ground_track()
     # a.test_geosynchronous()
     # a.test_circle_satellite()
-    a.test_azeld()
+    # a.test_azeld()
     # a.test_azeld2()
-    a.test_azeld3()
+    # a.test_azeld3()
     # a.test_llavpa()
 
-    # showFigures()()
+    showFigures()

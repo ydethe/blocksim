@@ -121,7 +121,7 @@ class TestMadgwick(TestBase):
         sim.connect("mux.xout", "ctrl.estimation")
 
         tps = np.arange(200) * self.dt
-        sim.simulate(tps, error_on_unconnected=True)
+        sim.simulate(tps, error_on_unconnected=False)
         self.log = sim.getLogger()
 
         fig = self.plotVerif(
@@ -130,7 +130,7 @@ class TestMadgwick(TestBase):
             [{"var": "ctrl_command_u"}],
         )
 
-        return fig
+        return fig.render()
 
     def test_madgwick_exc(self):
         q = np.array([1.0, 0.0, 0.0, 0.0])
@@ -199,7 +199,7 @@ class TestMadgwick(TestBase):
         self.assertAlmostEqual(err_t, 0.0, delta=1e-9)
         self.assertAlmostEqual(err_a, 0.0, delta=5e-2)
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [
                 {"var": "deg(madg_euler_roll)", "label": "FilteredRoll"},
@@ -213,6 +213,7 @@ class TestMadgwick(TestBase):
                 },
             ],
         )
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_madgwick_yaw(self):
@@ -244,7 +245,7 @@ class TestMadgwick(TestBase):
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-9)
         self.assertAlmostEqual(err_a, 0.0, delta=5e-2)
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [
                 {"var": "deg(madg_euler_roll)", "label": "FilteredRoll"},
@@ -258,6 +259,7 @@ class TestMadgwick(TestBase):
                 },
             ],
         )
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_madgwick_all_dof(self):
@@ -292,10 +294,10 @@ class TestMadgwick(TestBase):
 
         self.assertAlmostEqual(err_a, 0.0, delta=6.0)
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [
-                {"title": "Pitch (deg)", "nrow": 1, "ncol": 1, "ind": 1},
+                {"title": "Pitch (deg)", "coord": 0},
                 {"var": "deg(madg_euler_pitch)"},
                 {
                     "var": "deg(sys_euler_pitch)",
@@ -305,6 +307,7 @@ class TestMadgwick(TestBase):
                 },
             ],
         )
+        return fig.render()
 
 
 class TestMahony(TestBase):
@@ -411,7 +414,7 @@ class TestMahony(TestBase):
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-9)
         self.assertAlmostEqual(err_a, 0.0, delta=0.085)
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [
                 {"var": "deg(maho_euler_roll)", "label": "FilteredRoll"},
@@ -425,6 +428,7 @@ class TestMahony(TestBase):
                 },
             ],
         )
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_mahony_yaw(self):
@@ -456,7 +460,7 @@ class TestMahony(TestBase):
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
         self.assertAlmostEqual(err_a, 0.0, delta=0.08)
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [
                 {"var": "deg(maho_euler_roll)", "label": "FilteredRoll"},
@@ -470,14 +474,18 @@ class TestMahony(TestBase):
                 },
             ],
         )
+        return fig.render()
 
 
 if __name__ == "__main__":
     # unittest.main()
+    # exit(0)
+
+    from blocksim.graphics import showFigures
 
     a = TestMadgwick()
     a.setUp()
-    a.test_madgwick_cl()
+    a.test_madgwick_all_dof()
     # a.test_madgwick_pitch()
 
-    showFigures()()
+    showFigures()

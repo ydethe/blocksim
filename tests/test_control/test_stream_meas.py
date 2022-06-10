@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import unittest
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -31,7 +32,7 @@ class TestStreamMeas(TestBase):
 
         self.log = sim.getLogger()
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [
                 {"var": "stp_setpoint_x", "label": "set point"},
@@ -43,10 +44,16 @@ class TestStreamMeas(TestBase):
                 },
             ],
         )
+        return fig.render()
 
 
 if __name__ == "__main__":
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = TestStreamMeas()
     a.test_stream_csv_meas()
 
-    showFigures()()
+    showFigures()

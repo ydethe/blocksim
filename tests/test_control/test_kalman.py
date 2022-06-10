@@ -100,7 +100,7 @@ class TestKalman(TestBase):
         self.assertGreaterEqual(np.min(u), Umin)
         self.assertLessEqual(np.max(u), Umax)
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "test_awc_kal",
             [
                 {"var": "sys_state_x"},
@@ -109,6 +109,7 @@ class TestKalman(TestBase):
                 {"var": "cpt_measurement_x", "linestyle": "", "marker": "+"},
             ],
         )
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_ss_kal(self):
@@ -175,7 +176,7 @@ class TestKalman(TestBase):
 
         self.log = sim.getLogger()
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "test_ss_kal",
             [
                 {"var": "sys_state_x"},
@@ -184,6 +185,7 @@ class TestKalman(TestBase):
                 {"var": "cpt_measurement_x", "linestyle": "", "marker": "+"},
             ],
         )
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_ti_kal(self):
@@ -259,7 +261,7 @@ class TestKalman(TestBase):
         kal_bias = self.log.getValue("kal_state_b")
         self.assertAlmostEqual(kal_bias[-1], bias, delta=2e-2)
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "test_ss_kal",
             [
                 {"var": "sys_state_x"},
@@ -268,14 +270,18 @@ class TestKalman(TestBase):
                 {"var": "cpt_measurement_x", "linestyle": "", "marker": "+"},
             ],
         )
+        return fig.render()
 
 
 if __name__ == "__main__":
-    # unittest.main()
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
 
     a = TestKalman()
     # a.test_ss_kal()
     # a.test_ti_kal()
     a.test_awc_kal()
 
-    showFigures()()
+    showFigures()

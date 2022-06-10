@@ -103,7 +103,14 @@ class TestSystem(TestBase):
 
 
 if __name__ == "__main__":
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = TestSystem()
     a.setUp()
     a.test_tfsystem()
     # a.test_ltisystem()
+
+    showFigures()

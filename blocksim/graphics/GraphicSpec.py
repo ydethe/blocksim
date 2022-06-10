@@ -1,6 +1,51 @@
-from typing import Iterable
+from typing import Iterable, List
 
-from .AxeSpec import AxeSpec
+
+class AxeSpec(object):
+    """Class that provides a description of an axe, without data.
+    It handles the lines to be drawn
+    (with the name of the variables instead of a concrete set of data)
+
+    Args:
+        props: A dictionary. Supported keys :
+
+            * coord for the position in the layout. Shall be a slice object
+            * sharex is the numer of an axe whose X axe will be shared with the instance of AxeSpec
+            * title for the title of the axe
+            * projection for the axe projection. Can be 'map', 'rectilinear', 'north_polar' or 'polar'
+        lines: List of dict to specify the lines' spec. Supported keys :
+
+            * the matplotlib keyword arguments of the funcion *plot*
+            * varx for the name of the X variable
+            * vary for the name of the y variable
+
+    """
+
+    __slots__ = ["props", "lines"]
+
+    def __init__(self, props, lines):
+        self.props = props
+        self.lines = lines
+
+    def __repr__(self, ntabs=0):
+        st = " " * ntabs
+        s = ""
+        s += st + 10 * "=" + " Axe '%s' " % self.props["title"] + 10 * "=" + "\n"
+        kys = list(self.props.keys())
+        kys.sort()
+        for k in kys:
+            if k == "title":
+                continue
+            s += st + "%s:\t'%s'\n" % (k, self.props[k])
+
+        for k, l in enumerate(self.lines):
+            s += st + 10 * "-" + " Line #%i " % (k + 1) + 10 * "-" + "\n"
+            kys = list(l.keys())
+            kys.sort()
+            for k in kys:
+                s += 2 * st + "%s:\t'%s'\n" % (k, l[k])
+
+        return s
 
 
 class FigureSpec(object):
@@ -9,15 +54,21 @@ class FigureSpec(object):
     (with the name of the variables instead of a concrete set of data)
 
     Args:
-        props: A dictionary. Only key supported : title for the figure title
-        axes: List of blocksim.graphics.AxeSpec to specify the axes' spec
+        props: A dictionary. Supported key:
+
+        * title: figure title
+        * nrow: number of rows in the BFigure layout
+        * ncol: number of columns in the BFigure layout
+        axes: List of blocksim.graphics.GraphicSpec to specify the axes' spec
 
     Examples:
         >>> fs = FigureSpec.specForOneAxeMultiLines([{'var':'th_mes','linestyle':'', 'marker':'+'}])
 
     """
 
-    def __init__(self, props: dict, axes: AxeSpec):
+    __slots__ = ["props", "axes"]
+
+    def __init__(self, props: dict, axes: List[AxeSpec]):
         self.props = props
         self.axes = axes
 

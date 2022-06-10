@@ -7,10 +7,7 @@ from numpy import pi, exp
 from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.graphics import plotDSPLine
-from blocksim.loggers.Logger import Logger
-from blocksim.dsp.DSPSignal import DSPSignal
-
+from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp import createGoldSequence, createZadoffChu
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -25,12 +22,12 @@ class TestSignal(TestBase):
 
         y = s1.correlate(s2)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        axe.grid(True)
-        plotDSPLine(y, axe)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(y)
 
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_zadoff_chu_autocorr(self):
@@ -38,12 +35,12 @@ class TestSignal(TestBase):
 
         y = s1.correlate(s1)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        axe.grid(True)
-        plotDSPLine(y, axe)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(y)
 
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_gold_crosscorr(self):
@@ -56,12 +53,12 @@ class TestSignal(TestBase):
 
         y = s1.correlate(s2)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        axe.grid(True)
-        plotDSPLine(y, axe)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(y)
 
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_gold_autocorr(self):
@@ -71,12 +68,12 @@ class TestSignal(TestBase):
 
         y = s1.correlate(s1)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        axe.grid(True)
-        plotDSPLine(y, axe)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(y)
 
-        return fig
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_gold_corr_integ(self):
@@ -98,27 +95,26 @@ class TestSignal(TestBase):
         zi = z.integrate(period=1e-3, offset=511 / (1.023e6))
 
         # Plotting
-        fig = plt.figure()
-        axe = fig.add_subplot(311)
-        axe.grid(True)
-        plotDSPLine(y, axe)
-        axe.set_ylabel("Brut")
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(3, 1)
 
-        axe = fig.add_subplot(312)
-        axe.grid(True)
-        plotDSPLine(z, axe)
-        axe.set_ylabel("Corrélation")
+        axe = fig.add_baxe(title="Brut", spec=gs[0, 0])
+        axe.plot(y)
 
-        axe = fig.add_subplot(313)
-        axe.grid(True)
-        plotDSPLine(zi, axe)
-        axe.set_ylabel("Intégration")
+        axe = fig.add_baxe(title="Corrélation", spec=gs[1, 0])
+        axe.plot(z)
 
-        return fig
+        axe = fig.add_baxe(title="Intégration", spec=gs[2, 0])
+        axe.plot(zi)
+
+        return fig.render()
 
 
 if __name__ == "__main__":
-    # unittest.main()
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
 
     a = TestSignal()
     # a.test_zadoff_chu_crosscorr()
@@ -126,4 +122,4 @@ if __name__ == "__main__":
     a.test_gold_autocorr()
     a.test_gold_crosscorr()
 
-    showFigures()()
+    showFigures()

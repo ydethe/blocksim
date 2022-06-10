@@ -1,11 +1,8 @@
 import sys
 from pathlib import Path
 import unittest
-from typing import Iterable
 
 import numpy as np
-import scipy.linalg as lin
-from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.control.System import LTISystem
@@ -80,10 +77,11 @@ class TestPVTOL(TestBase):
         log.export("tests/quadri.csv")
 
         self.log = sim.getLogger()
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [{"var": "sys_state_x"}, {"var": "sys_state_y"}, {"var": "sys_state_z"}],
         )
+        return fig.render()
 
 
 class TestPVTOLComplex(TestBase):
@@ -266,17 +264,18 @@ class TestPVTOLComplex(TestBase):
     def test_quad_complexe_yaw(self):
         self.log = TestPVTOLComplex.log
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [{"var": "sys_state_px"}, {"var": "sys_state_py"}, {"var": "sys_state_pz"}],
             [{"var": "deg(sys_euler_yaw)"}],
         )
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_quad_complexe_sval(self):
         self.log = TestPVTOLComplex.log
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 2",
             [
                 {"var": "mot0_vel_s"},
@@ -285,12 +284,13 @@ class TestPVTOLComplex(TestBase):
                 {"var": "mot3_vel_s"},
             ],
         )
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_quad_complexe_att(self):
         self.log = TestPVTOLComplex.log
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 3",
             [
                 {"var": "deg(ctlvtol_att_roll)"},
@@ -298,9 +298,15 @@ class TestPVTOLComplex(TestBase):
                 {"var": "deg(ctlvtol_att_yaw)"},
             ],
         )
+        return fig.render()
 
 
 if __name__ == "__main__":
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
+
     # a = TestPVTOL()
     # a.setUp()
     # a.test_quad_simplified()
@@ -310,4 +316,4 @@ if __name__ == "__main__":
     a.setUp()
     a.test_quad_complexe_att()
 
-    showFigures()()
+    showFigures()

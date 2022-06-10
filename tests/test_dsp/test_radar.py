@@ -3,15 +3,12 @@ from pathlib import Path
 import unittest
 
 import pytest
-from scipy.signal import correlate
-from numpy import pi, exp, sin, cos
 import numpy as np
-from matplotlib import pyplot as plt
 
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim import logger
 from blocksim.constants import c
-from blocksim.graphics import plotSpectrogram, plotDSPLine
+from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp import analyse_DV
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -85,22 +82,26 @@ class TestRadar(TestBase):
         self.assertAlmostEqual(peak.coord[1], 15e-6, delta=5e-10)  # delay
         self.assertAlmostEqual(peak.value, 27.85, delta=1e-2)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        plotSpectrogram(
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="Power (dB)", spec=gs[0, 0])
+        axe.plot(
             spg,
-            axe,
             transform=trf,
             find_peaks=1,
         )
-        axe.set_title("Power (dB)")
 
-        return fig
+        return fig.render()
 
 
 if __name__ == "__main__":
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = TestRadar()
     a.setUp()
     a.test_analyse_dv()
 
-    showFigures()()
+    showFigures()

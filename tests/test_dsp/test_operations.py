@@ -5,8 +5,6 @@ import unittest
 import numpy as np
 from numpy.testing import assert_array_almost_equal_nulp
 from numpy import pi, exp
-from matplotlib import pyplot as plt
-import pytest
 
 from blocksim.dsp.DSPSignal import DSPSignal
 

@@ -4,11 +4,9 @@ import unittest
 
 import numpy as np
 from numpy import pi, exp
-from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.graphics import plotDSPLine
-from blocksim.dsp.DSPSpectrum import DSPSpectrum
+from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp.DSPSignal import DSPSignal
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -25,14 +23,14 @@ class TestSpectre(TestBase):
         t1 = np.arange(ns) / fs
         x1 = exp(1j * 2 * pi * f0 * t1) + 2 * exp(1j * 2 * pi * 3 * f0 * t1)
         s1 = DSPSignal(name="s1", samplingStart=0, samplingPeriod=1 / fs, y_serie=x1)
-
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-
         sp = s1.fft()
-        plotDSPLine(sp, axe)
 
-        return fig
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(sp)
+
+        return fig.render()
 
     def test_fft(self):
         fs = 200
@@ -65,12 +63,12 @@ class TestSpectre(TestBase):
         ech = sp.getSample(f0 + fdop)
         self.assertAlmostEqual(ech, 1, delta=1e-8)
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(sp)
 
-        plotDSPLine(sp, axe)
-
-        return fig
+        return fig.render()
 
 
 if __name__ == "__main__":

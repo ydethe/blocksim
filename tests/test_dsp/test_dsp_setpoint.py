@@ -1,13 +1,13 @@
 import sys
 from pathlib import Path
 from typing import Any
+import unittest
 
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
-from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.graphics import plotDSPLine
+from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.control.System import ASystem
 from blocksim.control.Controller import PIDController
@@ -78,17 +78,21 @@ class TestDSPSetpoint(TestBase):
         sig_out = self.log.getSignal("sys_state_x")
         spectrum = sig_out.fft()
 
-        fig = plt.figure()
-        axe = fig.add_subplot(111)
-        axe.grid(True)
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(spectrum)
 
-        plotDSPLine(spectrum, axe)
-
-        return fig
+        return fig.render()
 
 
 if __name__ == "__main__":
+    unittest.main()
+    exit(0)
+
+    from blocksim.graphics import showFigures
+
     a = TestDSPSetpoint()
     a.test_dsp_setpoint()
 
-    showFigures()()
+    showFigures()

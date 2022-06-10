@@ -1,25 +1,20 @@
 import sys
 from pathlib import Path
 import unittest
-from typing import Iterable
 
 import numpy as np
-import scipy.linalg as lin
-from matplotlib import pyplot as plt
 import pytest
 
-from blocksim.control.System import ASystem, G6DOFSystem
 from blocksim.control.Controller import (
-    AController,
     AntiWindupPIDController,
 )
 from blocksim.Simulation import Simulation
 from blocksim.control.SetPoint import Step, Rectangular
-from blocksim.utils import quat_to_matrix, quat_to_euler
 from blocksim.control.Route import Group, Split
 from blocksim.quadcopter.Quadri import Quadri
 from blocksim.quadcopter.AttPilot import AttPilot
 from blocksim.quadcopter.Motor import Motor
+from blocksim.graphics.BFigure import FigureFactory
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
@@ -57,11 +52,12 @@ class TestQuad(TestBase):
         s0 = self.log.getValue("mot0_state_s")
         self.assertAlmostEqual(s0[-1], s_eq, delta=5.5)
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [{"var": "stp_setpoint_c"}, {"var": "mot0_state_s"}],
             [{"var": "ctl_command_u"}],
         )
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_quad(self):
@@ -117,7 +113,7 @@ class TestQuad(TestBase):
         self.assertAlmostEqual(np.max(np.abs(p)), 0, delta=1e-9)
         self.assertAlmostEqual(np.max(np.abs(y)), 0, delta=1e-9)
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [{"var": "sys_state_pz"}],
             [
@@ -126,6 +122,7 @@ class TestQuad(TestBase):
                 {"var": "deg(sys_euler_yaw)"},
             ],
         )
+        return fig.render()
 
 
 class TestCmdAtt(TestBase):
@@ -279,56 +276,65 @@ class TestCmdAtt(TestBase):
     def test_cmd_att_angles(self):
         self.log = TestCmdAtt.log
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 1",
             [{"var": "deg(sys_euler_roll)"}, {"var": "deg(stp_setpoint_r)"}],
             [{"var": "deg(sys_euler_pitch)"}, {"var": "deg(stp_setpoint_p)"}],
             [{"var": "deg(sys_euler_yaw)"}, {"var": "deg(stp_setpoint_y)"}],
         )
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_cmd_att_sval(self):
         self.log = TestCmdAtt.log
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 2",
             [{"var": "mot0_state_s"}, {"var": "ctlmot0_command_u"}],
             [{"var": "mot1_state_s"}, {"var": "ctlmot1_command_u"}],
             [{"var": "mot2_state_s"}, {"var": "ctlmot2_command_u"}],
             [{"var": "mot3_state_s"}, {"var": "ctlmot3_command_u"}],
         )
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_cmd_att_torques(self):
         self.log = TestCmdAtt.log
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 3",
             [{"var": "ctlatt_command_Gr"}],
             [{"var": "ctlatt_command_Gp"}],
             [{"var": "ctlatt_command_Gy"}],
         )
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_cmd_att_trans(self):
         self.log = TestCmdAtt.log
 
-        return self.plotVerif(
+        fig = self.plotVerif(
             "Figure 4",
             [{"var": "sys_state_px"}, {"var": "sys_state_py"}, {"var": "sys_state_pz"}],
             [{"var": "sys_state_vx"}, {"var": "sys_state_vy"}, {"var": "sys_state_vz"}],
         )
+        return fig.render()
 
 
 if __name__ == "__main__":
-    # a = TestQuad()
-    # a.test_motor()
-    # a.test_quad()
+    # unittest.main()
+    # exit(0)
 
-    TestCmdAtt.setUpClass(pb=True)
-    a = TestCmdAtt()
-    a.setUp()
-    a.test_cmd_att_angles()
+    from blocksim.graphics import showFigures
+
+    a = TestQuad()
+    # a.test_motor()
+    a.test_quad()
+
+    # TestCmdAtt.setUpClass(pb=True)
+    # a = TestCmdAtt()
+    # a.setUp()
+    # a.test_cmd_att_angles()
     # a.test_cmd_att_sval()
 
-    showFigures()()
+    showFigures()

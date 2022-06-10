@@ -1,6 +1,10 @@
 from pathlib import Path
 import sys
 
+from blocksim.satellite.Trajectory import Cube
+from blocksim.graphics.BFigure import FigureFactory
+from blocksim.graphics.enums import FigureProjection
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
 
@@ -56,6 +60,7 @@ class TestB3DPlotter(TestBase):
             lon=-59.68293668545234,
             alt=0,
         )
+        device.resetCallback(0.0)
 
         nb_per = 3
         traj = satellite.geocentricITRFTrajectory(
@@ -72,22 +77,19 @@ class TestB3DPlotter(TestBase):
         u2 = (psat - dsat) / lin.norm(psat - dsat)
         print(180 / pi * np.arcsin(u1 @ u2))
 
-        app = B3DPlotter()
+        fig = FigureFactory.create(projection=FigureProjection.EARTH3D)
+        self.assertRaises(AssertionError, fig.add_gridspec, 2, 1)
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
 
-        app.plotEarth()
+        axe.plot(traj)
+        axe.plot(traj_sim)
 
-        # app.buildLine(color=(0, 1, 0, 1), itrf_positions=[(0,0,0), app.sun_light.getPos()*Req])
-        app.plotLine(color=(0, 1, 0, 1), itrf_positions=[psat, dsat])
+        axe.plot(Cube(dsat, size=100e3), color=(0, 0, 1, 1))
+        axe.plot(Cube(psat, size=100e3), color=(1, 0, 0, 1))
+        axe.plot(Cube(psat_sim, size=100e3), color=(1, 1, 0, 1))
 
-        app.plotTrajectory(traj)
-        app.plotTrajectory(traj_sim)
-
-        app.plotCube(itrf_position=dsat, size=100e3, color=(0, 0, 1, 1))
-
-        app.plotCube(itrf_position=psat, size=100e3, color=(1, 0, 0, 1))
-        app.plotCube(itrf_position=psat_sim, size=100e3, color=(1, 1, 0, 1))
-
-        return app
+        return fig.render()
 
 
 if __name__ == "__main__":

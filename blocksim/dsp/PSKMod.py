@@ -7,7 +7,7 @@ from numpy import sqrt, sign, pi, exp, cos, sin, log2
 from .ADSPComputer import ADSPComputer
 from .DSPSpectrum import DSPSpectrum
 from .DSPSignal import DSPSignal
-
+from ..graphics.BAxe import BAxe
 from .. import logger
 
 
@@ -82,7 +82,7 @@ class PSKMapping(ADSPComputer):
         outputs["output"] = symbols
         return outputs
 
-    def plotConstellation(self, axe):
+    def plotConstellation(self, axe: BAxe):
         """Plots the PSK constellation on a matplotlib axe
 
         Args:
@@ -93,16 +93,15 @@ class PSKMapping(ADSPComputer):
         x_circle = cos(theta)
         y_circle = sin(theta)
 
-        axe.grid(True)
-        axe.set_aspect("equal")
-        axe.scatter(
-            cos(self.mapping),
-            sin(self.mapping),
+        axe.kwargs["aspect"] = "equal"
+        axe.plot(
+            plottable=(cos(self.mapping), sin(self.mapping)),
             color="red",
             marker="o",
             label="constellation",
+            linestyle="",
         )
-        axe.plot(x_circle, y_circle, color="black", linestyle="--")
+        axe.plot(plottable=(x_circle, y_circle), color="black", linestyle="--")
 
 
 class PSKDemapping(ADSPComputer):

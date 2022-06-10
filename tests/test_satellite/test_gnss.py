@@ -1,17 +1,14 @@
 import sys
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime
 
 import numpy as np
-from numpy import cos, sin, sqrt, exp, pi, nan, testing
+from numpy import nan, testing
 from skyfield.api import utc
-from matplotlib import pyplot as plt
-import pytest
 
 from blocksim.control.Route import Group
 from blocksim.Simulation import Simulation
 from blocksim.utils import rad
-
 from blocksim.utils import geodetic_to_itrf
 from blocksim.satellite.Satellite import createSatellites
 from blocksim.gnss.GNSSTracker import GNSSTracker
