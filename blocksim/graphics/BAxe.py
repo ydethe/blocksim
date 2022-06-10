@@ -222,8 +222,8 @@ class BAxe(object):
 
         g = Geodesic()
         val = g.circle(g_lon * 180 / pi, g_lat * 180 / pi, radius=rad)
-        c_lon = val[:, 0]
-        c_lat = val[:, 1]
+        c_lon = np.array(val[:, 0])
+        c_lat = np.array(val[:, 1])
 
         return self.plot(plottable=(c_lon * pi / 180, c_lat * pi / 180), **kwargs)
 

@@ -41,7 +41,7 @@ class TestGraphics2(unittest.TestCase):
             img=img,
         )
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=24, savefig_kwargs={"dpi": 150})
     def test_t1_2dxy_platecarree(self):
         # ==========================
         # T1
@@ -89,7 +89,7 @@ class TestGraphics2(unittest.TestCase):
             color="red",
         )
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=24, savefig_kwargs={"dpi": 150})
     def test_t3_3dxyz_platecarree(self):
         # ==========================
         # T3

@@ -112,7 +112,7 @@ class TestSatellite(TestBase):
 
         testing.assert_allclose(actual=vel, desired=vel_ref, rtol=2e-5, equal_nan=True)
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=24, savefig_kwargs={"dpi": 150})
     def test_circle_satellite(self):
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
