@@ -21,15 +21,14 @@ class APlottable(metaclass=ABCMeta):
     * networkx graphs. See `PlottableGraph`
     * `blocksim.dsp.DSPLine.DSPLine`. See `PlottableDSPLine`
     * simple arrays. See `PlottableArray`
+    * tuple of arrays. See `PlottableTuple`
+    * `blocksim.satellite.Trajectory.Trajectory` instances. See `PlottableTrajectory`
+    * `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`. See `PlottableDSPSpectrogram`
     * tuple of dictionaries, see `PlottableDictTuple`. The dictionaries keys are:
 
         * data
         * name
         * unit
-
-    * tuple of arrays. See `PlottableTuple`
-    * `blocksim.satellite.Trajectory.Trajectory` instances. See `PlottableTrajectory`
-    * `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`. See `PlottableDSPSpectrogram`
 
     Args:
         plottable: one of the instance above
