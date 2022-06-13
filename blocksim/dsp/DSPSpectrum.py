@@ -5,13 +5,13 @@ import numpy as np
 from numpy.fft import ifft, fftshift
 from scipy.signal import get_window
 
-from .DSPLine import DSPLine
+from .DSPLine import DSPRectilinearLine
 
 
 __all__ = ["DSPSpectrum"]
 
 
-class DSPSpectrum(DSPLine):
+class DSPSpectrum(DSPRectilinearLine):
     """Spectrum of a signal
 
     Args:
@@ -19,7 +19,6 @@ class DSPSpectrum(DSPLine):
         samplingStart: First frequency of the sample of the spectrum (Hz)
         samplingPeriod: Frequency spacing of the spectrum (Hz)
         y_serie: Complex samples of the spectrum
-        projection: Axe projection. Can only be 'rectilinear'
         default_transform: Function to apply to the samples before plotting.
           Shall be vectorized
 
@@ -31,16 +30,14 @@ class DSPSpectrum(DSPLine):
         samplingStart: float = None,
         samplingPeriod: float = None,
         y_serie: NDArray[Any, Any] = None,
-        projection: str = "rectilinear",
         default_transform=np.abs,
     ):
-        DSPLine.__init__(
+        DSPRectilinearLine.__init__(
             self,
             name=name,
             samplingStart=samplingStart,
             samplingPeriod=samplingPeriod,
             y_serie=y_serie,
-            projection=projection,
             default_transform=default_transform,
         )
 

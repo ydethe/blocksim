@@ -190,8 +190,8 @@ class Test6DOFSys(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
-    exit(0)
+    # unittest.main()
+    # exit(0)
 
     from blocksim.graphics import showFigures
 

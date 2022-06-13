@@ -10,14 +10,14 @@ from scipy.signal import correlate
 from .. import logger
 from ..control.SetPoint import ASetPoint
 from . import get_window, phase_unfold
-from .DSPLine import DSPLine
+from .DSPLine import DSPRectilinearLine
 from .DSPSpectrum import DSPSpectrum
 
 
 __all__ = ["DSPSignal"]
 
 
-class DSPSignal(DSPLine, ASetPoint):
+class DSPSignal(DSPRectilinearLine, ASetPoint):
     """Temporal signal
 
     This element has no input
@@ -28,7 +28,6 @@ class DSPSignal(DSPLine, ASetPoint):
         samplingStart: First date of the sample of the signal (s)
         samplingPeriod: Time spacing of the signal (s)
         y_serie: Complex samples of the signal
-        projection: Axe projection. Can only be 'rectilinear'
         default_transform: Function to apply to the samples before plotting.
             Shall be vectorized
 
@@ -41,7 +40,6 @@ class DSPSignal(DSPLine, ASetPoint):
         samplingPeriod=None,
         y_serie: NDArray[Any, Any] = None,
         default_transform=np.real,
-        projection: str = "rectilinear",
         dtype=np.complex128,
     ):
         ASetPoint.__init__(
@@ -50,13 +48,12 @@ class DSPSignal(DSPLine, ASetPoint):
             snames=[name],
             dtype=dtype,
         )
-        DSPLine.__init__(
+        DSPRectilinearLine.__init__(
             self,
             name=name,
             samplingStart=samplingStart,
             samplingPeriod=samplingPeriod,
             y_serie=y_serie,
-            projection=projection,
             default_transform=default_transform,
         )
 

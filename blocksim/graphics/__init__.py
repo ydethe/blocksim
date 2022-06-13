@@ -1,5 +1,5 @@
 """Advanced plotting functions.
-Allows plotting from a `blocksim.loggers.Logger.Logger`, or from `blocksim.dsp.DSPLine.DSPLine`
+Allows plotting from a `blocksim.loggers.Logger.Logger`, or from `blocksim.dsp.DSPLine.DSPRectilinearLine`
 3D plot around Earth are also possible
 
 """
@@ -13,8 +13,6 @@ from matplotlib import pyplot as plt
 
 from .. import logger
 from ..loggers.Logger import Logger
-from ..dsp.DSPFilter import ADSPFilter
-from ..dsp.DSPLine import DSPLine
 from ..dsp import phase_unfold
 
 
@@ -230,15 +228,10 @@ def createFigureFromSpec(spec: "FigureSpec", log: Logger, fig=None) -> "BFigure"
         axe = fig.add_baxe(title=title, spec=gs[coord], projection=proj, sharex=sharex)
         l_axes.append(axe)
 
-        # spec.axes[k].props["_axe"] = axe
-
         for d in spec.axes[k].lines:
             lp = d.copy()
             lp.pop("varx", None)
             lp.pop("vary", None)
-            # lp.pop("_line", None)
-            # lp.pop("_xdata", None)
-            # lp.pop("_ydata", None)
 
             varx = d["varx"]
             vary = d["vary"]
@@ -249,17 +242,11 @@ def createFigureFromSpec(spec: "FigureSpec", log: Logger, fig=None) -> "BFigure"
             else:
                 line = plotFromLogger(log, varx, vary, axe=axe, **lp)
 
-            # line = axe.plottable_factories[-1]
-            # d["_line"] = line
-            # xdata, ydata = line.get_data()
-            # d["_xdata"] = xdata
-            # d["_ydata"] = ydata
-
     return fig
 
 
 def plotBode(
-    filt: ADSPFilter,
+    filt: "blocksim.dsp.DSPFilter.ADSPFilter",
     axe_amp: "BAxe",
     axe_pha: "BAxe",
     fpoints: int = 200,
@@ -288,6 +275,7 @@ def plotBode(
 
     """
     from scipy.signal import TransferFunction, freqz
+    from ..dsp.DSPLine import DSPRectilinearLine
 
     fs = 1 / filt.samplingPeriod
 
@@ -305,7 +293,7 @@ def plotBode(
         plottable=(
             {"data": freq, "unit": "Hz", "name": "Frequency"},
             {
-                "data": DSPLine.to_db(y, lim_db=pow_lim),
+                "data": DSPRectilinearLine.to_db(y, lim_db=pow_lim),
                 "name": "Amplitude",
                 "unit": "dB",
             },

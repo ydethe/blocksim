@@ -3,9 +3,9 @@ import pytest
 
 import numpy as np
 from numpy import pi, sqrt
-from blocksim.dsp.DSPLine import DSPLine
+from blocksim.dsp.DSPLine import DSPNorthPolarLine, DSPPolarLine, DSPRectilinearLine
 from blocksim.dsp.DSPSignal import DSPSignal
-from blocksim.dsp.DSPSpectrogram import DSPSpectrogram
+from blocksim.dsp.DSPMap import DSPPolarMap, DSPRectilinearMap, DSPNorthPolarMap
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.graphics.GraphicSpec import (
     AxeProjection,
@@ -32,7 +32,7 @@ class TestGraphics2(unittest.TestCase):
         X, Y = np.meshgrid(xx, yy)
         R2 = X**2 + Y**2
         img = np.sinc(sqrt(R2))
-        self.spg = DSPSpectrogram(
+        self.spg = DSPRectilinearMap(
             name="spg",
             samplingXStart=-5,
             samplingXPeriod=0.1,
@@ -74,12 +74,11 @@ class TestGraphics2(unittest.TestCase):
 
         theta = np.linspace(-pi, pi, 50)
         r = np.cos(theta)
-        sig = DSPLine(
+        sig = DSPPolarLine(
             name="2DTR",
             samplingStart=theta[0],
             samplingPeriod=theta[1] - theta[0],
             y_serie=r,
-            projection="polar",
             default_transform=lambda x: x,
         )
         self.assertRaises(
@@ -106,16 +105,15 @@ class TestGraphics2(unittest.TestCase):
         X, Y = np.meshgrid(xx, yy)
         R2 = (X + 5) ** 2 + (Y - 45) ** 2
         img = np.sinc(sqrt(R2))
-        spg = DSPSpectrogram(
+        spg = DSPRectilinearMap(
             name="spg",
             samplingXStart=xx[0] * pi / 180,
             samplingXPeriod=(xx[1] - xx[0]) * pi / 180,
             samplingYStart=yy[0] * pi / 180,
             samplingYPeriod=(yy[1] - yy[0]) * pi / 180,
             img=img,
-            projection="rectilinear",
         )
-        axe.plot(plottable=spg)
+        axe.plot(plottable=spg, find_peaks=1)
 
         return fig.render()
 
@@ -135,14 +133,13 @@ class TestGraphics2(unittest.TestCase):
         X, Y = np.meshgrid(xx, yy)
         R2 = (X + 5) ** 2 + (Y - 45) ** 2
         img = np.sinc(sqrt(R2))
-        spg = DSPSpectrogram(
+        spg = DSPPolarMap(
             name="spg",
             samplingXStart=xx[0] * pi / 180,
             samplingXPeriod=(xx[1] - xx[0]) * pi / 180,
             samplingYStart=yy[0] * pi / 180,
             samplingYPeriod=(yy[1] - yy[0]) * pi / 180,
             img=img,
-            projection="polar",
         )
         self.assertRaises(AssertionError, axe.plot, plottable=spg)
 
@@ -157,12 +154,11 @@ class TestGraphics2(unittest.TestCase):
 
         theta = np.linspace(-pi, pi, 50)
         r = np.cos(theta)
-        sig = DSPLine(
+        sig = DSPRectilinearLine(
             name="2DTR",
             samplingStart=theta[0],
             samplingPeriod=theta[1] - theta[0],
             y_serie=r,
-            projection="rectilinear",
             default_transform=lambda x: x,
         )
         self.assertRaises(AssertionError, axe.plot, plottable=sig)
@@ -202,14 +198,13 @@ class TestGraphics2(unittest.TestCase):
         X, Y = np.meshgrid(xx, yy)
         R2 = (X + 5) ** 2 + (Y - 45) ** 2
         img = np.sinc(sqrt(R2))
-        spg = DSPSpectrogram(
+        spg = DSPRectilinearMap(
             name="spg",
             samplingXStart=xx[0] * pi / 180,
             samplingXPeriod=(xx[1] - xx[0]) * pi / 180,
             samplingYStart=yy[0] * pi / 180,
             samplingYPeriod=(yy[1] - yy[0]) * pi / 180,
             img=img,
-            projection="rectilinear",
         )
 
         fig = FigureFactory.create(title="Figure")
@@ -233,14 +228,13 @@ class TestGraphics2(unittest.TestCase):
         X, Y = np.meshgrid(xx, yy)
         R2 = (X - pi) ** 2 + (Y - 5) ** 2
         img = np.sinc(sqrt(R2))
-        spg = DSPSpectrogram(
+        spg_pm = DSPPolarMap(
             name="spg",
             samplingXStart=xx[0],
             samplingXPeriod=xx[1] - xx[0],
             samplingYStart=yy[0],
             samplingYPeriod=yy[1] - yy[0],
             img=img,
-            projection="polar",
         )
 
         fig = FigureFactory.create(title="Figure")
@@ -249,14 +243,22 @@ class TestGraphics2(unittest.TestCase):
         axe = fig.add_baxe(
             spec=gs[0, 0], title="Polar plot", projection=AxeProjection.POLAR
         )
-        axe.plot(plottable=spg)
+        axe.plot(plottable=spg_pm, find_peaks=1)
 
+        spg_npm = DSPNorthPolarMap(
+            name="spg",
+            samplingXStart=xx[0],
+            samplingXPeriod=xx[1] - xx[0],
+            samplingYStart=yy[0],
+            samplingYPeriod=yy[1] - yy[0],
+            img=img,
+        )
         axe = fig.add_baxe(
             spec=gs[0, 1],
             title="North polar plot",
             projection=AxeProjection.NORTH_POLAR,
         )
-        axe.plot(plottable=spg)
+        axe.plot(plottable=spg_npm, find_peaks=1)
 
         return fig.render()
 
@@ -271,12 +273,11 @@ class TestGraphics2(unittest.TestCase):
 
         theta = np.linspace(-pi, pi, 50)
         r = np.cos(theta)
-        sig = DSPLine(
+        sig = DSPRectilinearLine(
             name="2DXY",
             samplingStart=theta[0],
             samplingPeriod=theta[1] - theta[0],
             y_serie=r,
-            projection="rectilinear",
             default_transform=lambda x: x,
         )
         self.assertRaises(AssertionError, axe.plot, plottable=sig)
@@ -292,12 +293,11 @@ class TestGraphics2(unittest.TestCase):
 
         theta = np.linspace(-pi, pi, 50)
         r = np.cos(theta)
-        sig = DSPLine(
+        sig = DSPPolarLine(
             name="2DTR",
             samplingStart=theta[0],
             samplingPeriod=theta[1] - theta[0],
             y_serie=r,
-            projection="polar",
             default_transform=lambda x: x,
         )
         self.assertRaises(
@@ -317,7 +317,7 @@ class TestGraphics2(unittest.TestCase):
 
         axe = fig.add_baxe(spec=gs[0, 0], title="axe", projection=AxeProjection.DIM3D)
 
-        axe.plot(plottable=self.spg)
+        axe.plot(plottable=self.spg, find_peaks=1)
 
         return fig.render()
 
@@ -331,14 +331,13 @@ class TestGraphics2(unittest.TestCase):
         X, Y = np.meshgrid(xx, yy)
         R2 = (X - pi) ** 2 + (Y - 5) ** 2
         img = np.sinc(sqrt(R2))
-        spg = DSPSpectrogram(
+        spg = DSPPolarMap(
             name="spg",
             samplingXStart=xx[0],
             samplingXPeriod=xx[1] - xx[0],
             samplingYStart=yy[0],
             samplingYPeriod=yy[1] - yy[0],
             img=img,
-            projection="polar",
         )
 
         fig = FigureFactory.create(title="Figure")
@@ -347,7 +346,7 @@ class TestGraphics2(unittest.TestCase):
         axe = fig.add_baxe(
             spec=gs[0, 0], title="Polar plot", projection=AxeProjection.DIM3D
         )
-        axe.plot(plottable=spg)
+        axe.plot(plottable=spg, find_peaks=1)
 
         return fig.render()
 
@@ -365,15 +364,14 @@ class TestGraphics2(unittest.TestCase):
 
         theta = np.linspace(-pi, pi, 50)
         r = np.cos(theta)
-        sig = DSPLine(
+        sig = DSPRectilinearLine(
             name="2DXY",
             samplingStart=theta[0],
             samplingPeriod=theta[1] - theta[0],
             y_serie=r,
-            projection="rectilinear",
             default_transform=lambda x: x,
         )
-        axe.plot(plottable=sig, color="red")
+        axe.plot(plottable=sig, color="red", find_peaks=1)
 
         return fig.render()
 
@@ -417,7 +415,7 @@ class TestGraphics2(unittest.TestCase):
             aspect="equal",
         )
 
-        axe.plot(plottable=self.spg, fill="contour", levels=20)
+        axe.plot(plottable=self.spg, fill="contour", levels=20, find_peaks=1)
 
         return fig.render()
 
@@ -437,7 +435,6 @@ class TestGraphics2(unittest.TestCase):
 
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_t16_3dtr_rect(self):
         # ==========================
         # T16
@@ -447,14 +444,13 @@ class TestGraphics2(unittest.TestCase):
         X, Y = np.meshgrid(xx, yy)
         R2 = (X - pi) ** 2 + (Y - 5) ** 2
         img = np.sinc(sqrt(R2))
-        spg = DSPSpectrogram(
+        spg = DSPPolarMap(
             name="spg",
             samplingXStart=xx[0],
             samplingXPeriod=xx[1] - xx[0],
             samplingYStart=yy[0],
             samplingYPeriod=yy[1] - yy[0],
             img=img,
-            projection="polar",
         )
 
         fig = FigureFactory.create(title="Figure")
@@ -463,9 +459,9 @@ class TestGraphics2(unittest.TestCase):
         axe = fig.add_baxe(
             spec=gs[0, 0], title="Polar plot", projection=AxeProjection.RECTILINEAR
         )
-        axe.plot(plottable=spg, fill="pcolormesh")
-
-        return fig.render()
+        self.assertRaises(
+            AssertionError, axe.plot, plottable=spg, fill="pcolormesh", find_peaks=1
+        )
 
     def test_3d_plot(self):
         fig = FigureFactory.create(title="Figure", projection=FigureProjection.EARTH3D)
@@ -501,16 +497,23 @@ if __name__ == "__main__":
 
     a = TestGraphics2()
     a.setUp()
-    a.test_multiple_plots()
+    # a.test_multiple_plots()
     # a.test_t1_2dxy_platecarree()
+    # a.test_t2_2dtr_platecarree()
     # a.test_t3_3dxyz_platecarree()
-    # # a.test_t8_3dtrz_polar()
-    # # a.test_t9_2dxy_3d()
-    # # a.test_t10_2dtr_dim3d()
+    # a.test_t4_3dtrz_platecarree()
+    # a.test_t5_2dxy_polar()
+    # a.test_t6_2dtr_polar()
+    # a.test_t7_3dxyz_polar()
+    a.test_t8_3dtrz_polar()
+    # a.test_t9_2dxy_dim3d()
+    # a.test_t10_2dtr_dim3d()
     # a.test_t11_3dxyz_dim3d()
-    # a.test_t12_3dtr_dim3d()
-    # # a.test_t13_2dxy_rect()
-    # # a.test_t14_2dtr_rect()
-    # # a.test_t16_3dtr_rect()
+    a.test_t12_3dtr_dim3d()
+    # a.test_t13_2dxy_rect()
+    # a.test_t14_2dtr_rect()
+    # a.test_t15_1_3dxyz_2d()
+    # a.test_t15_2_3dxyz_2d()
+    # a.test_t16_3dtr_rect()
 
     showFigures()

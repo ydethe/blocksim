@@ -7,8 +7,8 @@ import numpy as np
 from numpy import pi
 
 from ..utils import find1dpeak
-from ..dsp.DSPLine import DSPLine
-from ..dsp.DSPSpectrogram import DSPSpectrogram
+from ..dsp.DSPLine import DSPRectilinearLine, DSPPolarLine, DSPNorthPolarLine
+from ..dsp.DSPMap import DSPRectilinearMap, DSPPolarMap, DSPNorthPolarMap
 from .GraphicSpec import AxeProjection, FigureProjection
 from ..satellite.Trajectory import Trajectory, Cube
 from . import getUnitAbbrev
@@ -17,13 +17,15 @@ from . import getUnitAbbrev
 class APlottable(metaclass=ABCMeta):
     """This base abstract class describes all the entities able to be plotted:
 
+    Daughter classes shall make sure that the class attribute *compatible_baxe* is up to date.
+
     * `blocksim.satellite.Trajectory.Cube` instances. See `PlottableCube`
     * networkx graphs. See `PlottableGraph`
     * `blocksim.dsp.DSPLine.DSPLine`. See `PlottableDSPLine`
     * simple arrays. See `PlottableArray`
     * tuple of arrays. See `PlottableTuple`
     * `blocksim.satellite.Trajectory.Trajectory` instances. See `PlottableTrajectory`
-    * `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`. See `PlottableDSPSpectrogram`
+    * `blocksim.dsp.DSPMap.DSPMap`. See `PlottableDSPSpectrogram`
     * tuple of dictionaries, see `PlottableDictTuple`. The dictionaries keys are:
 
         * data
@@ -38,12 +40,14 @@ class APlottable(metaclass=ABCMeta):
 
     __slots__ = ["plottable", "kwargs"]
 
+    compatible_baxe = []
+
     def __init__(self, plottable, kwargs: dict) -> None:
         self.plottable = plottable
         self.kwargs = kwargs
 
     @abstractmethod
-    def _make_mline(self) -> Tuple["array", "array", str, str, str, str]:
+    def _make_mline(self, axe: "BAxe") -> Tuple["array", "array", str, str, str, str]:
         """This makes the job of turning a generic plotable into a tuple of useful values
 
         Returns:
@@ -90,14 +94,11 @@ class APlottable(metaclass=ABCMeta):
             unit_of_x_var,
             name_of_y_var,
             unit_of_y_var,
-        ) = self._make_mline()
+        ) = self._make_mline(axe)
 
         fill = ""
         plot_mth = maxe.plot
-        if axe.projection == AxeProjection.PLATECARREE:
-            args = (xd * 180 / pi, yd * 180 / pi)
-        else:
-            args = (xd, yd)
+        args = (xd, yd)
 
         kwargs = self.kwargs.copy()
         nb_peaks = kwargs.pop("find_peaks", 0)
@@ -212,13 +213,17 @@ class PlottableCube(APlottable):
 
     """
 
-    def _make_mline(self) -> Tuple["array", "array", str, str, str, str]:
+    __slots__ = []
+
+    compatible_baxe = [AxeProjection.DIM3D]
+
+    def _make_mline(self, axe: "BAxe") -> Tuple["array", "array", str, str, str, str]:
         pass
 
     def render(self, axe: "BAxe") -> dict:
-        if axe.figure.projection != FigureProjection.EARTH3D:
+        if not axe.projection in self.__class__.compatible_baxe:
             raise AssertionError(
-                f"plotCube only allowed for {FigureProjection.EARTH3D}"
+                f"{axe.projection} is not in {self.__class__.compatible_baxe}"
             )
 
         app = axe.figure.mpl_fig
@@ -266,13 +271,15 @@ class PlottableGraph(APlottable):
 
     """
 
-    __slots__ = ["plottable", "kwargs"]
+    __slots__ = []
+
+    compatible_baxe = [AxeProjection.RECTILINEAR]
 
     def __init__(self, plottable, kwargs: dict) -> None:
         self.plottable = plottable
         self.kwargs = kwargs
 
-    def _make_mline(self):
+    def _make_mline(self, axe: "BAxe"):
         pass
 
     def render(self, axe: "BAxe") -> dict:
@@ -300,6 +307,11 @@ class PlottableGraph(APlottable):
             * ymax: largest Y value
 
         """
+        if not axe.projection in self.__class__.compatible_baxe:
+            raise AssertionError(
+                f"{axe.projection} is not in {self.__class__.compatible_baxe}"
+            )
+
         maxe = axe.mpl_axe
 
         kwds = self.kwargs.copy()
@@ -317,10 +329,10 @@ class PlottableGraph(APlottable):
             "unit_of_x_var": "-",
             "name_of_y_var": "",
             "unit_of_y_var": "-",
-            "xmin": 0,
-            "xmax": 0,
-            "ymin": 0,
-            "ymax": 0,
+            "xmin": np.nan,
+            "xmax": np.nan,
+            "ymin": np.nan,
+            "ymax": np.nan,
         }
         return info
 
@@ -366,7 +378,7 @@ class PlottableGraph(APlottable):
         return info
 
 
-class PlottableDSPLine(APlottable):
+class PlottableDSPRectilinearLine(APlottable):
     """Specialisation of `APlottable` for `blocksim.dsp.DSPLine.DSPLine`
 
     Args:
@@ -377,7 +389,12 @@ class PlottableDSPLine(APlottable):
 
     __slots__ = []
 
-    def _make_mline(self) -> Tuple["array", "array", str, str, str, str]:
+    compatible_baxe = [
+        AxeProjection.RECTILINEAR,
+        # AxeProjection.PLATECARREE,
+    ]
+
+    def _make_mline(self, axe: "BAxe") -> Tuple["array", "array", str, str, str, str]:
         transform = self.kwargs.get("transform", self.plottable.default_transform)
         xd = self.plottable.generateXSerie()
         yd = transform(np.array(self.plottable.y_serie))
@@ -390,6 +407,24 @@ class PlottableDSPLine(APlottable):
         unit_of_y_var = "-"
 
         return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
+
+
+class PlottableDSPPolarLine(PlottableDSPRectilinearLine):
+
+    __slots__ = []
+
+    compatible_baxe = [
+        AxeProjection.POLAR,
+    ]
+
+
+class PlottableDSPNorthPolarLine(PlottableDSPRectilinearLine):
+
+    __slots__ = []
+
+    compatible_baxe = [
+        AxeProjection.NORTH_POLAR,
+    ]
 
 
 class PlottableArray(APlottable):
@@ -406,7 +441,14 @@ class PlottableArray(APlottable):
 
     __slots__ = []
 
-    def _make_mline(self) -> Tuple["array", "array", str, str, str, str]:
+    compatible_baxe = [
+        AxeProjection.RECTILINEAR,
+        AxeProjection.NORTH_POLAR,
+        AxeProjection.PLATECARREE,
+        AxeProjection.POLAR,
+    ]
+
+    def _make_mline(self, axe: "BAxe") -> Tuple["array", "array", str, str, str, str]:
         transform = self.kwargs.get("transform", lambda x: x)
         yd = transform(np.array(self.plottable))
         ns = len(yd)
@@ -415,6 +457,12 @@ class PlottableArray(APlottable):
         unit_of_x_var = "-"
         name_of_y_var = ""
         unit_of_y_var = "-"
+
+        if axe.projection == AxeProjection.PLATECARREE:
+            xd *= 180 / pi
+            yd *= 180 / pi
+            unit_of_x_var = "deg"
+            unit_of_y_var = "deg"
 
         return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
 
@@ -440,7 +488,14 @@ class PlottableDictTuple(APlottable):
 
     __slots__ = []
 
-    def _make_mline(self) -> Tuple["array", "array", str, str, str, str]:
+    compatible_baxe = [
+        AxeProjection.RECTILINEAR,
+        AxeProjection.NORTH_POLAR,
+        AxeProjection.PLATECARREE,
+        AxeProjection.POLAR,
+    ]
+
+    def _make_mline(self, axe: "BAxe") -> Tuple["array", "array", str, str, str, str]:
         transform = self.kwargs.get("transform", lambda x: x)
         xdesc, ydesc = self.plottable
 
@@ -450,12 +505,18 @@ class PlottableDictTuple(APlottable):
         if unit_of_x_var == "":
             unit_of_x_var = "-"
 
-        yd = ydesc.get("data")
-        yd = transform(np.array(yd))
+        yd = np.array(ydesc.get("data"))
+        yd = transform(yd)
         name_of_y_var = ydesc.get("name", "")
         unit_of_y_var = ydesc.get("unit", "")
         if unit_of_y_var == "":
             unit_of_y_var = "-"
+
+        if axe.projection == AxeProjection.PLATECARREE:
+            xd *= 180 / pi
+            yd *= 180 / pi
+            unit_of_x_var = "deg"
+            unit_of_y_var = "deg"
 
         return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
 
@@ -474,7 +535,14 @@ class PlottableTuple(APlottable):
 
     __slots__ = []
 
-    def _make_mline(self) -> Tuple["array", "array", str, str, str, str]:
+    compatible_baxe = [
+        AxeProjection.RECTILINEAR,
+        AxeProjection.NORTH_POLAR,
+        AxeProjection.PLATECARREE,
+        AxeProjection.POLAR,
+    ]
+
+    def _make_mline(self, axe: "BAxe") -> Tuple["array", "array", str, str, str, str]:
         transform = self.kwargs.get("transform", lambda x: x)
         xd, yd = self.plottable
         yd = transform(np.array(yd))
@@ -483,8 +551,17 @@ class PlottableTuple(APlottable):
         name_of_y_var = ""
         unit_of_y_var = "-"
 
+        xd = np.array(xd)
+        yd = np.array(yd)
+
+        if axe.projection == AxeProjection.PLATECARREE:
+            xd *= 180 / pi
+            yd *= 180 / pi
+            unit_of_x_var = "deg"
+            unit_of_y_var = "deg"
+
         return (
-            np.array(xd),
+            xd,
             yd,
             name_of_x_var,
             unit_of_x_var,
@@ -504,7 +581,13 @@ class PlottableTrajectory(APlottable):
 
     __slots__ = []
 
-    def _make_mline(self) -> Tuple["array", "array", str, str, str, str]:
+    compatible_baxe = [
+        AxeProjection.DIM3D,
+        AxeProjection.PLATECARREE,
+        AxeProjection.RECTILINEAR,
+    ]
+
+    def _make_mline(self, axe: "BAxe") -> Tuple["array", "array", str, str, str, str]:
         # Only used if axe.figure.projection==FigureProjection.MPL
         lon, lat = self.plottable.getGroundTrack()
 
@@ -521,15 +604,26 @@ class PlottableTrajectory(APlottable):
                 lat = np.insert(lat, ilmax + 1, [new_lat, np.nan, new_lat])
                 decal += 3
 
-        xd = lon
-        yd = lat
+        if axe.projection == AxeProjection.PLATECARREE:
+            lon *= 180 / pi
+            lat *= 180 / pi
+            sunit = "deg"
+        else:
+            sunit = "rad"
+
         name_of_x_var = "Longitude"
-        unit_of_x_var = "rad"
+        unit_of_x_var = sunit
         name_of_y_var = "Latitude"
-        unit_of_y_var = "rad"
-        return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
+        unit_of_y_var = sunit
+
+        return lon, lat, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
 
     def render(self, axe: "BAxe") -> dict:
+        if not axe.projection in self.__class__.compatible_baxe:
+            raise AssertionError(
+                f"{axe.projection} is not in {self.__class__.compatible_baxe}"
+            )
+
         if axe.figure.projection == FigureProjection.EARTH3D:
             app = axe.figure.mpl_fig
             info = {
@@ -564,21 +658,23 @@ class PlottableTrajectory(APlottable):
         return info
 
 
-class PlottableDSPSpectrogram(APlottable):
-    """Specialisation of `APlottable` for `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`
+class APlottableDSPMap(APlottable):
+    """Specialisation of `APlottable` for `blocksim.dsp.DSPMap.DSPMap`
 
     Args:
-        plottable: a `blocksim.dsp.DSPSpectrogram.DSPSpectrogram` instance
+        plottable: a `blocksim.dsp.DSPMap.DSPMap` instance
         kwargs: The dictionary of options for plotting (color, width,etc)
 
     """
 
     __slots__ = []
 
-    def _make_mline(self) -> Tuple["array", "array", str, str, str, str]:
-        pass
-
     def render(self, axe: "BAxe") -> dict:
+        if not axe.projection in self.__class__.compatible_baxe:
+            raise AssertionError(
+                f"{axe.projection} is not in {self.__class__.compatible_baxe}"
+            )
+
         mline = self.plottable
         maxe = axe.mpl_axe
 
@@ -586,14 +682,6 @@ class PlottableDSPSpectrogram(APlottable):
         fill = kwargs.pop("fill", "pcolormesh")
         transform = kwargs.pop("transform", mline.default_transform)
         find_peaks = kwargs.pop("find_peaks", 0)
-
-        x_samp = mline.generateXSerie()
-        name_of_x_var = mline.name_of_x_var
-        x_unit = getattr(mline, "unit_of_x_var", "-")
-
-        y_samp = mline.generateYSerie()
-        name_of_y_var = mline.name_of_y_var
-        y_unit = getattr(mline, "unit_of_y_var", "-")
 
         if axe.projection == AxeProjection.DIM3D:
             plot_mth = maxe.plot_surface
@@ -607,17 +695,17 @@ class PlottableDSPSpectrogram(APlottable):
             pass
         elif fill == "contour":
             pass
-        Z = transform(mline.img)
-        if fill == "plot_surface" and mline.projection == "polar":
-            P, R = np.meshgrid(x_samp, y_samp)
-            X, Y = R * np.cos(P), R * np.sin(P)
-        else:
-            X, Y = np.meshgrid(x_samp, y_samp)
+        (
+            X,
+            Y,
+            name_of_x_var,
+            unit_of_x_var,
+            name_of_y_var,
+            unit_of_y_var,
+        ) = self._make_mline(axe)
 
-        if axe.projection == AxeProjection.PLATECARREE:
-            args = (X * 180 / pi, Y * 180 / pi, Z)
-        else:
-            args = (X, Y, Z)
+        Z = transform(mline.img)
+        args = (X, Y, Z)
 
         lpeaks = mline.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
 
@@ -629,13 +717,13 @@ class PlottableDSPSpectrogram(APlottable):
             "mpl_kwargs": kwargs,
             "peaks": lpeaks,
             "name_of_x_var": name_of_x_var,
-            "unit_of_x_var": x_unit,
+            "unit_of_x_var": unit_of_x_var,
             "name_of_y_var": name_of_y_var,
-            "unit_of_y_var": y_unit,
-            "xmin": np.min(x_samp),
-            "xmax": np.max(x_samp),
-            "ymin": np.min(y_samp),
-            "ymax": np.max(y_samp),
+            "unit_of_y_var": unit_of_y_var,
+            "xmin": np.min(X),
+            "xmax": np.max(X),
+            "ymin": np.min(Y),
+            "ymax": np.max(Y),
         }
         return info
 
@@ -665,18 +753,91 @@ class PlottableDSPSpectrogram(APlottable):
         return info
 
 
+class PlottableDSPRectilinearMap(APlottableDSPMap):
+    """Specialisation of `APlottable` for `blocksim.dsp.DSPMap.DSPMap`
+
+    Args:
+        plottable: a `blocksim.dsp.DSPMap.DSPMap` instance
+        kwargs: The dictionary of options for plotting (color, width,etc)
+
+    """
+
+    __slots__ = []
+
+    compatible_baxe = [
+        AxeProjection.RECTILINEAR,
+        AxeProjection.PLATECARREE,
+        AxeProjection.DIM3D,
+    ]
+
+    def _make_mline(self, axe: "BAxe") -> Tuple["array", "array", str, str, str, str]:
+        mline = self.plottable
+
+        x_samp = mline.generateXSerie()
+        y_samp = mline.generateYSerie()
+
+        name_of_x_var = mline.name_of_x_var
+        unit_of_x_var = getattr(mline, "unit_of_x_var", "-")
+
+        name_of_y_var = mline.name_of_y_var
+        unit_of_y_var = getattr(mline, "unit_of_y_var", "-")
+
+        X, Y = np.meshgrid(x_samp, y_samp)
+        if axe.projection == AxeProjection.PLATECARREE:
+            X *= 180 / pi
+            Y *= 180 / pi
+
+        return X, Y, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
+
+
+class PlottableDSPPolarMap(PlottableDSPRectilinearMap):
+    __slots__ = []
+
+    compatible_baxe = [
+        AxeProjection.POLAR,
+        AxeProjection.DIM3D,
+    ]
+
+    def _make_mline(self, axe: "BAxe") -> Tuple["array", "array", str, str, str, str]:
+        mline = self.plottable
+
+        x_samp = mline.generateXSerie()
+        y_samp = mline.generateYSerie()
+
+        name_of_x_var = mline.name_of_x_var
+        unit_of_x_var = getattr(mline, "unit_of_x_var", "-")
+
+        name_of_y_var = mline.name_of_y_var
+        unit_of_y_var = getattr(mline, "unit_of_y_var", "-")
+
+        P, R = np.meshgrid(x_samp, y_samp)
+
+        return P, R, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
+
+
+class PlottableDSPNorthPolarMap(PlottableDSPPolarMap):
+    __slots__ = []
+
+    compatible_baxe = [
+        AxeProjection.NORTH_POLAR,
+        AxeProjection.DIM3D,
+    ]
+
+
 class PlottableFactory(object):
     """Factory class that instanciates the adapted daughter class of `APlottable` to handle the object to plot"""
 
-    @staticmethod
-    def create(mline, kwargs: dict) -> APlottable:
+    __slots__ = []
+
+    @classmethod
+    def create(cls, mline, kwargs: dict) -> APlottable:
         """Creates the adapted daughter class of `APlottable` to handle the object to plot
 
         Args:
             mline: Object to plot. Can be:
 
             * a `blocksim.dsp.DSPLine.DSPLine`
-            * a `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`
+            * a `blocksim.dsp.DSPMap.DSPMap`
             * a 2 elements tuple of numpy arrays
             * a simple numpy arrays
             * a networkx DiGraph
@@ -701,11 +862,23 @@ class PlottableFactory(object):
         elif isinstance(mline, Cube):
             ret = PlottableCube(mline, kwargs)
 
-        elif isinstance(mline, DSPLine):
-            ret = PlottableDSPLine(mline, kwargs)
+        elif isinstance(mline, DSPRectilinearLine):
+            ret = PlottableDSPRectilinearLine(mline, kwargs)
 
-        elif isinstance(mline, DSPSpectrogram):
-            ret = PlottableDSPSpectrogram(mline, kwargs)
+        elif isinstance(mline, DSPPolarLine):
+            ret = PlottableDSPPolarLine(mline, kwargs)
+
+        elif isinstance(mline, DSPNorthPolarLine):
+            ret = PlottableDSPNorthPolarLine(mline, kwargs)
+
+        elif isinstance(mline, DSPRectilinearMap):
+            ret = PlottableDSPRectilinearMap(mline, kwargs)
+
+        elif isinstance(mline, DSPPolarMap):
+            ret = PlottableDSPPolarMap(mline, kwargs)
+
+        elif isinstance(mline, DSPNorthPolarMap):
+            ret = PlottableDSPNorthPolarMap(mline, kwargs)
 
         elif isinstance(mline, tuple):
             if isinstance(mline[0], dict):

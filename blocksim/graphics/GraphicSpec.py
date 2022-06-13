@@ -2,6 +2,18 @@ from typing import Iterable, List
 from enum import Enum
 
 
+class DSPLineType(Enum):
+    RECTILINEAR = 0
+    POLAR = 1
+    NORTH_POLAR = 2
+
+
+class DSPMapType(Enum):
+    RECTILINEAR = 0
+    POLAR = 1
+    NORTH_POLAR = 2
+
+
 class AxeProjection(Enum):
     #: For rectilinear plots (the most frequent use case)
     RECTILINEAR = 0

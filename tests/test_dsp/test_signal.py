@@ -6,7 +6,7 @@ import numpy as np
 from numpy import testing, pi, exp
 import pytest
 
-from blocksim.dsp.DSPLine import DSPLine
+from blocksim.dsp.DSPLine import DSPRectilinearLine
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.loggers.Logger import Logger
 from blocksim.dsp.DSPSignal import DSPSignal
@@ -182,7 +182,7 @@ class TestSignal(TestBase):
         b = -4 + 1j
         x = np.arange(10)
         y = a * x + b
-        line = DSPLine(
+        line = DSPRectilinearLine(
             name="line", samplingStart=x[0], samplingPeriod=x[1] - x[0], y_serie=y
         )
         p = line.polyfit(deg=1)

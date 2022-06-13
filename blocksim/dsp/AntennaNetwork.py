@@ -5,7 +5,7 @@ import numpy as np
 from numpy import pi, cos, sin
 
 from ..core.Node import AComputer
-from .DSPSpectrogram import DSPSpectrogram
+from .DSPMap import DSPPolarMap
 
 from .. import logger
 from ..constants import c
@@ -75,14 +75,14 @@ class AntennaNetwork(AComputer):
         """
         return self._coeff.copy()
 
-    def antennaDiagram(self, n_points: int = 100) -> DSPSpectrogram:
+    def antennaDiagram(self, n_points: int = 100) -> DSPPolarMap:
         """Computes the antenna diagram
 
         Args:
             n_points: Number of points for theta and psi axis
 
         Returns:
-            A DSPSpectrogram that represents the diagram
+            A DSPPolarMap that represents the diagram
 
         """
         used_theta = np.linspace(0, self.hpbw, n_points)
@@ -101,15 +101,14 @@ class AntennaNetwork(AComputer):
                 if np.abs(m[r, s]) > Emax:
                     Emax = np.abs(m[r, s])
 
-        diag = DSPSpectrogram(
+        diag = DSPPolarMap(
             name="diag",
             samplingXStart=used_psi[0],
             samplingXPeriod=used_psi[1] - used_psi[0],
             samplingYStart=used_theta[0] * 180 / pi,
             samplingYPeriod=(used_theta[1] - used_theta[0]) * 180 / pi,
             img=m / Emax,
-            projection="polar",
-            default_transform=DSPSpectrogram.to_db_lim(-40),
+            default_transform=DSPPolarMap.to_db_lim(-40),
         )
         diag.name_of_x_var = ""  # Off-axis angle
         diag.unit_of_x_var = "rad"

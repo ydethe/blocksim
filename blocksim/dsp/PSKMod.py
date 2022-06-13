@@ -1,13 +1,11 @@
 from typing import Any
 
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
-from numpy import sqrt, sign, pi, exp, cos, sin, log2
+from numpy import pi, exp, cos, sin, log2
 
 from .ADSPComputer import ADSPComputer
-from .DSPSpectrum import DSPSpectrum
-from .DSPSignal import DSPSignal
-from ..graphics.BAxe import BAxe
+from ..graphics.BAxe import ABaxe
 from .. import logger
 
 
@@ -82,7 +80,7 @@ class PSKMapping(ADSPComputer):
         outputs["output"] = symbols
         return outputs
 
-    def plotConstellation(self, axe: BAxe):
+    def plotConstellation(self, axe: ABaxe):
         """Plots the PSK constellation on a matplotlib axe
 
         Args:

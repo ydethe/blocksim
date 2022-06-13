@@ -13,7 +13,7 @@
 # from tqdm import tqdm
 
 # from ..dsp.DSPSignal import DSPSignal
-# from ..dsp.DSPSpectrogram import DSPSpectrogram
+# from ..dsp.DSPMap import DSPRectilinearMap
 # from ..graphics import plotSpectrogram
 
 # from .. import logger

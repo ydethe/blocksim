@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from .B3DPlotter import B3DPlotter
 from .GraphicSpec import AxeProjection, FigureProjection
 from .BLayout import BGridSpec, BGridElement
-from .BAxe import BAxe
+from .BAxe import BAxeFactory, ABaxe
 
 
 class BFigure(object):
@@ -31,20 +31,20 @@ class BFigure(object):
         title: str,
         spec: BGridElement,
         projection: AxeProjection = AxeProjection.RECTILINEAR,
-        sharex: BAxe = None,
-        sharey: BAxe = None,
+        sharex: ABaxe = None,
+        sharey: ABaxe = None,
         **kwargs,
-    ) -> BAxe:
+    ) -> ABaxe:
         if spec.axe is None:
-            """Creates a BAxe"""
-            axe = BAxe(
+            """Creates a ABaxe"""
+            axe = BAxeFactory.create(
                 figure=self,
                 title=title,
                 spec=spec,
                 projection=projection,
                 sharex=sharex,
                 sharey=sharey,
-                **kwargs,
+                kwargs=kwargs,
             )
             self.registerAxeFactory(axe)
             spec.axe = axe
@@ -73,11 +73,11 @@ class BFigure(object):
         self.grid_spec = res
         return res
 
-    def registerAxeFactory(self, baxe: BAxe):
-        """Registers a new BAxe in the list of related BAxe
+    def registerAxeFactory(self, baxe: ABaxe):
+        """Registers a new ABaxe in the list of related ABaxe
 
         Args:
-            baxe: The BAxe to add
+            baxe: The ABaxe to add
 
         """
         self.axe_factories.append(baxe)
@@ -249,9 +249,9 @@ def _render_mpl(fig: BFigure, tight_layout: bool = False) -> "Figure":
             maxe.set_xlim(xmin, xmax)
 
             ymin, ymax = axe.ybounds
-            if ymin is None:
+            if ymin is None and not np.isnan(global_ymin):
                 ymin = global_ymin / info["y_mult"]
-            if ymax is None:
+            if ymax is None and not np.isnan(global_ymax):
                 ymax = global_ymax / info["y_mult"]
             maxe.set_ylim(ymin, ymax)
 

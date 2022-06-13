@@ -11,7 +11,7 @@ from scipy.signal import cont2discrete, TransferFunction
 from ..exceptions import *
 from ..core.Node import AComputer, Input, Output
 from ..loggers.Logger import Logger
-from ..dsp.DSPSpectrogram import DSPSpectrogram
+from ..dsp.DSPMap import DSPRectilinearMap
 from ..dsp.DSPFilter import ArbitraryDSPFilter
 from ..utils import quat_to_euler, assignVector
 
@@ -783,14 +783,14 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
 
         return filt
 
-    def getSpectrogram(self, log: Logger) -> DSPSpectrogram:
-        """Gets the spectrogram from the Logger after simulation
+    def getSpectrogram(self, log: Logger) -> DSPRectilinearMap:
+        """Gets the map from the Logger after simulation
 
         Args:
             log: The Logger after simulation
 
         Returns:
-            The spectrogram
+            The map
 
         """
         nb_tracks = len(self.tracks)
@@ -808,8 +808,8 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
 
         df = self.tracks[1] - self.tracks[0]
 
-        spg = DSPSpectrogram(
-            name="spectrogram",
+        spg = DSPRectilinearMap(
+            name="map",
             samplingXStart=t_sim[0] - nb_tracks * self.dt / 2,
             samplingXPeriod=self.dt,
             samplingYStart=self.tracks[0],

@@ -1,3 +1,5 @@
+from enum import Enum
+from abc import ABCMeta, abstractmethod
 from typing import Callable, List, Any
 
 from lazy_property import LazyProperty
@@ -10,11 +12,12 @@ from scipy import linalg as lin
 from . import derivative_coeff
 from .. import logger
 from ..utils import find1dpeak, Peak
+from ..graphics.GraphicSpec import AxeProjection, DSPLineType
 
-__all__ = ["DSPLine"]
+__all__ = ["DSPRectilinearLine", "DSPPolarLine", "DSPNorthPolarLine"]
 
 
-class DSPLine(object):
+class ADSPLine(metaclass=ABCMeta):
     """Generic DSP line
 
     Args:
@@ -22,12 +25,12 @@ class DSPLine(object):
         samplingStart: First x coord of the sample of the line
         samplingPeriod: x coord spacing of the line
         y_serie: Complex samples of the line
-        projection: Axe projection. Can be 'rectilinear', 'north_polar' or 'polar'
         default_transform: Function to apply to the samples before plotting.
             Shall be vectorized
 
     """
 
+    # Has to be commented because of multiple inheritance
     # __slots__=["__name","__samplingStart","__samplingPeriod","__y_serie","__default_transform"]
 
     def __init__(
@@ -36,7 +39,6 @@ class DSPLine(object):
         samplingStart: float = None,
         samplingPeriod: float = None,
         y_serie: NDArray[Any, Any] = None,
-        projection: str = "rectilinear",
         default_transform=lambda x: x,
     ):
         self.__name = name
@@ -46,7 +48,11 @@ class DSPLine(object):
         self.__default_transform = default_transform
         self.name_of_x_var = "Samples"
         self.unit_of_x_var = "ech"
-        self.projection = projection
+
+    @property
+    @abstractmethod
+    def dspline_type(self) -> DSPLineType:
+        pass
 
     @property
     def name(self) -> str:
@@ -145,6 +151,14 @@ class DSPLine(object):
         x = index * self.samplingPeriod + self.samplingStart
         return x
 
+    def getAdaptedAxeProjection(self) -> AxeProjection:
+        if self.dspline_type == DSPLineType.RECTILINEAR:
+            return AxeProjection.RECTILINEAR
+        elif self.dspline_type == DSPLineType.POLAR:
+            return AxeProjection.POLAR
+        elif self.dspline_type == DSPLineType.NORTH_POLAR:
+            return AxeProjection.NORTH_POLAR
+
     def quickPlot(self, **kwargs) -> "AxesSubplot":
         """Quickly plots the line on a matplotlib axe
 
@@ -161,7 +175,7 @@ class DSPLine(object):
         return axe
 
     def polyfit(self, deg: int) -> Polynomial:
-        """Fits a polynomial to the DSPLine. All the samples are considered in the computation.
+        """Fits a polynomial to the DSPRectilinearLine. All the samples are considered in the computation.
         See https://numpy.org/doc/stable/reference/generated/numpy.polynomial.polynomial.Polynomial.html
         for the Polynomial object documentation.
 
@@ -176,7 +190,7 @@ class DSPLine(object):
             >>> b = -4 + 1j
             >>> x = np.arange(10)
             >>> y = a * x + b
-            >>> line = DSPLine(name="line", samplingStart=0, samplingPeriod=1, y_serie=y)
+            >>> line = DSPRectilinearLine(name="line", samplingStart=0, samplingPeriod=1, y_serie=y)
             >>> p = line.polyfit(deg=1)
             >>> p
             Polynomial([-4.+1.j,  2.-3.j], domain=[0., 9.], window=[0., 9.])
@@ -192,14 +206,14 @@ class DSPLine(object):
 
         return Polynomial(coef=c, domain=[x0, x1], window=[x0, x1])
 
-    def applyDelay(self, delay: float) -> "DSPLine":
-        """Applies a delay (in X axis unit) to the DSPLine
+    def applyDelay(self, delay: float) -> "DSPRectilinearLine":
+        """Applies a delay (in X axis unit) to the DSPRectilinearLine
 
         Args:
             delay: Delay to be applied
 
         Returns:
-            The delayed DSPLine
+            The delayed DSPRectilinearLine
 
         """
         t_start = self.samplingStart + delay
@@ -210,21 +224,20 @@ class DSPLine(object):
             samplingStart=t_start,
             samplingPeriod=self.samplingPeriod,
             y_serie=ech,
-            projection=self.projection,
             default_transform=self.default_transform,
         )
         dsig.name_of_x_var = self.name_of_x_var
         dsig.unit_of_x_var = self.unit_of_x_var
         return dsig
 
-    def repeat(self, repeats: int) -> "DSPLine":
+    def repeat(self, repeats: int) -> "DSPRectilinearLine":
         """Repeats the samples *repeats* time
 
         Args:
             repeats: Number of repetitions
 
         Returns:
-            The repeated DSPLine
+            The repeated DSPRectilinearLine
 
         """
         dsig = self.__class__(
@@ -232,7 +245,6 @@ class DSPLine(object):
             samplingStart=self.samplingStart,
             samplingPeriod=self.samplingPeriod,
             y_serie=np.tile(self.y_serie, reps=repeats),
-            projection=self.projection,
             default_transform=self.default_transform,
         )
         dsig.name_of_x_var = self.name_of_x_var
@@ -242,7 +254,7 @@ class DSPLine(object):
     def findPeaksWithTransform(
         self, transform: Callable = None, nb_peaks: int = 3
     ) -> List[Peak]:
-        """Finds the peaks in a DSPLine.
+        """Finds the peaks in a DSPRectilinearLine.
         The search is performed on the transformed samples (with the argument *transform*, or the attribute *default_transform*)
 
         Args:
@@ -313,7 +325,7 @@ class DSPLine(object):
         samplingStart: float = None,
         samplingStop: float = None,
         zero_padding: bool = True,
-    ) -> "DSPLine":
+    ) -> "DSPRectilinearLine":
         """Truncates a line between x=samplingStart and x=samplingStop.
 
         Args:
@@ -374,7 +386,7 @@ class DSPLine(object):
             The test is successful if:
             $$ |dt - dty| < 10^-6 * min(dt, dty) $$
             $$ modf((t0 - t0y) / dt) < 10^-3 $$
-        * a DSPLine. In this case, t0y is y.samplingStart and dty is y.samplingPeriod
+        * a DSPRectilinearLine. In this case, t0y is y.samplingStart and dty is y.samplingPeriod
             The test is successful if:
             $$ |dt - dty| < 10^-6 * min(dt, dty) $$
             $$ modf((t0 - t0y) / dt) < 10^-3 $$
@@ -410,7 +422,7 @@ class DSPLine(object):
         nech: int = None,
         zero_padding: bool = True,
         complex_output: bool = None,
-    ) -> "DSPLine":
+    ) -> "DSPRectilinearLine":
         """Resamples the line using a cubic interpolation.
         If the new bounds are larger than the original ones, the line is filled with 0
         The resulting signal keeps the timestamp of samples
@@ -484,7 +496,7 @@ class DSPLine(object):
             The function to map on a complex time serie
 
         Examples:
-            >>> f = DSPLine.to_db_lim(low=-80)
+            >>> f = DSPRectilinearLine.to_db_lim(low=-80)
             >>> f(1e-3)
             -60.0
             >>> f(1e-4)
@@ -539,7 +551,7 @@ class DSPLine(object):
 
         return self.y_serie[lid]
 
-    def derivate(self, rank: int = 1, order: int = None) -> "DSPLine":
+    def derivate(self, rank: int = 1, order: int = None) -> "DSPRectilinearLine":
         """Performs numerical derivation if the line
 
         Args:
@@ -568,7 +580,7 @@ class DSPLine(object):
         res.unit_of_x_var = self.unit_of_x_var
         return res
 
-    def _prepareOperation(self, y: "DSPLine"):
+    def _prepareOperation(self, y: "DSPRectilinearLine"):
         t_start = min(self.samplingStart, y.samplingStart)
         dt = min(self.samplingPeriod, y.samplingPeriod)
         t_stop = max(self.samplingStop, y.samplingStop)
@@ -579,11 +591,11 @@ class DSPLine(object):
 
         return t_start, dt, rx, ry
 
-    def __radd__(self, y) -> "DSPLine":
+    def __radd__(self, y) -> "DSPRectilinearLine":
         return self + y
 
-    def __add__(self, y: "DSPLine") -> "DSPLine":
-        if issubclass(y.__class__, DSPLine):
+    def __add__(self, y: "DSPRectilinearLine") -> "DSPRectilinearLine":
+        if issubclass(y.__class__, DSPRectilinearLine):
             t_start, dt, rx, ry = self._prepareOperation(y)
 
             y_serie = rx.y_serie + ry.y_serie
@@ -604,7 +616,7 @@ class DSPLine(object):
         res.unit_of_x_var = self.unit_of_x_var
         return res
 
-    def __neg__(self) -> "DSPLine":
+    def __neg__(self) -> "DSPRectilinearLine":
         res = self.__class__(
             name=self.name,
             samplingStart=self.samplingStart,
@@ -616,11 +628,11 @@ class DSPLine(object):
         res.unit_of_x_var = self.unit_of_x_var
         return res
 
-    def __rsub__(self, y) -> "DSPLine":
+    def __rsub__(self, y) -> "DSPRectilinearLine":
         z = -self
         return y + z
 
-    def __sub__(self, y: "DSPLine") -> "DSPLine":
+    def __sub__(self, y: "DSPRectilinearLine") -> "DSPRectilinearLine":
         z = -y
         return self + z
 
@@ -628,7 +640,7 @@ class DSPLine(object):
         return self * y
 
     def __truediv__(self, y):
-        if issubclass(y.__class__, DSPLine):
+        if issubclass(y.__class__, DSPRectilinearLine):
             t_start, dt, rx, ry = self._prepareOperation(y)
             y_serie = np.empty_like(ry.y_serie, dtype=np.complex128)
             y_serie[:] = 0
@@ -657,8 +669,8 @@ class DSPLine(object):
         res.unit_of_x_var = self.unit_of_x_var
         return res
 
-    def __mul__(self, y: "DSPLine") -> "DSPLine":
-        if issubclass(y.__class__, DSPLine):
+    def __mul__(self, y: "DSPRectilinearLine") -> "DSPRectilinearLine":
+        if issubclass(y.__class__, DSPRectilinearLine):
             t_start, dt, rx, ry = self._prepareOperation(y)
 
             y_serie = rx.y_serie * ry.y_serie
@@ -678,3 +690,21 @@ class DSPLine(object):
         res.name_of_x_var = self.name_of_x_var
         res.unit_of_x_var = self.unit_of_x_var
         return res
+
+
+class DSPRectilinearLine(ADSPLine):
+    @property
+    def dspline_type(self) -> DSPLineType:
+        return DSPLineType.RECTILINEAR
+
+
+class DSPPolarLine(ADSPLine):
+    @property
+    def dspline_type(self) -> DSPLineType:
+        return DSPLineType.POLAR
+
+
+class DSPNorthPolarLine(ADSPLine):
+    @property
+    def dspline_type(self) -> DSPLineType:
+        return DSPLineType.NORTH_POLAR

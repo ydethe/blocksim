@@ -1,27 +1,25 @@
-from typing import Any, List
+from abc import ABCMeta, abstractmethod
 
-from nptyping import NDArray
 import numpy as np
 from numpy import pi, sqrt, cos, sin
 import cartopy.crs as ccrs
 from cartopy.geodesic import Geodesic
 
-from ..dsp.DSPLine import DSPLine
-from ..dsp.DSPSpectrogram import DSPSpectrogram
 from ..constants import Req
-from ..satellite.Trajectory import Trajectory
-from .GraphicSpec import AxeProjection, FigureProjection
+from .GraphicSpec import FigureProjection, AxeProjection
 from .BLayout import BGridElement
 from .Plottable import *
 
 
-class BAxe(object):
+class ABaxe(metaclass=ABCMeta):
     """Class that describes the axe. Not yet a matplotlib axe
 
     Args:
+        figure: Parent figure containing the BAxe
         title: Title of the axe
         spec: Position in the BGridSpec
-        projection: Projection to use
+        sharex: ABaxe instance to share X limits with
+        sharey: ABaxe instance to share Y limits with
 
     """
 
@@ -29,7 +27,6 @@ class BAxe(object):
         "figure",
         "title",
         "spec",
-        "projection",
         "parent_sharex",
         "children_sharex",
         "parent_sharey",
@@ -41,15 +38,35 @@ class BAxe(object):
         "ybounds",
     ]
 
+    projection = None
+
+    @abstractmethod
+    def render(self, mfig: "Figure", mgs: "SubplotSpec") -> "AxesSubplot":
+        pass
+
+    def _solveSharedBAxes(
+        self, mfig: "Figure", mgs: "SubplotSpec"
+    ) -> Tuple["ABaxe", "ABaxe"]:
+        if not self.parent_sharex is None:
+            sharex = self.parent_sharex.render(mfig, mgs)
+        else:
+            sharex = None
+
+        if not self.parent_sharey is None:
+            sharey = self.parent_sharey.render(mfig, mgs)
+        else:
+            sharey = None
+
+        return sharex, sharey
+
     def __init__(
         self,
         figure: "BFigure",
         title: str,
         spec: BGridElement,
-        projection: AxeProjection = AxeProjection.RECTILINEAR,
-        sharex: "BAxe" = None,
-        sharey: "BAxe" = None,
-        **kwargs,
+        sharex: "ABAxe" = None,
+        sharey: "ABAxe" = None,
+        kwargs={},
     ):
         gs = spec.get_gridspec()
         if figure.projection == FigureProjection.EARTH3D and (
@@ -62,7 +79,6 @@ class BAxe(object):
         self.figure = figure
         self.title = title
         self.spec = spec
-        self.projection = projection
         self.parent_sharex = sharex
         self.children_sharex = []
         self.parent_sharey = sharey
@@ -84,31 +100,37 @@ class BAxe(object):
 
         self.plottable_factories = []
 
-    def _addChildSharex(self, sharex: "Baxe"):
+    def _addChildSharex(self, sharex: "ABaxe"):
         self.children_sharex.append(sharex)
 
-    def _addChildSharey(self, sharey: "Baxe"):
+    def _addChildSharey(self, sharey: "ABaxe"):
         self.children_sharey.append(sharey)
 
-    def _findRootSharex(self) -> "BAxe":
+    def _findRootSharex(self) -> "ABaxe":
         if self.parent_sharex is None:
             return self
         else:
             return self.parent_sharex._findRootSharex()
 
-    def _findRootSharey(self) -> "BAxe":
+    def _findRootSharey(self) -> "ABaxe":
         if self.parent_sharey is None:
             return self
         else:
             return self.parent_sharey._findRootSharey()
 
-    def registerPlottableFactory(self, plottable: APlottable):
+    def registerPlottable(self, plottable: APlottable):
         """Registers the APlottable in the list of objects handled by the axe
 
         Args:
             plottable: APlottable object
 
         """
+
+        if not self.projection in plottable.compatible_baxe:
+            raise AssertionError(
+                f"{self.projection} not in {plottable.compatible_baxe}"
+            )
+
         self.plottable_factories.append(plottable)
 
     def set_xlim(self, xmin: float = None, xmax: float = None, _from_root: bool = True):
@@ -154,45 +176,186 @@ class BAxe(object):
             plottable: Object to plot. Can be:
 
             * a `blocksim.dsp.DSPLine.DSPLine`
-            * a `blocksim.dsp.DSPSpectrogram.DSPSpectrogram`
+            * a `blocksim.dsp.DSPMap.DSPMap`
             * a 2 elements tuple of numpy arrays
             * a simple numpy arrays
             kwargs: The plotting options for the object
 
         """
-        if self.projection == AxeProjection.PLATECARREE:
-            if (
-                not isinstance(plottable, tuple)
-                and not isinstance(plottable, DSPSpectrogram)
-                and not isinstance(plottable, Trajectory)
-            ):
-                raise AssertionError(
-                    f"With '{self.projection}' axe projection, only (lon,lat), Trajectory or rectilinear DSPSpectrogram data are accepted. Got {plottable}"
-                )
-            elif isinstance(plottable, DSPSpectrogram):
-                if not plottable.projection == "rectilinear":
-                    raise AssertionError(
-                        f"With '{self.projection}' axe projection and DSPSpectrogram data, only the rectilinear projection is accepted. Got {plottable.projection}"
-                    )
-
-        if (
-            self.projection == AxeProjection.POLAR
-            or self.projection == AxeProjection.NORTH_POLAR
-        ) and (isinstance(plottable, DSPLine) or isinstance(plottable, DSPSpectrogram)):
-            if plottable.projection != "polar":
-                raise AssertionError(
-                    f"With '{self.projection}' axe projection, only polar projecions are allowed. Got {plottable.projection}"
-                )
-        if self.projection == AxeProjection.DIM3D and not isinstance(
-            plottable, DSPSpectrogram
-        ):
-            raise AssertionError(
-                f"With '{self.projection}' axe projection, only DSPSpectrogram is accepted. Got {plottable}"
-            )
-
         res = PlottableFactory.create(plottable, kwargs)
-        self.registerPlottableFactory(res)
+        self.registerPlottable(res)
         return res
+
+
+class BAxeRectiliear(ABaxe):
+
+    __slots__ = []
+
+    projection = AxeProjection.RECTILINEAR
+
+    def render(self, mfig: "Figure", mgs: "SubplotSpec") -> "AxesSubplot":
+        """Creates a matplotlib axe according to the BAxe.plot commands
+
+        Args:
+            mfig: Matplotlib figure
+            mgs: Matplotlib grid_spec
+
+        Returns:
+            The created matplotlib axe
+
+        """
+        if not self.mpl_axe is None:
+            return self.mpl_axe
+
+        ge = self.spec
+
+        sharex, sharey = self._solveSharedBAxes(mfig, mgs)
+
+        maxe = mfig.add_subplot(
+            mgs[ge.coord],
+            sharex=sharex,
+            sharey=sharey,
+            **self.kwargs,
+        )
+
+        if self.title != "":
+            maxe.set_title(self.title)
+
+        maxe.grid(True)
+
+        self.mpl_axe = maxe
+
+        return self.mpl_axe
+
+
+class BAxePolar(ABaxe):
+
+    __slots__ = []
+
+    projection = AxeProjection.POLAR
+
+    def render(self, mfig: "Figure", mgs: "SubplotSpec") -> "AxesSubplot":
+        """Creates a matplotlib axe according to the BAxe.plot commands
+
+        Args:
+            mfig: Matplotlib figure
+            mgs: Matplotlib grid_spec
+
+        Returns:
+            The created matplotlib axe
+
+        """
+        if not self.mpl_axe is None:
+            return self.mpl_axe
+
+        ge = self.spec
+
+        sharex, sharey = self._solveSharedBAxes(mfig, mgs)
+
+        maxe = mfig.add_subplot(
+            mgs[ge.coord],
+            projection="polar",
+            sharex=sharex,
+            sharey=sharey,
+            **self.kwargs,
+        )
+
+        if self.title != "":
+            maxe.set_title(self.title)
+
+        maxe.grid(True)
+
+        self.mpl_axe = maxe
+
+        return self.mpl_axe
+
+
+class BAxeNorthPolar(ABaxe):
+
+    __slots__ = []
+
+    projection = AxeProjection.NORTH_POLAR
+
+    def render(self, mfig: "Figure", mgs: "SubplotSpec") -> "AxesSubplot":
+        """Creates a matplotlib axe according to the BAxe.plot commands
+
+        Args:
+            mfig: Matplotlib figure
+            mgs: Matplotlib grid_spec
+
+        Returns:
+            The created matplotlib axe
+
+        """
+        if not self.mpl_axe is None:
+            return self.mpl_axe
+
+        ge = self.spec
+
+        sharex, sharey = self._solveSharedBAxes(mfig, mgs)
+
+        maxe = mfig.add_subplot(
+            mgs[ge.coord],
+            projection="polar",
+            sharex=sharex,
+            sharey=sharey,
+            **self.kwargs,
+        )
+
+        if self.title != "":
+            maxe.set_title(self.title)
+
+        maxe.set_theta_zero_location("N")
+        maxe.set_theta_direction(-1)
+        maxe.grid(True)
+
+        self.mpl_axe = maxe
+
+        return self.mpl_axe
+
+
+class BAxePlateCarree(ABaxe):
+
+    __slots__ = []
+
+    projection = AxeProjection.PLATECARREE
+
+    def render(self, mfig: "Figure", mgs: "SubplotSpec") -> "AxesSubplot":
+        """Creates a matplotlib axe according to the BAxe.plot commands
+
+        Args:
+            mfig: Matplotlib figure
+            mgs: Matplotlib grid_spec
+
+        Returns:
+            The created matplotlib axe
+
+        """
+        if not self.mpl_axe is None:
+            return self.mpl_axe
+
+        ge = self.spec
+        proj = ccrs.PlateCarree()
+
+        sharex, sharey = self._solveSharedBAxes(mfig, mgs)
+
+        maxe = mfig.add_subplot(
+            mgs[ge.coord],
+            projection=proj,
+            sharex=sharex,
+            sharey=sharey,
+            **self.kwargs,
+        )
+
+        if self.title != "":
+            maxe.set_title(self.title)
+
+        maxe.stock_img()
+        maxe.gridlines(crs=proj, draw_labels=True)
+
+        self.mpl_axe = maxe
+
+        return self.mpl_axe
 
     def plotDeviceReach(
         self, coord: tuple, elev_min: float, sat_alt: float, **kwargs
@@ -227,6 +390,13 @@ class BAxe(object):
 
         return self.plot(plottable=(c_lon * pi / 180, c_lat * pi / 180), **kwargs)
 
+
+class BAxeDim3D(ABaxe):
+
+    __slots__ = []
+
+    projection = AxeProjection.DIM3D
+
     def render(self, mfig: "Figure", mgs: "SubplotSpec") -> "AxesSubplot":
         """Creates a matplotlib axe according to the BAxe.plot commands
 
@@ -242,30 +412,12 @@ class BAxe(object):
             return self.mpl_axe
 
         ge = self.spec
-        if self.projection == AxeProjection.PLATECARREE:
-            proj = ccrs.PlateCarree()
-        elif self.projection == AxeProjection.POLAR:
-            proj = "polar"
-        elif self.projection == AxeProjection.NORTH_POLAR:
-            proj = "polar"
-        elif self.projection == AxeProjection.DIM3D:
-            proj = "3d"
-        else:
-            proj = "rectilinear"
 
-        if not self.parent_sharex is None:
-            sharex = self.parent_sharex.render(mfig, mgs)
-        else:
-            sharex = None
-
-        if not self.parent_sharey is None:
-            sharey = self.parent_sharey.render(mfig, mgs)
-        else:
-            sharey = None
+        sharex, sharey = self._solveSharedBAxes(mfig, mgs)
 
         maxe = mfig.add_subplot(
             mgs[ge.coord],
-            projection=proj,
+            projection="3d",
             sharex=sharex,
             sharey=sharey,
             **self.kwargs,
@@ -274,16 +426,89 @@ class BAxe(object):
         if self.title != "":
             maxe.set_title(self.title)
 
-        if self.projection == AxeProjection.PLATECARREE:
-            maxe.stock_img()
-            maxe.gridlines(crs=proj, draw_labels=True)
-        elif self.projection == AxeProjection.NORTH_POLAR:
-            maxe.set_theta_zero_location("N")
-            maxe.set_theta_direction(-1)
-            maxe.grid(True)
-        else:
-            maxe.grid(True)
+        maxe.grid(True)
 
         self.mpl_axe = maxe
 
         return self.mpl_axe
+
+
+class BAxeFactory(object):
+    """Factory class that instanciates the adapted daughter class of `APlottable` to handle the object to plot"""
+
+    __slots__ = []
+
+    @classmethod
+    def create(
+        cls,
+        figure: "BFigure",
+        title: str,
+        spec: BGridElement,
+        projection: AxeProjection,
+        sharex: "ABAxe" = None,
+        sharey: "ABAxe" = None,
+        kwargs={},
+    ) -> ABaxe:
+        """Creates the adapted daughter class of `ABAxe`
+
+        Args:
+            figure: parent BFigure
+            title: title of the BAxe
+            spec : coordinates of the BAxe in the BFigure's layout
+            projection: projection of the BAxe. Used to determine which subclass of ABAxe to use
+            sharex: ABAxe to share X limits with
+            sharey: ABAxe to share Y limits with
+            kwargs: The plotting options for the object
+
+        Returns:
+            The ABAxe instance suited to the projection
+
+        """
+
+        if projection == AxeProjection.DIM3D:
+            baxe = BAxeDim3D(
+                figure,
+                title,
+                spec,
+                sharex,
+                sharey,
+                kwargs,
+            )
+        elif projection == AxeProjection.NORTH_POLAR:
+            baxe = BAxeNorthPolar(
+                figure,
+                title,
+                spec,
+                sharex,
+                sharey,
+                kwargs,
+            )
+        elif projection == AxeProjection.PLATECARREE:
+            baxe = BAxePlateCarree(
+                figure,
+                title,
+                spec,
+                sharex,
+                sharey,
+                kwargs,
+            )
+        elif projection == AxeProjection.POLAR:
+            baxe = BAxePolar(
+                figure,
+                title,
+                spec,
+                sharex,
+                sharey,
+                kwargs,
+            )
+        elif projection == AxeProjection.RECTILINEAR:
+            baxe = BAxeRectiliear(
+                figure,
+                title,
+                spec,
+                sharex,
+                sharey,
+                kwargs,
+            )
+
+        return baxe

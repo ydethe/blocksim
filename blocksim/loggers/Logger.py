@@ -9,7 +9,7 @@ from types import FunctionType
 from datetime import datetime, timezone
 
 import pluggy
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
 from numpy import *
 from scipy.signal import firwin, fftconvolve
@@ -18,7 +18,6 @@ from .. import logger
 from ..core.Node import AComputer
 from ..exceptions import *
 from ..utils import deg, rad
-from ..dsp.DSPSignal import DSPSignal
 from .. import plugin_manager
 from .Parameter import Parameter
 
@@ -449,7 +448,7 @@ class Logger(object):
 
         return foo_func(self)
 
-    def getSignal(self, name: str, raw: bool = False) -> DSPSignal:
+    def getSignal(self, name: str, raw: bool = False) -> "DSPSignal":
         """Get the value of a logged variable
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos
@@ -468,6 +467,8 @@ class Logger(object):
             True
 
         """
+        from ..dsp.DSPSignal import DSPSignal
+
         tps = self.getRawValue("t")
         val = self.getValue(name, raw=raw)
         comp_name = name.replace("_", "")

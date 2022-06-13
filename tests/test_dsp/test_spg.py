@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pytest
 
-from blocksim.dsp.DSPSpectrogram import DSPSpectrogram
+from blocksim.dsp.DSPMap import DSPRectilinearMap
 from blocksim.graphics.BFigure import FigureFactory
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -27,7 +27,7 @@ class TestDSPSpectrogram(TestBase):
         X, Y = np.meshgrid(x, y)
         Z = f(X, Y)
 
-        spg = DSPSpectrogram(
+        spg = DSPRectilinearMap(
             name="spg",
             samplingXStart=x[0],
             samplingXPeriod=x[1] - x[0],

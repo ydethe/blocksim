@@ -132,7 +132,7 @@ def analyse_DV(
     coherent: bool = True,
     progress_bar: bool = False,
     corr_window: str = "hamming",
-) -> "DSPSpectrogram":
+) -> "DSPRectilinearMap":
     """Distance / velocity analysis for acquisition
 
     Args:
@@ -151,11 +151,11 @@ def analyse_DV(
         corr_window: Window to be used for correlation
 
     Returns:
-        The DSPSpectrogram of the analysis
+        The DSPRectilinearMap of the analysis
 
     """
     from ..constants import c
-    from .DSPSpectrogram import DSPSpectrogram
+    from .DSPMap import DSPRectilinearMap
     from ..graphics import getUnitAbbrev
 
     if nv % 2 == 0:
@@ -208,7 +208,7 @@ def analyse_DV(
 
         img[:, kv] = zi.y_serie[kmin:kmax]
 
-    spg = DSPSpectrogram(
+    spg = DSPRectilinearMap(
         name="spg",
         samplingXStart=tab_v[0] - vrad0,
         samplingXPeriod=tab_v[1] - tab_v[0],
