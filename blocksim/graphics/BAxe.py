@@ -68,14 +68,6 @@ class ABaxe(metaclass=ABCMeta):
         sharey: "ABAxe" = None,
         kwargs={},
     ):
-        gs = spec.get_gridspec()
-        if figure.projection == FigureProjection.EARTH3D and (
-            gs.ncol != 1 or gs.nrow != 1
-        ):
-            raise AssertionError(
-                f"Cannot use BGridSpec different from (1,1) with figure projection 'earth3d'. Got ({gs.nrow},{gs.ncol})"
-            )
-
         self.figure = figure
         self.title = title
         self.spec = spec

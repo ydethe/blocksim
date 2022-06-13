@@ -4,15 +4,13 @@
 
 from typing import Iterable, Tuple, Any
 from uuid import UUID, uuid4
-from multiprocessing import Pool, Queue, Process, Manager
 from time import time
 from datetime import datetime
 
 import tqdm
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
 import matplotlib.animation as animation
-from matplotlib import pyplot as plt
 import networkx as nx
 
 from .exceptions import *
@@ -21,20 +19,6 @@ from .loggers.Logger import Logger
 from . import logger
 
 __all__ = ["Simulation"]
-
-
-def worker(ns: "Namespace", inQ: "Queue"):
-    while True:
-        params = inQ.get()
-        if params is None:
-            logger.debug(f"Worker quits")
-            break
-
-        tindex = params["tindex"]
-        t0 = params["t0"]
-        t1 = params["t1"]
-        # sim.update(clist, t0, t1, error_on_unconnected=eou, tindex=tindex)
-        logger.debug(f"Poney {tindex}")
 
 
 class Simulation(object):
@@ -278,7 +262,6 @@ class Simulation(object):
         self,
         tps: NDArray[Any, Any],
         progress_bar: bool = True,
-        jobs: int = 1,
         error_on_unconnected: bool = True,
         fig=None,
     ) -> "FuncAnimation":
@@ -290,7 +273,6 @@ class Simulation(object):
         Args:
             tps: Dates to be simulated (s)
             progress_bar: True to display a progress bar in the terminal
-            jobs: Number of parallel processes to run. Only effective for acyclic simulation graphs
             error_on_unconnected: True to raise an exception is an input is not connected. If an input is not connected and error_on_unconnected is False, the input will be padded with zeros
             fig: In the case of a realtime plot (use of RTPlotter for example), must be the figure that is updated in real time
 
@@ -299,7 +281,7 @@ class Simulation(object):
 
         """
         # Remove cycles in Simulation graph
-        if nx.is_directed_acyclic_graph(self.__graph) and fig is None and jobs > 1:
+        if nx.is_directed_acyclic_graph(self.__graph) and fig is None:
             sg = self.__graph
             # TODO: activate the parallelization options
             parallel = True
@@ -326,44 +308,7 @@ class Simulation(object):
                 clist, tps[k], tps[k + 1], error_on_unconnected=error_on_unconnected
             )
 
-        if parallel:
-            t0 = time()
-            logger.debug(f"Parallelization active using {jobs} cores")
-
-            mgr = Manager()
-
-            inQ = mgr.Queue()
-            ns = mgr.Namespace()
-            ns.sim = self
-            ns.clist = clist
-            ns.error_on_unconnected = error_on_unconnected
-
-            # Initiate the worker processes
-            processes = []
-            for i in range(jobs):
-                # Create the process, and connect it to the worker function
-                new_process = Process(name=f"poney{i}", target=worker, args=(ns, inQ))
-
-                # Add new process to the list of processes
-                processes.append(new_process)
-
-                # Start the process
-                new_process.start()
-
-            # Fill task queue
-            for p in itr:
-                params = {
-                    "tindex": p,
-                    "t0": tps[p],
-                    "t1": tps[p + 1],
-                }
-                inQ.put(params)
-
-            for p in range(jobs):
-                inQ.put(None)
-
-            ani = None
-        elif fig is None:
+        if fig is None:
             for k in itr:
                 _anim_func(k)
             ani = None

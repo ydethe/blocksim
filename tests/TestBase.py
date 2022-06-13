@@ -5,7 +5,7 @@ import numpy as np
 from numpy import sqrt, cos, sin, exp
 
 from blocksim.graphics import plotVerif, showFigures
-from blocksim.graphics.BFigure import BFigure
+from blocksim.graphics.BFigure import ABFigure
 
 
 def exact(t, yyp, vvp, u):
@@ -62,7 +62,7 @@ class TestBase(unittest.TestCase):
     def setUp(self):
         np.random.seed(1883647)
 
-    def plotVerif(self, fig_title, *axes) -> BFigure:
+    def plotVerif(self, fig_title, *axes) -> ABFigure:
         fig = plotVerif(self.log, fig_title, *axes)
 
         if "SHOW_PLOT" in os.environ.keys():
