@@ -92,14 +92,14 @@ class PSKMapping(ADSPComputer):
         y_circle = sin(theta)
 
         axe.kwargs["aspect"] = "equal"
+        axe.plot(plottable=(x_circle, y_circle), color="black", linestyle="--")
         axe.plot(
             plottable=(cos(self.mapping), sin(self.mapping)),
             color="red",
             marker="o",
-            label="constellation",
+            label="PSK constellation",
             linestyle="",
         )
-        axe.plot(plottable=(x_circle, y_circle), color="black", linestyle="--")
 
 
 class PSKDemapping(ADSPComputer):

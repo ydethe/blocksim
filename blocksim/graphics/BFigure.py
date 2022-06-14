@@ -19,14 +19,15 @@ class ABFigure(metaclass=ABCMeta):
 
     """
 
-    __slots__ = ["title", "grid_spec", "axe_factories", "projection", "mpl_fig"]
+    __slots__ = ["title", "grid_spec", "axe_factories", "mpl_fig"]
 
-    def __init__(self, title: str, projection: FigureProjection = FigureProjection.MPL):
+    projection = None
+
+    def __init__(self, title: str):
         self.title = title
         self.grid_spec = None
         self.axe_factories = []
         self.mpl_fig = None
-        self.projection = projection
 
     def add_baxe(
         self,
@@ -94,6 +95,9 @@ class ABFigure(metaclass=ABCMeta):
 
 
 class MplFigure(ABFigure):
+
+    projection = FigureProjection.MPL
+
     def render(self, tight_layout: bool = False) -> "Figure":
         if not self.mpl_fig is None:
             return self.mpl_fig
@@ -166,9 +170,12 @@ class MplFigure(ABFigure):
 
                 args = info["scaled_args"]
                 kwargs = info["mpl_kwargs"]
-                ret = info["plot_method"](*args, **kwargs)
+                plt_mth = info["plot_method"]
+                ret = plt_mth(*args, **kwargs)
+
                 if "label" in kwargs.keys():
                     display_legend = True
+
                 for xp, yp, txt in info["scaled_peaks"]:
                     maxe.plot([xp], [yp], marker="o", color="red", linestyle="")
                     maxe.annotate(txt, xy=(xp, yp), fontsize="x-small")
@@ -213,6 +220,9 @@ class MplFigure(ABFigure):
 
 
 class B3DFigure(ABFigure):
+
+    projection = FigureProjection.EARTH3D
+
     def render(self, tight_layout: bool = False) -> "Figure":
         if not self.mpl_fig is None:
             return self.mpl_fig
@@ -266,9 +276,9 @@ class FigureFactory(object, metaclass=Singleton):  # type: ignore
         factory = cls()
 
         if projection == FigureProjection.MPL:
-            res = MplFigure(title=title, projection=projection)
+            res = MplFigure(title=title)
         elif projection == FigureProjection.EARTH3D:
-            res = B3DFigure(title=title, projection=projection)
+            res = B3DFigure(title=title)
 
         factory.figures.append(res)
 

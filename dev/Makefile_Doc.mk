@@ -40,6 +40,10 @@ doc: $(PYNBPY) $(PYPKG) examples
 	$(Q)test -d $(BLD_DIR)/blocksim || mkdir -p $(BLD_DIR)/blocksim
 	$(Q)pdoc --html --force --config latex_math=True -o $(BLD_DIR) blocksim examples
 
+baseline:
+	$(Q)echo "Generating baseline images"
+	$(Q)rm tests/baseline/* && python3 -m pytest -n 8 --mpl-generate-path=tests/baseline tests
+
 classes:
 	$(Q)echo "Generating class diagram"
 	$(Q)test -d $(BLD_DIR)/blocksim || mkdir -p $(BLD_DIR)/blocksim

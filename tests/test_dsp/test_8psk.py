@@ -123,13 +123,13 @@ class Test8PSK(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
-    exit(0)
+    # unittest.main()
+    # exit(0)
 
     from blocksim.graphics import showFigures
 
     a = Test8PSK()
     a.test_8psk()
-    a.test_8psk_noise()
+    # a.test_8psk_noise()
 
     showFigures()
