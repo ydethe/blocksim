@@ -61,11 +61,11 @@ class ABaxe(metaclass=ABCMeta):
 
     def __init__(
         self,
-        figure: "BFigure",
+        figure: "blocksim.graphics.BFigure.ABFigure",
         title: str,
         spec: BGridElement,
-        sharex: "ABAxe" = None,
-        sharey: "ABAxe" = None,
+        sharex: "blocksim.graphics.BAxe.ABAxe" = None,
+        sharey: "blocksim.graphics.BAxe.ABAxe" = None,
         kwargs={},
     ):
         self.figure = figure
@@ -92,19 +92,19 @@ class ABaxe(metaclass=ABCMeta):
 
         self.plottable_factories = []
 
-    def _addChildSharex(self, sharex: "ABaxe"):
+    def _addChildSharex(self, sharex: "blocksim.graphics.BAxe.ABaxe"):
         self.children_sharex.append(sharex)
 
-    def _addChildSharey(self, sharey: "ABaxe"):
+    def _addChildSharey(self, sharey: "blocksim.graphics.BAxe.ABaxe"):
         self.children_sharey.append(sharey)
 
-    def _findRootSharex(self) -> "ABaxe":
+    def _findRootSharex(self) -> "blocksim.graphics.BAxe.ABaxe":
         if self.parent_sharex is None:
             return self
         else:
             return self.parent_sharex._findRootSharex()
 
-    def _findRootSharey(self) -> "ABaxe":
+    def _findRootSharey(self) -> "blocksim.graphics.BAxe.ABaxe":
         if self.parent_sharey is None:
             return self
         else:
@@ -179,7 +179,7 @@ class ABaxe(metaclass=ABCMeta):
         return res
 
 
-class BAxeRectiliear(ABaxe):
+class BAxeRectilinear(ABaxe):
 
     __slots__ = []
 
@@ -433,12 +433,12 @@ class BAxeFactory(object):
     @classmethod
     def create(
         cls,
-        figure: "BFigure",
+        figure: "blocksim.graphics.BFigure.ABFigure",
         title: str,
         spec: BGridElement,
         projection: AxeProjection,
-        sharex: "ABAxe" = None,
-        sharey: "ABAxe" = None,
+        sharex: "blocksim.graphics.BAxe.ABAxe" = None,
+        sharey: "blocksim.graphics.BAxe.ABAxe" = None,
         kwargs={},
     ) -> ABaxe:
         """Creates the adapted daughter class of `ABAxe`
@@ -494,7 +494,7 @@ class BAxeFactory(object):
                 kwargs,
             )
         elif projection == AxeProjection.RECTILINEAR:
-            baxe = BAxeRectiliear(
+            baxe = BAxeRectilinear(
                 figure,
                 title,
                 spec,

@@ -48,7 +48,7 @@ class DSPSpectrum(DSPRectilinearLine):
     def energy(self) -> float:
         return np.real(self.y_serie @ self.y_serie.conj() * len(self))
 
-    def ifft(self, win: str = "ones") -> "DSPSignal":
+    def ifft(self, win: str = "ones") -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Applies the inverse discrete Fourier transform
 
         Args:

@@ -118,8 +118,8 @@ def format_parameter(samp: float, unit: str) -> str:
 
 
 def plotFromLogger(
-    log: Logger, id_x: str, id_y: str, axe: "BAxe", **kwargs
-) -> "APlottable":
+    log: Logger, id_x: str, id_y: str, axe: "blocksim.graphics.BAxe.ABaxe", **kwargs
+) -> "blocksim.graphics.Plottable.APlottable":
     """Plots a value on a matplotlib axe
 
     Args:
@@ -177,13 +177,17 @@ def plotFromLogger(
     return line
 
 
-def createFigureFromSpec(spec: "FigureSpec", log: Logger, fig=None) -> "BFigure":
+def createFigureFromSpec(
+    spec: "blocksim.graphics.GraphicSpec.FigureSpec",
+    log: Logger,
+    fig: "blocksim.graphics.BFigure.MplFigure" = None,
+) -> "blocksim.graphics.BFigure.MplFigure":
     """Parses a FigureSpec to build a matplotlib figure, and returns it
 
     Args:
         spec: A FigureSpec instance
         log: The Logger to read into
-        fig: A BFigure. If None, the function creates ones
+        fig: A ABFigure. If None, the function creates ones
 
     Returns:
         The matplotlib figure
@@ -247,8 +251,8 @@ def createFigureFromSpec(spec: "FigureSpec", log: Logger, fig=None) -> "BFigure"
 
 def plotBode(
     filt: "blocksim.dsp.DSPFilter.ADSPFilter",
-    axe_amp: "BAxe",
-    axe_pha: "BAxe",
+    axe_amp: "blocksim.graphics.BAxe.BAxeRectilinear",
+    axe_pha: "blocksim.graphics.BAxe.BAxeRectilinear",
     fpoints: int = 200,
     pow_lim: float = -100.0,
     **kwargs,
@@ -257,8 +261,8 @@ def plotBode(
 
     Args:
         filt: Filter to analyse
-        axe_amp: The BAxe amplitude axis to draw on. Obtained by fig.add_baxe
-        axe_pha: The BAxe phase axis to draw on. Obtained by fig.add_baxe
+        axe_amp: The ABAxe amplitude axis to draw on. Obtained by fig.add_baxe
+        axe_pha: The ABAxe phase axis to draw on. Obtained by fig.add_baxe
         fpoints: If int, number of frequency samples to use for the plot
             If iterable, list of frequency samples to use for the plot
         kwargs: Plotting options.
@@ -316,7 +320,9 @@ def plotBode(
     return line_amp, line_pha
 
 
-def plotVerif(log: Logger, fig_title: str, *axes) -> "BFigure":
+def plotVerif(
+    log: Logger, fig_title: str, *axes
+) -> "blocksim.graphics.BFigure.MplFigure":
     """Plots a set of axes and curves on a single figure
 
     Args:
@@ -362,7 +368,7 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "BFigure":
     return fig
 
 
-def quickPlot(*args, **kwargs) -> "BFigure":
+def quickPlot(*args, **kwargs) -> "blocksim.graphics.BFigure.MplFigure":
     """Quickly plots data
 
     Args:

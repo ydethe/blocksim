@@ -448,7 +448,9 @@ class Logger(object):
 
         return foo_func(self)
 
-    def getSignal(self, name: str, raw: bool = False) -> "DSPSignal":
+    def getSignal(
+        self, name: str, raw: bool = False
+    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Get the value of a logged variable
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos

@@ -26,7 +26,7 @@ class Logger(object, metaclass=Singleton):
         return istat
 
     @hookimpl
-    def loadLogFile(self, log: "Logger", uri: str) -> bool:
+    def loadLogFile(self, log: "blocksim.loggers.Logger.Logger", uri: str) -> bool:
         if not self.test_suitable(uri):
             return False
 
@@ -46,11 +46,13 @@ class Logger(object, metaclass=Singleton):
         return True
 
     @hookimpl
-    def getRawValue(self, log: "Logger", name: str) -> NDArray[Any, Any]:
+    def getRawValue(
+        self, log: "blocksim.loggers.Logger.Logger", name: str
+    ) -> NDArray[Any, Any]:
         return
 
     @hookimpl
-    def export(self, log: "Logger", uri: str) -> int:
+    def export(self, log: "blocksim.loggers.Logger.Logger", uri: str) -> int:
         if not self.test_suitable(uri):
             return -1
 
@@ -60,5 +62,7 @@ class Logger(object, metaclass=Singleton):
         return 0
 
     @hookimpl
-    def log(self, log: "Logger", name: str, val: float, tindex: int) -> int:
+    def log(
+        self, log: "blocksim.loggers.Logger.Logger", name: str, val: float, tindex: int
+    ) -> int:
         return 1

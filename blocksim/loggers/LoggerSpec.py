@@ -25,7 +25,7 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def loadLogFile(self, log: "Logger", uri: str) -> bool:
+    def loadLogFile(self, log: "blocksim.loggers.Logger.Logger", uri: str) -> bool:
         """Load log file
 
         Args:
@@ -38,7 +38,9 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def getRawValue(self, log: "Logger", name: str) -> NDArray[Any, Any]:
+    def getRawValue(
+        self, log: "blocksim.loggers.Logger.Logger", name: str
+    ) -> NDArray[Any, Any]:
         """If implemented, subsequent calls to `blocksim.loggers.Logger.Logger.getRawValue` will use this method.
         Otherwise, the internal dictionary of `blocksim.loggers.Logger.Logger` is used.
 
@@ -52,7 +54,7 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def export(self, log: "Logger", uri: str) -> int:
+    def export(self, log: "blocksim.loggers.Logger.Logger", uri: str) -> int:
         """Export the log into a file
 
         Args:
@@ -65,7 +67,9 @@ class LoggerSpec(object):
         """
 
     @hookspec
-    def log(self, log: "Logger", name: str, val: float, tindex: int) -> int:
+    def log(
+        self, log: "blocksim.loggers.Logger.Logger", name: str, val: float, tindex: int
+    ) -> int:
         """Export the log into a file
 
         Args:

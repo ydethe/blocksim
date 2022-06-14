@@ -107,7 +107,7 @@ class Output(ABaseNode):
         self.__shape = self.__snames.shape
         self.setInitialState(np.zeros(self.__shape, dtype=dtype))
 
-    def setComputer(self, comp: "AComputer"):
+    def setComputer(self, comp: "blocksim.core.Node.AComputer"):
         if not self.__computer is None:
             if self.__computer.getName() != comp.getName():
                 logger.warning(
@@ -116,7 +116,7 @@ class Output(ABaseNode):
 
         self.__computer = comp
 
-    def getComputer(self) -> "AComputer":
+    def getComputer(self) -> "blocksim.core.Node.AComputer":
         return self.__computer
 
     def __repr__(self):
@@ -531,12 +531,15 @@ class AComputer(ABaseNode):
         return s
 
     def getValueFromLogger(
-        self, logger: "Logger", output_name: str, dtype=np.complex128
+        self,
+        logger: "blocksim.loggers.Logger.Logger",
+        output_name: str,
+        dtype=np.complex128,
     ) -> NDArray[Any, Any]:
         """Gets the list of output vectors for a computer's output
 
         Args:
-            logger: A `blocksim.loggers.Logger.Logger` that contains the values
+            logger: A Logger that contains the values
             output_name
                 Name of an output. For example, for a sensor, *measurement*
             dtype

@@ -1,3 +1,4 @@
+from matplotlib.figure import Figure
 from singleton3 import Singleton
 import numpy as np
 from matplotlib import pyplot as plt
@@ -14,16 +15,18 @@ class ABFigure(metaclass=ABCMeta):
 
     Args:
         title: Title of the figure
+        projection: The projection to use
 
     """
 
-    __slots__ = ["title", "grid_spec", "axe_factories", "mpl_fig"]
+    __slots__ = ["title", "grid_spec", "axe_factories", "projection", "mpl_fig"]
 
-    def __init__(self, title: str):
+    def __init__(self, title: str, projection: FigureProjection = FigureProjection.MPL):
         self.title = title
         self.grid_spec = None
         self.axe_factories = []
         self.mpl_fig = None
+        self.projection = projection
 
     def add_baxe(
         self,
@@ -80,6 +83,9 @@ class ABFigure(metaclass=ABCMeta):
     def render(self, tight_layout: bool = False) -> "Figure":
         """Actually renders the figure with matplotlib
 
+        Args:
+            tight_layout: To activate tight_layout in matplotlib
+
         Returns:
             The matplotlib figure
 
@@ -89,12 +95,6 @@ class ABFigure(metaclass=ABCMeta):
 
 class MplFigure(ABFigure):
     def render(self, tight_layout: bool = False) -> "Figure":
-        """Actually renders the figure with matplotlib
-
-        Returns:
-            The matplotlib figure
-
-        """
         if not self.mpl_fig is None:
             return self.mpl_fig
 
@@ -214,21 +214,14 @@ class MplFigure(ABFigure):
 
 class B3DFigure(ABFigure):
     def render(self, tight_layout: bool = False) -> "Figure":
-        """Actually renders the figure with matplotlib
-
-        Returns:
-            The matplotlib figure
-
-        """
         if not self.mpl_fig is None:
             return self.mpl_fig
 
-        # if self.projection == FigureProjection.EARTH3D and (nrow != 1 or ncol != 1):
-        #     raise AssertionError(
-        #         f"With {self.projection}, only (1,1) GridPsec are allowed. Got ({nrow},{ncol})"
-        #     )
+        if self.grid_spec.ncol != 1 or self.grid_spec.nrow != 1:
+            raise AssertionError(
+                f"With {FigureProjection.EARTH3D}, only (1,1) GridPsec are allowed. Got ({self.grid_spec.nrow},{self.grid_spec.ncol})"
+            )
 
-        # mfig = _render_earth3d(self)
         app = B3DPlotter()
         app.plotEarth()
 
@@ -273,9 +266,9 @@ class FigureFactory(object, metaclass=Singleton):  # type: ignore
         factory = cls()
 
         if projection == FigureProjection.MPL:
-            res = MplFigure(title=title)
+            res = MplFigure(title=title, projection=projection)
         elif projection == FigureProjection.EARTH3D:
-            res = B3DFigure(title=title)
+            res = B3DFigure(title=title, projection=projection)
 
         factory.figures.append(res)
 

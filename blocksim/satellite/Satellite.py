@@ -339,7 +339,7 @@ class SGP4Satellite(ASatellite):
         bstar: float = 0,
         ndot: float = 0,
         nddot: float = 0,
-    ) -> "SGP4Satellite":
+    ) -> "blocksim.satellite.Satellite.SGP4Satellite":
         """Builds a SGP4Satellite from orbital elements.
         See https://rhodesmill.org/skyfield/earth-satellites.html#build-a-satellite-from-orbital-elements
 
@@ -393,7 +393,7 @@ class SGP4Satellite(ASatellite):
         tsync: datetime = None,
         iline: int = 0,
         name_prefix: str = "",
-    ) -> "SGP4Satellite":
+    ) -> "blocksim.satellite.Satellite.SGP4Satellite":
         """Builds a SGP4Satellite from a TLE file
         Returns None if the file was incorrect
         See https://en.wikipedia.org/wiki/Two-line_element_set
@@ -485,7 +485,7 @@ class SGP4Satellite(ASatellite):
         hx: float,
         hy: float,
         lv: float,
-    ) -> "SGP4Satellite":
+    ) -> "blocksim.satellite.Satellite.SGP4Satellite":
         """Builds a SGP4Satellite from its equinoctial elements
 
         See https://www.orekit.org/static/apidocs/org/orekit/orbits/EquinoctialOrbit.html
@@ -611,7 +611,7 @@ class CircleSatellite(ASatellite):
         argp: float,
         mano: float = 0.0,
         node: float = 0.0,
-    ) -> "CircleSatellite":
+    ) -> "blocksim.satellite.Satellite.CircleSatellite":
         """Builds an orbit from orbital elements. The eccentricity is forced to 0
 
         Args:
@@ -644,7 +644,7 @@ class CircleSatellite(ASatellite):
     @classmethod
     def fromITRF(
         cls, name: str, tsync: datetime, pv_itrf: NDArray[Any, Any]
-    ) -> "CircleSatellite":
+    ) -> "blocksim.satellite.Satellite.CircleSatellite":
         """Instanciates a CircleSatellite from an initial position and velocity from in ITRF position / velocity
         The velocity is used only to determine the orbit's plane. It is then modified so that the orbit eccentricity be 0
         Also sets the attributes of the class
@@ -671,7 +671,7 @@ class CircleSatellite(ASatellite):
         tsync: datetime = None,
         iline: int = 0,
         name_prefix: str = "",
-    ) -> "CircleSatellite":
+    ) -> "blocksim.satellite.Satellite.CircleSatellite":
         """Builds a CircleSatellite from a TLE file
         The velocity is used only to determine the orbit's plane. It is then modified so that the orbit eccentricity be 0
         Returns None if the file was incorrect

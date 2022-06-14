@@ -124,7 +124,9 @@ class FigureSpec(object):
         return self.__repr__()
 
     @classmethod
-    def specForOneAxeMultiLines(cls, line_list: Iterable[dict]) -> "FigureSpec":
+    def specForOneAxeMultiLines(
+        cls, line_list: Iterable[dict]
+    ) -> "blocksim.graphics.GraphicSpec.FigureSpec":
         """Returns a FigureSpec to draw all the given variables on one same axe
 
         Args:

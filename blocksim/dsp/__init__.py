@@ -125,14 +125,14 @@ def analyse_DV(
     damb: float,
     vrad0: float,
     vamb: float,
-    seq: "DSPSignal",
-    rxsig: "DSPSignal",
+    seq: "blocksim.dsp.DSPSignal.DSPSignal",
+    rxsig: "blocksim.dsp.DSPSignal.DSPSignal",
     nv: int,
     n_integration: int = -1,
     coherent: bool = True,
     progress_bar: bool = False,
     corr_window: str = "hamming",
-) -> "DSPRectilinearMap":
+) -> "blocksim.dsp.DSPMap.DSPRectilinearMap":
     """Distance / velocity analysis for acquisition
 
     Args:
@@ -272,7 +272,7 @@ def createGoldSequence(
     sampling_factor: int = 10,
     samplingStart: float = 0,
     bitmap=[-1, 1],
-) -> "DSPSignal":
+) -> "blocksim.dsp.DSPSignal.DSPSignal":
     """Builds Gold sequence
 
     Args:
@@ -376,7 +376,7 @@ def createZadoffChu(
     u: int,
     sampling_freq: float,
     samplingStart: float = 0,
-) -> "DSPSignal":
+) -> "blocksim.dsp.DSPSignal.DSPSignal":
     """Builds DSPSignal defined by a Zadoff-Chu sequence
 
     Args:

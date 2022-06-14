@@ -78,7 +78,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
     @classmethod
     def fromBinaryRandom(
         cls, name: str, samplingPeriod: int, size: int, seed: int = None
-    ) -> "DSPSignal":
+    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Creates a random signal whose samples are randomly,
         following a uniform law in the set {0,1}
 
@@ -117,7 +117,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         fstart: float,
         fend: float,
         repeats: int = 1,
-    ) -> "DSPSignal":
+    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Builds a signal from a linear frequency modulation (chirp)
 
         Args:
@@ -146,7 +146,9 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         return sig
 
     @classmethod
-    def fromLogger(cls, name: str, log: "Logger", param: str) -> "DSPSignal":
+    def fromLogger(
+        cls, name: str, log: "blocksim.loggers.Logger.Logger", param: str
+    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Builds a signal from a `blocksim.loggers.Logger.Logger`
 
         Args:
@@ -165,7 +167,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
     @classmethod
     def fromTimeAndSamples(
         cls, name: str, tps: NDArray[Any, Any], y_serie: NDArray[Any, Any]
-    ) -> "DSPSignal":
+    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Builds a signal from 2 time and samples series
 
         Args:
@@ -199,7 +201,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
     @classmethod
     def fromPhaseLaw(
         cls, name: str, sampling_freq: float, pha: NDArray[Any, Any]
-    ) -> "DSPSignal":
+    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Builds a signal from a phase law
 
         Args:
@@ -220,7 +222,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
             default_transform=np.real,
         )
 
-    def delay(self, tau: float) -> "DSPSignal":
+    def delay(self, tau: float) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Builds a delayed DSPSignal
 
         Args:
@@ -239,7 +241,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
             default_transform=self.default_transform,
         )
 
-    def applyDopplerFrequency(self, fdop: float) -> "DSPSignal":
+    def applyDopplerFrequency(self, fdop: float) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Builds a DSPSignal with a Doppler effet applied
 
         Args:
@@ -258,7 +260,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
             default_transform=np.real,
         )
 
-    def applyGaussianNoise(self, pwr: float) -> "DSPSignal":
+    def applyGaussianNoise(self, pwr: float) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Builds a DSPSignal with a complex gaussian noise added
 
         Args:
@@ -284,7 +286,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
     def energy(self) -> float:
         return np.real(self.y_serie @ self.y_serie.conj())
 
-    def fft(self, win: str = "ones") -> "DSPSpectrum":
+    def fft(self, win: str = "ones") -> "blocksim.dsp.DSPSpectrum.DSPSpectrum":
         """Applies the discrete Fourier transform
 
         Args:
@@ -345,7 +347,9 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
 
         return comp_out
 
-    def correlate(self, y: "DSPSignal", win="ones") -> "DSPSignal":
+    def correlate(
+        self, y: "blocksim.dsp.DSPSignal.DSPSignal", win="ones"
+    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Correlates the signal with another signal
 
         Args:
@@ -398,7 +402,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
             default_transform=self.to_db,
         )
 
-    def autoCorrelation(self, win="ones") -> "DSPSignal":
+    def autoCorrelation(self, win="ones") -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Autocorrelation of the signal
 
         Args:
@@ -411,7 +415,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         ac = self.correlate(self)
         return ac
 
-    def applyFunction(self, fct: Callable) -> "DSPSignal":
+    def applyFunction(self, fct: Callable) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Applies a function to all the samples
 
         Args:
@@ -429,7 +433,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
             default_transform=self.default_transform,
         )
 
-    def conj(self) -> "DSPSignal":
+    def conj(self) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Returns the conjugated signal
 
         Returns:
@@ -438,7 +442,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         """
         return self.applyFunction(np.conj)
 
-    def reverse(self) -> "DSPSignal":
+    def reverse(self) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Returns the reversed signal
 
         Returns:
@@ -447,10 +451,14 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         """
         return self.applyFunction(lambda x: x[::-1])
 
-    def __matmul__(self, y: "DSPSignal") -> "DSPSignal":
+    def __matmul__(
+        self, y: "blocksim.dsp.DSPSignal.DSPSignal"
+    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         return self.convolve(y)
 
-    def convolve(self, y: "DSPSignal") -> "DSPSignal":
+    def convolve(
+        self, y: "blocksim.dsp.DSPSignal.DSPSignal"
+    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Returns the convolution with another DSPSignal
 
         Args:
@@ -463,7 +471,9 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         z = y.reverse().conj()
         return self.correlate(z)
 
-    def forceSamplingStart(self, samplingStart: float) -> "DSPSignal":
+    def forceSamplingStart(
+        self, samplingStart: float
+    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Moves the first sample timestamp to the spec ified value.
         All the other samples are shifted by the same value.
 
@@ -483,7 +493,9 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         )
         return res
 
-    def superheterodyneIQ(self, carrier_freq: float, bandwidth: float) -> "DSPSignal":
+    def superheterodyneIQ(
+        self, carrier_freq: float, bandwidth: float
+    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Use Single-Sideband Modulation to down convert the signal in baseband
 
         Args:
@@ -536,7 +548,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         n_integration: int = -1,
         offset: float = 0,
         coherent: bool = True,
-    ) -> "DSPSignal":
+    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Coherent integration of the signal
 
         Args:

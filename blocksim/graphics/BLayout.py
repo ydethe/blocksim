@@ -3,18 +3,18 @@ class BGridElement(object):
 
     Args:
         gs: Grid that gives axes' positions in a BFigure
-        coord: Positoin of the BGridElement in the grid
+        coord: Position of the BGridElement in the grid
 
     """
 
     __slots__ = ["axe", "gs", "coord"]
 
-    def __init__(self, gs: "BGridSpec", coord: slice):
+    def __init__(self, gs: "blocksim.graphics.BLayout.BGridSpec", coord: slice):
         self.axe = None
         self.gs = gs
         self.coord = coord
 
-    def get_gridspec(self) -> "BGridSpec":
+    def get_gridspec(self) -> "blocksim.graphics.BLayout.BGridSpec":
         """Returns the BGridSpec associated with the BGridElement
 
         Returns:
@@ -23,7 +23,7 @@ class BGridElement(object):
         """
         return self.gs
 
-    def getFigure(self) -> "BFigure":
+    def getFigure(self) -> "blocksim.graphics.BFigure.ABFigure":
         return self.gs.figure
 
 
@@ -39,7 +39,9 @@ class BGridSpec(object):
 
     __slots__ = ["figure", "nrow", "ncol"]
 
-    def __init__(self, figure: "BFigure", nrow: int, ncol: int):
+    def __init__(
+        self, figure: "blocksim.graphics.BFigure.ABFigure", nrow: int, ncol: int
+    ):
         self.figure = figure
         self.nrow = nrow
         self.ncol = ncol

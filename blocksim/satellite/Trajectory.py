@@ -107,7 +107,7 @@ class Trajectory(object):
         color: tuple,
         npoint: int = -1,
         raw_value: bool = True,
-    ) -> "Trajectory":
+    ) -> "blocksim.satellite.Trajectory.Trajectory":
         """Instanciates a Trajectory from a Logger
 
         Args:

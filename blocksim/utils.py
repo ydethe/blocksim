@@ -140,7 +140,11 @@ def resource_path(resource: str, package: str = "blocksim") -> str:
 
 
 def find1dpeak(
-    nb_peaks: int, xd: "array", yd: "array", name_of_x_var: str, unit_of_x_var: str
+    nb_peaks: int,
+    xd: NDArray[Any, Any],
+    yd: NDArray[Any, Any],
+    name_of_x_var: str,
+    unit_of_x_var: str,
 ) -> List[Peak]:
     """Finds the peaks in a serie.
 
@@ -194,9 +198,9 @@ def find1dpeak(
 
 def find2dpeak(
     nb_peaks: int,
-    xd: "array",
-    yd: "array",
-    zd: "array",
+    xd: NDArray[Any, Any],
+    yd: NDArray[Any, Any],
+    zd: NDArray[Any, Any],
     name_of_x_var: str,
     unit_of_x_var: str,
     name_of_y_var: str,

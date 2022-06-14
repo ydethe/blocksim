@@ -200,7 +200,7 @@ class ArbitraryDSPFilter(ADSPFilter):
         gpass: float,
         gstop: float,
         ftype: str = "ellip",
-    ) -> "ArbitraryDSPFilter":
+    ) -> "blocksim.dsp.DSPFilter.ArbitraryDSPFilter":
         """Complete IIR digital and analog filter design.
 
         Given passband and stopband frequencies and gains, construct an analog or
@@ -253,7 +253,7 @@ class ArbitraryDSPFilter(ADSPFilter):
         desired: NDArray[Any, Any],
         method: str = "firwin2",
         **kwargs,
-    ) -> "ArbitraryDSPFilter":
+    ) -> "blocksim.dsp.DSPFilter.ArbitraryDSPFilter":
         """
         FIR filter design using the window method.
 

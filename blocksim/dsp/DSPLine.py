@@ -206,7 +206,7 @@ class ADSPLine(metaclass=ABCMeta):
 
         return Polynomial(coef=c, domain=[x0, x1], window=[x0, x1])
 
-    def applyDelay(self, delay: float) -> "DSPRectilinearLine":
+    def applyDelay(self, delay: float) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
         """Applies a delay (in X axis unit) to the DSPRectilinearLine
 
         Args:
@@ -230,7 +230,7 @@ class ADSPLine(metaclass=ABCMeta):
         dsig.unit_of_x_var = self.unit_of_x_var
         return dsig
 
-    def repeat(self, repeats: int) -> "DSPRectilinearLine":
+    def repeat(self, repeats: int) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
         """Repeats the samples *repeats* time
 
         Args:
@@ -325,7 +325,7 @@ class ADSPLine(metaclass=ABCMeta):
         samplingStart: float = None,
         samplingStop: float = None,
         zero_padding: bool = True,
-    ) -> "DSPRectilinearLine":
+    ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
         """Truncates a line between x=samplingStart and x=samplingStop.
 
         Args:
@@ -422,7 +422,7 @@ class ADSPLine(metaclass=ABCMeta):
         nech: int = None,
         zero_padding: bool = True,
         complex_output: bool = None,
-    ) -> "DSPRectilinearLine":
+    ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
         """Resamples the line using a cubic interpolation.
         If the new bounds are larger than the original ones, the line is filled with 0
         The resulting signal keeps the timestamp of samples
@@ -551,7 +551,9 @@ class ADSPLine(metaclass=ABCMeta):
 
         return self.y_serie[lid]
 
-    def derivate(self, rank: int = 1, order: int = None) -> "DSPRectilinearLine":
+    def derivate(
+        self, rank: int = 1, order: int = None
+    ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
         """Performs numerical derivation if the line
 
         Args:
@@ -580,7 +582,7 @@ class ADSPLine(metaclass=ABCMeta):
         res.unit_of_x_var = self.unit_of_x_var
         return res
 
-    def _prepareOperation(self, y: "DSPRectilinearLine"):
+    def _prepareOperation(self, y: "blocksim.dsp.DSPLine.DSPRectilinearLine"):
         t_start = min(self.samplingStart, y.samplingStart)
         dt = min(self.samplingPeriod, y.samplingPeriod)
         t_stop = max(self.samplingStop, y.samplingStop)
@@ -591,10 +593,12 @@ class ADSPLine(metaclass=ABCMeta):
 
         return t_start, dt, rx, ry
 
-    def __radd__(self, y) -> "DSPRectilinearLine":
+    def __radd__(self, y) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
         return self + y
 
-    def __add__(self, y: "DSPRectilinearLine") -> "DSPRectilinearLine":
+    def __add__(
+        self, y: "blocksim.dsp.DSPLine.DSPRectilinearLine"
+    ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
         if issubclass(y.__class__, DSPRectilinearLine):
             t_start, dt, rx, ry = self._prepareOperation(y)
 
@@ -616,7 +620,7 @@ class ADSPLine(metaclass=ABCMeta):
         res.unit_of_x_var = self.unit_of_x_var
         return res
 
-    def __neg__(self) -> "DSPRectilinearLine":
+    def __neg__(self) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
         res = self.__class__(
             name=self.name,
             samplingStart=self.samplingStart,
@@ -628,11 +632,13 @@ class ADSPLine(metaclass=ABCMeta):
         res.unit_of_x_var = self.unit_of_x_var
         return res
 
-    def __rsub__(self, y) -> "DSPRectilinearLine":
+    def __rsub__(self, y) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
         z = -self
         return y + z
 
-    def __sub__(self, y: "DSPRectilinearLine") -> "DSPRectilinearLine":
+    def __sub__(
+        self, y: "blocksim.dsp.DSPLine.DSPRectilinearLine"
+    ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
         z = -y
         return self + z
 
@@ -669,7 +675,9 @@ class ADSPLine(metaclass=ABCMeta):
         res.unit_of_x_var = self.unit_of_x_var
         return res
 
-    def __mul__(self, y: "DSPRectilinearLine") -> "DSPRectilinearLine":
+    def __mul__(
+        self, y: "blocksim.dsp.DSPLine.DSPRectilinearLine"
+    ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
         if issubclass(y.__class__, DSPRectilinearLine):
             t_start, dt, rx, ry = self._prepareOperation(y)
 
