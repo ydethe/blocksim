@@ -4,8 +4,9 @@ from enum import Enum
 
 class DSPLineType(Enum):
     RECTILINEAR = 0
-    POLAR = 1
-    NORTH_POLAR = 2
+    HISTOGRAM = 1
+    POLAR = 2
+    NORTH_POLAR = 3
 
 
 class DSPMapType(Enum):
@@ -17,14 +18,18 @@ class DSPMapType(Enum):
 class AxeProjection(Enum):
     #: For rectilinear plots (the most frequent use case)
     RECTILINEAR = 0
+    LINEAR = 1
+    LOGX = 2
+    LOGY = 3
+    LOGXY = 4
     #: For trigonometric polar plots
-    POLAR = 1
+    POLAR = 5
     #: For north azimuthal plots
-    NORTH_POLAR = 2
+    NORTH_POLAR = 6
     #: For Mercator cartography
-    PLATECARREE = 3
+    PLATECARREE = 7
     #: For 3D plots
-    DIM3D = 4
+    DIM3D = 8
 
 
 class FigureProjection(Enum):

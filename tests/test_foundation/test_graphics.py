@@ -3,9 +3,11 @@ from pathlib import Path
 import unittest
 
 import numpy as np
+from numpy import pi, sqrt, exp
 import pytest
 
 from blocksim.loggers.Logger import Logger
+from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.graphics import (
     plotFromLogger,
     createFigureFromSpec,
@@ -53,6 +55,25 @@ class TestGraphics(TestBase):
 
         t = self.log.getValue("t")
         plotFromLogger(self.log, t + 1, "x", axe, label="brut,translated")
+
+        return fig.render()
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_histogram(self):
+        ns = 10000
+        a = np.random.normal(size=ns)
+        serie = DSPSignal(name="serie", samplingStart=0, samplingPeriod=1, y_serie=a)
+        hist = serie.histogram(name="hist", density=True)
+        bins = hist.generateXSerie()
+
+        def pdf(x):
+            return 1 / sqrt(2 * pi) * exp(-(x**2) / 2)
+
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="Histogram", spec=gs[0, 0])
+        axe.plot(hist)
+        axe.plot(plottable=(bins, pdf(bins)), color="red")
 
         return fig.render()
 

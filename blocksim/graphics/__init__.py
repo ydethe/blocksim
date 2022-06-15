@@ -57,6 +57,10 @@ def getUnitAbbrev(
         1e-6: "µ",
         1e-9: "n",
         1e-12: "p",
+        1e-15: "f",
+        1e-18: "a",
+        1e-21: "z",
+        1e-24: "y",
     }
     d_time = {
         1: "s",
@@ -220,6 +224,12 @@ def createFigureFromSpec(
         sproj = spec.axes[k].props.pop("projection", "rectilinear")
         if sproj == "rectilinear":
             proj = AxeProjection.RECTILINEAR
+        elif sproj == "logx":
+            proj = AxeProjection.LOGX
+        elif sproj == "logy":
+            proj = AxeProjection.LOGY
+        elif sproj == "logxy":
+            proj = AxeProjection.LOGXY
         elif sproj == "polar":
             proj = AxeProjection.POLAR
         elif sproj == "north_polar":

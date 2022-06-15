@@ -7,7 +7,12 @@ import numpy as np
 from numpy import pi
 
 from ..utils import find1dpeak
-from ..dsp.DSPLine import DSPRectilinearLine, DSPPolarLine, DSPNorthPolarLine
+from ..dsp.DSPLine import (
+    DSPRectilinearLine,
+    DSPPolarLine,
+    DSPNorthPolarLine,
+    DSPHistogram,
+)
 from ..dsp.DSPMap import DSPRectilinearMap, DSPPolarMap, DSPNorthPolarMap
 from .GraphicSpec import AxeProjection, FigureProjection
 from ..satellite.Trajectory import Trajectory, Cube
@@ -99,10 +104,11 @@ class APlottable(metaclass=ABCMeta):
         ) = self._make_mline(axe)
 
         fill = ""
+        kwargs = self.kwargs.copy()
         plot_mth = maxe.plot
+
         args = (xd, yd)
 
-        kwargs = self.kwargs.copy()
         nb_peaks = kwargs.pop("find_peaks", 0)
         _ = kwargs.pop("transform", None)
         lpeaks = find1dpeak(
@@ -124,6 +130,7 @@ class APlottable(metaclass=ABCMeta):
             iok = np.intersect1d(np.where(xd <= xmax)[0], iok)
 
         info = {
+            "axe": axe,
             "plottable": self,
             "plot_method": plot_mth,
             "fill": fill,
@@ -173,12 +180,25 @@ class APlottable(metaclass=ABCMeta):
             The label to use for Y axis
 
         """
+        axe = info["axe"]
         xd, yd = info["args"]
 
-        _, x_mult, x_lbl, x_unit = getUnitAbbrev(amp_x, unit=info["unit_of_x_var"])
-        _, y_mult, y_lbl, y_unit = getUnitAbbrev(amp_y, unit=info["unit_of_y_var"])
-
-        args = (xd / x_mult, yd / y_mult)
+        x_mult = 1
+        x_lbl = ""
+        x_unit = info["unit_of_x_var"]
+        y_mult = 1
+        y_lbl = ""
+        y_unit = info["unit_of_y_var"]
+        if axe.projection == AxeProjection.LOGX:
+            args = (xd, yd)
+        elif axe.projection == AxeProjection.LOGY:
+            args = (xd, yd)
+        elif axe.projection == AxeProjection.LOGXY:
+            args = (xd, yd)
+        else:
+            _, x_mult, x_lbl, x_unit = getUnitAbbrev(amp_x, unit=info["unit_of_x_var"])
+            _, y_mult, y_lbl, y_unit = getUnitAbbrev(amp_y, unit=info["unit_of_y_var"])
+            args = (xd / x_mult, yd / y_mult)
 
         x_label = "%s (%s%s)" % (info["name_of_x_var"], x_lbl, x_unit)
         y_label = "%s (%s%s)" % (info["name_of_y_var"], y_lbl, y_unit)
@@ -191,6 +211,7 @@ class APlottable(metaclass=ABCMeta):
             yp = p.value
             txt = "(%.1f %s%s,%.1f)" % (xp / x_mult, x_lbl, x_unit, p.value / y_mult)
             scaled_peaks.append((xp / x_mult, yp, txt))
+
         info["scaled_peaks"] = scaled_peaks
         info["x_mult"] = x_mult
         info["y_mult"] = y_mult
@@ -234,6 +255,7 @@ class PlottableCube(APlottable):
         mpl_kwargs = self.kwargs.copy()
         mpl_kwargs["size"] = self.plottable.size
         info = {
+            "axe": axe,
             "plottable": self,
             "plot_method": app.plotCube,
             "fill": "",
@@ -323,6 +345,7 @@ class PlottableGraph(APlottable):
             kwds["node_size"] = 1000
 
         info = {
+            "axe": axe,
             "plottable": self,
             "plot_method": nx.draw_networkx,
             "fill": "",
@@ -395,6 +418,9 @@ class PlottableDSPRectilinearLine(APlottable):
 
     compatible_baxe = [
         AxeProjection.RECTILINEAR,
+        AxeProjection.LOGX,
+        AxeProjection.LOGY,
+        AxeProjection.LOGXY,
         # AxeProjection.PLATECARREE,
     ]
 
@@ -433,6 +459,23 @@ class PlottableDSPNorthPolarLine(PlottableDSPRectilinearLine):
     ]
 
 
+class PlottableDSPHistogram(PlottableDSPRectilinearLine):
+
+    __slots__ = []
+
+    compatible_baxe = [
+        AxeProjection.RECTILINEAR,
+        AxeProjection.LOGY,
+    ]
+
+    def render(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+        info = super().render(axe)
+        axe = info["axe"]
+        maxe = axe.mpl_axe
+        info["plot_method"] = maxe.bar
+        return info
+
+
 class PlottableArray(APlottable):
     """Specialisation of `APlottable` to handle simple numpy arrays,
 
@@ -449,6 +492,9 @@ class PlottableArray(APlottable):
 
     compatible_baxe = [
         AxeProjection.RECTILINEAR,
+        AxeProjection.LOGX,
+        AxeProjection.LOGY,
+        AxeProjection.LOGXY,
         AxeProjection.NORTH_POLAR,
         AxeProjection.PLATECARREE,
         AxeProjection.POLAR,
@@ -498,6 +544,9 @@ class PlottableDictTuple(APlottable):
 
     compatible_baxe = [
         AxeProjection.RECTILINEAR,
+        AxeProjection.LOGX,
+        AxeProjection.LOGY,
+        AxeProjection.LOGXY,
         AxeProjection.NORTH_POLAR,
         AxeProjection.PLATECARREE,
         AxeProjection.POLAR,
@@ -547,6 +596,9 @@ class PlottableTuple(APlottable):
 
     compatible_baxe = [
         AxeProjection.RECTILINEAR,
+        AxeProjection.LOGX,
+        AxeProjection.LOGY,
+        AxeProjection.LOGXY,
         AxeProjection.NORTH_POLAR,
         AxeProjection.PLATECARREE,
         AxeProjection.POLAR,
@@ -641,6 +693,7 @@ class PlottableTrajectory(APlottable):
         if axe.figure.projection == FigureProjection.EARTH3D:
             app = axe.figure.mpl_fig
             info = {
+                "axe": axe,
                 "plottable": self,
                 "plot_method": app.plotTrajectory,
                 "fill": "",
@@ -724,6 +777,7 @@ class APlottableDSPMap(APlottable):
         lpeaks = mline.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
 
         info = {
+            "axe": axe,
             "plottable": self,
             "plot_method": plot_mth,
             "fill": fill,
@@ -780,6 +834,9 @@ class PlottableDSPRectilinearMap(APlottableDSPMap):
 
     compatible_baxe = [
         AxeProjection.RECTILINEAR,
+        AxeProjection.LOGX,
+        AxeProjection.LOGY,
+        AxeProjection.LOGXY,
         AxeProjection.PLATECARREE,
         AxeProjection.DIM3D,
     ]
@@ -888,6 +945,9 @@ class PlottableFactory(object):
 
         elif isinstance(mline, DSPNorthPolarLine):
             ret = PlottableDSPNorthPolarLine(mline, kwargs)
+
+        elif isinstance(mline, DSPHistogram):
+            ret = PlottableDSPHistogram(mline, kwargs)
 
         elif isinstance(mline, DSPRectilinearMap):
             ret = PlottableDSPRectilinearMap(mline, kwargs)

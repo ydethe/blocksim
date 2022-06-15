@@ -320,7 +320,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         H = sp.y_serie
         f = sp.generateXSerie()
         H2 = np.real(np.conj(H) * H)
-        B2 = np.sum(f**2 * H2) / np.sum(H2)
+        B2 = np.trapz(f**2 * H2) / np.trapz(H2)
         return sqrt(B2)
 
     def getUnfoldedPhase(self, eps: float = 1e-9) -> NDArray[Any, Any]:

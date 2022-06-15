@@ -700,10 +700,85 @@ class ADSPLine(metaclass=ABCMeta):
         return res
 
 
+class DSPHistogram(ADSPLine):
+    @property
+    def dspline_type(self) -> DSPLineType:
+        return DSPLineType.HISTOGRAM
+
+
 class DSPRectilinearLine(ADSPLine):
     @property
     def dspline_type(self) -> DSPLineType:
         return DSPLineType.RECTILINEAR
+
+    def histogram(
+        self,
+        name: str,
+        bins="auto",
+        weights=None,
+        density=None,
+        bin_unit: str = "-",
+        bin_name: str = "",
+        transform=None,
+    ) -> DSPHistogram:
+        """Computes the histogram of the time serie"""
+        # bins : int or sequence of scalars or str, optional
+        #    'auto'
+        #        Maximum of the 'sturges' and 'fd' estimators. Provides good
+        #        all around performance.
+        #    'fd' (Freedman Diaconis Estimator)
+        #        Robust (resilient to outliers) estimator that takes into
+        #        account data variability and data size.
+        #    'doane'
+        #        An improved version of Sturges' estimator that works better
+        #        with non-normal datasets.
+        #    'scott'
+        #        Less robust estimator that that takes into account data
+        #        variability and data size.
+        #    'stone'
+        #        Estimator based on leave-one-out cross-validation estimate of
+        #        the integrated squared error. Can be regarded as a generalization
+        #        of Scott's rule.
+        #    'rice'
+        #        Estimator does not take variability into account, only data
+        #        size. Commonly overestimates number of bins required.
+        #    'sturges'
+        #        R's default method, only accounts for data size. Only
+        #        optimal for gaussian data and underestimates number of bins
+        #        for large non-gaussian datasets.
+        #    'sqrt'
+        #        Square root (of data size) estimator, used by Excel and
+        #        other programs for its speed and simplicity.
+        # weights : array_like, optional
+        #     An array of weights, of the same shape as `a`.  Each value in
+        #     `a` only contributes its associated weight towards the bin count
+        #     (instead of 1). If `density` is True, the weights are
+        #     normalized, so that the integral of the density over the range
+        #     remains 1.
+        # density : bool, optional
+        #     If ``False``, the result will contain the number of samples in
+        #     each bin. If ``True``, the result is the value of the
+        #     probability *density* function at the bin, normalized such that
+        #     the *integral* over the range is 1. Note that the sum of the
+        #     histogram values will not be equal to 1 unless bins of unity
+        #     width are chosen; it is not a probability *mass* function.
+        if transform is None:
+            f = self.default_transform
+        else:
+            f = transform
+        hist, bin_edges = np.histogram(
+            f(self.y_serie), bins=bins, weights=weights, density=density
+        )
+        ret = DSPHistogram(
+            name=name,
+            samplingStart=bin_edges[0],
+            samplingPeriod=bin_edges[1] - bin_edges[0],
+            y_serie=hist,
+            default_transform=lambda x: x,
+        )
+        ret.name_of_x_var = bin_name
+        ret.unit_of_x_var = bin_unit
+        return ret
 
 
 class DSPPolarLine(ADSPLine):

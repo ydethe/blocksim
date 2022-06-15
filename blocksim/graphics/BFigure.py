@@ -191,6 +191,9 @@ class MplFigure(ABFigure):
 
             if (
                 axe.projection == AxeProjection.RECTILINEAR
+                or axe.projection == AxeProjection.LOGX
+                or axe.projection == AxeProjection.LOGY
+                or axe.projection == AxeProjection.LOGXY
                 or axe.projection == AxeProjection.DIM3D
             ):
                 if x_label != "":

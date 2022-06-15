@@ -174,7 +174,24 @@ class ABaxe(metaclass=ABCMeta):
             kwargs: The plotting options for the object
 
         """
-        res = PlottableFactory.create(plottable, kwargs)
+        res = PlottableFactory.create(plottable, kwargs=kwargs)
+        self.registerPlottable(res)
+        return res
+
+    def scatter(self, plottable, **kwargs) -> APlottable:
+        """Records the scatter command (without executing it) and does some checks
+
+        Args:
+            plottable: Object to plot. Can be:
+
+            * a `blocksim.dsp.DSPLine.DSPLine`
+            * a `blocksim.dsp.DSPMap.DSPMap`
+            * a 2 elements tuple of numpy arrays
+            * a simple numpy arrays
+            kwargs: The plotting options for the object
+
+        """
+        res = PlottableFactory.create(plottable, kwargs=kwargs)
         self.registerPlottable(res)
         return res
 
@@ -216,6 +233,55 @@ class BAxeRectilinear(ABaxe):
         maxe.grid(True)
 
         self.mpl_axe = maxe
+
+        return self.mpl_axe
+
+
+class BAxeSemiLogX(BAxeRectilinear):
+
+    __slots__ = []
+
+    projection = AxeProjection.LOGX
+
+    def render(self, mfig: "Figure", mgs: "SubplotSpec") -> "AxesSubplot":
+        if not self.mpl_axe is None:
+            return self.mpl_axe
+
+        maxe = super().render(mfig, mgs)
+        maxe.set_xscale("log", nonpositive="mask")
+
+        return self.mpl_axe
+
+
+class BAxeSemiLogY(BAxeRectilinear):
+
+    __slots__ = []
+
+    projection = AxeProjection.LOGY
+
+    def render(self, mfig: "Figure", mgs: "SubplotSpec") -> "AxesSubplot":
+        if not self.mpl_axe is None:
+            return self.mpl_axe
+
+        maxe = super().render(mfig, mgs)
+        maxe.set_yscale("log", nonpositive="mask")
+
+        return self.mpl_axe
+
+
+class BAxeSemiLogXY(BAxeRectilinear):
+
+    __slots__ = []
+
+    projection = AxeProjection.LOGXY
+
+    def render(self, mfig: "Figure", mgs: "SubplotSpec") -> "AxesSubplot":
+        if not self.mpl_axe is None:
+            return self.mpl_axe
+
+        maxe = super().render(mfig, mgs)
+        maxe.set_xscale("log", nonpositive="mask")
+        maxe.set_yscale("log", nonpositive="mask")
 
         return self.mpl_axe
 
@@ -495,6 +561,33 @@ class BAxeFactory(object):
             )
         elif projection == AxeProjection.RECTILINEAR:
             baxe = BAxeRectilinear(
+                figure,
+                title,
+                spec,
+                sharex,
+                sharey,
+                kwargs,
+            )
+        elif projection == AxeProjection.LOGX:
+            baxe = BAxeSemiLogX(
+                figure,
+                title,
+                spec,
+                sharex,
+                sharey,
+                kwargs,
+            )
+        elif projection == AxeProjection.LOGY:
+            baxe = BAxeSemiLogY(
+                figure,
+                title,
+                spec,
+                sharex,
+                sharey,
+                kwargs,
+            )
+        elif projection == AxeProjection.LOGXY:
+            baxe = BAxeSemiLogXY(
                 figure,
                 title,
                 spec,
