@@ -14,7 +14,13 @@ from .. import logger
 from ..utils import find1dpeak, Peak
 from ..graphics.GraphicSpec import AxeProjection, DSPLineType
 
-__all__ = ["DSPRectilinearLine", "DSPPolarLine", "DSPNorthPolarLine"]
+__all__ = [
+    "ADSPLine",
+    "DSPHistogram",
+    "DSPRectilinearLine",
+    "DSPPolarLine",
+    "DSPNorthPolarLine",
+]
 
 
 class ADSPLine(metaclass=ABCMeta):

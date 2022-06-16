@@ -8,6 +8,7 @@ class DSPLineType(Enum):
     HISTOGRAM = 1
     POLAR = 2
     NORTH_POLAR = 3
+    BODE_DIAG = 4
 
 
 class DSPMapType(Enum):

@@ -10,8 +10,8 @@ import pytest
 
 from blocksim.control.Estimator import SpectrumEstimator
 from blocksim.Simulation import Simulation
+from blocksim.dsp import phase_unfold_deg
 from blocksim.graphics.BFigure import FigureFactory
-from blocksim.graphics import plotBode
 from blocksim.dsp.DSPSignal import DSPSignal
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -115,12 +115,16 @@ class TestTrackingSteadyState(TestBase):
         kal.matR = np.eye(1)
 
         filt = kal.getEstimatingFilter("filt")
+        bode = filt.bodeDiagram(name="bode", fpoints=np.arange(0, 20, 0.1))
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(2, 1)
+
         axe_amp = fig.add_baxe(title="Amplitude", spec=gs[0, 0])
+        axe_amp.plot(bode, transform=bode.to_db_lim(-100))
+
         axe_pha = fig.add_baxe(title="Phase", spec=gs[1, 0], sharex=axe_amp)
-        plotBode(filt, axe_amp=axe_amp, axe_pha=axe_pha, fpoints=np.arange(0, 20, 0.1))
+        axe_pha.plot(bode, transform=phase_unfold_deg)
 
         return fig.render()
 
@@ -140,12 +144,16 @@ class TestTrackingSteadyState(TestBase):
 
         filt = kal.getEstimatingFilter("filt", ma_freq=[3])
         fpoints = np.arange(0, 20, 0.1)
+        bode = filt.bodeDiagram(name="bode", fpoints=fpoints)
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(2, 1)
+
         axe_amp = fig.add_baxe(title="Amplitude", spec=gs[0, 0])
+        axe_amp.plot(bode, transform=bode.to_db_lim(-40))
+
         axe_pha = fig.add_baxe(title="Phase", spec=gs[1, 0], sharex=axe_amp)
-        plotBode(filt, axe_amp=axe_amp, axe_pha=axe_pha, fpoints=fpoints, pow_lim=-40)
+        axe_pha.plot(bode, transform=phase_unfold_deg)
 
         #### TMP###
         # Check with scipy functions

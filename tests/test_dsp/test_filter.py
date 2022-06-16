@@ -9,8 +9,7 @@ from numpy import pi, exp
 import pytest
 
 from blocksim.graphics.BFigure import FigureFactory
-from blocksim.graphics import plotBode
-from blocksim.dsp import derivative_coeff
+from blocksim.dsp import derivative_coeff, phase_unfold_deg
 from blocksim.dsp.DSPFilter import ArbitraryDSPFilter, BandpassDSPFilter
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.Simulation import Simulation
@@ -33,12 +32,16 @@ class TestFilter(TestBase):
             samplingPeriod=1 / fs,
             win=("chebwin", -60),
         )
+        bode = filt.bodeDiagram(name="bode")
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(2, 1)
+
         axe_amp = fig.add_baxe(title="Amplitude", spec=gs[0, 0])
+        axe_amp.plot(bode, transform=bode.to_db_lim(-100))
+
         axe_pha = fig.add_baxe(title="Phase", spec=gs[1, 0], sharex=axe_amp)
-        plotBode(filt, axe_amp=axe_amp, axe_pha=axe_pha)
+        axe_pha.plot(bode, transform=phase_unfold_deg)
 
         return fig.render()
 
@@ -208,7 +211,9 @@ class TestFilter(TestBase):
                 bands=bands,
                 desired=desired,
             )
-            plotBode(filt, axe_amp=axe_amp, axe_pha=axe_pha, label=method)
+            bode = filt.bodeDiagram(name="bode")
+            axe_amp.plot(bode, transform=bode.to_db_lim(-100), label=method)
+            axe_pha.plot(bode, transform=phase_unfold_deg)
 
         axe_amp.plot(
             plottable=((2, 3), (0, 0)), linestyle="--", color="black", linewidth=2
@@ -229,13 +234,16 @@ class TestFilter(TestBase):
         filt = ArbitraryDSPFilter.fromIIRSpecification(
             name="filt", wp=wp, ws=ws, gpass=gpass, gstop=gstop, fs=fs
         )
+        bode = filt.bodeDiagram(name="bode")
         num, den = filt.generateCoefficients()
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(2, 1)
         axe_amp = fig.add_baxe(title="Amplitude", spec=gs[0, 0])
         axe_pha = fig.add_baxe(title="Phase", spec=gs[1, 0], sharex=axe_amp)
-        plotBode(filt, axe_amp=axe_amp, axe_pha=axe_pha)
+
+        axe_amp.plot(bode, transform=bode.to_db_lim(-100))
+        axe_pha.plot(bode, transform=phase_unfold_deg)
 
         sys = dlti(num, den, dt=1 / fs)
         w, mag, phase = sys.bode()
@@ -294,13 +302,16 @@ class TestFilter(TestBase):
         den = [1, 0, 0]
 
         filt = ArbitraryDSPFilter(name="filt", samplingPeriod=dt, num=num, den=den)
+        bode = filt.bodeDiagram(name="bode", fpoints=100)
         sys = dlti(num, den, dt=dt)
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(2, 1)
         axe_amp = fig.add_baxe(title="Amplitude", spec=gs[0, 0])
         axe_pha = fig.add_baxe(title="Phase", spec=gs[1, 0], sharex=axe_amp)
-        plotBode(filt, axe_amp=axe_amp, axe_pha=axe_pha, fpoints=100)
+
+        axe_amp.plot(bode, transform=bode.to_db_lim(-100))
+        axe_pha.plot(bode, transform=phase_unfold_deg)
 
         w, mag, phase = sys.bode(n=100)
         axe_amp.plot(

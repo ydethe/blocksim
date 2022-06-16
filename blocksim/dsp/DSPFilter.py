@@ -13,14 +13,24 @@ from scipy.signal import (
     TransferFunction,
     remez,
     firls,
+    freqz,
 )
 
 from .. import logger
+from ..dsp import phase_unfold
 from ..core.Node import AComputer, TFOutput
 from .DSPSignal import DSPSignal
+from .DSPLine import ADSPLine
+from ..graphics.GraphicSpec import DSPLineType
 
 
-__all__ = ["ADSPFilter", "BandpassDSPFilter", "ArbitraryDSPFilter"]
+__all__ = ["DSPBodeDiagram", "ADSPFilter", "BandpassDSPFilter", "ArbitraryDSPFilter"]
+
+
+class DSPBodeDiagram(ADSPLine):
+    @property
+    def dspline_type(self) -> DSPLineType:
+        return DSPLineType.BODE_DIAG
 
 
 class ADSPFilter(AComputer):
@@ -137,6 +147,46 @@ class ADSPFilter(AComputer):
         z = lfilter(b, a, s)
 
         return z
+
+    def bodeDiagram(
+        self,
+        name: str,
+        fpoints: int = 200,
+    ) -> DSPBodeDiagram:
+        """Computes the Bode diagram for the filter
+
+        Args:
+            name: Name of the diagram
+            fpoints: If int, number of frequency samples to use for the plot
+                     If iterable, list of frequency samples to use for the plot
+
+        Returns:
+            The Bode diagram
+
+        """
+        fs = 1 / self.samplingPeriod
+
+        b, a = self.generateCoefficients()
+
+        if hasattr(fpoints, "__iter__"):
+            freq = fpoints
+        else:
+            freq = np.arange(0, fs / 2, fs / 2 / fpoints)
+
+        num, den = TransferFunction._z_to_zinv(b, a)
+        _, y = freqz(num, den, worN=freq, fs=fs)
+
+        ret = DSPBodeDiagram(
+            name=name,
+            samplingStart=freq[0],
+            samplingPeriod=freq[1] - freq[0],
+            y_serie=y,
+            default_transform=ADSPLine.to_db_lim(-100),
+        )
+        ret.unit_of_x_var = "Hz"
+        ret.name_of_x_var = "Frequency"
+
+        return ret
 
 
 class ArbitraryDSPFilter(ADSPFilter):

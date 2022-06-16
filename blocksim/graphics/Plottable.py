@@ -15,6 +15,7 @@ from ..dsp.DSPLine import (
     DSPNorthPolarLine,
     DSPHistogram,
 )
+from ..dsp.DSPFilter import DSPBodeDiagram
 from ..loggers.Logger import Logger
 from ..dsp.DSPMap import DSPRectilinearMap, DSPPolarMap, DSPNorthPolarMap
 from .GraphicSpec import AxeProjection, FigureProjection, Annotation
@@ -458,6 +459,16 @@ class PlottableDSPRectilinearLine(APlottable):
         unit_of_y_var = "-"
 
         return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
+
+
+class PlottableBodeDiagram(PlottableDSPRectilinearLine):
+
+    __slots__ = []
+
+    compatible_baxe = [
+        AxeProjection.RECTILINEAR,
+        AxeProjection.LOGY,
+    ]
 
 
 class PlottableDSPPolarLine(PlottableDSPRectilinearLine):
@@ -1072,6 +1083,9 @@ class PlottableFactory(object):
 
         elif isinstance(mline, DSPRectilinearMap):
             ret = PlottableDSPRectilinearMap(mline, kwargs)
+
+        elif isinstance(mline, DSPBodeDiagram):
+            ret = PlottableBodeDiagram(mline, kwargs)
 
         elif isinstance(mline, DSPPolarMap):
             ret = PlottableDSPPolarMap(mline, kwargs)

@@ -118,6 +118,20 @@ def phase_unfold(sig: NDArray[Any, Any], eps: float = 1e-9) -> NDArray[Any, Any]
     return pha
 
 
+def phase_unfold_deg(sig: NDArray[Any, Any], eps: float = 1e-9) -> NDArray[Any, Any]:
+    """Unfolds the phase law of the given complex signal
+
+    Args:
+        sig: The array of complex samples
+        eps: The threshold to test equality
+
+    Returns:
+        The unfolded phase law (deg)
+
+    """
+    return 180 / pi * phase_unfold(sig, eps=eps)
+
+
 def analyse_DV(
     wavelength: float,
     period: float,
