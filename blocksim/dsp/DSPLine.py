@@ -717,6 +717,7 @@ class DSPRectilinearLine(ADSPLine):
         bins="auto",
         weights=None,
         density=None,
+        cumulative: bool = False,
         bin_unit: str = "-",
         bin_name: str = "",
         transform=None,
@@ -769,10 +770,20 @@ class DSPRectilinearLine(ADSPLine):
         hist, bin_edges = np.histogram(
             f(self.y_serie), bins=bins, weights=weights, density=density
         )
+        delta = bin_edges[1] - bin_edges[0]
+
+        if cumulative:
+            # start = bin_edges[0] - delta
+            # hist = np.hstack(([0], np.cumsum(hist) * delta))
+            start = bin_edges[0]
+            hist = np.cumsum(hist) * delta
+        else:
+            start = bin_edges[0]
+
         ret = DSPHistogram(
             name=name,
-            samplingStart=bin_edges[0],
-            samplingPeriod=bin_edges[1] - bin_edges[0],
+            samplingStart=start,
+            samplingPeriod=delta,
             y_serie=hist,
             default_transform=lambda x: x,
         )

@@ -189,6 +189,9 @@ class MplFigure(ABFigure):
                 elif info["fill"] == "contour":
                     maxe.clabel(ret, inline=True, fontsize=10)
 
+            if display_legend:
+                maxe.legend(loc="best")
+
             if (
                 axe.projection == AxeProjection.RECTILINEAR
                 or axe.projection == AxeProjection.LOGX
@@ -201,9 +204,16 @@ class MplFigure(ABFigure):
                 if y_label != "":
                     maxe.set_ylabel(y_label)
 
-                xmin, xmax = axe.xbounds
-                maxe.set_xlim(xmin, xmax)
+                    xmin, xmax = axe.xbounds
+                    maxe.set_xlim(xmin, xmax)
 
+            if (
+                axe.projection == AxeProjection.RECTILINEAR
+                or axe.projection == AxeProjection.LOGX
+                or axe.projection == AxeProjection.LOGY
+                or axe.projection == AxeProjection.LOGXY
+                or axe.projection == AxeProjection.DIM3D
+            ):
                 ymin, ymax = axe.ybounds
                 if ymin is None and not np.isnan(global_ymin):
                     ymin = global_ymin / info["y_mult"]
@@ -211,8 +221,28 @@ class MplFigure(ABFigure):
                     ymax = global_ymax / info["y_mult"]
                 maxe.set_ylim(ymin, ymax)
 
-                if display_legend:
-                    maxe.legend(loc="best")
+            if (
+                axe.projection == AxeProjection.RECTILINEAR
+                or axe.projection == AxeProjection.LOGX
+                or axe.projection == AxeProjection.LOGY
+                or axe.projection == AxeProjection.LOGXY
+                or axe.projection == AxeProjection.POLAR
+                or axe.projection == AxeProjection.NORTH_POLAR
+                or axe.projection == AxeProjection.PLATECARREE
+            ):
+                for an in info["scaled_annotations"]:
+                    maxe.annotate(text=an.text, xy=an.coord)
+
+            if (
+                axe.projection == AxeProjection.POLAR
+                or axe.projection == AxeProjection.NORTH_POLAR
+            ):
+                ymin, ymax = axe.ybounds
+                if ymin is None and not np.isnan(global_ymin):
+                    ymin = global_ymin / info["y_mult"]
+                if ymax is None and not np.isnan(global_ymax):
+                    ymax = global_ymax / info["y_mult"]
+                maxe.set_rlim(ymin, ymax)
 
         if tight_layout:
             mfig.tight_layout()

@@ -191,6 +191,9 @@ class ABaxe(metaclass=ABCMeta):
             kwargs: The plotting options for the object
 
         """
+        if not "marker" in kwargs:
+            kwargs["marker"] = "+"
+        kwargs["linestyle"] = ""
         res = PlottableFactory.create(plottable, kwargs=kwargs)
         self.registerPlottable(res)
         return res

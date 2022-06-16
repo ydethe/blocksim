@@ -30,7 +30,7 @@ class DSPSpectrum(DSPRectilinearLine):
         samplingStart: float = None,
         samplingPeriod: float = None,
         y_serie: NDArray[Any, Any] = None,
-        default_transform=np.abs,
+        default_transform=lambda x: np.real(np.conj(x) * x),
     ):
         DSPRectilinearLine.__init__(
             self,

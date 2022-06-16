@@ -266,7 +266,7 @@ def plotBode(
     fpoints: int = 200,
     pow_lim: float = -100.0,
     **kwargs,
-) -> Tuple["PlottableDictTuple", "PlottableDictTuple"]:
+) -> Tuple["PlottableTuple", "PlottableTuple"]:
     """Plots the bode diagram of a filter
 
     Args:

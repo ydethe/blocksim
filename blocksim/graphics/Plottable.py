@@ -1,10 +1,12 @@
 from abc import ABCMeta, abstractmethod
 from typing import Tuple
+from pathlib import Path
 
 import networkx as nx
 from networkx.classes.graph import Graph
 import numpy as np
 from numpy import pi
+import matplotlib.image as mpimg
 
 from ..utils import find1dpeak
 from ..dsp.DSPLine import (
@@ -14,7 +16,7 @@ from ..dsp.DSPLine import (
     DSPHistogram,
 )
 from ..dsp.DSPMap import DSPRectilinearMap, DSPPolarMap, DSPNorthPolarMap
-from .GraphicSpec import AxeProjection, FigureProjection
+from .GraphicSpec import AxeProjection, FigureProjection, Annotation
 from ..satellite.Trajectory import Trajectory, Cube
 from . import getUnitAbbrev
 
@@ -28,10 +30,9 @@ class APlottable(metaclass=ABCMeta):
     * networkx graphs. See `PlottableGraph`
     * `blocksim.dsp.DSPLine.DSPLine`. See `PlottableDSPLine`
     * simple arrays. See `PlottableArray`
-    * tuple of arrays. See `PlottableTuple`
     * `blocksim.satellite.Trajectory.Trajectory` instances. See `PlottableTrajectory`
     * `blocksim.dsp.DSPMap.DSPMap`. See `PlottableDSPSpectrogram`
-    * tuple of dictionaries, see `PlottableDictTuple`. The dictionaries keys are:
+    * tuple of arrays or dictionaries, see `PlottableTuple`. The dictionaries keys are:
 
         * data
         * name
@@ -83,6 +84,7 @@ class APlottable(metaclass=ABCMeta):
             * args: the data to be plotted with matplotlib. 2 or 3 elements tuple with numpy arrays
             * mpl_kwargs: the plotting options useable with matplotlib
             * peaks: the peaks found in the data
+            * annotations: list of Annotation instances
             * name_of_x_var: name of the X variable
             * unit_of_x_var: unit of the X variable
             * name_of_y_var: name of the Y variable
@@ -104,13 +106,14 @@ class APlottable(metaclass=ABCMeta):
         ) = self._make_mline(axe)
 
         fill = ""
-        kwargs = self.kwargs.copy()
         plot_mth = maxe.plot
 
         args = (xd, yd)
 
+        kwargs = self.kwargs.copy()
         nb_peaks = kwargs.pop("find_peaks", 0)
         _ = kwargs.pop("transform", None)
+        annotations = kwargs.pop("annotations", [])
         lpeaks = find1dpeak(
             nb_peaks=nb_peaks,
             xd=xd,
@@ -137,6 +140,7 @@ class APlottable(metaclass=ABCMeta):
             "args": args,
             "mpl_kwargs": kwargs,
             "peaks": lpeaks,
+            "annotations": annotations,
             "name_of_x_var": name_of_x_var,
             "unit_of_x_var": unit_of_x_var,
             "name_of_y_var": name_of_y_var,
@@ -176,6 +180,7 @@ class APlottable(metaclass=ABCMeta):
                 * ymax: largest Y value
                 * scaled_args: the scaled data to be plotted with matplotlib. 2 or 3 elements tuple with numpy arrays
                 * scaled_peaks: the peaks found in the data with scaled coordinates
+                * scaled_annotations: the peaks found in the data with scaled coordinates
             The label to use for X axis
             The label to use for Y axis
 
@@ -212,7 +217,14 @@ class APlottable(metaclass=ABCMeta):
             txt = "(%.1f %s%s,%.1f)" % (xp / x_mult, x_lbl, x_unit, p.value / y_mult)
             scaled_peaks.append((xp / x_mult, yp, txt))
 
+        scaled_annotations = []
+        for a in info["annotations"]:
+            (xa, ya) = a.coord
+            an = Annotation(coord=(xa / x_mult, ya / y_mult), text=a.text)
+            scaled_annotations.append(an)
+
         info["scaled_peaks"] = scaled_peaks
+        info["scaled_annotations"] = scaled_annotations
         info["x_mult"] = x_mult
         info["y_mult"] = y_mult
         info["x_label"] = x_label
@@ -254,6 +266,7 @@ class PlottableCube(APlottable):
         app = axe.figure.mpl_fig
         mpl_kwargs = self.kwargs.copy()
         mpl_kwargs["size"] = self.plottable.size
+        _ = mpl_kwargs.pop("annotations", None)
         info = {
             "axe": axe,
             "plottable": self,
@@ -262,6 +275,7 @@ class PlottableCube(APlottable):
             "args": (self.plottable.position,),
             "mpl_kwargs": mpl_kwargs,
             "peaks": [],
+            "annotations": [],
             "name_of_x_var": "x",  # UNUSED
             "unit_of_x_var": "m",  # UNUSED
             "name_of_y_var": "y",  # UNUSED
@@ -277,6 +291,7 @@ class PlottableCube(APlottable):
     def scaleAndLabelData(self, info: dict, amp_x: float, amp_y: float) -> dict:
         info["scaled_args"] = info["args"]
         info["scaled_peaks"] = info["peaks"]
+        info["scaled_annotations"] = info["annotations"]
         info["x_mult"] = 1.0
         info["y_mult"] = 1.0
         info["x_label"] = 1.0
@@ -343,6 +358,7 @@ class PlottableGraph(APlottable):
         kwds = self.kwargs.copy()
         if not "node_size" in kwds.keys():
             kwds["node_size"] = 1000
+        annotat_ions = kwds.pop("annotations", None)
 
         info = {
             "axe": axe,
@@ -352,6 +368,7 @@ class PlottableGraph(APlottable):
             "args": (self.plottable,),
             "mpl_kwargs": kwds,
             "peaks": 0,
+            "annotations": [],
             "name_of_x_var": "",
             "unit_of_x_var": "-",
             "name_of_y_var": "",
@@ -397,6 +414,7 @@ class PlottableGraph(APlottable):
         """
         info["scaled_args"] = info["args"]
         info["scaled_peaks"] = []
+        info["scaled_annotations"] = []
         info["x_mult"] = 1.0
         info["y_mult"] = 1.0
         info["x_label"] = ""
@@ -471,6 +489,9 @@ class PlottableDSPHistogram(PlottableDSPRectilinearLine):
     def render(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
         info = super().render(axe)
         axe = info["axe"]
+        plottable = info["plottable"]
+        kwargs = info["mpl_kwargs"]
+        kwargs["width"] = plottable.plottable.samplingPeriod
         maxe = axe.mpl_axe
         info["plot_method"] = maxe.bar
         return info
@@ -521,7 +542,7 @@ class PlottableArray(APlottable):
         return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
 
 
-class PlottableDictTuple(APlottable):
+class PlottableTuple(APlottable):
     """Specialisation of `APlottable` to handle a 2 elements tuple of dictionaries
     Each dictionary contains the following keys:
 
@@ -536,7 +557,7 @@ class PlottableDictTuple(APlottable):
     Examples:
         >>> xdesc = {"data": np.arange(10), "name": "Time", "unit": "s"}
         >>> ydesc = {"data": np.arange(10), "name": "Time", "unit": "s"}
-        >>> _ = PlottableDictTuple(plottable=(xdesc, ydesc), kwargs={})
+        >>> _ = PlottableTuple(plottable=(xdesc, ydesc), kwargs={})
 
     """
 
@@ -552,24 +573,31 @@ class PlottableDictTuple(APlottable):
         AxeProjection.POLAR,
     ]
 
+    def _extractDataFromDesc(self, desc) -> Tuple["array", str, str]:
+        if isinstance(desc, dict):
+            dat = np.array(desc.get("data"))
+            name_of_var = desc.get("name", "")
+            unit_of_var = desc.get("unit", "")
+        else:
+            dat = desc
+            name_of_var = ""
+            unit_of_var = ""
+
+        if unit_of_var == "":
+            unit_of_var = "-"
+
+        return np.array(dat), name_of_var, unit_of_var
+
     def _make_mline(
         self, axe: "blocksim.graphics.BAxe.ABaxe"
     ) -> Tuple["array", "array", str, str, str, str]:
         transform = self.kwargs.get("transform", lambda x: x)
         xdesc, ydesc = self.plottable
 
-        xd = np.array(xdesc.get("data"))
-        name_of_x_var = xdesc.get("name", "")
-        unit_of_x_var = xdesc.get("unit", "")
-        if unit_of_x_var == "":
-            unit_of_x_var = "-"
+        xd, name_of_x_var, unit_of_x_var = self._extractDataFromDesc(xdesc)
+        yd, name_of_y_var, unit_of_y_var = self._extractDataFromDesc(ydesc)
 
-        yd = np.array(ydesc.get("data"))
         yd = transform(yd)
-        name_of_y_var = ydesc.get("name", "")
-        unit_of_y_var = ydesc.get("unit", "")
-        if unit_of_y_var == "":
-            unit_of_y_var = "-"
 
         if axe.projection == AxeProjection.PLATECARREE:
             xd *= 180 / pi
@@ -578,60 +606,6 @@ class PlottableDictTuple(APlottable):
             unit_of_y_var = "deg"
 
         return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
-
-
-class PlottableTuple(APlottable):
-    """Specialisation of `APlottable` to handle a 2 elements tuple of numpy arrays
-
-    Args:
-        plottable: a 2 elements tuple of numpy arrays
-        kwargs: The dictionary of options for plotting (color, width,etc)
-
-    Examples:
-        >>> _ = PlottableTuple(plottable=(np.arange(10),np.arange(10)*2-1), kwargs={})
-
-    """
-
-    __slots__ = []
-
-    compatible_baxe = [
-        AxeProjection.RECTILINEAR,
-        AxeProjection.LOGX,
-        AxeProjection.LOGY,
-        AxeProjection.LOGXY,
-        AxeProjection.NORTH_POLAR,
-        AxeProjection.PLATECARREE,
-        AxeProjection.POLAR,
-    ]
-
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
-        transform = self.kwargs.get("transform", lambda x: x)
-        xd, yd = self.plottable
-        yd = transform(np.array(yd))
-        name_of_x_var = ""
-        unit_of_x_var = "-"
-        name_of_y_var = ""
-        unit_of_y_var = "-"
-
-        xd = np.array(xd)
-        yd = np.array(yd)
-
-        if axe.projection == AxeProjection.PLATECARREE:
-            xd *= 180 / pi
-            yd *= 180 / pi
-            unit_of_x_var = "deg"
-            unit_of_y_var = "deg"
-
-        return (
-            xd,
-            yd,
-            name_of_x_var,
-            unit_of_x_var,
-            name_of_y_var,
-            unit_of_y_var,
-        )
 
 
 class PlottableTrajectory(APlottable):
@@ -692,14 +666,17 @@ class PlottableTrajectory(APlottable):
 
         if axe.figure.projection == FigureProjection.EARTH3D:
             app = axe.figure.mpl_fig
+            kwargs = self.kwargs.copy()
+            _ = kwargs.pop("transform", None)
             info = {
                 "axe": axe,
                 "plottable": self,
                 "plot_method": app.plotTrajectory,
                 "fill": "",
                 "args": (self.plottable,),
-                "mpl_kwargs": self.kwargs,
+                "mpl_kwargs": kwargs,
                 "peaks": [],
+                "annotations": [],
                 "name_of_x_var": "x",  # UNUSED
                 "unit_of_x_var": "m",  # UNUSED
                 "name_of_y_var": "y",  # UNUSED
@@ -717,6 +694,7 @@ class PlottableTrajectory(APlottable):
     def scaleAndLabelData(self, info, amp_x, amp_y) -> dict:
         info["scaled_args"] = info["args"]
         info["scaled_peaks"] = info["peaks"]
+        info["scaled_annotations"] = info["annotations"]
         info["x_mult"] = 1.0
         info["y_mult"] = 1.0
         info["x_label"] = 1.0
@@ -749,6 +727,7 @@ class APlottableDSPMap(APlottable):
         fill = kwargs.pop("fill", "pcolormesh")
         transform = kwargs.pop("transform", mline.default_transform)
         find_peaks = kwargs.pop("find_peaks", 0)
+        annotations = kwargs.pop("annotations", [])
 
         if axe.projection == AxeProjection.DIM3D:
             plot_mth = maxe.plot_surface
@@ -784,6 +763,7 @@ class APlottableDSPMap(APlottable):
             "args": args,
             "mpl_kwargs": kwargs,
             "peaks": lpeaks,
+            "annotations": annotations,
             "name_of_x_var": name_of_x_var,
             "unit_of_x_var": unit_of_x_var,
             "name_of_y_var": name_of_y_var,
@@ -811,12 +791,80 @@ class APlottableDSPMap(APlottable):
             txt = "(%.1f,%.1f,%.1f)" % (xp / x_mult, yp / y_mult, p.value)
             scaled_peaks.append((xp / x_mult, yp / y_mult, txt))
 
+        scaled_annotations = []
+        for a in info["annotations"]:
+            xa, ya = a.coord
+            an = Annotation(coord=(xa / x_mult, ya / y_mult), text=a.text)
+            scaled_annotations.append(an)
+
         info["scaled_args"] = args
         info["scaled_peaks"] = scaled_peaks
+        info["scaled_annotations"] = scaled_annotations
         info["x_mult"] = x_mult
         info["y_mult"] = y_mult
         info["x_label"] = x_label
         info["y_label"] = y_label
+
+        return info
+
+
+class PlottableImage(APlottableDSPMap):
+    """Specialisation of `APlottable` for plotting images
+
+    Args:
+        plottable: a Path instance
+        kwargs: The dictionary of options for plotting
+
+    """
+
+    __slots__ = []
+
+    compatible_baxe = [
+        AxeProjection.RECTILINEAR,
+    ]
+
+    def _make_mline(
+        self, axe: "blocksim.graphics.BAxe.ABaxe"
+    ) -> Tuple["array", "array", str, str, str, str]:
+        pass
+
+    def render(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+        maxe = axe.mpl_axe
+        maxe.grid(False)
+        img = mpimg.imread(str(self.plottable))
+
+        kwargs = self.kwargs.copy()
+        _ = kwargs.pop("transform", None)
+        _ = kwargs.pop("annotations", None)
+
+        info = {
+            "axe": axe,
+            "plottable": self,
+            "plot_method": maxe.imshow,
+            "fill": "",
+            "args": (img,),
+            "mpl_kwargs": kwargs,
+            "peaks": [],
+            "annotations": [],
+            "name_of_x_var": "",
+            "unit_of_x_var": "-",
+            "name_of_y_var": "",
+            "unit_of_y_var": "-",
+            "xmin": np.nan,
+            "xmax": np.nan,
+            "ymin": np.nan,
+            "ymax": np.nan,
+        }
+        return info
+
+    def scaleAndLabelData(self, info: dict, amp_x: float, amp_y: float) -> dict:
+        info["scaled_peaks"] = []
+        info["scaled_args"] = info["args"]
+        info["scaled_annotations"] = []
+        info["x_mult"] = 1
+        info["y_mult"] = 1
+        info["x_label"] = ""
+        info["y_label"] = ""
 
         return info
 
@@ -959,10 +1007,10 @@ class PlottableFactory(object):
             ret = PlottableDSPNorthPolarMap(mline, kwargs)
 
         elif isinstance(mline, tuple):
-            if isinstance(mline[0], dict):
-                ret = PlottableDictTuple(mline, kwargs)
-            else:
-                ret = PlottableTuple(mline, kwargs)
+            ret = PlottableTuple(mline, kwargs)
+
+        elif isinstance(mline, Path):
+            ret = PlottableImage(mline, kwargs)
 
         else:
             ret = PlottableArray(mline, kwargs)

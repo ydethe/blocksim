@@ -1,5 +1,6 @@
 from typing import Iterable, List
 from enum import Enum
+from dataclasses import dataclass
 
 
 class DSPLineType(Enum):
@@ -18,7 +19,6 @@ class DSPMapType(Enum):
 class AxeProjection(Enum):
     #: For rectilinear plots (the most frequent use case)
     RECTILINEAR = 0
-    LINEAR = 1
     LOGX = 2
     LOGY = 3
     LOGXY = 4
@@ -37,6 +37,12 @@ class FigureProjection(Enum):
     MPL = 0
     #: For panda3d 3d plots
     EARTH3D = 1
+
+
+@dataclass(init=True)
+class Annotation:
+    coord: tuple
+    text: str
 
 
 class AxeSpec(object):

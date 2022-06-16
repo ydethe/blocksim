@@ -4,6 +4,7 @@ import unittest
 
 import numpy as np
 from numpy import pi, sqrt, exp
+from scipy.special import erf
 import pytest
 
 from blocksim.loggers.Logger import Logger
@@ -12,6 +13,7 @@ from blocksim.graphics import (
     plotFromLogger,
     createFigureFromSpec,
     plotVerif,
+    showFigures,
 )
 from blocksim.graphics.GraphicSpec import AxeSpec, FigureSpec
 from blocksim.graphics.BFigure import FigureFactory
@@ -22,6 +24,8 @@ from TestBase import TestBase
 
 class TestGraphics(TestBase):
     def setUp(self):
+        super().setUp()
+
         self.log = Logger()
 
         dt = 0.01
@@ -78,6 +82,25 @@ class TestGraphics(TestBase):
         return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_cdf(self):
+        ns = 10000
+        a = np.random.normal(size=ns)
+        serie = DSPSignal(name="serie", samplingStart=0, samplingPeriod=1, y_serie=a)
+        hist = serie.histogram(name="hist", density=True, cumulative=True)
+        bins = hist.generateXSerie()
+
+        def cdf(x):
+            return 0.5 * (1 + erf(x / sqrt(2)))
+
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="Histogram (CDF)", spec=gs[0, 0])
+        axe.plot(hist)
+        axe.plot(plottable=(bins, cdf(bins)), color="red")
+
+        return fig.render()
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_figure_from_spec(self):
         aProp = dict()
 
@@ -115,4 +138,9 @@ class TestGraphics(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+
+    a = TestGraphics()
+    a.test_histogram()
+    a.test_cdf()
+    showFigures()
