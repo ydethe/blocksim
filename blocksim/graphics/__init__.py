@@ -121,66 +121,6 @@ def format_parameter(samp: float, unit: str) -> str:
     return txt
 
 
-def plotFromLogger(
-    log: Logger, id_x: str, id_y: str, axe: "blocksim.graphics.BAxe.ABaxe", **kwargs
-) -> "blocksim.graphics.Plottable.APlottable":
-    """Plots a value on a matplotlib axe
-
-    Args:
-        log: The Logger to read into
-        id_x: Name or expression for the X axis
-        id_y: Name or expression for the Y axis
-        axe: The BAxe to draw on. Obtained by fig.add_baxe
-        kwargs: matplotlib plotting options for the 'plot' method.
-
-    Returns:
-        The created APlottable
-
-    """
-    if type(id_x) == type(""):
-        val_x = log.getValue(id_x)
-        name_x = id_x
-        if id_x in log.getParametersName():
-            p = log.getParameter(id_x)
-            unit_x = p.unit
-        else:
-            unit_x = ""
-    elif hasattr(id_x, "__iter__"):
-        val_x = id_x
-        name_x = ""
-        unit_x = ""
-    else:
-        raise SystemError("[ERROR]Unacceptable argument for id_x : %s" % (str(id_x)))
-
-    if type(id_y) == type(""):
-        val_y = log.getValue(id_y)
-        name_y = id_y
-        if id_y in log.getParametersName():
-            p = log.getParameter(id_y)
-            unit_y = p.unit
-        else:
-            unit_y = ""
-    elif hasattr(id_y, "__iter__"):
-        val_y = id_y
-        name_y = ""
-        unit_y = ""
-    else:
-        raise SystemError("[ERROR]Unacceptable argument for id_y : %s" % (str(id_y)))
-
-    if not "label" in kwargs.keys():
-        kwargs["label"] = id_y
-
-    line = axe.plot(
-        (
-            {"data": val_x, "name": name_x, "unit": unit_x},
-            {"data": val_y, "name": name_y, "unit": unit_y},
-        ),
-        **kwargs,
-    )
-
-    return line
-
-
 def createFigureFromSpec(
     spec: "blocksim.graphics.GraphicSpec.FigureSpec",
     log: Logger,
@@ -249,12 +189,16 @@ def createFigureFromSpec(
 
             varx = d["varx"]
             vary = d["vary"]
-            if "label" in d.keys():
-                line = plotFromLogger(log, varx, vary, axe=axe, **lp)
-            elif type(vary) == type(""):
-                line = plotFromLogger(log, varx, vary, axe=axe, label=vary, **lp)
+            if log is None:
+                plottable = (varx, vary)
             else:
-                line = plotFromLogger(log, varx, vary, axe=axe, **lp)
+                plottable = (log, varx, vary)
+            if "label" in d.keys():
+                line = axe.plot(plottable, **lp)
+            elif type(vary) == type(""):
+                line = axe.plot(plottable, label=vary, **lp)
+            else:
+                line = axe.plot(plottable, **lp)
 
     return fig
 

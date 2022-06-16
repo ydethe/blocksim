@@ -15,6 +15,7 @@ from ..dsp.DSPLine import (
     DSPNorthPolarLine,
     DSPHistogram,
 )
+from ..loggers.Logger import Logger
 from ..dsp.DSPMap import DSPRectilinearMap, DSPPolarMap, DSPNorthPolarMap
 from .GraphicSpec import AxeProjection, FigureProjection, Annotation
 from ..satellite.Trajectory import Trajectory, Cube
@@ -573,6 +574,14 @@ class PlottableTuple(APlottable):
         AxeProjection.POLAR,
     ]
 
+    def __init__(self, plottable, kwargs: dict) -> None:
+        super().__init__(plottable, kwargs)
+        xdesc, ydesc = plottable
+        if xdesc is None:
+            raise AssertionError(f"Cannot use None as data descriptor")
+        if ydesc is None:
+            raise AssertionError(f"Cannot use None as data descriptor")
+
     def _extractDataFromDesc(self, desc) -> Tuple["array", str, str]:
         if isinstance(desc, dict):
             dat = np.array(desc.get("data"))
@@ -604,6 +613,70 @@ class PlottableTuple(APlottable):
             yd *= 180 / pi
             unit_of_x_var = "deg"
             unit_of_y_var = "deg"
+
+        return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
+
+
+class PlottableLogger(APlottable):
+    """Specialisation of `APlottable` for `blocksim.loggers.Logger.Logger`
+
+    Args:
+        plottable: a tuple with:
+
+        * `blocksim.loggers.Logger.Logger` instance
+        * name of the X variable
+        * name of the Y variable
+        kwargs: The dictionary of options for plotting (color, width,etc)
+
+    """
+
+    __slots__ = []
+
+    compatible_baxe = [
+        AxeProjection.RECTILINEAR,
+        AxeProjection.LOGX,
+        AxeProjection.LOGY,
+        AxeProjection.LOGXY,
+        AxeProjection.POLAR,
+        AxeProjection.NORTH_POLAR,
+        AxeProjection.PLATECARREE,
+    ]
+
+    def __init__(self, plottable, kwargs: dict) -> None:
+        super().__init__(plottable, kwargs)
+        log, xdesc, ydesc = plottable
+        if xdesc is None:
+            raise AssertionError(f"Cannot use None as data descriptor")
+        if ydesc is None:
+            raise AssertionError(f"Cannot use None as data descriptor")
+
+    def _extractDataFromDesc(self, log: Logger, name: str) -> Tuple["array", str, str]:
+        if isinstance(name, str):
+            dat = log.getValue(name)
+            name_of_var = ""
+            unit_of_var = log.findExpressionUnit(name)
+        elif hasattr(name, "__iter__"):
+            dat = name
+            name_of_var = ""
+            unit_of_var = ""
+        else:
+            raise AssertionError(f"Incomatible type {type(name)}")
+
+        if unit_of_var == "":
+            unit_of_var = "-"
+
+        return np.array(dat), name_of_var, unit_of_var
+
+    def _make_mline(
+        self, axe: "blocksim.graphics.BAxe.ABaxe"
+    ) -> Tuple["array", "array", str, str, str, str]:
+        transform = self.kwargs.get("transform", lambda x: x)
+        log, xdesc, ydesc = self.plottable
+
+        xd, name_of_x_var, unit_of_x_var = self._extractDataFromDesc(log, xdesc)
+        yd, name_of_y_var, unit_of_y_var = self._extractDataFromDesc(log, ydesc)
+
+        yd = transform(yd)
 
         return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
 
@@ -1007,7 +1080,10 @@ class PlottableFactory(object):
             ret = PlottableDSPNorthPolarMap(mline, kwargs)
 
         elif isinstance(mline, tuple):
-            ret = PlottableTuple(mline, kwargs)
+            if isinstance(mline[0], Logger):
+                ret = PlottableLogger(mline, kwargs)
+            else:
+                ret = PlottableTuple(mline, kwargs)
 
         elif isinstance(mline, Path):
             ret = PlottableImage(mline, kwargs)

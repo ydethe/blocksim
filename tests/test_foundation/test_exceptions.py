@@ -13,7 +13,7 @@ from blocksim.control.SetPoint import Step
 from blocksim.core.Node import AComputer
 from blocksim.control.Sensors import LinearSensors
 from blocksim.utils import quat_to_euler
-from blocksim.graphics import plotFromLogger
+from blocksim.graphics.BFigure import FigureFactory
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
@@ -154,12 +154,11 @@ class TestExceptions(TestBase):
         self.assertRaises(SystemError, log.getValue, "tps")
         log.log(name="tps", val=0, unit="")
         log.log(name="y", val=0, unit="")
-        self.assertRaises(
-            SystemError, plotFromLogger, log, id_x=None, id_y="y", axe=None
-        )
-        self.assertRaises(
-            SystemError, plotFromLogger, log, id_x="tps", id_y=None, axe=None
-        )
+        fig = FigureFactory.create(title="Figure")
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(spec=gs[0, 0], title="")
+        self.assertRaises(AssertionError, axe.plot, (log, None, "y"))
+        self.assertRaises(AssertionError, axe.plot, (log, "tps", None))
 
     def test_aelem_exc(self):
         tmp = DummyTestElement(
@@ -204,10 +203,10 @@ class TestExceptions(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
-    exit(0)
+    # unittest.main()
+    # exit(0)
 
     a = TestExceptions()
     a.setUp()
-    a.test_sim_exc()
-    # a.test_logger_exc()
+    # a.test_sim_exc()
+    a.test_logger_exc()

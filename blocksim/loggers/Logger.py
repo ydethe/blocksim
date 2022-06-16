@@ -1,7 +1,7 @@
 """Implementation of Logger
 
 """
-
+import ast
 from collections import defaultdict
 from typing import Iterable, Any
 from keyword import iskeyword
@@ -411,6 +411,49 @@ class Logger(object):
             raise ValueError(
                 "Too many loggers to handle file '%s'" % self.getLoadedFile()
             )
+
+    def findExpressionUnit(self, expr: str) -> str:
+        """Given an expression, gives the unit of the expression
+
+        Args:
+            expr: An expression to evaluate, e.g. a*cos(t) + b*sin(t)
+
+        Returns:
+            The unit if found
+
+        """
+        m = ast.parse(expr)
+
+        class ListNames(ast.NodeVisitor):
+            def __init__(self) -> None:
+                super().__init__()
+                self.names = []
+
+            def visit_Name(self, node):
+                self.names.append(node.id)
+
+        ln = ListNames()
+        ln.visit(m)
+
+        unit = "-"
+        from_param = ""
+        for n in ln.names:
+            if not n in self.getParametersName():
+                continue
+            p = self.getParameter(n)
+            if p.unit == "" or p.unit == "-":
+                continue
+            if unit == "-":
+                unit = p.unit
+                from_param = p.name
+            else:
+                if unit != p.unit:
+                    logger.debug(
+                        f"Inconsistent unit in '{expr}': {p.name} [{p.unit}] instead of {from_param} [{unit}]"
+                    )
+
+        # return unit
+        return "-"
 
     def getValue(self, name: str, raw: bool = False) -> NDArray[Any, Any]:
         """Get the value of a logged variable

@@ -10,7 +10,6 @@ import pytest
 from blocksim.loggers.Logger import Logger
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.graphics import (
-    plotFromLogger,
     createFigureFromSpec,
     plotVerif,
     showFigures,
@@ -54,11 +53,11 @@ class TestGraphics(TestBase):
         dt = self.tps_ref[1] - self.tps_ref[0]
         fr = self.log.getFilteredValue("x", 64, 2 * fc * dt)
 
-        plotFromLogger(self.log, "t", "x", axe, label="brut")
-        plotFromLogger(self.log, "t", fr, axe, label="filtré")
+        axe.plot((self.log, "t", "x"), label="brut")
+        axe.plot((self.log, "t", fr), label="filtré")
 
         t = self.log.getValue("t")
-        plotFromLogger(self.log, t + 1, "x", axe, label="brut,translated")
+        axe.plot((self.log, t + 1, "x"), label="brut,translated")
 
         return fig.render()
 
@@ -141,6 +140,7 @@ if __name__ == "__main__":
     # unittest.main()
 
     a = TestGraphics()
-    a.test_histogram()
-    a.test_cdf()
+    # a.test_histogram()
+    # a.test_cdf()
+    a.test_figure_from_spec()
     showFigures()
