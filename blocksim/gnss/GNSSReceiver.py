@@ -52,7 +52,7 @@ class GNSSReceiver(AComputer):
         self.defineOutput("realpos", snames=COORD, dtype=np.float64)
         self.defineOutput("estpos", snames=COORD, dtype=np.float64)
         self.defineOutput(
-            "estdop", snames=["sx", "sy", "sz", "sp", "sv"], dtype=np.float64
+            "estdop", snames=["sx", "sy", "sz", "sp", "sv"], dtype=np.complex128
         )
         self.defineOutput("estclkerror", snames=["dp", "dv"], dtype=np.float64)
 
@@ -149,9 +149,11 @@ class GNSSReceiver(AComputer):
         nsat = len(ephem) // 6
         nval = 0
         if self.algo == "doppler-ranging":
-            B = np.empty((2 * nsat, 5))
+            P = np.empty((nsat, 5))
+            V = np.empty((nsat, 5))
         else:
-            B = np.empty((nsat, 4))
+            P = np.empty((nsat, 4))
+            V = np.empty((nsat, 4))
 
         Penv = build_local_matrix(pos)
 
@@ -165,47 +167,61 @@ class GNSSReceiver(AComputer):
             d = lin.norm(R)
 
             if self.algo == "doppler":
-                B[nval, :3] = -(Penv.T @ svel) / d + (Penv.T @ R) / d**3 * (svel @ R)
-                B[nval, 3] = 1
-                nval += 1
+                V[nval, :3] = -(Penv.T @ svel) / d + (Penv.T @ R) / d**3 * (svel @ R)
+                V[nval, 3] = 1
 
             elif self.algo == "ranging":
-                B[nval, :3] = -(Penv.T @ R) / d
-                B[nval, 3] = 1
-                nval += 1
+                P[nval, :3] = -(Penv.T @ R) / d
+                P[nval, 3] = 1
 
             elif self.algo == "doppler-ranging":
-                B[nval, :3] = -(Penv.T @ R) / d
-                B[nval, 3] = 1
-                B[nval, 4] = 0
-                nval += 1
+                P[nval, :3] = -(Penv.T @ R) / d
+                P[nval, 3] = 1
+                P[nval, 4] = 0
 
-                B[nval, :3] = -(Penv.T @ svel) / d + (Penv.T @ R) / d**3 * (svel @ R)
-                B[nval, 3] = 0
-                B[nval, 4] = 1
-                nval += 1
+                V[nval, :3] = -(Penv.T @ svel) / d + (Penv.T @ R) / d**3 * (svel @ R)
+                V[nval, 3] = 0
+                V[nval, 4] = 1
 
-        B = B[:nval, :]
-        nsat, n = B.shape
+            nval += 1
+
+        P = P[:nval, :]
+        V = V[:nval, :]
+        nsat, n = P.shape
         if nsat < n:
             return np.nan, np.nan, np.nan, np.nan, np.nan
 
-        _, R = lin.qr(B, mode="full")
-        Q = lin.inv(R.T @ R)
-        sv = 0.0
-        sp = 0.0
+        H = np.zeros((n, n))
+        if self.algo == "ranging" or self.algo == "doppler-ranging":
+            _, Rp = lin.qr(P, mode="full")
+            PtP = Rp.T @ Rp
+            H += PtP
 
-        if self.algo == "doppler":
+        if self.algo == "doppler" or self.algo == "doppler-ranging":
+            _, Rv = lin.qr(V, mode="full")
+            VtV = Rv.T @ Rv
+            H += VtV
+
+        if self.algo == "ranging":
+            Q = lin.inv(H)
+            sx, sy, sz = sqrt(Q[0, 0]), sqrt(Q[1, 1]), sqrt(Q[2, 2])
+            sp = sqrt(Q[3, 3])
+            sv = 0.0
+
+        elif self.algo == "doppler":
+            Q = lin.inv(H)
+            sx, sy, sz = 1j * sqrt(Q[0, 0]), 1j * sqrt(Q[1, 1]), 1j * sqrt(Q[2, 2])
+            sp = 0.0
             sv = sqrt(Q[3, 3])
-        elif self.algo == "ranging":
-            sp = sqrt(Q[3, 3])
-        elif self.algo == "doppler-ranging":
-            sp = sqrt(Q[3, 3])
-            sv = sqrt(Q[4, 4])
-        else:
-            raise ValueError(f"Unknown GNSSReceiver algorithm : '{self.algo}'")
 
-        return sqrt(Q[0, 0]), sqrt(Q[1, 1]), sqrt(Q[2, 2]), sp, sv
+        elif self.algo == "doppler-ranging":
+            iH = lin.inv(H)
+            Q1 = iH @ PtP @ iH
+            Q2 = iH @ VtV @ iH
+            di = np.diag_indices(5)
+            sx, sy, sz, sp, sv = sqrt(Q1[di]) + 1j * sqrt(Q2[di])
+
+        return sx, sy, sz, sp, sv
 
     def computeFromRadialVelocities(
         self, ephem: NDArray[Any, Any], meas: NDArray[Any, Any]
@@ -574,7 +590,7 @@ class GNSSReceiver(AComputer):
             pos, dp, dv = self.computeFromPRandVR(ephemeris, measurements)
             sx, sy, sz, sp, sv = self.getDOP(ephemeris, realpos)
 
-        estdop = np.array([sx, sy, sz, sp, sv])
+        estdop = np.array([sx, sy, sz, sp, sv], dtype=np.complex128)
 
         outputs = {}
 
