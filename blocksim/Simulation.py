@@ -283,12 +283,8 @@ class Simulation(object):
         # Remove cycles in Simulation graph
         if nx.is_directed_acyclic_graph(self.__graph) and fig is None:
             sg = self.__graph
-            # TODO: activate the parallelization options
-            parallel = True
-            progress_bar = False
         else:
             sg = self.computeAcyclicGraph()
-            parallel = False
         clist = list(nx.topological_sort(sg))
 
         self.__logger.reset()

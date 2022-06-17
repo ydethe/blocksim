@@ -393,6 +393,9 @@ class AComputer(ABaseNode):
     def isLogged(self):
         return self.__logged
 
+    def setLogged(self, logged: bool):
+        self.__logged = logged
+
     def __repr__(self):
         s = ""
         sn = "'%s'" % self.getName()
