@@ -9,7 +9,7 @@ from .. import logger
 from ..utils import find2dpeak, Peak
 from ..graphics.GraphicSpec import AxeProjection, DSPMapType
 
-__all__ = ["DSPRectilinearMap", "DSPPolarMap", "DSPNorthPolarMap"]
+__all__ = ["ADSPMap", "DSPRectilinearMap", "DSPPolarMap", "DSPNorthPolarMap"]
 
 
 class ADSPMap(metaclass=ABCMeta):

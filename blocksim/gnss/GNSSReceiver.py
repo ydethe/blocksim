@@ -166,20 +166,19 @@ class GNSSReceiver(AComputer):
             R = spos - pos
             d = lin.norm(R)
 
-            if self.algo == "doppler":
-                V[nval, :3] = -(Penv.T @ svel) / d + (Penv.T @ R) / d**3 * (svel @ R)
-                V[nval, 3] = 1
+            P[nval, :3] = -(Penv.T @ R) / d
+            V[nval, :3] = -(Penv.T @ svel) / d + (Penv.T @ R) / d**3 * (svel @ R)
 
-            elif self.algo == "ranging":
-                P[nval, :3] = -(Penv.T @ R) / d
+            if self.algo == "ranging":
                 P[nval, 3] = 1
 
+            elif self.algo == "doppler":
+                V[nval, 3] = 1
+
             elif self.algo == "doppler-ranging":
-                P[nval, :3] = -(Penv.T @ R) / d
                 P[nval, 3] = 1
                 P[nval, 4] = 0
 
-                V[nval, :3] = -(Penv.T @ svel) / d + (Penv.T @ R) / d**3 * (svel @ R)
                 V[nval, 3] = 0
                 V[nval, 4] = 1
 
@@ -204,15 +203,15 @@ class GNSSReceiver(AComputer):
 
         if self.algo == "ranging":
             Q = lin.inv(H)
-            sx, sy, sz = sqrt(Q[0, 0]), sqrt(Q[1, 1]), sqrt(Q[2, 2])
-            sp = sqrt(Q[3, 3])
+            di = np.diag_indices(4)
+            sx, sy, sz, sp = sqrt(Q[di])
             sv = 0.0
 
         elif self.algo == "doppler":
             Q = lin.inv(H)
-            sx, sy, sz = 1j * sqrt(Q[0, 0]), 1j * sqrt(Q[1, 1]), 1j * sqrt(Q[2, 2])
+            di = np.diag_indices(4)
+            sx, sy, sz, sv = 1j * sqrt(Q[di])
             sp = 0.0
-            sv = sqrt(Q[3, 3])
 
         elif self.algo == "doppler-ranging":
             iH = lin.inv(H)

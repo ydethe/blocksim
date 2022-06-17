@@ -30,10 +30,10 @@ class APlottable(metaclass=ABCMeta):
 
     * `blocksim.satellite.Trajectory.Cube` instances. See `PlottableCube`
     * networkx graphs. See `PlottableGraph`
-    * `blocksim.dsp.DSPLine.DSPLine`. See `PlottableDSPLine`
+    * `blocksim.dsp.DSPLine.ADSPLine`. See `PlottableDSPLine`
     * simple arrays. See `PlottableArray`
     * `blocksim.satellite.Trajectory.Trajectory` instances. See `PlottableTrajectory`
-    * `blocksim.dsp.DSPMap.DSPMap`. See `PlottableDSPSpectrogram`
+    * `blocksim.dsp.DSPMap.ADSPMap`. See `PlottableDSPSpectrogram`
     * tuple of arrays or dictionaries, see `PlottableTuple`. The dictionaries keys are:
 
         * data
@@ -237,7 +237,7 @@ class APlottable(metaclass=ABCMeta):
 
 class PlottableCube(APlottable):
     """Allows plotting a `blocksim.satellite.Trajectory.Cube`
-    Only possible in `blocksim.graphics.enums.FigureProjection.EARTH3D`.
+    Only possible in `blocksim.graphics.GraphicSpec.FigureProjection.EARTH3D`.
     Available plotting options:
 
     * color
@@ -304,7 +304,7 @@ class PlottableCube(APlottable):
 
 class PlottableGraph(APlottable):
     """Allows plotting a networkx MultiDiGraph
-    Only possible in `blocksim.graphics.enums.FigureProjection.MPL`.
+    Only possible in `blocksim.graphics.GraphicSpec.FigureProjection.MPL`.
     Available plotting options:
     see https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pylab.draw_networkx.html
 
@@ -426,10 +426,10 @@ class PlottableGraph(APlottable):
 
 
 class PlottableDSPRectilinearLine(APlottable):
-    """Specialisation of `APlottable` for `blocksim.dsp.DSPLine.DSPLine`
+    """Specialisation of `APlottable` for `blocksim.dsp.DSPLine.ADSPLine`
 
     Args:
-        plottable: a `blocksim.dsp.DSPLine.DSPLine` instance
+        plottable: a `blocksim.dsp.DSPLine.ADSPLine` instance
         kwargs: The dictionary of options for plotting (color, width,etc)
 
     """
@@ -788,10 +788,10 @@ class PlottableTrajectory(APlottable):
 
 
 class APlottableDSPMap(APlottable):
-    """Specialisation of `APlottable` for `blocksim.dsp.DSPMap.DSPMap`
+    """Specialisation of `APlottable` for `blocksim.dsp.DSPMap.ADSPMap`
 
     Args:
-        plottable: a `blocksim.dsp.DSPMap.DSPMap` instance
+        plottable: a `blocksim.dsp.DSPMap.ADSPMap` instance
         kwargs: The dictionary of options for plotting (color, width,etc)
 
     """
@@ -954,10 +954,10 @@ class PlottableImage(APlottableDSPMap):
 
 
 class PlottableDSPRectilinearMap(APlottableDSPMap):
-    """Specialisation of `APlottable` for `blocksim.dsp.DSPMap.DSPMap`
+    """Specialisation of `APlottable` for `blocksim.dsp.DSPMap.ADSPMap`
 
     Args:
-        plottable: a `blocksim.dsp.DSPMap.DSPMap` instance
+        plottable: a `blocksim.dsp.DSPMap.ADSPMap` instance
         kwargs: The dictionary of options for plotting (color, width,etc)
 
     """
@@ -1043,8 +1043,8 @@ class PlottableFactory(object):
         Args:
             mline: Object to plot. Can be:
 
-            * a `blocksim.dsp.DSPLine.DSPLine`
-            * a `blocksim.dsp.DSPMap.DSPMap`
+            * a `blocksim.dsp.DSPLine.ADSPLine`
+            * a `blocksim.dsp.DSPMap.ADSPMap`
             * a 2 elements tuple of numpy arrays
             * a simple numpy arrays
             * a networkx DiGraph

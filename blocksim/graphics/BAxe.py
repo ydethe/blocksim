@@ -64,8 +64,8 @@ class ABaxe(metaclass=ABCMeta):
         figure: "blocksim.graphics.BFigure.ABFigure",
         title: str,
         spec: BGridElement,
-        sharex: "blocksim.graphics.BAxe.ABAxe" = None,
-        sharey: "blocksim.graphics.BAxe.ABAxe" = None,
+        sharex: "blocksim.graphics.BAxe.ABaxe" = None,
+        sharey: "blocksim.graphics.BAxe.ABaxe" = None,
         kwargs={},
     ):
         self.figure = figure
@@ -167,8 +167,8 @@ class ABaxe(metaclass=ABCMeta):
         Args:
             plottable: Object to plot. Can be:
 
-            * a `blocksim.dsp.DSPLine.DSPLine`
-            * a `blocksim.dsp.DSPMap.DSPMap`
+            * a `blocksim.dsp.DSPLine.ADSPLine`
+            * a `blocksim.dsp.DSPMap.ADSPMap`
             * a 2 elements tuple of numpy arrays
             * a simple numpy arrays
             kwargs: The plotting options for the object
@@ -184,8 +184,8 @@ class ABaxe(metaclass=ABCMeta):
         Args:
             plottable: Object to plot. Can be:
 
-            * a `blocksim.dsp.DSPLine.DSPLine`
-            * a `blocksim.dsp.DSPMap.DSPMap`
+            * a `blocksim.dsp.DSPLine.ADSPLine`
+            * a `blocksim.dsp.DSPMap.ADSPMap`
             * a 2 elements tuple of numpy arrays
             * a simple numpy arrays
             kwargs: The plotting options for the object
@@ -506,23 +506,23 @@ class BAxeFactory(object):
         title: str,
         spec: BGridElement,
         projection: AxeProjection,
-        sharex: "blocksim.graphics.BAxe.ABAxe" = None,
-        sharey: "blocksim.graphics.BAxe.ABAxe" = None,
+        sharex: "blocksim.graphics.BAxe.ABaxe" = None,
+        sharey: "blocksim.graphics.BAxe.ABaxe" = None,
         kwargs={},
     ) -> ABaxe:
-        """Creates the adapted daughter class of `ABAxe`
+        """Creates the adapted daughter class of `ABaxe`
 
         Args:
             figure: parent BFigure
             title: title of the BAxe
             spec : coordinates of the BAxe in the BFigure's layout
-            projection: projection of the BAxe. Used to determine which subclass of ABAxe to use
-            sharex: ABAxe to share X limits with
-            sharey: ABAxe to share Y limits with
+            projection: projection of the BAxe. Used to determine which subclass of ABaxe to use
+            sharex: ABaxe to share X limits with
+            sharey: ABaxe to share Y limits with
             kwargs: The plotting options for the object
 
         Returns:
-            The ABAxe instance suited to the projection
+            The ABaxe instance suited to the projection
 
         """
 

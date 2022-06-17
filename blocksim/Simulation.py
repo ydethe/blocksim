@@ -27,7 +27,7 @@ class Simulation(object):
     Also logs all the simulated values
 
     Args:
-        computers: list of `blocksim.core.Node.AComputer` to add to the simulation. Can be done later with `blocksim.Simulation.addComputer`
+        computers: list of `blocksim.core.Node.AComputer` to add to the simulation. Can be done later with `blocksim.Simulation.Simulation.addComputer`
 
     """
 
@@ -337,7 +337,7 @@ class Simulation(object):
 
     def connect(self, src_name: str, dst_name: str):
         """Links an computer with another, so that the state of the source is connected to the input of the destination.
-        Both src and dst must have been added with `blocksim.Simulation.addComputer`
+        Both src and dst must have been added with `blocksim.Simulation.Simulation.addComputer`
 
         Args:
             src_name: Source computer. Example: sys.output
@@ -368,7 +368,7 @@ class Simulation(object):
         )
 
     def computeGraph(self) -> nx.MultiDiGraph:
-        """Computes the simulation graph. The result can be plotted thanks to `blocksim.graphics.plotGraph`
+        """Computes the simulation graph.
 
         Returns:
             The simulation graph as an instance of nx.MultiDiGraph
@@ -377,7 +377,7 @@ class Simulation(object):
         return self.__graph.copy()
 
     def computeAcyclicGraph(self) -> nx.MultiDiGraph:
-        """Computes the simulation DAG. The result can be plotted thanks to `blocksim.graphics.plotGraph`
+        """Computes the simulation DAG.
 
         Returns:
             The simulation DAG as an instance of nx.MultiDiGraph

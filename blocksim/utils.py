@@ -30,6 +30,7 @@ __all__ = [
     "Peak",
     "find1dpeak",
     "find2dpeak",
+    "getHVPDOP",
     "casedpath",
     "resource_path",
     "calc_cho",
@@ -294,6 +295,35 @@ def find2dpeak(
         lpeak = lpeak[:nb_peaks]
 
     return lpeak
+
+
+def getHVPDOP(sx: float, sy: float, sz: float) -> Tuple[complex, complex, complex]:
+    r"""From the DOP computed by `blocksim.gnss.GNSSReceiver.GNSSReceiver.getDOP`, gets the VDOP, HDOP and PDOP as complex numbers.
+
+    $$ \sigma_{3D} = Re(PDOP).\sigma_d +Im(PDOP).\sigma_v $$
+
+    Args:
+        sx: DOP term on X axis (East)
+        sy: DOP term on Y axis (North)
+        sz: DOP term on Z axis (Up)
+
+    Returns:
+        VDOP
+        HDOP
+        PDOP
+
+    """
+    udop = np.array([sx, sy, sz])
+    pdop = lin.norm(np.real(udop))
+    pdop += 1j * lin.norm(np.imag(udop))
+
+    vdop = np.real(sz)
+    vdop += 1j * np.imag(sz)
+
+    hdop = lin.norm(np.real(udop[:2]))
+    hdop += 1j * lin.norm(np.imag(udop[:2]))
+
+    return vdop, hdop, pdop
 
 
 def verif_mat_diag(A: NDArray[Any, Any]) -> bool:
