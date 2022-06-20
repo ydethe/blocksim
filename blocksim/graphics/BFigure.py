@@ -4,7 +4,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from abc import ABCMeta, abstractmethod
 
-from .B3DPlotter import B3DPlotter
 from .GraphicSpec import AxeProjection, FigureProjection
 from .BLayout import BGridSpec, BGridElement
 from .BAxe import BAxeFactory, ABaxe
@@ -103,151 +102,17 @@ class MplFigure(ABFigure):
             return self.mpl_fig
 
         mfig = plt.figure()
+        self.mpl_fig = mfig
         mfig.suptitle(self.title)
 
         gs = self.grid_spec
         mgs = mfig.add_gridspec(gs.nrow, gs.ncol)
 
         for axe in self.axe_factories:
-            display_legend = False
-            maxe = axe.render(mfig, mgs)
-
-            if len(axe.plottable_factories) == 0:
-                continue
-
-            rendered_plottables = []
-
-            global_xmin = np.nan
-            global_xmax = np.nan
-            global_ymin = np.nan
-            global_ymax = np.nan
-
-            for plottable in axe.plottable_factories:
-                info = plottable.render(axe)
-
-                rendered_plottables.append(info)
-
-                if info["xmin"] < global_xmin or np.isnan(global_xmin):
-                    global_xmin = info["xmin"]
-                if info["xmax"] > global_xmax or np.isnan(global_xmax):
-                    global_xmax = info["xmax"]
-                if info["ymin"] < global_ymin or np.isnan(global_ymin):
-                    global_ymin = info["ymin"]
-                if info["ymax"] > global_ymax or np.isnan(global_ymax):
-                    global_ymax = info["ymax"]
-
-            amp_x = global_xmax - global_xmin
-            amp_y = global_ymax - global_ymin
-
-            x_label = y_label = ""
-            x_unit = y_unit = "-"
-            for info in rendered_plottables:
-                info = info["plottable"].scaleAndLabelData(info, amp_x, amp_y)
-
-                x_labelp = info["x_label"]
-                x_unitp = info["unit_of_x_var"]
-                if x_unit == "-":
-                    x_label = x_labelp
-                    x_unit = x_unitp
-                if x_unitp != "-":
-                    if x_unit != x_unitp:
-                        raise AssertionError(
-                            f"Inconsistent X units: {x_label} with {x_labelp}"
-                        )
-                    x_label = x_labelp
-
-                y_labelp = info["y_label"]
-                y_unitp = info["unit_of_y_var"]
-                if y_unit == "-":
-                    y_label = y_labelp
-                    y_unit = y_unitp
-                if y_unitp != "-":
-                    if y_unit != y_unitp:
-                        raise AssertionError(
-                            f"Inconsistent Y units: {y_label} with {y_labelp}"
-                        )
-                    y_label = y_labelp
-
-                args = info["scaled_args"]
-                kwargs = info["mpl_kwargs"]
-                plt_mth = info["plot_method"]
-                ret = plt_mth(*args, **kwargs)
-
-                if "label" in kwargs.keys():
-                    display_legend = True
-
-                for xp, yp, txt in info["scaled_peaks"]:
-                    maxe.plot([xp], [yp], marker="o", color="red", linestyle="")
-                    maxe.annotate(txt, xy=(xp, yp), fontsize="x-small")
-
-                if info["fill"] == "plot_surface":
-                    pass
-                elif info["fill"] == "pcolormesh":
-                    maxe.figure.colorbar(ret, ax=maxe)
-                elif info["fill"] == "contourf":
-                    maxe.figure.colorbar(ret, ax=maxe)
-                elif info["fill"] == "contour":
-                    maxe.clabel(ret, inline=True, fontsize=10)
-
-            if display_legend:
-                maxe.legend(loc="best")
-
-            if (
-                axe.projection == AxeProjection.RECTILINEAR
-                or axe.projection == AxeProjection.LOGX
-                or axe.projection == AxeProjection.LOGY
-                or axe.projection == AxeProjection.LOGXY
-                or axe.projection == AxeProjection.DIM3D
-            ):
-                if x_label != "":
-                    maxe.set_xlabel(x_label)
-                if y_label != "":
-                    maxe.set_ylabel(y_label)
-
-                    xmin, xmax = axe.xbounds
-                    maxe.set_xlim(xmin, xmax)
-
-            if (
-                axe.projection == AxeProjection.RECTILINEAR
-                or axe.projection == AxeProjection.LOGX
-                or axe.projection == AxeProjection.LOGY
-                or axe.projection == AxeProjection.LOGXY
-                or axe.projection == AxeProjection.DIM3D
-            ):
-                ymin, ymax = axe.ybounds
-                if ymin is None and not np.isnan(global_ymin):
-                    ymin = global_ymin / info["y_mult"]
-                if ymax is None and not np.isnan(global_ymax):
-                    ymax = global_ymax / info["y_mult"]
-                maxe.set_ylim(ymin, ymax)
-
-            if (
-                axe.projection == AxeProjection.RECTILINEAR
-                or axe.projection == AxeProjection.LOGX
-                or axe.projection == AxeProjection.LOGY
-                or axe.projection == AxeProjection.LOGXY
-                or axe.projection == AxeProjection.POLAR
-                or axe.projection == AxeProjection.NORTH_POLAR
-                or axe.projection == AxeProjection.PLATECARREE
-            ):
-                for an in info["scaled_annotations"]:
-                    maxe.annotate(text=an.text, xy=an.coord)
-
-            if (
-                axe.projection == AxeProjection.POLAR
-                or axe.projection == AxeProjection.NORTH_POLAR
-            ):
-                ymin, ymax = axe.ybounds
-                if ymin is None and not np.isnan(global_ymin):
-                    ymin = global_ymin / info["y_mult"]
-                if ymax is None and not np.isnan(global_ymax):
-                    ymax = global_ymax / info["y_mult"]
-                maxe.set_rlim(ymin, ymax)
+            axe.render(self, mgs)
 
         if tight_layout:
             mfig.tight_layout()
-
-        self.mpl_fig = mfig
 
         return mfig
 
@@ -256,32 +121,40 @@ class B3DFigure(ABFigure):
 
     projection = FigureProjection.EARTH3D
 
+    def add_gridspec(self, nrow: int, ncol: int) -> BGridSpec:
+        if ncol != 1 or nrow != 1:
+            raise AssertionError(
+                f"With {FigureProjection.EARTH3D}, only (1,1) GridPsec are allowed. Got ({nrow},{ncol})"
+            )
+        return super().add_gridspec(nrow=nrow, ncol=ncol)
+
+    def registerAxeFactory(self, baxe: ABaxe):
+        if len(self.axe_factories) == 1:
+            raise AssertionError(f"Only one axe allowed in {FigureProjection.EARTH3D}")
+        self.axe_factories.append(baxe)
+
     def render(self, tight_layout: bool = False) -> "Figure":
         if not self.mpl_fig is None:
             return self.mpl_fig
 
-        if self.grid_spec.ncol != 1 or self.grid_spec.nrow != 1:
-            raise AssertionError(
-                f"With {FigureProjection.EARTH3D}, only (1,1) GridPsec are allowed. Got ({self.grid_spec.nrow},{self.grid_spec.ncol})"
-            )
+        # mfig = B3DPlotter()
+        # mfig.plotEarth()
+        mfig = None
 
-        app = B3DPlotter()
-        app.plotEarth()
+        self.mpl_fig = mfig
 
-        self.mpl_fig = app
-        axe = self.axe_factories[0]
+        for axe in self.axe_factories:
+            maxe = axe.render(mfig, self.grid_spec)
 
-        for plottable in axe.plottable_factories:
-            info = plottable.render(axe)
-            info = plottable.scaleAndLabelData(info, 1, 1)
+        # for plottable in axe.plottable_factories:
+        #     info = plottable.render(axe)
+        #     info = plottable.scaleAndLabelData(info, 1, 1)
 
-            args = info["scaled_args"]
-            kwargs = info["mpl_kwargs"]
-            ret = info["plot_method"](*args, **kwargs)
+        #     args = info["scaled_args"]
+        #     kwargs = info["mpl_kwargs"]
+        #     ret = info["plot_method"](*args, **kwargs)
 
-        self.mpl_fig = app
-
-        return app
+        return mfig
 
 
 class FigureFactory(object, metaclass=Singleton):  # type: ignore

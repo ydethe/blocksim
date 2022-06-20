@@ -465,8 +465,7 @@ class TestGraphics2(unittest.TestCase):
 
     def test_3d_plot(self):
         fig = FigureFactory.create(title="Figure", projection=FigureProjection.EARTH3D)
-        gs = fig.add_gridspec(2, 1)
-        self.assertRaises(AssertionError, fig.render)
+        self.assertRaises(AssertionError, fig.add_gridspec, 2, 1)
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_multiple_plots(self):

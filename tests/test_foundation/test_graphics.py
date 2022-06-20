@@ -135,12 +135,38 @@ class TestGraphics(TestBase):
 
         return fig.render()
 
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def ntest_twinx(self):
+        # Create some mock data
+        t = np.arange(0.01, 10.0, 0.01)
+        data1 = np.exp(t)
+        data2 = np.sin(2 * np.pi * t)
+
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+        axe.plot(
+            ({"data": t, "unit": "s", "name": "Time"}, {"data": data1, "name": "exp"})
+        )
+
+        axe.plot(
+            ({"data": t, "unit": "s", "name": "Time"}, {"data": data2, "name": "sin"}),
+            color="red",
+            twinx=True,
+        )
+
+        return fig.render()
+
 
 if __name__ == "__main__":
     # unittest.main()
 
     a = TestGraphics()
+    a.setUp()
     # a.test_histogram()
     # a.test_cdf()
-    a.test_figure_from_spec()
+    # a.test_figure_from_spec()
+    # a.ntest_twinx()
+    a.test_plot_logger()
+
     showFigures()

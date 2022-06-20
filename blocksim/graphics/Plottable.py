@@ -2,11 +2,13 @@ from abc import ABCMeta, abstractmethod
 from typing import Tuple
 from pathlib import Path
 
+from parse import parse
 import networkx as nx
 from networkx.classes.graph import Graph
 import numpy as np
 from numpy import pi
 import matplotlib.image as mpimg
+import pandas as pd
 
 from ..utils import find1dpeak
 from ..dsp.DSPLine import (
@@ -71,7 +73,7 @@ class APlottable(metaclass=ABCMeta):
         """
         pass
 
-    def render(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
         """Makes the final preparation before plotting with matplotlib
 
         Args:
@@ -97,7 +99,6 @@ class APlottable(metaclass=ABCMeta):
             * ymax: largest Y value, taking into account the X bounds given by `BAxe.set_xlim`
 
         """
-        maxe = axe.mpl_axe
         (
             xd,
             yd,
@@ -108,7 +109,6 @@ class APlottable(metaclass=ABCMeta):
         ) = self._make_mline(axe)
 
         fill = ""
-        plot_mth = maxe.plot
 
         args = (xd, yd)
 
@@ -137,7 +137,7 @@ class APlottable(metaclass=ABCMeta):
         info = {
             "axe": axe,
             "plottable": self,
-            "plot_method": plot_mth,
+            "plot_method": "plot",
             "fill": fill,
             "args": args,
             "mpl_kwargs": kwargs,
@@ -154,7 +154,7 @@ class APlottable(metaclass=ABCMeta):
         }
         return info
 
-    def scaleAndLabelData(self, info: dict, amp_x: float, amp_y: float) -> dict:
+    def render(self, info: dict, amp_x: float, amp_y: float) -> dict:
         """This method, knowing the maximum aplitude of data in the axe,
         scales the data by a power of 3.n so that the prefux k (kilo), M (mega), etc can be used
 
@@ -188,7 +188,8 @@ class APlottable(metaclass=ABCMeta):
 
         """
         axe = info["axe"]
-        xd, yd = info["args"]
+        args = info["args"]
+        maxe = axe.mpl_axe
 
         x_mult = 1
         x_lbl = ""
@@ -197,20 +198,23 @@ class APlottable(metaclass=ABCMeta):
         y_lbl = ""
         y_unit = info["unit_of_y_var"]
         if axe.projection == AxeProjection.LOGX:
-            args = (xd, yd)
+            scaled_args = args
         elif axe.projection == AxeProjection.LOGY:
-            args = (xd, yd)
+            scaled_args = args
         elif axe.projection == AxeProjection.LOGXY:
-            args = (xd, yd)
+            scaled_args = args
+        elif axe.projection == AxeProjection.GRAPH:
+            scaled_args = args
         else:
+            (xd, yd) = info["args"]
             _, x_mult, x_lbl, x_unit = getUnitAbbrev(amp_x, unit=info["unit_of_x_var"])
             _, y_mult, y_lbl, y_unit = getUnitAbbrev(amp_y, unit=info["unit_of_y_var"])
-            args = (xd / x_mult, yd / y_mult)
+            scaled_args = (xd / x_mult, yd / y_mult)
 
         x_label = "%s (%s%s)" % (info["name_of_x_var"], x_lbl, x_unit)
         y_label = "%s (%s%s)" % (info["name_of_y_var"], y_lbl, y_unit)
 
-        info["scaled_args"] = args
+        info["scaled_args"] = scaled_args
 
         scaled_peaks = []
         for p in info["peaks"]:
@@ -231,6 +235,25 @@ class APlottable(metaclass=ABCMeta):
         info["y_mult"] = y_mult
         info["x_label"] = x_label
         info["y_label"] = y_label
+
+        args = info["scaled_args"]
+        kwargs = info["mpl_kwargs"]
+        plt_mth = info["plot_method"]
+        mth = getattr(maxe, plt_mth)
+        ret = mth(*args, **kwargs)
+
+        for xp, yp, txt in info["scaled_peaks"]:
+            maxe.plot([xp], [yp], marker="o", color="red", linestyle="")
+            maxe.annotate(txt, xy=(xp, yp), fontsize="x-small")
+
+        if info["fill"] == "plot_surface":
+            pass
+        elif info["fill"] == "pcolormesh":
+            maxe.figure.colorbar(ret, ax=maxe)
+        elif info["fill"] == "contourf":
+            maxe.figure.colorbar(ret, ax=maxe)
+        elif info["fill"] == "contour":
+            maxe.clabel(ret, inline=True, fontsize=10)
 
         return info
 
@@ -259,20 +282,19 @@ class PlottableCube(APlottable):
     ) -> Tuple["array", "array", str, str, str, str]:
         pass
 
-    def render(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
         if not axe.projection in self.__class__.compatible_baxe:
             raise AssertionError(
                 f"{axe.projection} is not in {self.__class__.compatible_baxe}"
             )
 
-        app = axe.figure.mpl_fig
         mpl_kwargs = self.kwargs.copy()
         mpl_kwargs["size"] = self.plottable.size
         _ = mpl_kwargs.pop("annotations", None)
         info = {
             "axe": axe,
             "plottable": self,
-            "plot_method": app.plotCube,
+            "plot_method": "plotCube",
             "fill": "",
             "args": (self.plottable.position,),
             "mpl_kwargs": mpl_kwargs,
@@ -290,7 +312,7 @@ class PlottableCube(APlottable):
 
         return info
 
-    def scaleAndLabelData(self, info: dict, amp_x: float, amp_y: float) -> dict:
+    def render(self, info: dict, amp_x: float, amp_y: float) -> dict:
         info["scaled_args"] = info["args"]
         info["scaled_peaks"] = info["peaks"]
         info["scaled_annotations"] = info["annotations"]
@@ -316,7 +338,7 @@ class PlottableGraph(APlottable):
 
     __slots__ = []
 
-    compatible_baxe = [AxeProjection.RECTILINEAR]
+    compatible_baxe = [AxeProjection.GRAPH]
 
     def __init__(self, plottable, kwargs: dict) -> None:
         self.plottable = plottable
@@ -325,7 +347,7 @@ class PlottableGraph(APlottable):
     def _make_mline(self, axe: "blocksim.graphics.BAxe.ABaxe"):
         pass
 
-    def render(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
         """Makes the final preparation before plotting with matplotlib
 
         Args:
@@ -360,16 +382,16 @@ class PlottableGraph(APlottable):
         kwds = self.kwargs.copy()
         if not "node_size" in kwds.keys():
             kwds["node_size"] = 1000
-        annotat_ions = kwds.pop("annotations", None)
+        _ = kwds.pop("annotations", None)
 
         info = {
             "axe": axe,
             "plottable": self,
-            "plot_method": nx.draw_networkx,
+            "plot_method": "plotGraph",
             "fill": "",
             "args": (self.plottable,),
             "mpl_kwargs": kwds,
-            "peaks": 0,
+            "peaks": [],
             "annotations": [],
             "name_of_x_var": "",
             "unit_of_x_var": "-",
@@ -382,43 +404,8 @@ class PlottableGraph(APlottable):
         }
         return info
 
-    def scaleAndLabelData(self, info: dict, amp_x: float, amp_y: float) -> dict:
-        """This method, knowing the maximum aplitude of data in the axe,
-        scales the data by a power of 3.n so that the prefux k (kilo), M (mega), etc can be used
-
-        Args:
-            info: The data computed by APlottable.render
-            amp_x: The amplitude of X coordinates
-            amp_y: The amplitude of Y coordinates
-
-        Returns:
-            A dictionary with:
-
-                * plottable: this instance
-                * plot_method: the callable plot method to use to plot the data
-                * fill: for 3D plots, the fill method
-                * args: the data to be plotted with matplotlib. 2 or 3 elements tuple with numpy arrays
-                * mpl_kwargs: the plotting options useable with matplotlib
-                * peaks: the peaks found in the data
-                * name_of_x_var: name of the X variable
-                * unit_of_x_var: unit of the X variable
-                * name_of_y_var: name of the Y variable
-                * unit_of_y_var: unit of the Y variable
-                * xmin: smallest X value
-                * xmax: largest X value
-                * ymin: smallest Y value
-                * ymax: largest Y value
-                * scaled_args: the scaled data to be plotted with matplotlib. 2 or 3 elements tuple with numpy arrays
-                * scaled_peaks: the peaks found in the data with scaled coordinates
-            The label to use for X axis
-            The label to use for Y axis
-
-        """
-        info["scaled_args"] = info["args"]
-        info["scaled_peaks"] = []
-        info["scaled_annotations"] = []
-        info["x_mult"] = 1.0
-        info["y_mult"] = 1.0
+    def render(self, info: dict, amp_x: float, amp_y: float) -> dict:
+        info = super().render(info, amp_x=amp_x, amp_y=amp_y)
         info["x_label"] = ""
         info["y_label"] = ""
 
@@ -498,14 +485,14 @@ class PlottableDSPHistogram(PlottableDSPRectilinearLine):
         AxeProjection.LOGY,
     ]
 
-    def render(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
-        info = super().render(axe)
+    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+        info = super().preprocess(axe)
         axe = info["axe"]
         plottable = info["plottable"]
         kwargs = info["mpl_kwargs"]
         kwargs["width"] = plottable.plottable.samplingPeriod
         maxe = axe.mpl_axe
-        info["plot_method"] = maxe.bar
+        info["plot_method"] = "bar"
         return info
 
 
@@ -692,6 +679,125 @@ class PlottableLogger(APlottable):
         return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
 
 
+class PlottableDataframe(APlottable):
+    """Specialisation of `APlottable` for pandas DataFrame
+
+    Args:
+        plottable: a tuple with:
+
+        * pandas.DataFrame instance
+        * name of the X variable
+        * name of the Y variable
+        kwargs: The dictionary of options for plotting (color, width,etc)
+
+    """
+
+    __slots__ = []
+
+    compatible_baxe = [
+        AxeProjection.RECTILINEAR,
+        AxeProjection.LOGX,
+        AxeProjection.LOGY,
+        AxeProjection.LOGXY,
+        AxeProjection.POLAR,
+        AxeProjection.NORTH_POLAR,
+        AxeProjection.PLATECARREE,
+    ]
+
+    def __init__(self, plottable, kwargs: dict) -> None:
+        super().__init__(plottable, kwargs)
+        df, xdesc, ydesc = plottable
+        if xdesc is None:
+            raise AssertionError(f"Cannot use None as data descriptor")
+        if ydesc is None:
+            raise AssertionError(f"Cannot use None as data descriptor")
+
+    def _extractDataFromDesc(
+        self, df: pd.DataFrame, name: str
+    ) -> Tuple["array", str, str]:
+        if isinstance(name, str):
+            dat = df[name]
+            name_of_var = ""
+            unit_of_var = log.findExpressionUnit(name)
+        elif hasattr(name, "__iter__"):
+            dat = name
+            name_of_var = ""
+            unit_of_var = ""
+        else:
+            raise AssertionError(f"Incomatible type {type(name)}")
+
+        if unit_of_var == "":
+            unit_of_var = "-"
+
+        return np.array(dat), name_of_var, unit_of_var
+
+    def _make_mline(
+        self, axe: "blocksim.graphics.BAxe.ABaxe"
+    ) -> Tuple["array", "array", str, str, str, str]:
+        transform = self.kwargs.get("transform", lambda x: x)
+        df, xdesc, ydesc = self.plottable
+
+        xd, name_of_x_var, unit_of_x_var = self._extractDataFromDesc(df, xdesc)
+        yd, name_of_y_var, unit_of_y_var = self._extractDataFromDesc(df, ydesc)
+
+        yd = transform(yd)
+
+        return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
+
+
+class PlottableSerie(APlottable):
+    """Specialisation of `APlottable` for pandas Serie
+
+    Args:
+        plottable: a tuple with:
+
+        * pandas.Serie instance
+        kwargs: The dictionary of options for plotting (color, width,etc)
+
+    """
+
+    __slots__ = []
+
+    compatible_baxe = [
+        AxeProjection.RECTILINEAR,
+        AxeProjection.LOGX,
+        AxeProjection.LOGY,
+        AxeProjection.LOGXY,
+        AxeProjection.POLAR,
+        AxeProjection.NORTH_POLAR,
+        AxeProjection.PLATECARREE,
+    ]
+
+    def _make_mline(
+        self, axe: "blocksim.graphics.BAxe.ABaxe"
+    ) -> Tuple["array", "array", str, str, str, str]:
+        transform = self.kwargs.get("transform", lambda x: x)
+        serie = self.plottable
+
+        rx = parse("{name} ({unit})", serie.index.name)
+        ry = parse("{name} ({unit})", str(serie.name))
+
+        xd = np.array(serie.index)
+        if rx is None:
+            name_of_x_var = serie.index.name
+            unit_of_x_var = "-"
+        else:
+            name_of_x_var = rx["name"]
+            unit_of_x_var = rx["unit"]
+
+        yd = np.array(serie)
+        if ry is None:
+            name_of_y_var = serie.name
+            unit_of_y_var = "-"
+        else:
+            name_of_y_var = ry["name"]
+            unit_of_y_var = ry["unit"]
+
+        yd = transform(yd)
+
+        return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
+
+
 class PlottableTrajectory(APlottable):
     """Specialisation of `APlottable` to handle `blocksim.satellite.Trajectory.Trajectory`
 
@@ -742,7 +848,7 @@ class PlottableTrajectory(APlottable):
 
         return lon, lat, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
 
-    def render(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
         if not axe.projection in self.__class__.compatible_baxe:
             raise AssertionError(
                 f"{axe.projection} is not in {self.__class__.compatible_baxe}"
@@ -755,7 +861,7 @@ class PlottableTrajectory(APlottable):
             info = {
                 "axe": axe,
                 "plottable": self,
-                "plot_method": app.plotTrajectory,
+                "plot_method": "plotTrajectory",
                 "fill": "",
                 "args": (self.plottable,),
                 "mpl_kwargs": kwargs,
@@ -771,11 +877,11 @@ class PlottableTrajectory(APlottable):
                 "ymax": 0.0,  # UNUSED
             }
         elif axe.figure.projection == FigureProjection.MPL:
-            info = super().render(axe)
+            info = super().preprocess(axe)
 
         return info
 
-    def scaleAndLabelData(self, info, amp_x, amp_y) -> dict:
+    def render(self, info, amp_x, amp_y) -> dict:
         info["scaled_args"] = info["args"]
         info["scaled_peaks"] = info["peaks"]
         info["scaled_annotations"] = info["annotations"]
@@ -798,7 +904,7 @@ class APlottableDSPMap(APlottable):
 
     __slots__ = []
 
-    def render(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
         if not axe.projection in self.__class__.compatible_baxe:
             raise AssertionError(
                 f"{axe.projection} is not in {self.__class__.compatible_baxe}"
@@ -814,10 +920,10 @@ class APlottableDSPMap(APlottable):
         annotations = kwargs.pop("annotations", [])
 
         if axe.projection == AxeProjection.DIM3D:
-            plot_mth = maxe.plot_surface
+            plot_mth = "plot_surface"
             kwargs.pop("levels", None)
         else:
-            plot_mth = getattr(maxe, fill)
+            plot_mth = fill
 
         if fill == "pcolormesh":
             kwargs.pop("levels", None)
@@ -859,7 +965,10 @@ class APlottableDSPMap(APlottable):
         }
         return info
 
-    def scaleAndLabelData(self, info, amp_x, amp_y) -> dict:
+    def render(self, info, amp_x, amp_y) -> dict:
+        axe = info["axe"]
+        maxe = axe.mpl_axe
+
         xd, yd, zd = info["args"]
 
         _, x_mult, x_lbl, x_unit = getUnitAbbrev(amp_x, unit=info["unit_of_x_var"])
@@ -889,6 +998,25 @@ class APlottableDSPMap(APlottable):
         info["x_label"] = x_label
         info["y_label"] = y_label
 
+        args = info["scaled_args"]
+        kwargs = info["mpl_kwargs"]
+        plt_mth = info["plot_method"]
+        mth = getattr(maxe, plt_mth)
+        ret = mth(*args, **kwargs)
+
+        for xp, yp, txt in info["scaled_peaks"]:
+            maxe.plot([xp], [yp], marker="o", color="red", linestyle="")
+            maxe.annotate(txt, xy=(xp, yp), fontsize="x-small")
+
+        if info["fill"] == "plot_surface":
+            pass
+        elif info["fill"] == "pcolormesh":
+            maxe.figure.colorbar(ret, ax=maxe)
+        elif info["fill"] == "contourf":
+            maxe.figure.colorbar(ret, ax=maxe)
+        elif info["fill"] == "contour":
+            maxe.clabel(ret, inline=True, fontsize=10)
+
         return info
 
 
@@ -912,7 +1040,7 @@ class PlottableImage(APlottableDSPMap):
     ) -> Tuple["array", "array", str, str, str, str]:
         pass
 
-    def render(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
         maxe = axe.mpl_axe
         maxe.grid(False)
         img = mpimg.imread(str(self.plottable))
@@ -924,7 +1052,7 @@ class PlottableImage(APlottableDSPMap):
         info = {
             "axe": axe,
             "plottable": self,
-            "plot_method": maxe.imshow,
+            "plot_method": "imshow",
             "fill": "",
             "args": (img,),
             "mpl_kwargs": kwargs,
@@ -939,17 +1067,6 @@ class PlottableImage(APlottableDSPMap):
             "ymin": np.nan,
             "ymax": np.nan,
         }
-        return info
-
-    def scaleAndLabelData(self, info: dict, amp_x: float, amp_y: float) -> dict:
-        info["scaled_peaks"] = []
-        info["scaled_args"] = info["args"]
-        info["scaled_annotations"] = []
-        info["x_mult"] = 1
-        info["y_mult"] = 1
-        info["x_label"] = ""
-        info["y_label"] = ""
-
         return info
 
 
@@ -1093,9 +1210,14 @@ class PlottableFactory(object):
         elif isinstance(mline, DSPNorthPolarMap):
             ret = PlottableDSPNorthPolarMap(mline, kwargs)
 
+        elif isinstance(mline, pd.Series):
+            ret = PlottableSerie(mline, kwargs)
+
         elif isinstance(mline, tuple):
             if isinstance(mline[0], Logger):
                 ret = PlottableLogger(mline, kwargs)
+            elif isinstance(mline[0], pd.DataFrame):
+                ret = PlottableDataframe(mline, kwargs)
             else:
                 ret = PlottableTuple(mline, kwargs)
 

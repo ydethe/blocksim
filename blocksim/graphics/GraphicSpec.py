@@ -31,6 +31,8 @@ class AxeProjection(Enum):
     PLATECARREE = 7
     #: For 3D plots
     DIM3D = 8
+    GRAPH = 9
+    PANDA3D = 10
 
 
 class FigureProjection(Enum):
