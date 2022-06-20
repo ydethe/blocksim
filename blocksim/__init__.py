@@ -32,7 +32,7 @@ blocksim comes with some CLI utilities.
 
 To run tests, just run:
 
-    python3 -m pytest -n 8 --html=report.html --self-contained-html --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
+    make -f dev/Makefile_Doc.mk test
 
 To only run the tests related to the unstaged files or the current branch (according to Git):
 
@@ -50,7 +50,7 @@ Once the tests are run, the code coverage is available. To have a html version i
 
 If needed (for example, a new test with its associated baseline image), we might have to regenerate the baseline images. In this case, run:
 
-    python3 -m pytest -n 8 --mpl-generate-path=tests/baseline tests
+    make -f dev/Makefile_Doc.mk baseline
 
 ## Test reports
 
@@ -59,6 +59,10 @@ If needed (for example, a new test with its associated baseline image), we might
 [See test results](../tests/results/fig_comparison.html)
 
 # Class diagram
+
+This diagram can be regenerated thanks to
+
+    make -f dev/Makefile_Doc.mk classes
 
 ![classes](./classes.png "Class diagram")
 

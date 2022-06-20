@@ -39,6 +39,7 @@ doc: $(PYNBPY) $(PYPKG) examples
 	$(Q)echo "Generating documentation"
 	$(Q)test -d $(BLD_DIR)/blocksim || mkdir -p $(BLD_DIR)/blocksim
 	$(Q)pdoc --html --force --config latex_math=True -o $(BLD_DIR) blocksim examples
+	$(Q)echo "Documentation written in $(BLD_DIR)"
 
 baseline:
 	$(Q)echo "Generating baseline images"
@@ -49,6 +50,7 @@ classes:
 	$(Q)test -d $(BLD_DIR)/blocksim || mkdir -p $(BLD_DIR)/blocksim
 	$(Q)pyreverse -s0 blocksim -k --colorized -p blocksim -m no --ignore=exceptions.py,LogFormatter.py,CSVLogger.py,PickleLogger.py,XlsLogger.py -d build/htmldoc # In pylint package
 	$(Q)dot -Tpng build/htmldoc/classes_blocksim.dot -o $(BLD_DIR)/blocksim/classes.png
+	$(Q)echo "Class diagram written in $(BLD_DIR)/blocksim/classes.png"
 
 dist/blocksim-$(BS_VER).tar.gz: $(PYPKG)
 	$(Q)echo "Buliding distribution"
