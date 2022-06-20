@@ -881,17 +881,6 @@ class PlottableTrajectory(APlottable):
 
         return info
 
-    def render(self, info, amp_x, amp_y) -> dict:
-        info["scaled_args"] = info["args"]
-        info["scaled_peaks"] = info["peaks"]
-        info["scaled_annotations"] = info["annotations"]
-        info["x_mult"] = 1.0
-        info["y_mult"] = 1.0
-        info["x_label"] = 1.0
-        info["y_label"] = 1.0
-
-        return info
-
 
 class APlottableDSPMap(APlottable):
     """Specialisation of `APlottable` for `blocksim.dsp.DSPMap.ADSPMap`
