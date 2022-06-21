@@ -492,7 +492,7 @@ class GNSSReceiver(AComputer):
         realpos = self.__itrf_pv
 
         sp = sv = 0
-        if np.max(np.abs(measurements)) < 1 or not self.algo:
+        if np.max(np.abs(measurements)) < 1 or not self.algo or self.algo == "no":
             pos = np.zeros(6)
             dp = 0
             dv = 0
