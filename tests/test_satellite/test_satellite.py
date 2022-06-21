@@ -85,7 +85,7 @@ class TestSatellite(TestBase):
         self.assertAlmostEqual(err_v, 0, delta=1e-5)
 
     def test_geosynchronous(self):
-        pth = Path(__file__).parent / "geo_sat.tle"
+        pth = Path(__file__).parent.parent / "TLE/geo_sat.tle"
         sat = SGP4Satellite.fromTLE(tle_file=str(pth))
         pv_sat = sat.getGeocentricITRFPositionAt(0)
         pv_ue = np.array([Req, 0, 0, 0, 0, 0])
@@ -94,7 +94,7 @@ class TestSatellite(TestBase):
 
     def test_sgp4(self):
         ts = load.timescale()
-        pth = Path(__file__).parent / "iss.tle"
+        pth = Path(__file__).parent.parent / "TLE/iss.tle"
         satellite = load.tle_file(str(pth))[0]
         t = ts.utc(2022, 2, 5, 13, 0, 0)
         geocentric = satellite.at(t)
@@ -120,7 +120,7 @@ class TestSatellite(TestBase):
             title="", spec=gs[0, 0], projection=AxeProjection.PLATECARREE
         )
 
-        tle_pth = Path(__file__).parent / "gs1_gs2.tle"
+        tle_pth = Path(__file__).parent.parent / "TLE/gs1_gs2.tle"
         # 2021/04/15 12:00:00.0
         t0 = datetime(
             year=2022, month=2, day=3, hour=12, minute=0, second=0, tzinfo=timezone.utc
@@ -210,7 +210,7 @@ class TestSatellite(TestBase):
         )
 
     def test_iss(self):
-        pth = Path(__file__).parent / "iss.tle"
+        pth = Path(__file__).parent.parent / "TLE/iss.tle"
         t0 = datetime.strptime("Feb 5 2022  01:00AM", "%b %d %Y %I:%M%p")
         t0 = t0.replace(tzinfo=timezone.utc)
         satellite = SGP4Satellite.fromTLE(tsync=t0, tle_file=str(pth))
@@ -243,7 +243,7 @@ class TestSatellite(TestBase):
     def test_ground_track(self):
         pt = (-74.0542275 * pi / 180, 40.7004153 * pi / 180)
 
-        pth = Path(__file__).parent / "iss.tle"
+        pth = Path(__file__).parent.parent / "TLE/iss.tle"
         t0 = datetime.strptime("Feb 5 2022  01:00AM", "%b %d %Y %I:%M%p")
         t0 = t0.replace(tzinfo=timezone.utc)
         iss = SGP4Satellite.fromTLE(tsync=t0, tle_file=str(pth))

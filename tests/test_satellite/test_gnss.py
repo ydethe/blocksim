@@ -27,7 +27,7 @@ class TestGNSS(TestBase):
         tsync = datetime.strptime(sts, fmt)
         tsync = tsync.replace(tzinfo=utc)
 
-        pth = Path(__file__).parent / "galileo.tle"
+        pth = Path(__file__).parent.parent / "TLE/galileo.tle"
         satellites = createSatellites(str(pth), tsync)
         nsat = len(satellites)
 
