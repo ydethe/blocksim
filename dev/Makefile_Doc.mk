@@ -43,7 +43,7 @@ doc: $(PYNBPY) $(PYPKG) examples
 
 baseline:
 	$(Q)echo "Generating baseline images"
-	$(Q)rm tests/baseline/* && python3 -m pytest -n 8 --mpl-generate-path=tests/baseline tests
+	$(Q)rm tests/baseline/test_*.png && python3 -m pytest -n 8 --mpl-generate-path=tests/baseline tests
 
 classes:
 	$(Q)echo "Generating class diagram"

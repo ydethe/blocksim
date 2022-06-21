@@ -3,6 +3,12 @@ from enum import Enum
 from dataclasses import dataclass
 
 
+@dataclass(init=True)
+class Annotation:
+    coord: tuple
+    text: str
+
+
 class DSPLineType(Enum):
     RECTILINEAR = 0
     HISTOGRAM = 1
@@ -40,12 +46,6 @@ class FigureProjection(Enum):
     MPL = 0
     #: For panda3d 3d plots
     EARTH3D = 1
-
-
-@dataclass(init=True)
-class Annotation:
-    coord: tuple
-    text: str
 
 
 class AxeSpec(object):

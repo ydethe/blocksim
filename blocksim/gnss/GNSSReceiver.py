@@ -10,9 +10,9 @@ from scipy.optimize import minimize, Bounds
 from ..core.Node import AComputer
 
 from .. import logger
-from ..utils import build_local_matrix
 from ..utils import geodetic_to_itrf
 from .utils import computeDOP
+from ..constants import Req
 
 
 class GNSSReceiver(AComputer):
@@ -358,16 +358,27 @@ class GNSSReceiver(AComputer):
 
         # On initialise avec la position au nadir du premier satellite visible (ITRF)
         sp0 = np.zeros(3)
+        nvis = 0
         for k in range(nsat):
             spos = self.getSatellitePositionFromEphem(ephem, k)
             if np.isnan(spos[0]):
                 continue
-            sp0 += spos / nsat
+            sp0 += spos
+            nvis += 1
+        if nvis == 0:
+            sol = np.empty(6)
+            sol[:] = np.nan
+            logger.warning(f"No SV visible")
+            return sol, np.nan
+
         d0 = lin.norm(sp0)
         if d0 < 1:
-            pos0 = np.zeros(3)
+            sol = np.zeros(6)
+            sol[0] = Req
+            logger.warning(f"Null values")
+            return sol, 0.0
         else:
-            pos0 = sp0 / d0 * 6378137
+            pos0 = sp0 / d0 * Req
         X0 = np.hstack((pos0, 0))
 
         mult = np.array([10000000] * 3 + [1000])
@@ -444,9 +455,12 @@ class GNSSReceiver(AComputer):
         return np.hstack((pos, np.zeros(3))), dp
 
     def resetCallback(self, t0: float):
-        super().resetCallback(t0)
         x, y, z = geodetic_to_itrf(lon=self.lon, lat=self.lat, h=self.alt)
         self.__itrf_pv = np.array([x, y, z, 0.0, 0.0, 0.0])
+        self.setInitialStateForOutput(
+            initial_state=self.__itrf_pv, output_name="realpos"
+        )
+        super().resetCallback(t0)
 
     def getAbsoluteTime(self, t: float) -> datetime:
         """Converts a simulation time into absolute time

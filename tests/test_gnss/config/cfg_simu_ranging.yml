@@ -1,0 +1,25 @@
+setup:
+  tsync: 2021/04/15 09:29:54.996640
+  logfile: tests/test_gnss/logs/simu_ranging.pkl
+satellites:
+  TLE:
+  # - tests/TLE/beidou_tle.txt
+  - tests/TLE/galileo_tle.txt
+  # - tests/TLE/globalstar_tle.txt
+  # - tests/TLE/glonass_tle.txt
+  # - tests/TLE/gps_tle.txt
+  # - tests/TLE/iridium_next_tle.txt
+  # - tests/TLE/iridium_tle.txt
+  # - tests/TLE/orbcomm_tle.txt
+  # - tests/TLE/starlink_tle.txt
+receiver:
+  lon: 1.4415632156260192
+  lat: 43.60467117912294
+  alt: 143
+  algo: ranging
+tracker:
+  dp: 300
+  dv: 50
+  elev_mask: 5
+  uere: 0
+  ueve: 0

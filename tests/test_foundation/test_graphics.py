@@ -151,7 +151,7 @@ class TestGraphics(TestBase):
 
         axe.plot(
             ({"data": t, "unit": "s", "name": "Time"}, {"data": data2, "name": "sin"}),
-            color="red",
+            # color="red",
             twinx=True,
         )
 
@@ -166,7 +166,7 @@ if __name__ == "__main__":
     # a.test_histogram()
     # a.test_cdf()
     # a.test_figure_from_spec()
-    # a.ntest_twinx()
-    a.test_plot_logger()
+    a.ntest_twinx()
+    # a.test_plot_logger()
 
     showFigures()

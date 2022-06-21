@@ -1,0 +1,31 @@
+setup:
+  tsync: 2021/04/15 09:29:54.996640
+  logfile: tests/test_gnss/logs/mtcl_doppler.pkl
+satellites:
+  TLE:
+  # - tests/TLE/beidou_tle.txt
+  - tests/TLE/galileo_tle.txt
+  # - tests/TLE/globalstar_tle.txt
+  # - tests/TLE/glonass_tle.txt
+  # - tests/TLE/gps_tle.txt
+  # - tests/TLE/iridium_next_tle.txt
+  # - tests/TLE/iridium_tle.txt
+  # - tests/TLE/orbcomm_tle.txt
+  # - tests/TLE/starlink_tle.txt
+receiver:
+  lon: 1.4415632156260192
+  lat: 43.60467117912294
+  alt: 143
+  algo: doppler
+tracker:
+  dp: 300
+  dv: 50
+  elev_mask: 5
+  # Source :
+  #   Lee, Yang-Won & Suh, Yong-Cheol & Shibasaki, Ryosuke. (2008)
+  #   A simulation system for GNSS multipath mitigation using spatial statistical methods
+  #   Computers & Geosciences. 34. 1597-1609. 10.1016/j.cageo.2008.01.004
+  uere: 2 # https://en.wikipedia.org/wiki/Error_analysis_for_the_Global_Positioning_System#Overview
+  ueve: 0.01
+mtcl:
+  ns: 20

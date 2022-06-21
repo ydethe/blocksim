@@ -20,7 +20,7 @@ from ..dsp.DSPLine import (
 from ..dsp.DSPFilter import DSPBodeDiagram
 from ..loggers.Logger import Logger
 from ..dsp.DSPMap import DSPRectilinearMap, DSPPolarMap, DSPNorthPolarMap
-from .GraphicSpec import AxeProjection, FigureProjection, Annotation
+from .GraphicSpec import AxeProjection, FigureProjection
 from ..satellite.Trajectory import Trajectory, Cube
 from . import getUnitAbbrev
 
@@ -48,12 +48,14 @@ class APlottable(metaclass=ABCMeta):
 
     """
 
-    __slots__ = ["plottable", "kwargs"]
+    __slots__ = ["plottable", "kwargs", "twinx", "twiny"]
 
     compatible_baxe = []
 
     def __init__(self, plottable, kwargs: dict) -> None:
         self.plottable = plottable
+        self.twinx = kwargs.pop("twinx", None)
+        self.twiny = kwargs.pop("twiny", None)
         self.kwargs = kwargs
 
     @abstractmethod
@@ -82,7 +84,6 @@ class APlottable(metaclass=ABCMeta):
         Returns:
             A dictionary with:
 
-            * plottable: this instance
             * plot_method: the callable plot method to use to plot the data
             * fill: for 3D plots, the fill method
             * args: the data to be plotted with matplotlib. 2 or 3 elements tuple with numpy arrays
@@ -135,7 +136,7 @@ class APlottable(metaclass=ABCMeta):
             iok = np.intersect1d(np.where(xd <= xmax)[0], iok)
 
         info = {
-            "axe": axe,
+            # "axe": axe,
             "plottable": self,
             "plot_method": "plot",
             "fill": fill,
@@ -154,11 +155,20 @@ class APlottable(metaclass=ABCMeta):
         }
         return info
 
-    def render(self, info: dict, amp_x: float, amp_y: float) -> dict:
+    def render(
+        self,
+        axe: "blocksim.graphics.BAxe.ABAxe",
+        maxe: "Axes",
+        info: dict,
+        amp_x: float,
+        amp_y: float,
+    ) -> dict:
         """This method, knowing the maximum aplitude of data in the axe,
         scales the data by a power of 3.n so that the prefux k (kilo), M (mega), etc can be used
 
         Args:
+            axe: Axe  defining the plot region
+            maxe: Matplotlib instance of axe
             info: The data computed by APlottable.render
             amp_x: The amplitude of X coordinates
             amp_y: The amplitude of Y coordinates
@@ -187,9 +197,7 @@ class APlottable(metaclass=ABCMeta):
             The label to use for Y axis
 
         """
-        axe = info["axe"]
         args = info["args"]
-        maxe = axe.mpl_axe
 
         x_mult = 1
         x_lbl = ""
@@ -214,37 +222,32 @@ class APlottable(metaclass=ABCMeta):
         x_label = "%s (%s%s)" % (info["name_of_x_var"], x_lbl, x_unit)
         y_label = "%s (%s%s)" % (info["name_of_y_var"], y_lbl, y_unit)
 
-        info["scaled_args"] = scaled_args
-
-        scaled_peaks = []
         for p in info["peaks"]:
             (xp,) = p.coord
-            yp = p.value
-            txt = "(%.1f %s%s,%.1f)" % (xp / x_mult, x_lbl, x_unit, p.value / y_mult)
-            scaled_peaks.append((xp / x_mult, yp, txt))
+            xp /= x_mult
+            yp = p.value / y_mult
+            txt = "(%.1f %s%s,%.1f)" % (xp, x_lbl, x_unit, yp)
+            maxe.plot([xp], [yp], marker="o", color="red", linestyle="")
+            maxe.annotate(txt, xy=(xp, yp), fontsize="x-small")
 
-        scaled_annotations = []
+        # scaled_annotations = []
         for a in info["annotations"]:
             (xa, ya) = a.coord
-            an = Annotation(coord=(xa / x_mult, ya / y_mult), text=a.text)
-            scaled_annotations.append(an)
+            maxe.annotate(a.text, xy=(xa / x_mult, ya / y_mult), fontsize="x-small")
 
-        info["scaled_peaks"] = scaled_peaks
-        info["scaled_annotations"] = scaled_annotations
         info["x_mult"] = x_mult
         info["y_mult"] = y_mult
         info["x_label"] = x_label
         info["y_label"] = y_label
 
-        args = info["scaled_args"]
         kwargs = info["mpl_kwargs"]
         plt_mth = info["plot_method"]
         mth = getattr(maxe, plt_mth)
-        ret = mth(*args, **kwargs)
-
-        for xp, yp, txt in info["scaled_peaks"]:
-            maxe.plot([xp], [yp], marker="o", color="red", linestyle="")
-            maxe.annotate(txt, xy=(xp, yp), fontsize="x-small")
+        ret = mth(*scaled_args, **kwargs)
+        if isinstance(ret, list):
+            info["mline"] = ret[0]
+        else:
+            info["mline"] = ret
 
         if info["fill"] == "plot_surface":
             pass
@@ -292,7 +295,7 @@ class PlottableCube(APlottable):
         mpl_kwargs["size"] = self.plottable.size
         _ = mpl_kwargs.pop("annotations", None)
         info = {
-            "axe": axe,
+            # "axe": axe,
             "plottable": self,
             "plot_method": "plotCube",
             "fill": "",
@@ -312,7 +315,14 @@ class PlottableCube(APlottable):
 
         return info
 
-    def render(self, info: dict, amp_x: float, amp_y: float) -> dict:
+    def render(
+        self,
+        axe: "blocksim.graphics.BAxe.ABAxe",
+        maxe: "Axes",
+        info: dict,
+        amp_x: float,
+        amp_y: float,
+    ) -> dict:
         info["scaled_args"] = info["args"]
         info["scaled_peaks"] = info["peaks"]
         info["scaled_annotations"] = info["annotations"]
@@ -320,6 +330,7 @@ class PlottableCube(APlottable):
         info["y_mult"] = 1.0
         info["x_label"] = 1.0
         info["y_label"] = 1.0
+        info["mline"] = None
 
         return info
 
@@ -339,10 +350,6 @@ class PlottableGraph(APlottable):
     __slots__ = []
 
     compatible_baxe = [AxeProjection.GRAPH]
-
-    def __init__(self, plottable, kwargs: dict) -> None:
-        self.plottable = plottable
-        self.kwargs = kwargs
 
     def _make_mline(self, axe: "blocksim.graphics.BAxe.ABaxe"):
         pass
@@ -377,15 +384,13 @@ class PlottableGraph(APlottable):
                 f"{axe.projection} is not in {self.__class__.compatible_baxe}"
             )
 
-        maxe = axe.mpl_axe
-
         kwds = self.kwargs.copy()
         if not "node_size" in kwds.keys():
             kwds["node_size"] = 1000
         _ = kwds.pop("annotations", None)
 
         info = {
-            "axe": axe,
+            # "axe": axe,
             "plottable": self,
             "plot_method": "plotGraph",
             "fill": "",
@@ -404,8 +409,15 @@ class PlottableGraph(APlottable):
         }
         return info
 
-    def render(self, info: dict, amp_x: float, amp_y: float) -> dict:
-        info = super().render(info, amp_x=amp_x, amp_y=amp_y)
+    def render(
+        self,
+        axe: "blocksim.graphics.BAxe.ABAxe",
+        maxe: "Axes",
+        info: dict,
+        amp_x: float,
+        amp_y: float,
+    ) -> dict:
+        info = super().render(axe, maxe, info, amp_x=amp_x, amp_y=amp_y)
         info["x_label"] = ""
         info["y_label"] = ""
 
@@ -487,11 +499,9 @@ class PlottableDSPHistogram(PlottableDSPRectilinearLine):
 
     def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
         info = super().preprocess(axe)
-        axe = info["axe"]
         plottable = info["plottable"]
         kwargs = info["mpl_kwargs"]
         kwargs["width"] = plottable.plottable.samplingPeriod
-        maxe = axe.mpl_axe
         info["plot_method"] = "bar"
         return info
 
@@ -859,7 +869,7 @@ class PlottableTrajectory(APlottable):
             kwargs = self.kwargs.copy()
             _ = kwargs.pop("transform", None)
             info = {
-                "axe": axe,
+                # "axe": axe,
                 "plottable": self,
                 "plot_method": "plotTrajectory",
                 "fill": "",
@@ -900,7 +910,6 @@ class APlottableDSPMap(APlottable):
             )
 
         mline = self.plottable
-        maxe = axe.mpl_axe
 
         kwargs = self.kwargs.copy()
         fill = kwargs.pop("fill", "pcolormesh")
@@ -935,7 +944,7 @@ class APlottableDSPMap(APlottable):
         lpeaks = mline.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
 
         info = {
-            "axe": axe,
+            # "axe": axe,
             "plottable": self,
             "plot_method": plot_mth,
             "fill": fill,
@@ -954,48 +963,57 @@ class APlottableDSPMap(APlottable):
         }
         return info
 
-    def render(self, info, amp_x, amp_y) -> dict:
-        axe = info["axe"]
-        maxe = axe.mpl_axe
+    def render(
+        self,
+        axe: "blocksim.graphics.BAxe.ABAxe",
+        maxe: "Axes",
+        info: dict,
+        amp_x: float,
+        amp_y: float,
+    ) -> dict:
+        args = info["args"]
 
-        xd, yd, zd = info["args"]
+        x_mult = 1
+        x_lbl = ""
+        x_unit = info["unit_of_x_var"]
+        y_mult = 1
+        y_lbl = ""
+        y_unit = info["unit_of_y_var"]
+        if len(args) == 1:
+            scaled_args = args
+        elif len(args) == 3:
+            xd, yd, zd = args
 
-        _, x_mult, x_lbl, x_unit = getUnitAbbrev(amp_x, unit=info["unit_of_x_var"])
-        _, y_mult, y_lbl, y_unit = getUnitAbbrev(amp_y, unit=info["unit_of_y_var"])
+            _, x_mult, x_lbl, x_unit = getUnitAbbrev(amp_x, unit=info["unit_of_x_var"])
+            _, y_mult, y_lbl, y_unit = getUnitAbbrev(amp_y, unit=info["unit_of_y_var"])
 
-        args = (xd / x_mult, yd / y_mult, zd)
+            scaled_args = (xd / x_mult, yd / y_mult, zd)
+
         x_label = "%s (%s%s)" % (info["name_of_x_var"], x_lbl, x_unit)
         y_label = "%s (%s%s)" % (info["name_of_y_var"], y_lbl, y_unit)
 
-        scaled_peaks = []
         for p in info["peaks"]:
             xp, yp = p.coord
-            txt = "(%.1f,%.1f,%.1f)" % (xp / x_mult, yp / y_mult, p.value)
-            scaled_peaks.append((xp / x_mult, yp / y_mult, txt))
+            xp /= x_mult
+            yp /= y_mult
+            txt = "(%.1f,%.1f,%.1f)" % (xp, yp, p.value)
+            maxe.plot([xp], [yp], marker="o", color="red", linestyle="")
+            maxe.annotate(txt, xy=(xp, yp), fontsize="x-small")
 
-        scaled_annotations = []
         for a in info["annotations"]:
-            xa, ya = a.coord
-            an = Annotation(coord=(xa / x_mult, ya / y_mult), text=a.text)
-            scaled_annotations.append(an)
+            (xa, ya) = a.coord
+            maxe.annotate(a.text, xy=(xa / x_mult, ya / y_mult), fontsize="x-small")
 
-        info["scaled_args"] = args
-        info["scaled_peaks"] = scaled_peaks
-        info["scaled_annotations"] = scaled_annotations
         info["x_mult"] = x_mult
         info["y_mult"] = y_mult
         info["x_label"] = x_label
         info["y_label"] = y_label
 
-        args = info["scaled_args"]
         kwargs = info["mpl_kwargs"]
         plt_mth = info["plot_method"]
         mth = getattr(maxe, plt_mth)
-        ret = mth(*args, **kwargs)
-
-        for xp, yp, txt in info["scaled_peaks"]:
-            maxe.plot([xp], [yp], marker="o", color="red", linestyle="")
-            maxe.annotate(txt, xy=(xp, yp), fontsize="x-small")
+        ret = mth(*scaled_args, **kwargs)
+        info["mline"] = ret
 
         if info["fill"] == "plot_surface":
             pass
@@ -1030,8 +1048,6 @@ class PlottableImage(APlottableDSPMap):
         pass
 
     def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
-        maxe = axe.mpl_axe
-        maxe.grid(False)
         img = mpimg.imread(str(self.plottable))
 
         kwargs = self.kwargs.copy()
@@ -1039,7 +1055,7 @@ class PlottableImage(APlottableDSPMap):
         _ = kwargs.pop("annotations", None)
 
         info = {
-            "axe": axe,
+            # "axe": axe,
             "plottable": self,
             "plot_method": "imshow",
             "fill": "",

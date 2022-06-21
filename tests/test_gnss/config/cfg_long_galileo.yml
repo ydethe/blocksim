@@ -1,0 +1,21 @@
+setup:
+  tsync: 2021/04/15 09:29:54.996640
+  logfile: tests/test_gnss/logs/ref_long_galileo.pkl
+  nb_points: 5
+  tend: 2021/04/15 10:29:54.996640
+satellites:
+  TLE:
+  - tests/TLE/galileo_tle.txt
+receiver:
+  lon: 1.4415632156260192
+  lat: 43.60467117912294
+  alt: 143
+  algo: ranging
+  optim: trust-constr
+  # optim: bancroft
+tracker:
+  dp: 300
+  dv: 50
+  elev_mask: 5
+  uere: 2 # https://en.wikipedia.org/wiki/Error_analysis_for_the_Global_Positioning_System#Overview
+  ueve: 0.1

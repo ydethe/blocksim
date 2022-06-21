@@ -18,7 +18,7 @@ class ABFigure(metaclass=ABCMeta):
 
     """
 
-    __slots__ = ["title", "grid_spec", "axe_factories", "mpl_fig"]
+    __slots__ = ["title", "grid_spec", "axe_factories"]
 
     projection = None
 
@@ -102,14 +102,14 @@ class MplFigure(ABFigure):
             return self.mpl_fig
 
         mfig = plt.figure()
-        self.mpl_fig = mfig
         mfig.suptitle(self.title)
 
         gs = self.grid_spec
         mgs = mfig.add_gridspec(gs.nrow, gs.ncol)
 
         for axe in self.axe_factories:
-            axe.render(self, mgs)
+            maxe = axe.createMplAxe(mfig, mgs)
+            axe.render(maxe)
 
         if tight_layout:
             mfig.tight_layout()
@@ -134,25 +134,10 @@ class B3DFigure(ABFigure):
         self.axe_factories.append(baxe)
 
     def render(self, tight_layout: bool = False) -> "Figure":
-        if not self.mpl_fig is None:
-            return self.mpl_fig
-
-        # mfig = B3DPlotter()
-        # mfig.plotEarth()
         mfig = None
-
-        self.mpl_fig = mfig
 
         for axe in self.axe_factories:
             maxe = axe.render(mfig, self.grid_spec)
-
-        # for plottable in axe.plottable_factories:
-        #     info = plottable.render(axe)
-        #     info = plottable.scaleAndLabelData(info, 1, 1)
-
-        #     args = info["scaled_args"]
-        #     kwargs = info["mpl_kwargs"]
-        #     ret = info["plot_method"](*args, **kwargs)
 
         return mfig
 

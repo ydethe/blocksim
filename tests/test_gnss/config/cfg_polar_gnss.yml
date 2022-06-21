@@ -1,0 +1,21 @@
+setup:
+  # http://www.taroz.net/GNSS-Radar.html?lat=43.60467117912294&lon=1.4415632156260192&elemask=5&tint=60&ntimes=24
+  tsync: 2021/05/12 12:00:0.0
+  logfile: tests/test_gnss/logs/cfg_gps.pkl
+  nb_points: 24
+  tend: 2021/05/12 12:10:0.0
+satellites:
+  TLE:
+  - tests/TLE/tle_gps2.txt
+receiver:
+  lon: 1.4415632156260192
+  lat: 43.60467117912294
+  alt: 143
+  algo: ranging
+  optim: trust-constr
+tracker:
+  dp: 300
+  dv: 50
+  elev_mask: 5
+  uere: 2 # https://en.wikipedia.org/wiki/Error_analysis_for_the_Global_Positioning_System#Overview
+  ueve: 0.1

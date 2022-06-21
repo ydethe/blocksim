@@ -241,7 +241,7 @@ class Simulation(object):
                 if noexc:
                     pass
                 else:
-                    logger.error(f"While updating {cname}")
+                    logger.error(f"While updating {cname}: {e}")
                     raise e
 
             for otp in comp.getListOutputs():
