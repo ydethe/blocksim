@@ -69,23 +69,32 @@ class ABaxe(metaclass=ABCMeta):
         display_legend = False
         rendered_plottables = []
 
-        global_xmin = np.nan
-        global_xmax = np.nan
-        global_ymin = np.nan
-        global_ymax = np.nan
+        global_xmin = None
+        global_xmax = None
+        global_ymin = None
+        global_ymax = None
 
         for plottable in self.plottable_factories:
             info = plottable.preprocess(self)
 
             rendered_plottables.append(info)
 
-            if info["xmin"] < global_xmin or np.isnan(global_xmin):
+            if global_xmin is None:
                 global_xmin = info["xmin"]
-            if info["xmax"] > global_xmax or np.isnan(global_xmax):
-                global_xmax = info["xmax"]
-            if info["ymin"] < global_ymin or np.isnan(global_ymin):
+            if global_xmax is None:
+                global_xmax = info["xmin"]
+            if global_ymin is None:
                 global_ymin = info["ymin"]
-            if info["ymax"] > global_ymax or np.isnan(global_ymax):
+            if global_ymax is None:
+                global_ymax = info["ymin"]
+
+            if info["xmin"] < global_xmin:
+                global_xmin = info["xmin"]
+            if info["xmax"] > global_xmax:
+                global_xmax = info["xmax"]
+            if info["ymin"] < global_ymin:
+                global_ymin = info["ymin"]
+            if info["ymax"] > global_ymax:
                 global_ymax = info["ymax"]
 
         amp_x = global_xmax - global_xmin
@@ -300,6 +309,8 @@ class ABaxe(metaclass=ABCMeta):
             kwargs: The plotting options for the object
 
         """
+        if plottable is None:
+            return
         res = PlottableFactory.create(plottable, kwargs=kwargs)
         self.registerPlottable(res)
         return res
@@ -317,6 +328,8 @@ class ABaxe(metaclass=ABCMeta):
             kwargs: The plotting options for the object
 
         """
+        if plottable is None:
+            return
         if not "marker" in kwargs:
             kwargs["marker"] = "+"
         kwargs["linestyle"] = ""

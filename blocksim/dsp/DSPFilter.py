@@ -423,8 +423,8 @@ class BandpassDSPFilter(ADSPFilter):
         name: str,
         f_low: float,
         f_high: float,
-        numtaps: int,
         samplingPeriod: float,
+        numtaps: int = -1,
         win: str = "hamming",
         dtype=np.complex128,
     ):
@@ -432,16 +432,29 @@ class BandpassDSPFilter(ADSPFilter):
 
         self.createParameter(name="f_low", value=f_low)
         self.createParameter(name="f_high", value=f_high)
-        self.createParameter(name="numtaps", value=numtaps)
         self.createParameter(name="win", value=win)
+        if numtaps < 0:
+            nt = self._estimNumTaps()
+        else:
+            nt = numtaps
+        self.createParameter(name="numtaps", value=nt)
+
+    def _estimNumTaps(self, d: float = 10e-2) -> int:
+        nt = int(
+            -2
+            / 3
+            * log10(10 * d**2)
+            * self.samplingPeriod
+            / (self.f_high - self.f_low)
+        )
+        return nt
 
     def generateCoefficients(self) -> NDArray[Any, Any]:
         fs = 1 / self.samplingPeriod
 
         # https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need/31077
         d = 10e-2
-        nt = int(-2 / 3 * log10(10 * d**2) * fs / (self.f_high - self.f_low))
-        if nt > self.numtaps:
+        if self._estimNumTaps(d) > self.numtaps:
             raise ValueError(self.numtaps, nt)
 
         if self.f_low == 0:

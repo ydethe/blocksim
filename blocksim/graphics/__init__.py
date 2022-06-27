@@ -3,7 +3,7 @@ Allows plotting from a `blocksim.loggers.Logger.Logger`, or from `blocksim.dsp.D
 3D plot around Earth are also possible
 
 """
-
+import os
 from typing import Tuple
 
 import numpy as np
@@ -279,12 +279,28 @@ def quickPlot(*args, **kwargs) -> "blocksim.graphics.BFigure.MplFigure":
     return axe
 
 
-def showFigures(tight_layout: bool = False):
+def showFigures(
+    save_fig: bool = False,
+    tight_layout: bool = False,
+    one_by_one: bool = False,
+    show: bool = True,
+    save_dir: str = "",
+):
     from .BFigure import FigureFactory
 
     """Renders and shows all BFigure"""
     factory = FigureFactory()
+    mfig = None
     for f in factory.figures:
-        f.render(tight_layout=tight_layout)
+        mfig = f.render(tight_layout=tight_layout)
+        if save_fig:
+            # PRN_G18,_T0:_2022-06-20_00:00:00.104813+00:00_UTC
+            fic = f.title.replace(" ", "_").replace(",", "").replace(":", "_") + ".png"
+            mfig.savefig(os.path.join(save_dir, fic))
+        if one_by_one and show:
+            plt.show()
 
-    plt.show()
+    if not one_by_one and show:
+        plt.show()
+
+    return mfig

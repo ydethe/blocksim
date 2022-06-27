@@ -101,7 +101,12 @@ class MplFigure(ABFigure):
         if not self.mpl_fig is None:
             return self.mpl_fig
 
-        mfig = plt.figure()
+        mfig = plt.figure(
+            figsize=(10, 6),  # defaults to rc figure.figsize
+            dpi=100,  # defaults to rc figure.dpi
+            facecolor=None,  # defaults to rc figure.facecolor
+            edgecolor=None,  # defaults to rc figure.edgecolor
+        )
         mfig.suptitle(self.title)
 
         gs = self.grid_spec
@@ -174,17 +179,3 @@ class FigureFactory(object, metaclass=Singleton):  # type: ignore
         factory.figures.append(res)
 
         return res
-
-
-def showFigures(tight_layout: bool = False, show: bool = True):
-    """Renders and shows all BFigure"""
-    factory = FigureFactory()
-    mfigs = []
-    for f in factory.figures:
-        mfig = f.render(tight_layout=tight_layout)
-        mfigs.append(mfig)
-
-    if show:
-        plt.show()
-    else:
-        return mfigs

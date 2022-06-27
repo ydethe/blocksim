@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Tuple
 from pathlib import Path
+from datetime import datetime
 
 from parse import parse
 import networkx as nx
@@ -108,7 +109,6 @@ class APlottable(metaclass=ABCMeta):
             name_of_y_var,
             unit_of_y_var,
         ) = self._make_mline(axe)
-
         fill = ""
 
         args = (xd, yd)
@@ -117,6 +117,7 @@ class APlottable(metaclass=ABCMeta):
         nb_peaks = kwargs.pop("find_peaks", 0)
         _ = kwargs.pop("transform", None)
         annotations = kwargs.pop("annotations", [])
+        plt_mth = "plot"
         lpeaks = find1dpeak(
             nb_peaks=nb_peaks,
             xd=xd,
@@ -128,17 +129,31 @@ class APlottable(metaclass=ABCMeta):
         # X bounds shall be determined be examining all shared axes
         xmin, xmax = axe.xbounds
         ns = len(xd)
-        iok = list(range(ns))
+        iok = list(range(ns - 1))
         if not xmin is None:
             iok = np.intersect1d(np.where(xd > xmin)[0], iok)
 
         if not xmax is None:
             iok = np.intersect1d(np.where(xd <= xmax)[0], iok)
 
+        if len(iok) == 0 or np.all(np.isnan(yd[iok])):
+            ymin = np.nan
+            ymax = np.nan
+        else:
+            ymin = np.nanmin(yd[iok])
+            ymax = np.nanmax(yd[iok])
+
+        if not isinstance(xd[0], datetime) and np.all(np.isnan(xd)):
+            xmin = np.nan
+            xmax = np.nan
+        else:
+            xmin = np.nanmin(xd)
+            xmax = np.nanmax(xd)
+
         info = {
             # "axe": axe,
             "plottable": self,
-            "plot_method": "plot",
+            "plot_method": plt_mth,
             "fill": fill,
             "args": args,
             "mpl_kwargs": kwargs,
@@ -148,10 +163,10 @@ class APlottable(metaclass=ABCMeta):
             "unit_of_x_var": unit_of_x_var,
             "name_of_y_var": name_of_y_var,
             "unit_of_y_var": unit_of_y_var,
-            "xmin": np.min(xd),
-            "xmax": np.max(xd),
-            "ymin": np.min(yd[iok]),
-            "ymax": np.max(yd[iok]),
+            "xmin": xmin,
+            "xmax": xmax,
+            "ymin": ymin,
+            "ymax": ymax,
         }
         return info
 
@@ -213,10 +228,18 @@ class APlottable(metaclass=ABCMeta):
             scaled_args = args
         elif axe.projection == AxeProjection.GRAPH:
             scaled_args = args
+        elif isinstance(info["args"][0][0], datetime):
+            scaled_args = args
         else:
             (xd, yd) = info["args"]
-            _, x_mult, x_lbl, x_unit = getUnitAbbrev(amp_x, unit=info["unit_of_x_var"])
-            _, y_mult, y_lbl, y_unit = getUnitAbbrev(amp_y, unit=info["unit_of_y_var"])
+            if not np.isnan(amp_x):
+                _, x_mult, x_lbl, x_unit = getUnitAbbrev(
+                    amp_x, unit=info["unit_of_x_var"]
+                )
+            if not np.isnan(amp_y):
+                _, y_mult, y_lbl, y_unit = getUnitAbbrev(
+                    amp_y, unit=info["unit_of_y_var"]
+                )
             scaled_args = (xd / x_mult, yd / y_mult)
 
         x_label = "%s (%s%s)" % (info["name_of_x_var"], x_lbl, x_unit)
@@ -243,6 +266,15 @@ class APlottable(metaclass=ABCMeta):
         kwargs = info["mpl_kwargs"]
         plt_mth = info["plot_method"]
         mth = getattr(maxe, plt_mth)
+
+        # ax = axs[2]
+        # ax.set_title('Manual DateFormatter', loc='left', y=0.85, x=0.02, fontsize='medium')
+        # # Text in the x axis will be displayed in 'YYYY-mm' format.
+        # ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%b'))
+        # # Rotates and right-aligns the x labels so they don't crowd each other.
+        # for label in ax.get_xticklabels(which='major'):
+        #     label.set(rotation=30, horizontalalignment='right')
+
         ret = mth(*scaled_args, **kwargs)
         if isinstance(ret, list):
             info["mline"] = ret[0]
@@ -943,6 +975,20 @@ class APlottableDSPMap(APlottable):
 
         lpeaks = mline.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
 
+        if np.all(np.isnan(Y)):
+            ymin = np.nan
+            ymax = np.nan
+        else:
+            ymin = np.nanmin(Y)
+            ymax = np.nanmax(Y)
+
+        if np.all(np.isnan(X)):
+            xmin = np.nan
+            xmax = np.nan
+        else:
+            xmin = np.nanmin(X)
+            xmax = np.nanmax(X)
+
         info = {
             # "axe": axe,
             "plottable": self,
@@ -956,10 +1002,10 @@ class APlottableDSPMap(APlottable):
             "unit_of_x_var": unit_of_x_var,
             "name_of_y_var": name_of_y_var,
             "unit_of_y_var": unit_of_y_var,
-            "xmin": np.min(X),
-            "xmax": np.max(X),
-            "ymin": np.min(Y),
-            "ymax": np.max(Y),
+            "xmin": xmin,
+            "xmax": xmax,
+            "ymin": ymin,
+            "ymax": ymax,
         }
         return info
 
