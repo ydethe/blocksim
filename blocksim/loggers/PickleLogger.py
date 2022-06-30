@@ -1,5 +1,7 @@
 from typing import Any
 import os
+import json
+import pickle
 
 from nptyping import NDArray
 import pluggy
@@ -35,11 +37,12 @@ class Logger(object, metaclass=Singleton):
             raise FileNotFoundError(uri)
 
         log.reset()
-        data = pd.read_pickle(uri)
-        for name in data.columns:
-            unit = ""
-            typ = data[name].dtype
-            log.createEmptyValue(name=name, unit=unit, description="", dtype=typ)
+        with open(uri, "rb") as f:
+            pdesc, data = pickle.load(f)
+
+        for name, unit, desc, styp in pdesc:
+            typ = log.typ_map[styp.encode("utf-8")]
+            log.createEmptyValue(name=name, unit=unit, description=desc, dtype=typ)
         log.setRawData(data)
         return True
 
@@ -54,9 +57,31 @@ class Logger(object, metaclass=Singleton):
         if not self.test_suitable(uri):
             return -1
 
-        data = log.getRawData()
-        df = pd.DataFrame(data)
-        df.to_pickle(uri)
+        pdesc = []
+        for p in log.getParameters():
+            styp = p.getTypeDB()
+
+            if styp == "complex":
+                typ = "C"
+            elif styp == "integer":
+                typ = "I"
+            elif styp == "float":
+                typ = "F"
+            elif styp == "boolean":
+                typ = "B"
+            pdesc.append(
+                (
+                    p.name,
+                    p.unit,
+                    p.description,
+                    typ,
+                )
+            )
+
+        pkl_data = (pdesc, log.getRawData())
+        with open(uri, "wb") as f:
+            pickle.dump(pkl_data, f)
+
         return 0
 
     @hookimpl

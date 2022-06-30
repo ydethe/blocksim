@@ -58,6 +58,13 @@ class Logger(object):
         "__start_time",
     ]
 
+    typ_map = {
+        b"I": np.int64,
+        b"F": np.float64,
+        b"C": np.complex128,
+        b"B": bool,
+    }
+
     def __init__(self):
         self.reset()
 
@@ -86,15 +93,23 @@ class Logger(object):
         self.__params[name] = param
         self.__data[name] = None
 
-    def setRawData(self, data: dict):
+    def setRawData(self, data: dict, check_params: bool = False):
         """Sets the data for the whole logger.
         The dictionary data shall have one key per variable to create,
         and the associated value shall be an array of values.
 
         Args:
             data: Data to use
+            check_params! True to check if the number of keys in data matches the declared Parameter
 
         """
+        if check_params:
+            nd = len(data.keys())
+            np = len(self.getParameters())
+            if nd != np:
+                raise AssertionError(
+                    f"Mismatch : {nd} keys in data, {np} parameters declared"
+                )
         self.__data = data
 
     def getRawData(self) -> dict:
@@ -220,15 +235,8 @@ class Logger(object):
         if not name in self.__params.keys():
             if iskeyword(name) or name == "keep_up":
                 raise NameIsPythonKeyword(name)
-
-            typ_map = {
-                b"I": np.int64,
-                b"F": np.float64,
-                b"C": np.complex128,
-                b"B": bool,
-            }
             typ, pck_f, unpck_f, sze = self._findType(val)
-            dtyp = typ_map[typ]
+            dtyp = Logger.typ_map[typ]
 
             param = Parameter(name=name, unit=unit, dtype=dtyp, description="")
             self.__params[name] = param
@@ -569,7 +577,7 @@ class Logger(object):
             A integer that can be any information. **It needs to be >= 0 in case of success**
 
         Raises:
-            SystemError if no handler has been identified or if too many handlers were identified
+            SystemError if no handler was identified or if too many handlers were identified
 
         """
         self.__uri = str(uri)

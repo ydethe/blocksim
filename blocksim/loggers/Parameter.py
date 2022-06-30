@@ -2,9 +2,10 @@ from dataclasses import dataclass, field
 from typing import List, Any
 
 import numpy as np
+from sqlalchemy import desc
 
 
-@dataclass(init=True)
+@dataclass
 class Parameter:
     """Represents a parameter of the simulation"""
 
@@ -13,6 +14,22 @@ class Parameter:
     description: Any
     dtype: Any
     data: List[complex] = field(default_factory=list)
+
+    def __init__(
+        self,
+        name: str,
+        unit: str,
+        description: Any,
+        dtype: Any,
+        data: List[complex] = [],
+    ):
+        if "." in name:
+            raise NameError(f"No '.' allowed in parameter name: {name}")
+        self.name = name
+        self.unit = unit
+        self.description = description
+        self.dtype = dtype
+        self.data = data
 
     def __repr__(self):
         if self.description == "":

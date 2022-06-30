@@ -50,6 +50,42 @@ class TestLogger(TestBase):
         self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
         self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
 
+    def test_save_load_parquet(self):
+        log = Logger()
+
+        pth = Path(__file__).parent / "test_parquet.parq"
+
+        dt = 0.01
+        f = 11
+        ns = 1000
+
+        for i in range(ns):
+            log.log(name="x", val=exp(1j * i * dt * f * 2 * np.pi + 1), unit="")
+            log.log(name="t", val=i * dt, unit="t")
+            log.log(name="_", val=0, unit="")  # Variable named '_' is not recorded
+
+        log.reset()
+        for i in range(ns):
+            log.log(name="x", val=exp(1j * i * dt * f * 2 * np.pi + 1), unit="")
+            log.log(name="t", val=i * dt, unit="s")
+
+        log.export(pth)
+        del log
+
+        log2 = Logger()
+        log2.loadLogFile(str(pth))
+
+        vars = log2.getParametersName()
+        self.assertIn("t", vars)
+        self.assertIn("x", vars)
+
+        tps = np.arange(ns) * dt
+        x = exp(1j * tps * f * 2 * np.pi + 1)
+        err_t = np.max(np.abs(tps - log2.getRawValue("t")))
+        err_x = np.max(np.abs(x - log2.getRawValue("x")))
+        self.assertAlmostEqual(err_t, 0.0, delta=1.0e-2)
+        self.assertAlmostEqual(err_x, 0.0, delta=1.0e-2)
+
     def test_save_load_csv(self):
         log = Logger()
 
@@ -140,15 +176,18 @@ class TestLogger(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
-    exit(0)
+    # unittest.main()
+    # exit(0)
 
     a = TestLogger()
-    a.setUp()
-    a.test_save_load_csv()
+    # a.setUp()
+    # a.test_save_load_parquet()
 
-    a.setUp()
-    a.test_save_load_xls()
+    # a.setUp()
+    # a.test_save_load_csv()
+
+    # a.setUp()
+    # a.test_save_load_xls()
 
     a.setUp()
     a.test_save_load_pickle()

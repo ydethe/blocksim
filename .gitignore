@@ -4,6 +4,7 @@ examples/example_*.py
 blocksim/classes.png
 tests/quadri.csv
 
+*.parq
 *.pkl
 .ipynb/
 *.bak

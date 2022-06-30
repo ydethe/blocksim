@@ -44,3 +44,4 @@ markupsafe==2.0.1
 networkx==2.8
 munch==2.5.0
 pyyaml==6.0
+pyarrow==8.0.0
