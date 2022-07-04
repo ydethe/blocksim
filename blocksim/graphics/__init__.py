@@ -81,6 +81,8 @@ def getUnitAbbrev(
         lbl = ""
     else:
         if force_mult is None:
+            if isinstance(samp, np.timedelta64):
+                samp = np.timedelta64(samp, "s").astype(float)
             if samp == 0:
                 samp = 1
             xm = np.abs(samp)

@@ -19,7 +19,7 @@ from TestBase import TestBase
 
 
 class TestGNSSSimPlot(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=8, savefig_kwargs={"dpi": 150})
     def test_polar(self, fic_cfg="tests/test_gnss/config/cfg_polar_gnss.yml"):
         # http://www.taroz.net/GNSS-Radar.html#
         cfg = load_config(fic_cfg)
@@ -36,7 +36,7 @@ class TestGNSSSimPlot(TestBase):
 
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_elev_hist(self):
         log = Logger()
         # Simulate 2 sat at 5 and 40 deg elevation

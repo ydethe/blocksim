@@ -1,9 +1,10 @@
 import sys
 from pathlib import Path
+from datetime import datetime, timedelta
 import unittest
 
 import numpy as np
-from numpy import pi, sqrt, exp
+from numpy import pi, sqrt, exp, cos
 from scipy.special import erf
 import pytest
 
@@ -37,6 +38,31 @@ class TestGraphics(TestBase):
         for (t, x) in zip(self.tps_ref, self.x_ref):
             self.log.log(name="t", val=t, unit="s")
             self.log.log(name="x", val=x, unit="")
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_plot_datetime(self):
+        fig = FigureFactory.create(title="Essai datetime")
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+
+        t0 = datetime(year=2022, month=4, day=20, hour=13, minute=46)
+        t = [t0 + timedelta(minutes=x) for x in range(20)]
+        x = cos(np.arange(20))
+        axe.plot((t, x))
+
+        return fig.render()
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_plot_timedelta(self):
+        fig = FigureFactory.create(title="Essai timedelta")
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+
+        t = [timedelta(minutes=x) for x in range(20)]
+        x = cos(np.arange(20))
+        axe.plot((t, x))
+
+        return fig.render()
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_plot_logger(self):
@@ -166,7 +192,7 @@ if __name__ == "__main__":
     # a.test_histogram()
     # a.test_cdf()
     # a.test_figure_from_spec()
-    a.ntest_twinx()
+    a.test_plot_timedelta()
     # a.test_plot_logger()
 
     showFigures()

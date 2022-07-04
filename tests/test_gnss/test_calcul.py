@@ -101,7 +101,7 @@ class TestGNSSSimCalcul(TestBase):
         self.assertAlmostEqual(pdopp, 10881.29623, delta=5e-2)
         self.assertAlmostEqual(pdopv, 0, delta=1e-10)
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_plot_dop(self):
         cfg = load_config("tests/test_gnss/config/cfg_long_galileo.yml")
         fig = plot_dop(cfg)

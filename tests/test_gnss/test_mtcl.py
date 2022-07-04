@@ -21,21 +21,21 @@ class TestGNSSSimMTCL(TestBase):
         cfgr = load_config("tests/test_gnss/config/cfg_mtcl_ranging.yml")
         logr = mtcl(cfgr)
 
-    @pytest.mark.mpl_image_compare(tolerance=10, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=10, savefig_kwargs={"dpi": 150})
     def test_mtcl(self):
         cfg = load_config("tests/test_gnss/config/cfg_mtcl_ranging.yml")
         fig = plot_mtcl(cfg)
 
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=10, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=10, savefig_kwargs={"dpi": 150})
     def test_mtcl_vr(self):
         cfg = load_config("tests/test_gnss/config/cfg_mtcl_doppler.yml")
         fig = plot_mtcl(cfg)
 
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 300})
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_polar_view(self):
         cfg = load_config("tests/test_gnss/config/cfg_mtcl_doppler.yml")
 

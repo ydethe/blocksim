@@ -1,8 +1,9 @@
 from abc import ABCMeta, abstractmethod
 from typing import Tuple
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
+from pandas import Timedelta, Timestamp
 from parse import parse
 import networkx as nx
 from networkx.classes.graph import Graph
@@ -143,7 +144,12 @@ class APlottable(metaclass=ABCMeta):
             ymin = np.nanmin(yd[iok])
             ymax = np.nanmax(yd[iok])
 
-        if not isinstance(xd[0], datetime) and np.all(np.isnan(xd)):
+        if (
+            not isinstance(xd[0], datetime)
+            and not isinstance(xd[0], Timestamp)
+            and not isinstance(xd[0], np.datetime64)
+            and np.all(np.isnan(xd))
+        ):
             xmin = np.nan
             xmax = np.nan
         else:
@@ -228,7 +234,11 @@ class APlottable(metaclass=ABCMeta):
             scaled_args = args
         elif axe.projection == AxeProjection.GRAPH:
             scaled_args = args
-        elif isinstance(info["args"][0][0], datetime):
+        elif (
+            isinstance(info["args"][0][0], datetime)
+            or isinstance(info["args"][0][0], Timestamp)
+            or isinstance(info["args"][0][0], np.datetime64)
+        ):
             scaled_args = args
         else:
             (xd, yd) = info["args"]
@@ -628,12 +638,16 @@ class PlottableTuple(APlottable):
             name_of_var = desc.get("name", "")
             unit_of_var = desc.get("unit", "")
         else:
-            dat = desc
+            dat = np.array(desc)
             name_of_var = ""
             unit_of_var = ""
 
         if unit_of_var == "":
             unit_of_var = "-"
+
+        if isinstance(dat[0], (np.timedelta64, timedelta, Timestamp)):
+            s = pd.Series(data=dat)
+            dat = np.array(s).astype("timedelta64[s]").astype(np.float64)
 
         return np.array(dat), name_of_var, unit_of_var
 
@@ -696,7 +710,7 @@ class PlottableLogger(APlottable):
             name_of_var = ""
             unit_of_var = log.findExpressionUnit(name)
         elif hasattr(name, "__iter__"):
-            dat = name
+            dat = np.array(name)
             name_of_var = ""
             unit_of_var = ""
         else:
@@ -704,6 +718,10 @@ class PlottableLogger(APlottable):
 
         if unit_of_var == "":
             unit_of_var = "-"
+
+        if isinstance(dat[0], (np.timedelta64, timedelta, Timestamp)):
+            s = pd.Series(data=dat)
+            dat = np.array(s).astype("timedelta64[s]").astype(np.float64)
 
         return np.array(dat), name_of_var, unit_of_var
 
@@ -758,11 +776,11 @@ class PlottableDataframe(APlottable):
         self, df: pd.DataFrame, name: str
     ) -> Tuple["array", str, str]:
         if isinstance(name, str):
-            dat = df[name]
+            dat = np.array(df[name])
             name_of_var = ""
             unit_of_var = log.findExpressionUnit(name)
         elif hasattr(name, "__iter__"):
-            dat = name
+            dat = np.array(name)
             name_of_var = ""
             unit_of_var = ""
         else:
@@ -770,6 +788,10 @@ class PlottableDataframe(APlottable):
 
         if unit_of_var == "":
             unit_of_var = "-"
+
+        if isinstance(dat[0], (np.timedelta64, timedelta, Timestamp)):
+            s = pd.Series(data=dat)
+            dat = np.array(s).astype("timedelta64[s]").astype(np.float64)
 
         return np.array(dat), name_of_var, unit_of_var
 
@@ -836,6 +858,9 @@ class PlottableSerie(APlottable):
             unit_of_y_var = ry["unit"]
 
         yd = transform(yd)
+
+        if isinstance(xd[0], np.timedelta64):
+            xd = np.timedelta64(xd, "s").astype(float)
 
         return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
 
