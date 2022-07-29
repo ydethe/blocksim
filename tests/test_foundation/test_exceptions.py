@@ -157,7 +157,6 @@ class TestExceptions(TestBase):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(1, 1)
         axe = fig.add_baxe(spec=gs[0, 0], title="")
-        self.assertRaises(AssertionError, axe.plot, (log, None, "y"))
         self.assertRaises(AssertionError, axe.plot, (log, "tps", None))
 
     def test_aelem_exc(self):

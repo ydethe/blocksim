@@ -1,4 +1,6 @@
 from abc import ABCMeta, abstractmethod
+from ast import Assert
+from asyncio.log import logger
 from typing import Tuple
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -12,6 +14,7 @@ from numpy import pi
 import matplotlib.image as mpimg
 import pandas as pd
 
+from .GPlottable import GPlottable, GVariable
 from ..utils import find1dpeak
 from ..dsp.DSPLine import (
     DSPRectilinearLine,
@@ -19,11 +22,13 @@ from ..dsp.DSPLine import (
     DSPNorthPolarLine,
     DSPHistogram,
 )
+from .. import logger
 from ..dsp.DSPFilter import DSPBodeDiagram
 from ..loggers.Logger import Logger
 from ..dsp.DSPMap import DSPRectilinearMap, DSPPolarMap, DSPNorthPolarMap
 from .GraphicSpec import AxeProjection, FigureProjection
-from ..satellite.Trajectory import Trajectory, Cube
+from ..satellite.Trajectory import Trajectory
+from ..control.Earth6DDLPosition import Earth6DDLPosition
 from . import getUnitAbbrev
 
 
@@ -32,13 +37,13 @@ class APlottable(metaclass=ABCMeta):
 
     Daughter classes shall make sure that the class attribute *compatible_baxe* is up to date.
 
-    * `blocksim.satellite.Trajectory.Cube` instances. See `PlottableCube`
+    * `blocksim.control.Earth6DDLPosition.Earth6DDLPosition` instances. See `PlottableCube`
     * networkx graphs. See `PlottableGraph`
     * `blocksim.dsp.DSPLine.ADSPLine`. See `PlottableDSPLine`
     * simple arrays. See `PlottableArray`
     * `blocksim.satellite.Trajectory.Trajectory` instances. See `PlottableTrajectory`
     * `blocksim.dsp.DSPMap.ADSPMap`. See `PlottableDSPSpectrogram`
-    * tuple of arrays or dictionaries, see `PlottableTuple`. The dictionaries keys are:
+    * tuple of arrays or dictionaries, see `PlottableGeneric`. The dictionaries keys are:
 
         * data
         * name
@@ -234,13 +239,13 @@ class APlottable(metaclass=ABCMeta):
             scaled_args = args
         elif axe.projection == AxeProjection.GRAPH:
             scaled_args = args
-        elif (
+        elif hasattr(info["args"][0], "__getitem__") and (
             isinstance(info["args"][0][0], datetime)
             or isinstance(info["args"][0][0], Timestamp)
             or isinstance(info["args"][0][0], np.datetime64)
         ):
             scaled_args = args
-        else:
+        elif len(info["args"]) == 2:
             (xd, yd) = info["args"]
             if not np.isnan(amp_x):
                 _, x_mult, x_lbl, x_unit = getUnitAbbrev(
@@ -251,6 +256,8 @@ class APlottable(metaclass=ABCMeta):
                     amp_y, unit=info["unit_of_y_var"]
                 )
             scaled_args = (xd / x_mult, yd / y_mult)
+        else:
+            scaled_args = args
 
         x_label = "%s (%s%s)" % (info["name_of_x_var"], x_lbl, x_unit)
         y_label = "%s (%s%s)" % (info["name_of_y_var"], y_lbl, y_unit)
@@ -303,24 +310,22 @@ class APlottable(metaclass=ABCMeta):
         return info
 
 
-class PlottableCube(APlottable):
-    """Allows plotting a `blocksim.satellite.Trajectory.Cube`
+class Plottable6DDLPosition(APlottable):
+    """Allows plotting a `blocksim.control.Earth6DDLPosition.Earth6DDLPosition`
     Only possible in `blocksim.graphics.GraphicSpec.FigureProjection.EARTH3D`.
     Available plotting options:
 
     * color
 
-    See `blocksim.graphics.B3DPlotter.B3DPlotter.plotCube`
-
     Args:
-        plottable: a `blocksim.satellite.Trajectory.Cube` instance
+        plottable: a `blocksim.control.Earth6DDLPosition.Earth6DDLPosition` instance
         kwargs: The dictionary of options for plotting (color, width,etc)
 
     """
 
     __slots__ = []
 
-    compatible_baxe = [AxeProjection.DIM3D]
+    compatible_baxe = [AxeProjection.PANDA3D]
 
     def _make_mline(
         self, axe: "blocksim.graphics.BAxe.ABaxe"
@@ -334,7 +339,11 @@ class PlottableCube(APlottable):
             )
 
         mpl_kwargs = self.kwargs.copy()
-        mpl_kwargs["size"] = self.plottable.size
+        if not "size" in mpl_kwargs:
+            raise AssertionError(
+                f"Missing 'size' argument when plotting a Earth6DDLPosition"
+            )
+
         _ = mpl_kwargs.pop("annotations", None)
         info = {
             # "axe": axe,
@@ -357,24 +366,24 @@ class PlottableCube(APlottable):
 
         return info
 
-    def render(
-        self,
-        axe: "blocksim.graphics.BAxe.ABAxe",
-        maxe: "Axes",
-        info: dict,
-        amp_x: float,
-        amp_y: float,
-    ) -> dict:
-        info["scaled_args"] = info["args"]
-        info["scaled_peaks"] = info["peaks"]
-        info["scaled_annotations"] = info["annotations"]
-        info["x_mult"] = 1.0
-        info["y_mult"] = 1.0
-        info["x_label"] = 1.0
-        info["y_label"] = 1.0
-        info["mline"] = None
+    # def render(
+    #     self,
+    #     axe: "blocksim.graphics.BAxe.ABAxe",
+    #     maxe: "Axes",
+    #     info: dict,
+    #     amp_x: float,
+    #     amp_y: float,
+    # ) -> dict:
+    #     info["scaled_args"] = info["args"]
+    #     info["scaled_peaks"] = info["peaks"]
+    #     info["scaled_annotations"] = info["annotations"]
+    #     info["x_mult"] = 1.0
+    #     info["y_mult"] = 1.0
+    #     info["x_label"] = 1.0
+    #     info["y_label"] = 1.0
+    #     info["mline"] = None
 
-        return info
+    #     return info
 
 
 class PlottableGraph(APlottable):
@@ -548,17 +557,7 @@ class PlottableDSPHistogram(PlottableDSPRectilinearLine):
         return info
 
 
-class PlottableArray(APlottable):
-    """Specialisation of `APlottable` to handle simple numpy arrays,
-
-    Args:
-        plottable: a numpy array
-        kwargs: The dictionary of options for plotting (color, width,etc)
-
-    Examples:
-        >>> _ = PlottableArray(plottable=np.arange(10), kwargs={})
-
-    """
+class PlottableGeneric(APlottable):
 
     __slots__ = []
 
@@ -572,295 +571,28 @@ class PlottableArray(APlottable):
         AxeProjection.POLAR,
     ]
 
+    def __init__(self, plottable, kwargs: dict) -> None:
+        super().__init__(plottable, kwargs)
+
     def _make_mline(
         self, axe: "blocksim.graphics.BAxe.ABaxe"
     ) -> Tuple["array", "array", str, str, str, str]:
         transform = self.kwargs.get("transform", lambda x: x)
-        yd = transform(np.array(self.plottable))
-        ns = len(yd)
-        xd = np.arange(ns)
-        name_of_x_var = ""
-        unit_of_x_var = "-"
-        name_of_y_var = ""
-        unit_of_y_var = "-"
+
+        (
+            xd,
+            yd,
+            name_of_x_var,
+            unit_of_x_var,
+            name_of_y_var,
+            unit_of_y_var,
+        ) = self.plottable.make_line(transform=transform)
 
         if axe.projection == AxeProjection.PLATECARREE:
             xd *= 180 / pi
             yd *= 180 / pi
             unit_of_x_var = "deg"
             unit_of_y_var = "deg"
-
-        return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
-
-
-class PlottableTuple(APlottable):
-    """Specialisation of `APlottable` to handle a 2 elements tuple of dictionaries
-    Each dictionary contains the following keys:
-
-    * data (mandatory)
-    * name (optional)
-    * unit (optional)
-
-    Args:
-        plottable: a 2 elements tuple of dictionaries
-        kwargs: The dictionary of options for plotting (color, width,etc)
-
-    Examples:
-        >>> xdesc = {"data": np.arange(10), "name": "Time", "unit": "s"}
-        >>> ydesc = {"data": np.arange(10), "name": "Time", "unit": "s"}
-        >>> _ = PlottableTuple(plottable=(xdesc, ydesc), kwargs={})
-
-    """
-
-    __slots__ = []
-
-    compatible_baxe = [
-        AxeProjection.RECTILINEAR,
-        AxeProjection.LOGX,
-        AxeProjection.LOGY,
-        AxeProjection.LOGXY,
-        AxeProjection.NORTH_POLAR,
-        AxeProjection.PLATECARREE,
-        AxeProjection.POLAR,
-    ]
-
-    def __init__(self, plottable, kwargs: dict) -> None:
-        super().__init__(plottable, kwargs)
-        xdesc, ydesc = plottable
-        if xdesc is None:
-            raise AssertionError(f"Cannot use None as data descriptor")
-        if ydesc is None:
-            raise AssertionError(f"Cannot use None as data descriptor")
-
-    def _extractDataFromDesc(self, desc) -> Tuple["array", str, str]:
-        if isinstance(desc, dict):
-            dat = np.array(desc.get("data"))
-            name_of_var = desc.get("name", "")
-            unit_of_var = desc.get("unit", "")
-        else:
-            dat = np.array(desc)
-            name_of_var = ""
-            unit_of_var = ""
-
-        if unit_of_var == "":
-            unit_of_var = "-"
-
-        if isinstance(dat[0], (np.timedelta64, timedelta, Timestamp)):
-            s = pd.Series(data=dat)
-            dat = np.array(s).astype("timedelta64[s]").astype(np.float64)
-
-        return np.array(dat), name_of_var, unit_of_var
-
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
-        transform = self.kwargs.get("transform", lambda x: x)
-        xdesc, ydesc = self.plottable
-
-        xd, name_of_x_var, unit_of_x_var = self._extractDataFromDesc(xdesc)
-        yd, name_of_y_var, unit_of_y_var = self._extractDataFromDesc(ydesc)
-
-        yd = transform(yd)
-
-        if axe.projection == AxeProjection.PLATECARREE:
-            xd *= 180 / pi
-            yd *= 180 / pi
-            unit_of_x_var = "deg"
-            unit_of_y_var = "deg"
-
-        return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
-
-
-class PlottableLogger(APlottable):
-    """Specialisation of `APlottable` for `blocksim.loggers.Logger.Logger`
-
-    Args:
-        plottable: a tuple with:
-
-        * `blocksim.loggers.Logger.Logger` instance
-        * name of the X variable
-        * name of the Y variable
-        kwargs: The dictionary of options for plotting (color, width,etc)
-
-    """
-
-    __slots__ = []
-
-    compatible_baxe = [
-        AxeProjection.RECTILINEAR,
-        AxeProjection.LOGX,
-        AxeProjection.LOGY,
-        AxeProjection.LOGXY,
-        AxeProjection.POLAR,
-        AxeProjection.NORTH_POLAR,
-        AxeProjection.PLATECARREE,
-    ]
-
-    def __init__(self, plottable, kwargs: dict) -> None:
-        super().__init__(plottable, kwargs)
-        log, xdesc, ydesc = plottable
-        if xdesc is None:
-            raise AssertionError(f"Cannot use None as data descriptor")
-        if ydesc is None:
-            raise AssertionError(f"Cannot use None as data descriptor")
-
-    def _extractDataFromDesc(self, log: Logger, name: str) -> Tuple["array", str, str]:
-        if isinstance(name, str):
-            dat = log.getValue(name)
-            name_of_var = ""
-            unit_of_var = log.findExpressionUnit(name)
-        elif hasattr(name, "__iter__"):
-            dat = np.array(name)
-            name_of_var = ""
-            unit_of_var = ""
-        else:
-            raise AssertionError(f"Incomatible type {type(name)}")
-
-        if unit_of_var == "":
-            unit_of_var = "-"
-
-        if isinstance(dat[0], (np.timedelta64, timedelta, Timestamp)):
-            s = pd.Series(data=dat)
-            dat = np.array(s).astype("timedelta64[s]").astype(np.float64)
-
-        return np.array(dat), name_of_var, unit_of_var
-
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
-        transform = self.kwargs.get("transform", lambda x: x)
-        log, xdesc, ydesc = self.plottable
-
-        xd, name_of_x_var, unit_of_x_var = self._extractDataFromDesc(log, xdesc)
-        yd, name_of_y_var, unit_of_y_var = self._extractDataFromDesc(log, ydesc)
-
-        yd = transform(yd)
-
-        return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
-
-
-class PlottableDataframe(APlottable):
-    """Specialisation of `APlottable` for pandas DataFrame
-
-    Args:
-        plottable: a tuple with:
-
-        * pandas.DataFrame instance
-        * name of the X variable
-        * name of the Y variable
-        kwargs: The dictionary of options for plotting (color, width,etc)
-
-    """
-
-    __slots__ = []
-
-    compatible_baxe = [
-        AxeProjection.RECTILINEAR,
-        AxeProjection.LOGX,
-        AxeProjection.LOGY,
-        AxeProjection.LOGXY,
-        AxeProjection.POLAR,
-        AxeProjection.NORTH_POLAR,
-        AxeProjection.PLATECARREE,
-    ]
-
-    def __init__(self, plottable, kwargs: dict) -> None:
-        super().__init__(plottable, kwargs)
-        df, xdesc, ydesc = plottable
-        if xdesc is None:
-            raise AssertionError(f"Cannot use None as data descriptor")
-        if ydesc is None:
-            raise AssertionError(f"Cannot use None as data descriptor")
-
-    def _extractDataFromDesc(
-        self, df: pd.DataFrame, name: str
-    ) -> Tuple["array", str, str]:
-        if isinstance(name, str):
-            dat = np.array(df[name])
-            name_of_var = ""
-            unit_of_var = log.findExpressionUnit(name)
-        elif hasattr(name, "__iter__"):
-            dat = np.array(name)
-            name_of_var = ""
-            unit_of_var = ""
-        else:
-            raise AssertionError(f"Incomatible type {type(name)}")
-
-        if unit_of_var == "":
-            unit_of_var = "-"
-
-        if isinstance(dat[0], (np.timedelta64, timedelta, Timestamp)):
-            s = pd.Series(data=dat)
-            dat = np.array(s).astype("timedelta64[s]").astype(np.float64)
-
-        return np.array(dat), name_of_var, unit_of_var
-
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
-        transform = self.kwargs.get("transform", lambda x: x)
-        df, xdesc, ydesc = self.plottable
-
-        xd, name_of_x_var, unit_of_x_var = self._extractDataFromDesc(df, xdesc)
-        yd, name_of_y_var, unit_of_y_var = self._extractDataFromDesc(df, ydesc)
-
-        yd = transform(yd)
-
-        return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
-
-
-class PlottableSerie(APlottable):
-    """Specialisation of `APlottable` for pandas Serie
-
-    Args:
-        plottable: a tuple with:
-
-        * pandas.Serie instance
-        kwargs: The dictionary of options for plotting (color, width,etc)
-
-    """
-
-    __slots__ = []
-
-    compatible_baxe = [
-        AxeProjection.RECTILINEAR,
-        AxeProjection.LOGX,
-        AxeProjection.LOGY,
-        AxeProjection.LOGXY,
-        AxeProjection.POLAR,
-        AxeProjection.NORTH_POLAR,
-        AxeProjection.PLATECARREE,
-    ]
-
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
-        transform = self.kwargs.get("transform", lambda x: x)
-        serie = self.plottable
-
-        rx = parse("{name} ({unit})", serie.index.name)
-        ry = parse("{name} ({unit})", str(serie.name))
-
-        xd = np.array(serie.index)
-        if rx is None:
-            name_of_x_var = serie.index.name
-            unit_of_x_var = "-"
-        else:
-            name_of_x_var = rx["name"]
-            unit_of_x_var = rx["unit"]
-
-        yd = np.array(serie)
-        if ry is None:
-            name_of_y_var = serie.name
-            unit_of_y_var = "-"
-        else:
-            name_of_y_var = ry["name"]
-            unit_of_y_var = ry["unit"]
-
-        yd = transform(yd)
-
-        if isinstance(xd[0], np.timedelta64):
-            xd = np.timedelta64(xd, "s").astype(float)
 
         return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
 
@@ -877,6 +609,7 @@ class PlottableTrajectory(APlottable):
     __slots__ = []
 
     compatible_baxe = [
+        AxeProjection.PANDA3D,
         AxeProjection.DIM3D,
         AxeProjection.PLATECARREE,
         AxeProjection.RECTILINEAR,
@@ -1259,8 +992,8 @@ class PlottableFactory(object):
         elif isinstance(mline, Trajectory):
             ret = PlottableTrajectory(mline, kwargs)
 
-        elif isinstance(mline, Cube):
-            ret = PlottableCube(mline, kwargs)
+        elif isinstance(mline, Earth6DDLPosition):
+            ret = Plottable6DDLPosition(mline, kwargs)
 
         elif isinstance(mline, DSPRectilinearLine):
             ret = PlottableDSPRectilinearLine(mline, kwargs)
@@ -1286,21 +1019,21 @@ class PlottableFactory(object):
         elif isinstance(mline, DSPNorthPolarMap):
             ret = PlottableDSPNorthPolarMap(mline, kwargs)
 
-        elif isinstance(mline, pd.Series):
-            ret = PlottableSerie(mline, kwargs)
-
         elif isinstance(mline, tuple):
-            if isinstance(mline[0], Logger):
-                ret = PlottableLogger(mline, kwargs)
-            elif isinstance(mline[0], pd.DataFrame):
-                ret = PlottableDataframe(mline, kwargs)
+            if len(mline) == 0:
+                raise AssertionError(f"Plottable reduced to an empty tuple")
+
+            if np.isscalar(mline[0]):
+                gp = GPlottable.from_serie(sy=mline)
             else:
-                ret = PlottableTuple(mline, kwargs)
+                gp = GPlottable.from_tuple(mline)
+            ret = PlottableGeneric(gp, kwargs)
+
+        elif isinstance(mline, (pd.Series, GPlottable, np.ndarray, list)):
+            gp = GPlottable.from_serie(sy=mline)
+            ret = PlottableGeneric(gp, kwargs)
 
         elif isinstance(mline, Path):
             ret = PlottableImage(mline, kwargs)
-
-        else:
-            ret = PlottableArray(mline, kwargs)
 
         return ret

@@ -8,22 +8,6 @@ from ..loggers.Logger import Logger
 from ..utils import itrf_to_geodetic
 
 
-class Cube(object):
-    """Description of a cube, to be pltted on a 3D view
-
-    Args:
-        position: ITRF coordinate of the center (m)
-        size: size of the cube (m)
-
-    """
-
-    __slots__ = ["position", "size"]
-
-    def __init__(self, position: NDArray[Any, Any], size: float):
-        self.position = position
-        self.size = size
-
-
 class Trajectory(object):
     """Trajectory with a name and a color
 

@@ -2,7 +2,7 @@ import os
 import datetime
 
 import typer
-from tqdm import tqdm
+import rich.progress as rp
 import numpy as np
 from numpy import sqrt
 from scipy import linalg as lin
@@ -44,7 +44,7 @@ def dop(fic_cfg: str):
     pdop_d = np.empty(ns)
     pdop_dr = np.empty((2, ns))
     di = np.diag_indices(3)
-    for k in tqdm(range(ns)):
+    for k in rp.track(range(ns)):
         Q = computeDOP(
             algo="ranging",
             ephem=ephems[:, k],
@@ -210,7 +210,7 @@ def iterate(fic_cfg: str):
     lat_list = np.linspace(0, cfg["iterate"]["lat_max"], cfg["iterate"]["nb_lat"])
     min_sat = np.empty_like(lat_list)
 
-    for k, lat in tqdm(enumerate(lat_list)):
+    for k, lat in rp.track(enumerate(lat_list)):
         cfg["receiver"]["lat"] = lat
         cfg["setup"]["logfile"] = "data_file_%.1f.log" % lat
         log = fct_sim(cfg)

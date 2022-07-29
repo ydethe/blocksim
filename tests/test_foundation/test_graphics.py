@@ -193,6 +193,7 @@ if __name__ == "__main__":
     # a.test_cdf()
     # a.test_figure_from_spec()
     a.test_plot_timedelta()
+    a.test_plot_datetime()
     # a.test_plot_logger()
 
     showFigures()

@@ -61,7 +61,8 @@ class ABaxe(metaclass=ABCMeta):
         if self.title != "":
             maxe.set_title(self.title)
 
-        maxe.grid(True)
+        if not self.projection == AxeProjection.PANDA3D:
+            maxe.grid(True)
 
         if len(self.plottable_factories) == 0:
             return maxe
@@ -518,7 +519,7 @@ class BAxePlateCarree(ABaxe):
 
     def plotDeviceReach(
         self, coord: tuple, elev_min: float, sat_alt: float, **kwargs
-    ) -> PlottableTuple:
+    ) -> APlottable:
         """Plots a line that represents the device reach
 
         See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
@@ -530,7 +531,7 @@ class BAxePlateCarree(ABaxe):
             kwargs: The plotting options for the object
 
         Returns:
-            The created PlottableTuple
+            The created APlottable
 
         """
 
@@ -587,8 +588,8 @@ class BAxePanda3D(ABaxe):
 
         return maxe
 
-    def render(self, maxe: "Axes") -> "AxesSubplot":
-        pass
+    # def render(self, maxe: "Axes") -> "AxesSubplot":
+    #     pass
 
 
 class BAxeFactory(object):

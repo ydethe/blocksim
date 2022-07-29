@@ -10,7 +10,7 @@
 # from scipy import linalg as lin
 # from scipy.interpolate import interp1d
 # from matplotlib import pyplot as plt
-# from tqdm import tqdm
+# import rich.progress as rp
 
 # from ..dsp.DSPSignal import DSPSignal
 # from ..dsp.DSPMap import DSPRectilinearMap

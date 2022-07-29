@@ -1,4 +1,4 @@
-from tqdm import tqdm
+import rich.progress as rp
 import numpy as np
 from numpy import pi
 from scipy import linalg as lin
@@ -116,7 +116,7 @@ def plot_polar_view(cfg: Munch, tplot=None, axe=None):
     rows = []
 
     annotations = []
-    for comp in tqdm(sim.iterComputersList()):
+    for comp in rp.track(sim.iterComputersList()):
         if not isinstance(comp, ASatellite):
             continue
 
@@ -163,7 +163,7 @@ def plot_dop(cfg: Munch):
 
     pdopp = np.empty(ns)
     pdopv = np.empty(ns)
-    for k in tqdm(range(ns)):
+    for k in rp.track(range(ns)):
         if np.isnan(pdop_x[k]):
             pdop[k] = np.nan
         else:
@@ -216,7 +216,7 @@ def plot_mtcl(cfg: Munch):
     sz = log.getRawValue("UE_estdop_sz")[-1]
     ns = len(xe)
     err3d = np.empty(ns)
-    for k in tqdm(range(ns)):
+    for k in rp.track(range(ns)):
         err3d[k] = lin.norm((xe[k], ye[k], ze[k]))
     err3d = DSPSignal.fromTimeAndSamples(name="err3d", tps=np.arange(ns), y_serie=err3d)
 
@@ -271,7 +271,7 @@ def plot_3d(cfg: Munch, npoint: int):
     gs = fig.add_gridspec(1, 1)
     axe = fig.add_baxe(title="", spec=gs[0, 0])
 
-    for sn in tqdm(lsat):
+    for sn in rp.track(lsat):
         traj = Trajectory.fromLogger(
             log,
             npoint=npoint,
@@ -299,7 +299,7 @@ def plot_ground_track(cfg: Munch, npoint: int):
     fig = FigureFactory.create()
     gs = fig.add_gridspec(1, 1)
     axe = fig.add_baxe(title="", spec=gs[0, 0], projection=AxeProjection.PLATECARREE)
-    for sn in tqdm(lsat):
+    for sn in rp.track(lsat):
         traj = Trajectory.fromLogger(
             log,
             npoint=npoint,
