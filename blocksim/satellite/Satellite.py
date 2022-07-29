@@ -580,7 +580,7 @@ class CircleSatellite(ASatellite):
         a, e, argp, inc, mano, node = teme_to_orbital(pvc_teme)
 
         self.orbit_mano = mano
-        self.orbit_eccentricity = 0.0
+        self.orbit_eccentricity = e
         self.orbit_inclination = inc
         self.orbit_argp = argp
         self.orbit_node = node

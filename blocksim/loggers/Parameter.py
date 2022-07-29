@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 from typing import List, Any
 
 import numpy as np
-from sqlalchemy import desc
 
 
 @dataclass

@@ -36,11 +36,11 @@ def computeDOP(
     nsat = len(ephem) // 6
     nval = 0
     if algo == "doppler-ranging":
-        P = np.empty((nsat, 5))
-        V = np.empty((nsat, 5))
+        P = np.zeros((nsat, 5))
+        V = np.zeros((nsat, 5))
     else:
-        P = np.empty((nsat, 4))
-        V = np.empty((nsat, 4))
+        P = np.zeros((nsat, 4))
+        V = np.zeros((nsat, 4))
 
     Penv = build_local_matrix(pos)
 

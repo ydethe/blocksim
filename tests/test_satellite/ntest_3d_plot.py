@@ -2,7 +2,7 @@ from pathlib import Path
 import sys
 import unittest
 
-from blocksim.satellite.Trajectory import Cube
+from blocksim.control.Earth6DDLPosition import Earth6DDLPosition
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.graphics.GraphicSpec import FigureProjection
 
@@ -82,9 +82,9 @@ class TestB3DPlotter(TestBase):
         axe.plot(traj)
         axe.plot(traj_sim)
 
-        axe.plot(Cube(dsat, size=100e3), color=(0, 0, 1, 1))
-        axe.plot(Cube(psat, size=100e3), color=(1, 0, 0, 1))
-        axe.plot(Cube(psat_sim, size=100e3), color=(1, 1, 0, 1))
+        axe.plot(Earth6DDLPosition(position=dsat), size=100e3, color=(0, 0, 1, 1))
+        axe.plot(Earth6DDLPosition(position=psat), size=100e3, color=(1, 0, 0, 1))
+        axe.plot(Earth6DDLPosition(position=psat_sim), size=100e3, color=(1, 1, 0, 1))
 
         return fig.render()
 

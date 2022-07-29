@@ -7,7 +7,7 @@ from math import factorial
 from itertools import product
 from typing import List, Union, Any
 
-from tqdm import tqdm
+import rich.progress as rp
 from nptyping import NDArray, Shape
 import numpy as np
 from numpy import sqrt, sign, pi, exp
@@ -199,7 +199,7 @@ def analyse_DV(
 
     tab_v = np.linspace(vrad0 - vamb / 2, vrad0 + vamb / 2, nv)
     if progress_bar:
-        v_gen = tqdm(tab_v)
+        v_gen = rp.track(tab_v)
     else:
         v_gen = tab_v
 

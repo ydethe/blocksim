@@ -781,7 +781,7 @@ def build_local_matrix(
     Returns:
         Matrix whose columns are:
 
-        * Local East vector, or xvec
+        * Local East vector, or xvec if not None
         * Local North vector
         * Local Vertical vector, orthogonal to xvec
 
@@ -1157,13 +1157,17 @@ def azelalt_to_itrf(
     val = g.circle(lon * 180 / pi, lat * 180 / pi, radius=rad, n_samples=360)
 
     # 4. Find on the ground circle the position that corresponds to the azimut
+    if az >= pi:
+        az -= 2 * pi * int((az + pi) / (2 * pi))
+    if az < -pi:
+        az += 2 * pi * int(-(az + pi) / (2 * pi))
     iaz = int((az + pi) * 180 / pi)
     c_lon = val[iaz, 0] * pi / 180
     c_lat = val[iaz, 1] * pi / 180
 
     # Check
-    Xc = geodetic_to_itrf(c_lon, c_lat, alt)
-    azeld = itrf_to_azeld(obs=np.hstack((Xc, np.zeros(3))), sat=sat)
+    # Xc = geodetic_to_itrf(c_lon, c_lat, alt)
+    # azeld = itrf_to_azeld(obs=np.hstack((Xc, np.zeros(3))), sat=sat)
 
     c0 = np.array([c_lon, c_lat])
     sol = _tmp()

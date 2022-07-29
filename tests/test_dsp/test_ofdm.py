@@ -96,14 +96,14 @@ class TestOFDM(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
-    exit(0)
+    # unittest.main()
+    # exit(0)
 
     from blocksim.graphics import showFigures
 
     a = TestOFDM()
     a.setUp()
-    # a.test_ofdm_mapping()
-    a.test_ofdm_demapping()
+    a.test_ofdm_mapping()
+    # a.test_ofdm_demapping()
 
-    # showFigures()
+    showFigures()

@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 from time import time
 from datetime import datetime
 
-import tqdm
+import rich.progress as rp
 from nptyping import NDArray
 import numpy as np
 import matplotlib.animation as animation
@@ -295,7 +295,7 @@ class Simulation(object):
         self.__init_sim(clist, t0, error_on_unconnected=error_on_unconnected)
 
         if progress_bar and fig is None:
-            itr = tqdm.tqdm(range(len(tps) - 1))
+            itr = rp.track(range(len(tps) - 1))
         else:
             itr = range(len(tps) - 1)
 

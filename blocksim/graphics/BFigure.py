@@ -119,12 +119,24 @@ class MplFigure(ABFigure):
         if tight_layout:
             mfig.tight_layout()
 
+        self.mpl_fig = mfig
+
         return mfig
 
 
 class B3DFigure(ABFigure):
 
     projection = FigureProjection.EARTH3D
+
+    def add_baxe(self, title: str, spec: BGridElement, **kwargs) -> ABaxe:
+        return super().add_baxe(
+            title,
+            spec,
+            projection=AxeProjection.PANDA3D,
+            sharex=None,
+            sharey=None,
+            **kwargs,
+        )
 
     def add_gridspec(self, nrow: int, ncol: int) -> BGridSpec:
         if ncol != 1 or nrow != 1:
@@ -140,11 +152,13 @@ class B3DFigure(ABFigure):
 
     def render(self, tight_layout: bool = False) -> "Figure":
         mfig = None
+        mgs = None
 
         for axe in self.axe_factories:
-            maxe = axe.render(mfig, self.grid_spec)
+            maxe = axe.createMplAxe(mfig, mgs)
+            axe.render(maxe)
 
-        return mfig
+        return maxe
 
 
 class FigureFactory(object, metaclass=Singleton):  # type: ignore

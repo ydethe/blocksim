@@ -211,7 +211,7 @@ class TestSatellite(TestBase):
 
     def test_iss(self):
         pth = Path(__file__).parent.parent / "TLE/iss.tle"
-        t0 = datetime.strptime("Feb 5 2022  01:00AM", "%b %d %Y %I:%M%p")
+        t0 = datetime.strptime("5-2-2022 01:00", "%d-%m-%Y %I:%M")
         t0 = t0.replace(tzinfo=timezone.utc)
         satellite = SGP4Satellite.fromTLE(tsync=t0, tle_file=str(pth))
 
@@ -244,7 +244,7 @@ class TestSatellite(TestBase):
         pt = (-74.0542275 * pi / 180, 40.7004153 * pi / 180)
 
         pth = Path(__file__).parent.parent / "TLE/iss.tle"
-        t0 = datetime.strptime("Feb 5 2022  01:00AM", "%b %d %Y %I:%M%p")
+        t0 = datetime.strptime("5-2-2022 01:00", "%d-%m-%Y %I:%M")
         t0 = t0.replace(tzinfo=timezone.utc)
         iss = SGP4Satellite.fromTLE(tsync=t0, tle_file=str(pth))
 
@@ -286,7 +286,7 @@ if __name__ == "__main__":
     a = TestSatellite()
     # a.test_teme_itrf()
     # a.test_satellite()
-    # a.test_iss()
+    a.test_iss()
     a.test_ground_track()
     # a.test_geosynchronous()
     # a.test_circle_satellite()
