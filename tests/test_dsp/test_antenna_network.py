@@ -14,7 +14,7 @@ from TestBase import TestBase
 
 
 class TestAntennaNetwork(TestBase):
-    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=10, savefig_kwargs={"dpi": 150})
     def test_antenna_diagram(self, fill: bool = True):
 
         config = Path(__file__).parent / "antenna_config.py"

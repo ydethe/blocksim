@@ -286,7 +286,7 @@ class TestPVTOLComplex(TestBase):
         )
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=8, savefig_kwargs={"dpi": 150})
     def test_quad_complexe_att(self):
         self.log = TestPVTOLComplex.log
 

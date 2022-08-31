@@ -35,7 +35,7 @@ class TestGNSSSimMTCL(TestBase):
 
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=6, savefig_kwargs={"dpi": 150})
     def test_polar_view(self):
         cfg = load_config("tests/test_gnss/config/cfg_mtcl_doppler.yml")
 

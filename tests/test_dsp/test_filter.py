@@ -191,7 +191,7 @@ class TestFilter(TestBase):
 
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=6, savefig_kwargs={"dpi": 150})
     def test_fir_design(self):
         fs = 10.0  # Hz
         desired = (0, 1, 0)

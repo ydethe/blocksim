@@ -52,7 +52,7 @@ class Test6DOFSys(TestBase):
         )
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=6, savefig_kwargs={"dpi": 150})
     def test_att_cplxe(self):
         sys = G6DOFSystem("sys")
         g0 = -10
