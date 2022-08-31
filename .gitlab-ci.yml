@@ -16,7 +16,7 @@ test:
     - python3 -m venv sim
     - source sim/bin/activate
     - pip3 install "numpy==1.22.3" "wheel==0.37.1"
-    - pip3 install --index-url https://pypi.fury.io/manawenuz --extra-index-url https://pypi.org/simple "cartopy==0.18.0"
+    # - pip3 install --index-url https://pypi.fury.io/manawenuz --extra-index-url https://pypi.org/simple "cartopy==0.18.0"
     - pip3 install --index-url https://pypi.fury.io/manawenuz --extra-index-url https://pypi.org/simple -r dev/dev_requirements_3_8.txt
     - python3 setup.py develop
     - python3 setup.py sdist
