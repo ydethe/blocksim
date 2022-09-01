@@ -66,6 +66,6 @@ install: doc examples $(BLD_DIR)/coverage/index.html dist/blocksim-$(BS_VER).tar
 
 clean:
 	$(Q)echo "Cleaning..."
-	$(Q)rm -rf .coverage build dist examples/example_*.py
+	$(Q)rm -rf .coverage build dist examples/example_*.py *.egg-info .eggs .pytest_cache
 	$(Q)find . -name "__pycache__" -print0 | xargs -0 rm -rf
 	$(Q)find . -name "*.bak" -print0 | xargs -0 rm -rf

@@ -1,10 +1,10 @@
 setuptools
 numpy>=1.22.0
 nptyping~=2.0.1
-scipy>=1.7.0
+scipy~=1.8.0
 matplotlib~=3.5.0
-sgp4~=2.20
-skyfield>=1.39
+sgp4==2.20
+skyfield==1.39
 requests~=2.27.0
 lazy_property~=0.0.1
 singleton3~=1.0
