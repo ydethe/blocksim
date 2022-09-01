@@ -64,7 +64,7 @@ class TestGraphics(TestBase):
 
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_plot_logger(self):
         err_t = np.max(np.abs(self.tps_ref - self.log.getValue("t")))
         err_x = np.max(np.abs(self.x_ref - self.log.getValue("x")))

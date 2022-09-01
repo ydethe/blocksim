@@ -81,7 +81,7 @@ class Earth6DDLPosition(object):
         >>> e = Earth6DDLPosition(position=np.array([6378137.0, 0.0, 0.0]))
         >>> md = e.magneticDeclination()
         >>> (md*1e9).astype(np.int64)
-        array([16079, -2042, 27523])
+        array([16081, -2034, 27523])
 
         """
         lon, lat, alt = self.positionToGeodetic()

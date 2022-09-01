@@ -5,7 +5,7 @@ Example:
 >>> from blocksim.control.System import LTISystem
 >>> from blocksim.control.Controller import PIDController
 >>> from blocksim.Simulation import Simulation
->>> 
+>>>
 >>> # System's parameters
 >>> m = 1.0  # Mass
 >>> k = 40.0  # Spring rate
@@ -20,6 +20,6 @@ Example:
 >>> sim = Simulation(sys, ctl)
 >>> sim.connect("sys.state", "ctl.estimation")
 >>> sim.connect("ctl.command", "sys.command")
->>> sim.simulate(np.arange(200) / 100, error_on_unconnected=False)
+>>> sim.simulate(np.arange(200) / 100, error_on_unconnected=False, progress_bar=False)
 
 """

@@ -59,7 +59,7 @@ class TestQuad(TestBase):
         )
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_quad(self):
         mot1 = Motor(prefix="mot", num=1)
         mot2 = Motor(prefix="mot", num=2)
@@ -272,7 +272,7 @@ class TestCmdAtt(TestBase):
         self.assertAlmostEqual(np.abs(p[-1]), 0, delta=1.5e-5)
         self.assertAlmostEqual(np.abs(y[-1]), 0, delta=5e-2)
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=9, savefig_kwargs={"dpi": 150})
     def test_cmd_att_angles(self):
         self.log = TestCmdAtt.log
 
@@ -284,7 +284,7 @@ class TestCmdAtt(TestBase):
         )
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=12, savefig_kwargs={"dpi": 150})
     def test_cmd_att_sval(self):
         self.log = TestCmdAtt.log
 

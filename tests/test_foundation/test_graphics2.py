@@ -400,7 +400,7 @@ class TestGraphics2(unittest.TestCase):
 
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=15, savefig_kwargs={"dpi": 150})
     def test_t15_1_3dxyz_2d(self):
         # ==========================
         # T15

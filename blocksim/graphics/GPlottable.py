@@ -140,7 +140,7 @@ class GVariable(object):
         return rdesc
 
 
-@dataclass(init=True, slots=True)
+@dataclass(init=True)
 class GPlottable:
     xvar: GVariable
     yvar: GVariable
