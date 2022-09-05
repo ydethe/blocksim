@@ -82,11 +82,11 @@ from importlib.metadata import entry_points
 from pluggy import PluginManager
 import control
 import numpy
+from rich.logging import RichHandler
 
 control.use_numpy_matrix(flag=False, warn=True)
 
 from .loggers.LoggerSpec import LoggerSpec
-from .LogFormatter import LogFormatter
 
 
 __version__ = get_distribution(__name__).version
@@ -96,16 +96,9 @@ __email__ = "yann.blaudin-de-the@thalesaleniaspace.com"
 
 # création de l'objet logger qui va nous servir à écrire dans les logs
 logger = logging.getLogger("blocksim_logger")
+logger.setLevel(os.environ.get("LOGLEVEL", "INFO").upper())
 
-logger.setLevel(os.environ.get("LOGLEVEL", "INFO"))
-
-# création d'un formateur qui va ajouter le temps, le niveau
-# de chaque message quand on écrira un message dans le log
-formatter = LogFormatter()
-# création d'un handler qui va rediriger chaque écriture de log
-# sur la console
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
+stream_handler = RichHandler()
 logger.addHandler(stream_handler)
 
 numpy.seterr(all="raise")
