@@ -274,14 +274,14 @@ class TestKalman(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
-    exit(0)
+    # unittest.main()
+    # exit(0)
 
     from blocksim.graphics import showFigures
 
     a = TestKalman()
-    # a.test_ss_kal()
+    a.test_ss_kal()
     # a.test_ti_kal()
-    a.test_awc_kal()
+    # a.test_awc_kal()
 
-    showFigures()
+    # showFigures()
