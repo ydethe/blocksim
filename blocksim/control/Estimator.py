@@ -128,9 +128,11 @@ class ConvergedStateCovariance(Output):
         # We solve the Discrete Algebraic Riccati Equation (DARE)
         # The matrix Pp is the prediction error covariance matrix in steady state which is the positive solution of the DARE
         Pp = dare(a=Ad.T, b=Cd.T, q=estim.matQ, r=estim.matR)
+        print(Pp)
 
         # Converged gain matrix
         K = Pp @ Cd.T @ lin.inv(Cd @ Pp @ Cd.T + estim.matR)
+        print(K)
 
         # The matrix P is the estimation error covariance matrix in steady state
         self.__P = (np.eye(n) - K @ Cd) @ Pp
