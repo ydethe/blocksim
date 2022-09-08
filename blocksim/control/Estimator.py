@@ -58,11 +58,11 @@ class ConvergedGainMatrix(Output):
         # We solve the Discrete Algebraic Riccati Equation (DARE)
         # The matrix Pp is the prediction error covariance matrix in steady state which is the positive solution of the DARE
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.solve_discrete_are.html
-        Pp = dare(a=Ad.T, b=Cd.T, q=estim.matQ, r=estim.matR)
-        # a = Ad.T
-        # b = Cd.T
-        # q = estim.matQ
-        # r = estim.matR
+        # Pp = dare(a=Ad.T, b=Cd.T, q=estim.matQ, r=estim.matR)
+        a = Ad.T
+        b = Cd.T
+        q = estim.matQ
+        r = estim.matR
         # x = Pp
         # aH = np.conj(a.T)
         # bH = np.conj(b.T)

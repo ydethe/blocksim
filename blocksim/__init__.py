@@ -89,7 +89,7 @@ control.use_numpy_matrix(flag=False, warn=True)
 from .loggers.LoggerSpec import LoggerSpec
 
 
-__version__ = get_distribution(__name__).version
+__version__ = "2.4.4"
 __author__ = "Y. BLAUDIN DE THE"
 __email__ = "yann.blaudin-de-the@thalesaleniaspace.com"
 
