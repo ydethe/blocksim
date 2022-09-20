@@ -24,7 +24,6 @@ test:
     paths:
       - build/htmldoc
 
-
 # https://ydethe.gitlab.io/blocksim/htmldoc/blocksim/
 pages:
   stage: deploy

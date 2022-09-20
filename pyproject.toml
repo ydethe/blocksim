@@ -87,6 +87,7 @@ dependencies = [
 ]
 [tool.hatch.envs.test.scripts]
 run = [
+    'pip install "numpy==1.23.1"',
     "pip install -e .",
     "python3 -m pytest --html=build/htmldoc/tests/report.html --self-contained-html --mpl --mpl-generate-summary=html --mpl-results-always --mpl-baseline-path=tests/baseline --mpl-results-path=build/htmldoc/tests/results --cov blocksim tests --doctest-modules blocksim",
     "coverage html -d build/htmldoc/coverage",
@@ -103,6 +104,7 @@ dependencies = [
 
 [tool.hatch.envs.doc.scripts]
 build = [
+    'pip install "numpy==1.23.1"',
     "pip install -e .",
     "python3 -m ipykernel install --user",
     "python3 examples/__init__.py",
