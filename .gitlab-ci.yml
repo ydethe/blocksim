@@ -16,9 +16,9 @@ test:
     - python3 -m venv sim
     - source sim/bin/activate
     - pip3 install hatch
-    - SETUPTOOLS_SCM_PRETEND_VERSION=$CI_COMMIT_SHA hatch build
-    - SETUPTOOLS_SCM_PRETEND_VERSION=$CI_COMMIT_SHA hatch run doc:build
-    - SETUPTOOLS_SCM_PRETEND_VERSION=$CI_COMMIT_SHA hatch run test:run
+    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 hatch build
+    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 hatch run doc:build
+    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 hatch run test:run
   artifacts:
     when: always
     paths:
