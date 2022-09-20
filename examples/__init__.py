@@ -14,8 +14,8 @@ from nbconvert.preprocessors import ExecutePreprocessor
 from nbconvert import MarkdownExporter
 
 
-def _bsprint(*x):
-    pass
+def _bsprint(*args, **kwargs):
+    print(*args, **kwargs)
 
 
 def __f1_newer_than_f2(f1, f2):
@@ -97,5 +97,6 @@ def __process(fic):
 # for fic in lnb:
 #     __process(fic)
 if __name__ == "__main__":
-    fic = sys.argv[1]
-    __process(fic)
+    root = Path(__file__).parent
+    for fic in root.glob("*.ipynb"):
+        __process(fic)

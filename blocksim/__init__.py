@@ -32,7 +32,7 @@ blocksim comes with some CLI utilities.
 
 To run tests, just run:
 
-    make -f dev/Makefile_Doc.mk test
+    hatch run test:run
 
 To only run the tests related to the unstaged files or the current branch (according to Git):
 
@@ -50,7 +50,7 @@ Once the tests are run, the code coverage is available. To have a html version i
 
 If needed (for example, a new test with its associated baseline image), we might have to regenerate the baseline images. In this case, run:
 
-    make -f dev/Makefile_Doc.mk baseline
+    python3 -m pytest -n 8 --mpl-generate-path=tests/baseline tests
 
 ## Test reports
 
@@ -59,10 +59,6 @@ If needed (for example, a new test with its associated baseline image), we might
 [See test results](../tests/results/fig_comparison.html)
 
 # Class diagram
-
-This diagram can be regenerated thanks to
-
-    make -f dev/Makefile_Doc.mk classes
 
 ![classes](./classes.png "Class diagram")
 
@@ -89,9 +85,8 @@ control.use_numpy_matrix(flag=False, warn=True)
 from .loggers.LoggerSpec import LoggerSpec
 
 
-__version__ = "2.4.4"
 __author__ = "Y. BLAUDIN DE THE"
-__email__ = "yann.blaudin-de-the@thalesaleniaspace.com"
+__email__ = "yann@johncloud.fr"
 
 
 # création de l'objet logger qui va nous servir à écrire dans les logs

@@ -1,22 +1,15 @@
 [build-system]
-requires = [
-    "hatchling>=1.8.1",
-    "hatch-vcs"
-]
+requires = ["hatchling>=1.8.1", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "blocksim"
-dynamic = [
-    "version",
-]
+dynamic = ["version"]
 description = "A library to simulate a closed-loop system"
 readme = "README.md"
 license = ""
 requires-python = ">= 3.9"
-authors = [
-    { name = "Yann BLAUDIN DE THE", email = "yann.blaudin-de-the@thalesaleniaspace.com" },
-]
+authors = [{ name = "Yann BLAUDIN DE THE", email = "yann@johncloud.fr" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -69,23 +62,16 @@ logger_pkl = "blocksim.loggers.PickleLogger"
 logger_xls = "blocksim.loggers.XlsLogger"
 
 [project.urls]
-"Bug Tracker" = "https://git:8443/projects/DNFSND/repos/blocksim/browse/issues"
-Homepage = "https://git:8443/projects/DNFSND/repos/blocksim/browse"
-Source = "https://git:8443/projects/DNFSND/repos/blocksim/browse"
+"Bug Tracker" = "https://gitlab.com/ydethe/blocksim/-/issues"
+Homepage = "https://gitlab.com/ydethe/blocksim"
+Source = "https://gitlab.com/ydethe/blocksim"
 
 [tool.hatch]
 version.source = "vcs"
 build.hooks.vcs.version-file = "blocksim/version.py"
 
-[tool.hatch.envs.default]
-post-install-commands = [
-  "pip install -e .",
-]
-
 [tool.hatch.build.targets.sdist]
-include = [
-    "/blocksim",
-]
+include = ["/blocksim"]
 
 [tool.hatch.envs.test]
 dependencies = [
@@ -100,7 +86,11 @@ dependencies = [
     "pytest-html==3.1.1",
 ]
 [tool.hatch.envs.test.scripts]
-run = "pytest --html=build/htmldoc/tests/report.html --self-contained-html --mpl --mpl-generate-summary=html --mpl-results-always --mpl-baseline-path=tests/baseline --mpl-results-path=build/htmldoc/tests/results --cov blocksim tests --doctest-modules blocksim"
+run = [
+    "pip install -e .",
+    "python3 -m pytest --html=build/htmldoc/tests/report.html --self-contained-html --mpl --mpl-generate-summary=html --mpl-results-always --mpl-baseline-path=tests/baseline --mpl-results-path=build/htmldoc/tests/results --cov blocksim tests --doctest-modules blocksim",
+    "coverage html -d build/htmldoc/coverage",
+]
 
 [tool.hatch.envs.doc]
 dependencies = [
@@ -108,12 +98,16 @@ dependencies = [
     "pdoc3==0.10.0",
     "jupyter==1.0.0",
     "pylint==2.14.5",
+    "ipykernel",
 ]
 
 [tool.hatch.envs.doc.scripts]
 build = [
+    "pip install -e .",
+    "python3 -m ipykernel install --user",
+    "python3 examples/__init__.py",
+    "cp examples/quadcopter.png build/htmldoc/examples",
     "pdoc --html --force --config latex_math=True -o build/htmldoc blocksim examples",
-    "coverage html -d build/htmldoc/coverage",
     "pyreverse -s0 blocksim -k --colorized -p blocksim -m no --ignore=exceptions.py,LogFormatter.py,CSVLogger.py,PickleLogger.py,XlsLogger.py -d build/htmldoc",
-	"dot -Tpng build/htmldoc/classes_blocksim.dot -o build/htmldoc/blocksim/classes.png"
+    "dot -Tpng build/htmldoc/classes_blocksim.dot -o build/htmldoc/blocksim/classes.png",
 ]

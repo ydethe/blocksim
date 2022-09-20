@@ -15,15 +15,10 @@ test:
     - python3 --version
     - python3 -m venv sim
     - source sim/bin/activate
-    - pip3 install "numpy==1.22.3" "wheel==0.37.1"
-    # - pip3 install --index-url https://pypi.fury.io/manawenuz --extra-index-url https://pypi.org/simple "cartopy==0.18.0"
-    - pip3 install --index-url https://pypi.fury.io/manawenuz --extra-index-url https://pypi.org/simple -r dev/dev_requirements_3_8.txt
-    - python3 setup.py develop
-    - python3 setup.py sdist
-    - pip3 wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
-    - python3 -m ipykernel install --user --name=sim
-    - make -f dev/Makefile_Doc.mk
-    - make -f dev/Makefile_Doc.mk classes
+    - pip3 install hatch
+    - hatch build
+    - hatch run doc:build
+    - hatch run test:run
   artifacts:
     when: always
     paths:

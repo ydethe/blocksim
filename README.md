@@ -16,7 +16,7 @@ A library to simulate a open- and closed-loop system. Includes :
 -   Advanced plotting functions
 -   DSP tools
 
-blocksim is hosted here https://git:8443/projects/DNFSND/repos/blocksim/browse
+blocksim is hosted here https://gitlab.com/ydethe/blocksim
 
 # Setup
 
@@ -40,7 +40,7 @@ In the first 2 cases, the line to type is:
 
 Once the env is active, clone the repository. Note that the repository can be cloned in any other folder:
 
-    git clone ssh://git@git:7999/dnfsnd/blocksim.git
+    git clone git@gitlab.com:ydethe/blocksim.git
     cd blocksim
 
 In your virtual env:
@@ -56,11 +56,11 @@ In the folder tests and examples are a lot of examples that can be used as a sta
 
 Just run:
 
-    make -f dev/Makefile_Doc.mk
+    hatch run doc:build
 
 This will create the doc in build/htmldoc
 
 A few guidelines for updating the doc
 https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
 
-For now, it is hosted here: http://galessin/blocksim/blocksim/
+For now, it is hosted here: https://ydethe.gitlab.io/blocksim/blocksim/
