@@ -13,6 +13,7 @@ import numpy as np
 from numpy import sqrt, sign, pi, exp
 from numpy.fft import fft, ifft
 from scipy import linalg as lin
+from scipy.interpolate import interp1d
 
 
 def derivative_coeff(rank: int = 1, order: int = None) -> NDArray[Any, Any]:
@@ -283,7 +284,7 @@ def createGoldSequence(
     sv: Union[List[int], int],
     repeat=1,
     chip_rate: float = 1.023e6,
-    sampling_factor: int = 10,
+    sampling_rate: float = 10.23e6,
     samplingStart: float = 0,
     bitmap=[-1, 1],
 ) -> "blocksim.dsp.DSPSignal.DSPSignal":
@@ -293,8 +294,8 @@ def createGoldSequence(
         name: Name of the signal
         sv: Identifier of the SV. Can be either the PRN number (int), or the code tap selection (list of 2 int)
         repeat: Number of copies of a 1023 Gold sequence
-        chip_rate: Sampling frequency of the signal (Hz)
-        sampling_factor: Factor so that fs = sampling_factor*chip_rate
+        chip_rate: Chip rate (Hz)
+        sampling_rate: Sampling frequency of the signal (Hz)
         samplingStart: First date of the sample of the signal (s)
         bitmap: List of 2 values to map the bits on. [0, 1] returns a sequence with 0 and 1
 
@@ -352,15 +353,19 @@ def createGoldSequence(
         g2 = shift(
             G2, [2, 3, 6, 8, 9, 10], sv
         )  # feedback 2,3,6,8,9,10, output sv for sat
-        ca.extend([(g1 + g2) % 2] * sampling_factor)
+        ca.extend([(g1 + g2) % 2])
 
-    bits = np.array(ca * repeat, dtype=np.int8)
+    ca = np.array(ca, dtype=np.int8)
+    itp = interp1d(np.linspace(0, 1, 1023), ca, kind="nearest", assume_sorted=True)
+    cb = itp(np.linspace(0, 1, int(np.round(1023 * sampling_rate / chip_rate, 0))))
+
+    bits = np.tile(cb, reps=repeat)
     a, b = bitmap
     seq = (b - a) * bits + a
     sig = DSPSignal(
         name=name,
         samplingStart=samplingStart,
-        samplingPeriod=1 / chip_rate / sampling_factor,
+        samplingPeriod=1 / sampling_rate,
         y_serie=seq,
         dtype=np.int64,
     )

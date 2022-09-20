@@ -1,5 +1,6 @@
 from enum import Enum
 from abc import ABCMeta, abstractmethod
+from pathlib import Path
 from typing import Callable, List, Any
 
 from lazy_property import LazyProperty
@@ -39,6 +40,14 @@ class ADSPLine(metaclass=ABCMeta):
     # Has to be commented because of multiple inheritance
     # __slots__=["__name","__samplingStart","__samplingPeriod","__y_serie","__default_transform"]
 
+    @classmethod
+    def fromPickle(cls, fic: Path) -> "ADSPLine":
+        from pickle import load
+
+        with open(fic, "rb") as f:
+            res = load(f)
+        return res
+
     def __init__(
         self,
         name: str,
@@ -54,6 +63,33 @@ class ADSPLine(metaclass=ABCMeta):
         self.__default_transform = default_transform
         self.name_of_x_var = "Samples"
         self.unit_of_x_var = "ech"
+
+    def save(self, fic: Path):
+        from pickle import dump
+
+        with open(fic, "wb") as f:
+            dump(self, f)
+
+    def export(self, fic: Path):
+        """Exports the line in a matlab readable binary file:
+
+        1. The maximum range of the samples is determined (max(abs(y_serie)))
+
+        1. The serie is clipped to this value
+
+        1. Each sample of the clipped serie \( z=x+i.y \) is written as x, y
+
+        Args:
+            fic: Path to the file to write
+
+        """
+        ech = self.y_serie.view(np.float64)
+
+        dyn = np.max(np.abs(ech))
+
+        buf = (ech / dyn * 127).astype(np.int8)
+        with open(fic.expanduser().resolve(), "wb") as f:
+            buf.tofile(f)
 
     @property
     @abstractmethod

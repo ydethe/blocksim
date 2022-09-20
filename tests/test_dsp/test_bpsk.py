@@ -90,7 +90,7 @@ class TestBPSK(TestBase):
             name="PRN",
             sv=[2, 6],
             chip_rate=1.023e6,
-            sampling_factor=p_samp,
+            sampling_rate=1.023e6 * p_samp,
             bitmap=[0, 1],
         )
         bpsk = PSKMapping(name="bpsk", mapping=[0, pi])
@@ -117,8 +117,8 @@ class TestBPSK(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
-    exit(0)
+    # unittest.main()
+    # exit(0)
 
     from blocksim.graphics import showFigures
 

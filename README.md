@@ -63,4 +63,4 @@ This will create the doc in build/htmldoc
 A few guidelines for updating the doc
 https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
 
-For now, it is hosted here: http://navlin10:8081/blocksim/blocksim/
+For now, it is hosted here: http://galessin/blocksim/blocksim/

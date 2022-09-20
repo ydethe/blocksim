@@ -45,10 +45,10 @@ class TestSignal(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_gold_crosscorr(self):
         s1 = createGoldSequence(
-            name="s1", sv=[2, 6], repeat=1, chip_rate=1.023e6, sampling_factor=10
+            name="s1", sv=[2, 6], repeat=1, chip_rate=1.023e6, sampling_rate=10.23e6
         )
         s2 = createGoldSequence(
-            name="s2", sv=[3, 7], repeat=1, chip_rate=1.023e6, sampling_factor=10
+            name="s2", sv=[3, 7], repeat=1, chip_rate=1.023e6, sampling_rate=10.23e6
         )
 
         y = s1.correlate(s2)
@@ -63,7 +63,7 @@ class TestSignal(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_gold_autocorr(self):
         s1 = createGoldSequence(
-            name="s1", sv=[2, 6], repeat=1, chip_rate=1.023e6, sampling_factor=10
+            name="s1", sv=[2, 6], repeat=1, chip_rate=1.023e6, sampling_rate=10.23e6
         )
 
         y = s1.correlate(s1)
@@ -79,12 +79,12 @@ class TestSignal(TestBase):
     def test_gold_corr_integ(self):
         # Reference Gold sequence
         y1 = createGoldSequence(
-            name="s1", sv=[2, 6], repeat=1, chip_rate=1.023e6, sampling_factor=10
+            name="s1", sv=[2, 6], repeat=1, chip_rate=1.023e6, sampling_rate=10.23e6
         )
 
         # Noisy received signal
         y = createGoldSequence(
-            name="s1", sv=[2, 6], repeat=20, chip_rate=1.023e6, sampling_factor=10
+            name="s1", sv=[2, 6], repeat=20, chip_rate=1.023e6, sampling_rate=10.23e6
         )
         y = y.applyGaussianNoise(pwr=200)
 

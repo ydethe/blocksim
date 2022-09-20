@@ -3,7 +3,7 @@ from typing import Callable, Any
 
 from nptyping import NDArray, Shape
 import numpy as np
-from numpy import exp, pi, sqrt
+from numpy import exp, pi, sqrt, cos
 from numpy.fft import fft, fftshift
 from scipy.signal import correlate
 
@@ -494,44 +494,44 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         return res
 
     def superheterodyneIQ(
-        self, carrier_freq: float, bandwidth: float
+        self, carrier_freq: float, bandwidth: float, decim: bool = True
     ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Use Single-Sideband Modulation to down convert the signal in baseband
+
+        SSB : https://en.wikipedia.org/wiki/Single-sideband_modulation
 
         Args:
             carrier_freq: the frequency of the carrier (Hz)
             bandwidth: the bandwidth of the signal (Hz)
+            decim: to turn on/off decimation
 
         Returns:
             The new DSPSignal
 
         """
-        tps = self.generateXSerie()
-        lo = exp(-1j * 2 * pi * carrier_freq * tps)
-        y_mix = self.y_serie * lo
-
-        q = int(np.floor(1 / self.samplingPeriod / bandwidth))
-        logger.debug("Decimation : %i" % q)
-        eff_bp = 1 / self.samplingPeriod / q
-
         from .DSPFilter import BandpassDSPFilter
 
         filt = BandpassDSPFilter(
             name="decim",
-            f_low=0.0,
-            f_high=eff_bp,
+            f_low=0,
+            f_high=bandwidth / 2,
             numtaps=64,
             samplingPeriod=self.samplingPeriod,
             win="hamming",
         )
-        dtf = filt.getGroupDelay()
-        y_filt = filt.process(y_mix)
 
-        # SSB : https://en.wikipedia.org/wiki/Single-sideband_modulation
-        nz = int(2 * dtf / self.samplingPeriod)
-        y_ssb = filt.process(y_mix[::-1])[::-1]
-        y_ssb_sync = np.pad(array=y_ssb[:-nz], pad_width=(nz, 0), mode="constant")
-        y_filt += y_ssb_sync
+        dtf = filt.getGroupDelay()
+
+        tps = self.generateXSerie()
+        lo = exp(-1j * 2 * pi * carrier_freq * tps)
+        y_filt = filt.process(self.y_serie * lo * 2)
+
+        if decim:
+            q = int(np.floor(1 / self.samplingPeriod / bandwidth))
+        else:
+            q = 1
+
+        logger.info("Decimation : %i" % q)
 
         res = DSPSignal(
             name=self.name,
@@ -540,6 +540,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
             y_serie=y_filt[::q],
             default_transform=self.default_transform,
         )
+
         return res
 
     def integrate(

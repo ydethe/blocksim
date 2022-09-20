@@ -203,7 +203,7 @@ class TestSignal(TestBase):
             2 * pi * fc * tps[:ntau] + pi * B * tps[:ntau] * (tps[:ntau] - tau) / tau
         )
         re = DSPSignal(name="re", samplingStart=0, samplingPeriod=1 / fs, y_serie=x)
-        cp = re.superheterodyneIQ(carrier_freq=fc, bandwidth=B)
+        cp = re.superheterodyneIQ(carrier_freq=fc, bandwidth=B * 1.2)
         rep = DSPSignal.fromLinearFM(
             name="rep",
             samplingStart=0,
@@ -238,9 +238,9 @@ if __name__ == "__main__":
     # a.test_instanciation()
     # a.test_resample()
     # a.test_polyfit()
-    # a.test_superheterodyne()
+    a.test_superheterodyne()
     # a.test_correlation()
     # a.test_delay()
-    a.test_phase_unfold()
+    # a.test_phase_unfold()
 
     showFigures()
