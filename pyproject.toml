@@ -58,7 +58,6 @@ blocksim = "blocksim.__main__:main"
 logger_csv = "blocksim.loggers.CSVLogger"
 logger_pkl = "blocksim.loggers.PickleLogger"
 logger_xls = "blocksim.loggers.XlsLogger"
-logger_parq = "blocksim.loggers.ParquetLogger"
 
 [project.optional-dependencies]
 [build-system]
