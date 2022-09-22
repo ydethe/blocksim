@@ -118,7 +118,7 @@ doc.shell = """\
     python -m ipykernel install --user
     python examples/__init__.py
     cp examples/quadcopter.png build/htmldoc/examples
-    pdoc --html --force --config latex_math=True --template-dir docs/template -o build/htmldoc blocksim examples
+    pdoc --html --force --config latex_math=True --template-dir dev/template -o build/htmldoc blocksim examples
     pyreverse -s0 blocksim -k --colorized -p blocksim -m no --ignore=exceptions.py,LogFormatter.py,CSVLogger.py,PickleLogger.py,XlsLogger.py -d build/htmldoc
     dot -Tpng build/htmldoc/classes_blocksim.dot -o build/htmldoc/blocksim/classes.png
 """
