@@ -64,6 +64,19 @@ logger_xls = "blocksim.loggers.XlsLogger"
 requires = ["pdm-pep517>=1.0.0"]
 build-backend = "pdm.pep517.api"
 
+[tool.pdm.resolution]
+respect-source-order = true
+
+[[tool.pdm.source]]
+url = "https://pypi.fury.io/manawenuz/"
+verify_ssl = true
+name = "fury"
+
+[[tool.pdm.source]]
+url = "https://pypi.org/simple/"
+verify_ssl = true
+name = "pypi"
+
 [tool.pdm.version]
 source = "scm"
 
