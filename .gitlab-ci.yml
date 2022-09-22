@@ -13,12 +13,11 @@ test:
     - debconf-set-selections preseed.txt
     - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends graphviz python3-pip python3.10-dev python3.10-venv libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl
     - python3 --version
-    - python3 -m venv sim
-    - source sim/bin/activate
-    - pip3 install hatch
-    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 hatch build
-    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 hatch run doc:build
-    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 hatch run test:run
+    - pip3 install pdm
+    - pdm install
+    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 pdm build
+    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 pdm doc
+    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 pdm test
   artifacts:
     when: always
     paths:
