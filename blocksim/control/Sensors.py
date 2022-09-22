@@ -38,9 +38,7 @@ class ASensors(AComputer):
 
     __slots__ = []
 
-    def __init__(
-        self, name: str, shape_state: tuple, snames: Iterable[str], dtype=np.float64
-    ):
+    def __init__(self, name: str, shape_state: tuple, snames: Iterable[str], dtype=np.float64):
         AComputer.__init__(self, name)
         self.defineInput("state", shape=shape_state, dtype=dtype)
         otp = AWGNOutput(name="measurement", snames=snames, dtype=dtype)
@@ -132,12 +130,8 @@ class ProportionalSensors(ASensors):
 
     __slots__ = []
 
-    def __init__(
-        self, name: str, shape_state: tuple, snames: Iterable[str], dtype=np.float64
-    ):
-        ASensors.__init__(
-            self, name=name, shape_state=shape_state, snames=snames, dtype=dtype
-        )
+    def __init__(self, name: str, shape_state: tuple, snames: Iterable[str], dtype=np.float64):
+        ASensors.__init__(self, name=name, shape_state=shape_state, snames=snames, dtype=dtype)
         self.createParameter("matC", value=0)
 
     def update(
@@ -192,9 +186,7 @@ class LinearSensors(ASensors):
         snames: Iterable[str],
         dtype=np.float64,
     ):
-        ASensors.__init__(
-            self, name=name, shape_state=shape_state, snames=snames, dtype=dtype
-        )
+        ASensors.__init__(self, name=name, shape_state=shape_state, snames=snames, dtype=dtype)
         self.defineInput("command", shape_command, dtype=dtype)
         self.createParameter("matC", value=0)
         self.createParameter("matD", value=0)

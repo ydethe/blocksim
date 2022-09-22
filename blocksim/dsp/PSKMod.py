@@ -124,14 +124,11 @@ class PSKDemapping(ADSPComputer):
     def __init__(self, name: str, mapping: list, output_size: int = 1):
         mu = int(np.round(log2(len(mapping)), 0))
         if 2**mu != len(mapping):
-            raise ValueError(
-                "[%s]Mapping size must be a power of 2. Got %i" % (name, len(mapping))
-            )
+            raise ValueError("[%s]Mapping size must be a power of 2. Got %i" % (name, len(mapping)))
 
         if output_size % mu != 0:
             raise ValueError(
-                "[%s]output_size (=%i) must be divisible by mu (=%i)"
-                % (name, output_size, mu)
+                "[%s]output_size (=%i) must be divisible by mu (=%i)" % (name, output_size, mu)
             )
 
         ADSPComputer.__init__(

@@ -151,9 +151,7 @@ class TestKalman(TestBase):
         P = -k + 3 * a**2 * m
         I = a**3 * m
         D = 3 * a * m
-        ctl = PIDController(
-            "ctl", shape_estimation=(2,), snames=["u"], coeffs=(P, I, D)
-        )
+        ctl = PIDController("ctl", shape_estimation=(2,), snames=["u"], coeffs=(P, I, D))
 
         stp = Step(name="stp", snames=["c"], cons=np.array([1]))
 
@@ -221,9 +219,7 @@ class TestKalman(TestBase):
         cpt.setCovariance(np.eye(1) / 200)
         cpt.setMean(np.array([bias]))
 
-        ctl = LQRegulator(
-            "ctl", shape_setpoint=(1,), shape_estimation=(2,), snames=["u"]
-        )
+        ctl = LQRegulator("ctl", shape_setpoint=(1,), shape_estimation=(2,), snames=["u"])
         ctl.matA = sys.matA
         ctl.matB = sys.matB
         ctl.matC = kal.matC[:, :2]

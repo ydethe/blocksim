@@ -82,9 +82,7 @@ def load_config(cfg_file: str, simid: int = -1) -> Munch:
     if "prop" in dat["satellites"].keys():
         prop = dat["satellites"]["prop"]
         if not prop in ["circle", "SGP4"]:
-            raise AssertionError(
-                "satellites.prop=%s. Should be 'circle' or 'SGP4'" % prop
-            )
+            raise AssertionError("satellites.prop=%s. Should be 'circle' or 'SGP4'" % prop)
     else:
         dat["satellites"]["prop"] = "SGP4"
 
@@ -111,9 +109,7 @@ def load_config(cfg_file: str, simid: int = -1) -> Munch:
             el = rad(dat["receiver"]["elevation"])
             alt = rad(dat["receiver"]["alt"])
             tle = dat["satellites"]["TLE"][0]
-            sats = createSatellites(
-                tle, tsync=dat["setup"]["tsync"], prop=CircleSatellite
-            )
+            sats = createSatellites(tle, tsync=dat["setup"]["tsync"], prop=CircleSatellite)
             sat = sats[0]
             pv0 = sat.getGeocentricITRFPositionAt(0)
             pos_ue = azelalt_to_itrf(azelalt=(az, el, alt), sat=pv0)
@@ -194,9 +190,7 @@ def create_simulation(cfg: Munch) -> Simulation:
     lat = cfg.receiver.lat
     alt = cfg.receiver.alt
 
-    rec = GNSSReceiver(
-        name="UE", nsat=nsat, lon=lon, lat=lat, alt=alt, tsync=cfg.setup.tsync
-    )
+    rec = GNSSReceiver(name="UE", nsat=nsat, lon=lon, lat=lat, alt=alt, tsync=cfg.setup.tsync)
     rec.algo = cfg.receiver.algo
     rec.optim = cfg.receiver.optim
 

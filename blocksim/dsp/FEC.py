@@ -28,14 +28,11 @@ class FECCoder(ADSPComputer):
         G = np.array([[0o133, 0o171, 0o165]])
         _, k_cc = G.shape
         depth = 7
-        self.__trellis = Trellis(
-            memory=np.array([depth]), g_matrix=G, polynomial_format="MSB"
-        )
+        self.__trellis = Trellis(memory=np.array([depth]), g_matrix=G, polynomial_format="MSB")
 
         if output_size % k_cc != 0:
             raise ValueError(
-                "[%s]output_size must be divisible by %i. Got %i"
-                % (name, k_cc, output_size)
+                "[%s]output_size must be divisible by %i. Got %i" % (name, k_cc, output_size)
             )
 
         ADSPComputer.__init__(
@@ -90,9 +87,7 @@ class FECDecoder(ADSPComputer):
         G = np.array([[0o133, 0o171, 0o165]])
         _, k_cc = G.shape
         depth = 7
-        self.__trellis = Trellis(
-            memory=np.array([depth]), g_matrix=G, polynomial_format="MSB"
-        )
+        self.__trellis = Trellis(memory=np.array([depth]), g_matrix=G, polynomial_format="MSB")
 
         ADSPComputer.__init__(
             self,
@@ -121,9 +116,7 @@ class FECDecoder(ADSPComputer):
         raw: NDArray[Any, Any],
     ) -> dict:
         strm = self.flatten(coded)
-        bits = viterbi_decode(
-            coded_bits=strm, trellis=self.__trellis, decoding_type="hard"
-        )
+        bits = viterbi_decode(coded_bits=strm, trellis=self.__trellis, decoding_type="hard")
         raw = self.unflatten(bits)
 
         outputs = {}

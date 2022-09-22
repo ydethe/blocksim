@@ -54,9 +54,7 @@ class TestChannel(TestBase):
         # Find a point with 45° elevation
         elev_min = pi / 4
         pos = azelalt_to_itrf(azelalt=(-pi, elev_min, 0), sat=pv)
-        az, el, dist, azr, elr, vr = itrf_to_azeld(
-            obs=np.hstack((pos, np.zeros(3))), sat=pv
-        )
+        az, el, dist, azr, elr, vr = itrf_to_azeld(obs=np.hstack((pos, np.zeros(3))), sat=pv)
         self.assertAlmostEqual(az, -pi, delta=2e-8)
         self.assertAlmostEqual(el, elev_min, delta=2e-7)
 

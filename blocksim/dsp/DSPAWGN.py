@@ -38,9 +38,7 @@ class DSPAWGN(AComputer):
         size = len(mean)
 
         self.defineInput("noiseless", shape=size, dtype=dtype)
-        otp = AWGNOutput(
-            name="noisy", snames=["n%i" % i for i in range(size)], dtype=dtype
-        )
+        otp = AWGNOutput(name="noisy", snames=["n%i" % i for i in range(size)], dtype=dtype)
         otp.setInitialState(np.zeros(otp.getDataShape(), dtype=otp.getDataType()))
         self.addOutput(otp)
 

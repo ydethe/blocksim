@@ -120,9 +120,7 @@ class DSPChannel(AComputer):
 
         T0 = 290.0
         self.__gain_coef = wavelength * 10 ** (antenna_gain / 20.0) / (4 * pi)
-        noise_pow = (
-            kb * bandwidth * ((10 ** (noise_factor / 10) - 1) * T0 + antenna_temp)
-        )
+        noise_pow = kb * bandwidth * ((10 ** (noise_factor / 10) - 1) * T0 + antenna_temp)
         cov = np.eye(1) * noise_pow
         mean = np.zeros(1)
 
@@ -258,9 +256,7 @@ class DSPChannel(AComputer):
                 L_atm = 1
                 dt_atm = 0
             else:
-                dist, vrad, azim, elev, L_atm, dt_atm = self.atmosphericModel(
-                    txpos_k, rxpos
-                )
+                dist, vrad, azim, elev, L_atm, dt_atm = self.atmosphericModel(txpos_k, rxpos)
 
             if self.nodop:
                 phi_d0 = 0.0
@@ -272,9 +268,7 @@ class DSPChannel(AComputer):
             delay = dist / c + dt_atm
             delays[kelem] = delay
 
-            psig = (
-                txsig[kelem] * self.__gain_coef / sqrt(L_atm) / dist * exp(1j * phi_d0)
-            )
+            psig = txsig[kelem] * self.__gain_coef / sqrt(L_atm) / dist * exp(1j * phi_d0)
 
             dl = self.__delay_lines[kelem]
             dl.addSample(t2, psig)
@@ -295,9 +289,7 @@ class DSPChannel(AComputer):
                 theta = arccos(ath2)
                 psi = arctan2(v[1], v[0])
 
-                info = np.array(
-                    [CN0, SNR, dist, vrad, azim, elev, theta, psi, L_atm, dt_atm]
-                )
+                info = np.array([CN0, SNR, dist, vrad, azim, elev, theta, psi, L_atm, dt_atm])
 
         outputs = {}
         outputs["rxsig"] = np.array([np.sum(rxsig)], dtype=np.complex128)

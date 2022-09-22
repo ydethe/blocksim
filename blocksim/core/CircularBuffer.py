@@ -227,9 +227,7 @@ class CircularBuffer(object):
             # Get the start, stop, and step from the slice
             return [self[ii] for ii in range(*idx.indices(len(self)))]
         elif isinstance(idx, int):
-            return self.__buffer[
-                (idx + self.__offset) % self.__size
-            ]  # Get the data from elsewhere
+            return self.__buffer[(idx + self.__offset) % self.__size]  # Get the data from elsewhere
         else:
             raise TypeError("Invalid argument type.")
 

@@ -229,9 +229,7 @@ class Sinusoid(ASetPoint):
 
         # Iterate over all dimensions
         for iscal in product(*it):
-            x0[iscal] = self.amp[iscal] * np.sin(
-                2 * np.pi * self.freq[iscal] * t + self.pha[iscal]
-            )
+            x0[iscal] = self.amp[iscal] * np.sin(2 * np.pi * self.freq[iscal] * t + self.pha[iscal])
 
         return x0
 

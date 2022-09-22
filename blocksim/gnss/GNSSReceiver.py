@@ -43,18 +43,14 @@ class GNSSReceiver(AComputer):
 
     __slots__ = ["__itrf_pv"]
 
-    def __init__(
-        self, name: str, nsat: int, lon: float, lat: float, alt: float, tsync: datetime
-    ):
+    def __init__(self, name: str, nsat: int, lon: float, lat: float, alt: float, tsync: datetime):
         COORD = ["px", "py", "pz", "vx", "vy", "vz"]
         AComputer.__init__(self, name)
         self.defineInput("measurements", shape=(2 * nsat,), dtype=np.float64)
         self.defineInput("ephemeris", shape=(6 * nsat,), dtype=np.float64)
         self.defineOutput("realpos", snames=COORD, dtype=np.float64)
         self.defineOutput("estpos", snames=COORD, dtype=np.float64)
-        self.defineOutput(
-            "estdop", snames=["sx", "sy", "sz", "sp", "sv"], dtype=np.complex128
-        )
+        self.defineOutput("estdop", snames=["sx", "sy", "sz", "sp", "sv"], dtype=np.complex128)
         self.defineOutput("estclkerror", snames=["dp", "dv"], dtype=np.float64)
 
         self.createParameter("lat", value=lat)
@@ -309,10 +305,7 @@ class GNSSReceiver(AComputer):
                 err_p = pr_est - pr
                 err_v = vr_est - vr
 
-                G[:3] += (
-                    2 * (-svel / di + ab * (svel @ ab) / di**3) * err_v
-                    - 2 * ab / di * err_p
-                )
+                G[:3] += 2 * (-svel / di + ab * (svel @ ab) / di**3) * err_v - 2 * ab / di * err_p
                 G[3] += 2 * err_p
                 G[4] += 2 * err_v
 
@@ -457,9 +450,7 @@ class GNSSReceiver(AComputer):
     def resetCallback(self, t0: float):
         x, y, z = geodetic_to_itrf(lon=self.lon, lat=self.lat, h=self.alt)
         self.__itrf_pv = np.array([x, y, z, 0.0, 0.0, 0.0])
-        self.setInitialStateForOutput(
-            initial_state=self.__itrf_pv, output_name="realpos"
-        )
+        self.setInitialStateForOutput(initial_state=self.__itrf_pv, output_name="realpos")
         super().resetCallback(t0)
 
     def getAbsoluteTime(self, t: float) -> datetime:

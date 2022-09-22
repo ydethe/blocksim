@@ -9,7 +9,7 @@ from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim import logger
 from blocksim.constants import c
 from blocksim.graphics.BFigure import FigureFactory
-from blocksim.dsp import analyse_DV
+from blocksim.dsp import delay_doppler_analysis
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
@@ -48,39 +48,28 @@ class TestRadar(TestBase):
             .applyGaussianNoise(pwr=5)
         )
 
-        wl = 0.2
         Tr = tau / eta
-        Tana = nrep * Tr
-        Rf = 1 / Tana
-        Rv = Rf * wl
-        Rd = c / bp * 1.4
-        # print("Rv: %.2f m/s" % Rv)
-        # print("Rd: %.2f ns" % (Rd/c*1e9))
-        # vamb = 3 * Rv
-        # damb = 3 * Rd
-        vamb = wl / 2 / Tr
-        # damb = Tr*c/2
-        damb = 2 * tau * c
+        doppler_search_win = 1 / 2 / Tr
+        delay_search_win = 2 * tau
 
-        spg = analyse_DV(
-            wavelength=wl,
+        spg = delay_doppler_analysis(
             period=Tr,
-            dist0=tau * c,
-            damb=damb,
-            vrad0=-wl * fdop,
-            vamb=vamb,
+            delay_search_center=tau,
+            delay_search_win=delay_search_win,
+            doppler_search_center=fdop,
+            doppler_search_win=doppler_search_win,
             seq=rep,
             rxsig=sig,
             coherent=True,
-            nv=100,
+            ndop=100,
             corr_window="hamming",
         )
 
         trf = DSPSignal.to_db_lim(-80)
         (peak,) = spg.findPeaksWithTransform(transform=trf, nb_peaks=1)
-        self.assertAlmostEqual(peak.coord[0], 0, delta=0.1)  # radial velocity
+        self.assertAlmostEqual(peak.coord[0], fdop, delta=0.2)  # doppler
         self.assertAlmostEqual(peak.coord[1], 15e-6, delta=5e-10)  # delay
-        self.assertAlmostEqual(peak.value, 27.85, delta=1e-2)
+        self.assertAlmostEqual(peak.value, 27.85, delta=0.1)
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)

@@ -73,9 +73,7 @@ class Simulation(object):
             name = comp.getName()
 
             if "_" in name:
-                raise ValueError(
-                    "Cannot log variables with '_' in their name (got '%s')" % name
-                )
+                raise ValueError("Cannot log variables with '_' in their name (got '%s')" % name)
 
             for c in self.iterComputersList():
                 if c.getName() == name:
@@ -300,9 +298,7 @@ class Simulation(object):
             itr = range(len(tps) - 1)
 
         def _anim_func(k):
-            self.update(
-                clist, tps[k], tps[k + 1], error_on_unconnected=error_on_unconnected
-            )
+            self.update(clist, tps[k], tps[k + 1], error_on_unconnected=error_on_unconnected)
 
         if fig is None:
             for k in itr:
@@ -351,9 +347,7 @@ class Simulation(object):
 
         if not inp.getDataShape() is None and not otp.getDataShape() is None:
             if inp.getDataShape() != otp.getDataShape():
-                raise IncompatibleShapes(
-                    src_name, otp.getDataShape(), dst_name, inp.getDataShape()
-                )
+                raise IncompatibleShapes(src_name, otp.getDataShape(), dst_name, inp.getDataShape())
 
         self.__graph.add_edge(
             src_comp_name,

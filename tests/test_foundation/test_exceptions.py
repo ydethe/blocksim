@@ -32,12 +32,7 @@ class DummyTestElement(AComputer):
         self.createParameter("no", 0)
 
     def update(
-        self,
-        t1: float,
-        t2: float,
-        output: NDArray[Any, Any],
-        state: NDArray[Any, Any],
-        **inputs
+        self, t1: float, t2: float, output: NDArray[Any, Any], state: NDArray[Any, Any], **inputs
     ) -> dict:
         n = self.getOutputByName("state").getDataShape()[0]
         if self.ns == 2:
@@ -93,9 +88,7 @@ class TestExceptions(TestBase):
             name_of_states=["c"],
         )
         self.sim.addComputer(tmp2)
-        self.assertRaises(
-            IncompatibleShapes, self.sim.connect, "dummy.output", "sys.command"
-        )
+        self.assertRaises(IncompatibleShapes, self.sim.connect, "dummy.output", "sys.command")
 
         self.assertRaises(KeyError, self.sim.getComputerByName, "foo")
 
@@ -116,9 +109,7 @@ class TestExceptions(TestBase):
         )
 
         tmp = DummyTestElement("tmp", name_of_outputs=["out1"], name_of_inputs=["in1"])
-        tmp2 = DummyTestElement(
-            "tmp2", name_of_outputs=["out2"], name_of_inputs=["in2"]
-        )
+        tmp2 = DummyTestElement("tmp2", name_of_outputs=["out2"], name_of_inputs=["in2"])
         self.sim.addComputer(tmp)
         self.sim.addComputer(tmp2)
         self.sim.connect("tmp.output", "tmp2.in2")
@@ -140,9 +131,7 @@ class TestExceptions(TestBase):
         )
 
     def test_sens_exc(self):
-        cpt = LinearSensors(
-            name="cpt", shape_command=(1,), shape_state=(2,), snames=["x", "v"]
-        )
+        cpt = LinearSensors(name="cpt", shape_command=(1,), shape_state=(2,), snames=["x", "v"])
         cpt.setMean(np.zeros(2))
         self.assertRaises(ValueError, cpt.setCovariance, np.zeros((3, 2)))
         self.assertRaises(ValueError, cpt.setMean, np.zeros(5))

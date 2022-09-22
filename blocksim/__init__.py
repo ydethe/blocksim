@@ -11,16 +11,11 @@ blocksim comes with some CLI utilities.
     Usage: blocksim [OPTIONS] COMMAND [ARGS]...
 
     Options:
-    --install-completion [bash|zsh|fish|powershell|pwsh]
-                                    Install completion for the specified shell.
-    --show-completion [bash|zsh|fish|powershell|pwsh]
-                                    Show completion for the specified shell, to
-                                    copy it or customize the installation.
+    ...
     --help                          Show this message and exit.
 
     Commands:
-    db      Manage databases.
-    header  Visualize a binary log file's header
+    gnss_sim      GNSS constellation simulation
 
 # Examples
 
@@ -32,25 +27,13 @@ blocksim comes with some CLI utilities.
 
 To run tests, just run:
 
-    hatch run test:run
-
-To only run the tests related to the unstaged files or the current branch (according to Git):
-
-    python3 -m pytest -n 8 --picked --html=report.html --self-contained-html --mpl --mpl-generate-summary=html --mpl-baseline-path=tests/baseline --mpl-results-path=results --cov blocksim tests --doctest-modules blocksim
-
-## Code coverage
-
-Once the tests are run, the code coverage is available. To have a html version in the htmlcov folder, run:
-
-    coverage html
-
-[See coverage](../coverage/index.html)
+    pdm test
 
 ## Baseline images generation
 
 If needed (for example, a new test with its associated baseline image), we might have to regenerate the baseline images. In this case, run:
 
-    python3 -m pytest -n 8 --mpl-generate-path=tests/baseline tests
+    pdm baseline
 
 ## Test reports
 
@@ -58,13 +41,11 @@ If needed (for example, a new test with its associated baseline image), we might
 
 [See test results](../tests/results/fig_comparison.html)
 
+[See coverage](../coverage/index.html)
+
 # Class diagram
 
 ![classes](./classes.png "Class diagram")
-
-# Distribution
-
-Download source archive and wheel file [distribution](../dist)
 
 """
 
@@ -86,7 +67,7 @@ from .loggers.LoggerSpec import LoggerSpec
 
 
 __author__ = "Y. BLAUDIN DE THE"
-__email__ = "yann@johncloud.fr"
+__email__ = "yann.blaudin-de-the@thalesaleniaspace.com"
 
 
 # création de l'objet logger qui va nous servir à écrire dans les logs

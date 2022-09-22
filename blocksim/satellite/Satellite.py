@@ -51,9 +51,7 @@ def sgp4_to_teme(satrec: Satrec, t_epoch: float) -> NDArray[Any, Any]:
     elif e == 3:
         raise AssertionError("Perturbed eccentricity is outside the range 0 ≤ e ≤ 1.")
     elif e == 4:
-        raise AssertionError(
-            "Length of the orbit’s semi-latus rectum has fallen below zero."
-        )
+        raise AssertionError("Length of the orbit’s semi-latus rectum has fallen below zero.")
     elif e == 6:
         raise AssertionError(
             "Orbit has decayed: the computed position is underground. (The position is still returned, in case the vector is helpful to software that might be searching for the moment of re-entry.)"
@@ -120,9 +118,7 @@ class ASatellite(AComputer):
             float: Inital epoch of TLEs (s)
 
         """
-        t0 = datetime(
-            year=1949, month=12, day=31, hour=0, minute=0, second=0, tzinfo=timezone.utc
-        )
+        t0 = datetime(year=1949, month=12, day=31, hour=0, minute=0, second=0, tzinfo=timezone.utc)
         return t0
 
     def __init__(self, name: str, tsync: datetime):
@@ -241,9 +237,7 @@ class ASatellite(AComputer):
         return traj
 
     @abstractmethod
-    def getGeocentricITRFPositionAt(
-        self, td: float
-    ) -> NDArray[Any, Any]:  # pragma: no cover
+    def getGeocentricITRFPositionAt(self, td: float) -> NDArray[Any, Any]:  # pragma: no cover
         """Abstract method that shall compute, for a simulation time td,
         an array with 3 cartesian position (m) and 3 cartesian velocity (m/s) in ITRF frame
 
@@ -305,9 +299,7 @@ class SGP4Satellite(ASatellite):
         a = (mu / ws**2) ** (1 / 3)
         e = self.orbit_eccentricity
         # https://en.wikipedia.org/wiki/Nodal_precession#Rate_of_precession
-        self.orbital_precession = (
-            -3 / 2 * (Req / (a * (1 - e**2))) ** 2 * J2 * ws * np.cos(inc)
-        )
+        self.orbital_precession = -3 / 2 * (Req / (a * (1 - e**2))) ** 2 * J2 * ws * np.cos(inc)
         self.orbit_semi_major_axis = a
         self.orbit_apoapsis = a * (1 + e)
         self.orbit_periapsis = a * (1 - e)
@@ -590,9 +582,7 @@ class CircleSatellite(ASatellite):
         ws = sqrt(mu / a**3)
         self.orbit_period = timedelta(seconds=2 * np.pi / ws)
         # https://en.wikipedia.org/wiki/Nodal_precession#Rate_of_precession
-        self.orbital_precession = (
-            -3 / 2 * (Req / (a * (1 - e**2))) ** 2 * J2 * ws * np.cos(inc)
-        )
+        self.orbital_precession = -3 / 2 * (Req / (a * (1 - e**2))) ** 2 * J2 * ws * np.cos(inc)
         self.orbit_semi_major_axis = a
         self.orbit_apoapsis = a * (1 + e)
         self.orbit_periapsis = a * (1 - e)
@@ -737,9 +727,7 @@ class CircleSatellite(ASatellite):
         pv_teme = sgp4_to_teme(satrec, dt)
         pv_itrf = teme_to_itrf(dt, pv_teme)
 
-        sat = CircleSatellite.fromITRF(
-            name=name_prefix + name, tsync=tsync, pv_itrf=pv_itrf
-        )
+        sat = CircleSatellite.fromITRF(name=name_prefix + name, tsync=tsync, pv_itrf=pv_itrf)
 
         return sat
 
@@ -786,9 +774,7 @@ def createSatellites(
     iline = 0
     satellites = []
     while True:
-        sat = prop.fromTLE(
-            tsync=tsync, tle_file=tle_file, iline=iline, name_prefix=name_prefix
-        )
+        sat = prop.fromTLE(tsync=tsync, tle_file=tle_file, iline=iline, name_prefix=name_prefix)
         if sat is None:
             break
         sat.getName

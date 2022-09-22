@@ -69,10 +69,7 @@ class VTOLPilot(LQRegulator):
         else:
             pitch_d = np.arctan((Ty * np.sin(yaw_d) + np.cos(yaw_d) * Tx) / Tz)
         sr = Tx * np.sin(yaw_d) - Ty * np.cos(yaw_d)
-        cr = (
-            np.sin(pitch_d) * (Ty * np.sin(yaw_d) + np.cos(yaw_d) * Tx)
-            + np.cos(pitch_d) * Tz
-        )
+        cr = np.sin(pitch_d) * (Ty * np.sin(yaw_d) + np.cos(yaw_d) * Tx) + np.cos(pitch_d) * Tz
         roll_d = np.arctan2(sr, cr)
 
         roll_d = np.clip(roll_d, -self.roll_d_max, self.roll_d_max)

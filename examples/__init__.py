@@ -15,6 +15,7 @@ from nbconvert import MarkdownExporter
 
 
 def _bsprint(*args, **kwargs):
+    return
     print(*args, **kwargs)
 
 
@@ -25,13 +26,6 @@ def __f1_newer_than_f2(f1, f2):
     f2time = os.path.getmtime(f2)
 
     return f1time > f2time
-
-
-def __list_notebooks(root):
-    files_with_full_path = (
-        f.path for f in os.scandir(root) if f.is_file() and f.path.endswith(".ipynb")
-    )
-    return files_with_full_path
 
 
 def __read_notebook(path):
@@ -47,12 +41,11 @@ def __execute_notebook(root, ep, nb):
     ep.preprocess(nb, {"metadata": {"path": root}})
 
 
-def __render_notebook(exporter, fic, nb, odir):
+def __render_notebook(exporter, fic, nb, md_pth):
     (body, resources) = exporter.from_notebook_node(nb)
-    pth_dst = odir / os.path.basename(fic).replace(".ipynb", ".md")
-    _bsprint("   ", pth_dst)
+    _bsprint("   ", md_pth)
     rt = os.path.basename(fic).replace(".ipynb", "")
-    with open(pth_dst, "w") as f:
+    with open(md_pth, "w") as f:
         f.write(body.replace("![png](", f"![png]({rt}_"))
 
     imgdir = Path("build/htmldoc") / "examples"
@@ -65,11 +58,10 @@ def __render_notebook(exporter, fic, nb, odir):
         f.close()
 
 
-def __create_py(root, fic):
-    pth_py = Path(root) / os.path.basename(fic).replace(".ipynb", ".py")
-    rt = os.path.basename(fic).replace(".ipynb", "")
-    _bsprint("   ", pth_py)
-    with open(pth_py, "w") as f:
+def __create_py(src, dst):
+    rt = os.path.basename(src).replace(".ipynb", "")
+    _bsprint("   ", dst)
+    with open(dst, "w") as f:
         f.write(f'"""\n.. include:: ../build/htmldoc/{rt}.md\n"""')
 
 
@@ -83,15 +75,20 @@ odir.mkdir(parents=True, exist_ok=True)
 
 # root = "examples"
 # lnb=__list_notebooks(root)
-def __process(fic):
-    _bsprint(fic)
-    root = os.path.dirname(fic)
-    nb = __read_notebook(fic)
+def __process(ipynb_pth):
+    root = os.path.dirname(ipynb_pth)
+    py_pth = Path(root) / os.path.basename(ipynb_pth).replace(".ipynb", ".py")
+    md_pth = odir / os.path.basename(fic).replace(".ipynb", ".md")
+    if not __f1_newer_than_f2(ipynb_pth, py_pth) and not __f1_newer_than_f2(ipynb_pth, md_pth):
+        return
+
+    print(f"Processing {ipynb_pth.name}")
+    nb = __read_notebook(ipynb_pth)
     if nb is None:
         return
     __execute_notebook(root, ep, nb)
-    __render_notebook(exporter, fic, nb, odir)
-    __create_py(root, fic)
+    __render_notebook(exporter, ipynb_pth, nb, md_pth)
+    __create_py(ipynb_pth, py_pth)
 
 
 # for fic in lnb:

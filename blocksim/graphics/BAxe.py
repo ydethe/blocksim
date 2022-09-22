@@ -119,9 +119,7 @@ class ABaxe(metaclass=ABCMeta):
                 x_unit = info["unit_of_x_var"]
             if info["unit_of_x_var"] != "-":
                 if x_unit != info["unit_of_x_var"]:
-                    raise AssertionError(
-                        f"Inconsistent X units: {x_label} with {info['x_label']}"
-                    )
+                    raise AssertionError(f"Inconsistent X units: {x_label} with {info['x_label']}")
                 x_label = info["x_label"]
 
             # Handling unit and label of Y axis
@@ -132,9 +130,7 @@ class ABaxe(metaclass=ABCMeta):
                 y_unit = y_unitp
             if y_unitp != "-":
                 if y_unit != y_unitp:
-                    raise AssertionError(
-                        f"Inconsistent Y units: {y_label} with {y_labelp}"
-                    )
+                    raise AssertionError(f"Inconsistent Y units: {y_label} with {y_labelp}")
                 y_label = y_labelp
 
             # Check if we shall call maxe.legend (at the end)
@@ -173,10 +169,7 @@ class ABaxe(metaclass=ABCMeta):
                 ymax = global_ymax / info["y_mult"]
             maxe.set_ylim(ymin, ymax)
 
-        if (
-            self.projection == AxeProjection.POLAR
-            or self.projection == AxeProjection.NORTH_POLAR
-        ):
+        if self.projection == AxeProjection.POLAR or self.projection == AxeProjection.NORTH_POLAR:
             ymin, ymax = self.ybounds
             if ymin is None and not np.isnan(global_ymin):
                 ymin = global_ymin / info["y_mult"]
@@ -255,9 +248,7 @@ class ABaxe(metaclass=ABCMeta):
         """
 
         if not self.projection in plottable.compatible_baxe:
-            raise AssertionError(
-                f"{self.projection} not in {plottable.compatible_baxe}"
-            )
+            raise AssertionError(f"{self.projection} not in {plottable.compatible_baxe}")
 
         self.plottable_factories.append(plottable)
 
@@ -360,9 +351,7 @@ class BAxeGraph(ABaxe):
 
     def render(self, maxe) -> "AxesSubplot":
         def _plotGraph(self, G, pos=None, arrows=None, with_labels=True, **kwds):
-            nx.draw_networkx(
-                G, pos=pos, arrows=arrows, with_labels=with_labels, ax=self, **kwds
-            )
+            nx.draw_networkx(G, pos=pos, arrows=arrows, with_labels=with_labels, ax=self, **kwds)
 
         maxe.plotGraph = types.MethodType(_plotGraph, maxe)
 

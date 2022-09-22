@@ -134,9 +134,7 @@ class ADSPMap(metaclass=ABCMeta):
 
         return axe
 
-    def findPeaksWithTransform(
-        self, transform: Callable = None, nb_peaks: int = 1
-    ) -> List[Peak]:
+    def findPeaksWithTransform(self, transform: Callable = None, nb_peaks: int = 1) -> List[Peak]:
         """Finds the peaks
         The search is performed on the tranformed samples (with the argument *transform*, or the attribute *default_transform*)
 

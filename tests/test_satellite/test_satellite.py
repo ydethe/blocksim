@@ -116,15 +116,11 @@ class TestSatellite(TestBase):
     def test_circle_satellite(self):
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
-        axe = fig.add_baxe(
-            title="", spec=gs[0, 0], projection=AxeProjection.PLATECARREE
-        )
+        axe = fig.add_baxe(title="", spec=gs[0, 0], projection=AxeProjection.PLATECARREE)
 
         tle_pth = Path(__file__).parent.parent / "TLE/gs1_gs2.tle"
         # 2021/04/15 12:00:00.0
-        t0 = datetime(
-            year=2022, month=2, day=3, hour=12, minute=0, second=0, tzinfo=timezone.utc
-        )
+        t0 = datetime(year=2022, month=2, day=3, hour=12, minute=0, second=0, tzinfo=timezone.utc)
         sats = createSatellites(tle_file=tle_pth, tsync=t0, prop=SGP4Satellite)
 
         ns = 200
@@ -185,15 +181,9 @@ class TestSatellite(TestBase):
         )
 
         self.assertAlmostEqual(satellite.orbit_mano, sat2.orbit_mano, delta=0)
-        self.assertAlmostEqual(
-            satellite.orbit_eccentricity, sat2.orbit_eccentricity, delta=0
-        )
-        self.assertAlmostEqual(
-            satellite.orbit_semi_major_axis, sat2.orbit_semi_major_axis, delta=0
-        )
-        self.assertAlmostEqual(
-            satellite.orbit_inclination, sat2.orbit_inclination, delta=0
-        )
+        self.assertAlmostEqual(satellite.orbit_eccentricity, sat2.orbit_eccentricity, delta=0)
+        self.assertAlmostEqual(satellite.orbit_semi_major_axis, sat2.orbit_semi_major_axis, delta=0)
+        self.assertAlmostEqual(satellite.orbit_inclination, sat2.orbit_inclination, delta=0)
         self.assertAlmostEqual(satellite.orbit_argp, sat2.orbit_argp, delta=0)
         self.assertAlmostEqual(satellite.orbit_node, sat2.orbit_node, delta=0)
         self.assertAlmostEqual(satellite.orbit_bstar, sat2.orbit_bstar, delta=0)
@@ -201,13 +191,9 @@ class TestSatellite(TestBase):
         self.assertAlmostEqual(satellite.orbit_nddot, sat2.orbit_nddot, delta=0)
         self.assertAlmostEqual(satellite.orbit_periapsis, sat2.orbit_periapsis, delta=0)
         self.assertAlmostEqual(satellite.orbit_apoapsis, sat2.orbit_apoapsis, delta=0)
-        self.assertAlmostEqual(
-            satellite.orbital_precession, sat2.orbital_precession, delta=0
-        )
+        self.assertAlmostEqual(satellite.orbital_precession, sat2.orbital_precession, delta=0)
         self.assertAlmostEqual(satellite.orbit_period, sat2.orbit_period, delta=0)
-        self.assertAlmostEqual(
-            satellite.tsync.timestamp(), sat2.tsync.timestamp(), delta=0
-        )
+        self.assertAlmostEqual(satellite.tsync.timestamp(), sat2.tsync.timestamp(), delta=0)
 
     def test_iss(self):
         pth = Path(__file__).parent.parent / "TLE/iss.tle"
@@ -234,9 +220,7 @@ class TestSatellite(TestBase):
         t = dt.total_seconds()
         pv = satellite.update(0, t, subpoint=None, itrf=None)["itrf"]
 
-        traj = satellite.geocentricITRFTrajectory(
-            number_of_periods=1, number_of_position=100
-        )
+        traj = satellite.geocentricITRFTrajectory(number_of_periods=1, number_of_position=100)
         self.assertEqual(len(traj), 100)
 
     @pytest.mark.mpl_image_compare(tolerance=24, savefig_kwargs={"dpi": 150})
@@ -267,9 +251,7 @@ class TestSatellite(TestBase):
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
-        axe = fig.add_baxe(
-            title="", spec=gs[0, 0], projection=AxeProjection.PLATECARREE
-        )
+        axe = fig.add_baxe(title="", spec=gs[0, 0], projection=AxeProjection.PLATECARREE)
         axe.plot(traj, color="red")
         axe.plotDeviceReach(coord=pt, elev_min=pi / 8, sat_alt=600e3, color="blue")
         axe.plot(plottable=([pt[0]], [pt[1]]), linestyle="", marker="o", color="blue")

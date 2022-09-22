@@ -43,9 +43,7 @@ class TestTrackingSteadyState(TestBase):
         self.fchirp = (1 - self.t / tau) * f1 + self.t / tau * f2
 
         self.sig = (
-            DSPSignal(
-                name="sig", samplingStart=self.t[0], samplingPeriod=self.dt, y_serie=x
-            )
+            DSPSignal(name="sig", samplingStart=self.t[0], samplingPeriod=self.dt, y_serie=x)
             .resample(
                 samplingStart=self.t[0] - 1,
                 samplingPeriod=self.dt,

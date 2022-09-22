@@ -16,9 +16,7 @@ from ..loggers.Logger import Logger
 from ..dsp import phase_unfold
 
 
-def getUnitAbbrev(
-    samp: float, unit: str, force_mult: int = None
-) -> Tuple[float, float, str, str]:
+def getUnitAbbrev(samp: float, unit: str, force_mult: int = None) -> Tuple[float, float, str, str]:
     """Given a scale factor, gives the prefix for the unit to display
 
     Args:
@@ -205,9 +203,7 @@ def createFigureFromSpec(
     return fig
 
 
-def plotVerif(
-    log: Logger, fig_title: str, *axes
-) -> "blocksim.graphics.BFigure.MplFigure":
+def plotVerif(log: Logger, fig_title: str, *axes) -> "blocksim.graphics.BFigure.MplFigure":
     """Plots a set of axes and curves on a single figure
 
     Args:
@@ -292,6 +288,9 @@ def showFigures(
 
     """Renders and shows all BFigure"""
     factory = FigureFactory()
+    if len(factory.figures) == 0:
+        return
+
     mfig = None
     for f in factory.figures:
         mfig = f.render(tight_layout=tight_layout)
@@ -304,5 +303,3 @@ def showFigures(
 
     if not one_by_one and show:
         plt.show()
-
-    return mfig

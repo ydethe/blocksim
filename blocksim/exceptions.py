@@ -72,9 +72,10 @@ class TooWeakAcceleration(Exception):
         self.acc = acc
 
     def __str__(self):
-        return (
-            "For the element '%s', the measured acceleration is too weak : %s / norm = %g"
-            % (self.elem_name, self.acc, lin.norm(self.acc))
+        return "For the element '%s', the measured acceleration is too weak : %s / norm = %g" % (
+            self.elem_name,
+            self.acc,
+            lin.norm(self.acc),
         )
 
 
@@ -84,9 +85,10 @@ class TooWeakMagneticField(Exception):
         self.acc = acc
 
     def __str__(self):
-        return (
-            "For the element '%s', the measured magnetic field is too weak : %s / norm = %g"
-            % (self.elem_name, self.acc, lin.norm(self.acc))
+        return "For the element '%s', the measured magnetic field is too weak : %s / norm = %g" % (
+            self.elem_name,
+            self.acc,
+            lin.norm(self.acc),
         )
 
 
@@ -112,9 +114,9 @@ class DuplicateStateOutputName(Exception):
         self.name = name
 
     def __str__(self):
-        return (
-            "For the element '%s', the name '%s' appears both in state and output name"
-            % (self.elem_name, self.name)
+        return "For the element '%s', the name '%s' appears both in state and output name" % (
+            self.elem_name,
+            self.name,
         )
 
 

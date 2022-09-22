@@ -46,9 +46,7 @@ class Quadri(G6DOFSystem):
         self.createParameter("l", 22.5e-2)
         self.createParameter("Jr", 3.4e-5)
 
-    def getActions(
-        self, x: NDArray[Any, Any], u: NDArray[Any, Any]
-    ) -> Iterable["array"]:
+    def getActions(self, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> Iterable["array"]:
         """From the state vector and the motors speed setpoints,
         derives force and torque applied on the system
 
@@ -77,9 +75,7 @@ class Quadri(G6DOFSystem):
 
         return force, torque
 
-    def transition(
-        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
-    ) -> NDArray[Any, Any]:
+    def transition(self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> NDArray[Any, Any]:
         force, torque = self.getActions(x, u)
 
         a = np.hstack((force, torque))

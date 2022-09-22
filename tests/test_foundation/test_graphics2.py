@@ -49,9 +49,7 @@ class TestGraphics2(unittest.TestCase):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(1, 1)
 
-        axe = fig.add_baxe(
-            spec=gs[0, 0], title="axe", projection=AxeProjection.PLATECARREE
-        )
+        axe = fig.add_baxe(spec=gs[0, 0], title="axe", projection=AxeProjection.PLATECARREE)
 
         lon = np.linspace(-pi, pi, 50)
         lat = np.cos(lon)
@@ -68,9 +66,7 @@ class TestGraphics2(unittest.TestCase):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(1, 1)
 
-        axe = fig.add_baxe(
-            spec=gs[0, 0], title="axe", projection=AxeProjection.PLATECARREE
-        )
+        axe = fig.add_baxe(spec=gs[0, 0], title="axe", projection=AxeProjection.PLATECARREE)
 
         theta = np.linspace(-pi, pi, 50)
         r = np.cos(theta)
@@ -96,9 +92,7 @@ class TestGraphics2(unittest.TestCase):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(1, 1)
 
-        axe = fig.add_baxe(
-            spec=gs[0, 0], title="axe", projection=AxeProjection.PLATECARREE
-        )
+        axe = fig.add_baxe(spec=gs[0, 0], title="axe", projection=AxeProjection.PLATECARREE)
 
         xx = np.linspace(-10, 0, 50)
         yy = np.linspace(40, 50, 100)
@@ -124,9 +118,7 @@ class TestGraphics2(unittest.TestCase):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(1, 1)
 
-        axe = fig.add_baxe(
-            spec=gs[0, 0], title="axe", projection=AxeProjection.PLATECARREE
-        )
+        axe = fig.add_baxe(spec=gs[0, 0], title="axe", projection=AxeProjection.PLATECARREE)
 
         xx = np.linspace(-10, 0, 50)
         yy = np.linspace(40, 50, 100)
@@ -179,9 +171,7 @@ class TestGraphics2(unittest.TestCase):
         r = theta / (2 * pi)
         axe.plot(plottable=(theta, r), color="red")
 
-        axe = fig.add_baxe(
-            spec=gs[0, 1], title="Polar axe", projection=AxeProjection.POLAR
-        )
+        axe = fig.add_baxe(spec=gs[0, 1], title="Polar axe", projection=AxeProjection.POLAR)
 
         theta = np.linspace(0, 2 * pi, 50)
         r = theta / (2 * pi)
@@ -213,9 +203,7 @@ class TestGraphics2(unittest.TestCase):
         axe = fig.add_baxe(spec=gs[0, 0], title="axe", projection=AxeProjection.POLAR)
         self.assertRaises(AssertionError, axe.plot, plottable=spg)
 
-        axe = fig.add_baxe(
-            spec=gs[0, 1], title="axe", projection=AxeProjection.NORTH_POLAR
-        )
+        axe = fig.add_baxe(spec=gs[0, 1], title="axe", projection=AxeProjection.NORTH_POLAR)
         self.assertRaises(AssertionError, axe.plot, plottable=spg)
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
@@ -240,9 +228,7 @@ class TestGraphics2(unittest.TestCase):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(1, 2)
 
-        axe = fig.add_baxe(
-            spec=gs[0, 0], title="Polar plot", projection=AxeProjection.POLAR
-        )
+        axe = fig.add_baxe(spec=gs[0, 0], title="Polar plot", projection=AxeProjection.POLAR)
         axe.plot(plottable=spg_pm, find_peaks=1)
 
         spg_npm = DSPNorthPolarMap(
@@ -343,9 +329,7 @@ class TestGraphics2(unittest.TestCase):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(1, 1)
 
-        axe = fig.add_baxe(
-            spec=gs[0, 0], title="Polar plot", projection=AxeProjection.DIM3D
-        )
+        axe = fig.add_baxe(spec=gs[0, 0], title="Polar plot", projection=AxeProjection.DIM3D)
         axe.plot(plottable=spg, find_peaks=1)
 
         return fig.render()
@@ -358,9 +342,7 @@ class TestGraphics2(unittest.TestCase):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(1, 1)
 
-        axe = fig.add_baxe(
-            spec=gs[0, 0], title="axe", projection=AxeProjection.RECTILINEAR
-        )
+        axe = fig.add_baxe(spec=gs[0, 0], title="axe", projection=AxeProjection.RECTILINEAR)
 
         theta = np.linspace(-pi, pi, 50)
         r = np.cos(theta)
@@ -386,9 +368,7 @@ class TestGraphics2(unittest.TestCase):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(1, 2)
 
-        axe = fig.add_baxe(
-            spec=gs[0, 0], title="Polar plot", projection=AxeProjection.POLAR
-        )
+        axe = fig.add_baxe(spec=gs[0, 0], title="Polar plot", projection=AxeProjection.POLAR)
         axe.plot(plottable=(theta, r), color="red")
 
         axe = fig.add_baxe(
@@ -427,9 +407,7 @@ class TestGraphics2(unittest.TestCase):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(1, 1)
 
-        axe = fig.add_baxe(
-            spec=gs[0, 0], title="axe", projection=AxeProjection.RECTILINEAR
-        )
+        axe = fig.add_baxe(spec=gs[0, 0], title="axe", projection=AxeProjection.RECTILINEAR)
 
         axe.plot(plottable=self.spg, find_peaks=1)
 
@@ -456,12 +434,8 @@ class TestGraphics2(unittest.TestCase):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(1, 1)
 
-        axe = fig.add_baxe(
-            spec=gs[0, 0], title="Polar plot", projection=AxeProjection.RECTILINEAR
-        )
-        self.assertRaises(
-            AssertionError, axe.plot, plottable=spg, fill="pcolormesh", find_peaks=1
-        )
+        axe = fig.add_baxe(spec=gs[0, 0], title="Polar plot", projection=AxeProjection.RECTILINEAR)
+        self.assertRaises(AssertionError, axe.plot, plottable=spg, fill="pcolormesh", find_peaks=1)
 
     def test_3d_plot(self):
         fig = FigureFactory.create(title="Figure", projection=FigureProjection.EARTH3D)
@@ -472,9 +446,7 @@ class TestGraphics2(unittest.TestCase):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(2, 1)
 
-        axe = fig.add_baxe(
-            spec=gs[0, 0], title="axe", projection=AxeProjection.RECTILINEAR
-        )
+        axe = fig.add_baxe(spec=gs[0, 0], title="axe", projection=AxeProjection.RECTILINEAR)
 
         theta = np.linspace(0, 0.5, 50)
         r = theta * 2

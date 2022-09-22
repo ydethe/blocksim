@@ -3,7 +3,7 @@ from typing import Callable, Any
 
 from nptyping import NDArray, Shape
 import numpy as np
-from numpy import exp, pi, sqrt, cos
+from numpy import exp, pi, sqrt, cos, log2
 from numpy.fft import fft, fftshift
 from scipy.signal import correlate
 
@@ -255,8 +255,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
             name=self.name,
             samplingStart=self.samplingStart,
             samplingPeriod=self.samplingPeriod,
-            y_serie=self.y_serie
-            * np.exp(1j * 2 * np.pi * fdop * self.generateXSerie()),
+            y_serie=self.y_serie * np.exp(1j * 2 * np.pi * fdop * self.generateXSerie()),
             default_transform=np.real,
         )
 
@@ -286,11 +285,12 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
     def energy(self) -> float:
         return np.real(self.y_serie @ self.y_serie.conj())
 
-    def fft(self, win: str = "ones") -> "blocksim.dsp.DSPSpectrum.DSPSpectrum":
+    def fft(self, win: str = "ones", nfft: int = None) -> "blocksim.dsp.DSPSpectrum.DSPSpectrum":
         """Applies the discrete Fourier transform
 
         Args:
             win: The window to be applied. See `blocksim.dsp.get_window`
+            nfft: Number of points to use to compute the fft. Defaults to the size of the DSPSignal
 
         Returns:
             The resulting `blocksim.dsp.DSPSpectrum.DSPSpectrum`
@@ -299,13 +299,16 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         from .DSPSpectrum import DSPSpectrum
 
         n = len(self)
+        if nfft is None:
+            nfft = n
+
         w = get_window(win, n)
-        y = fftshift(fft(self.y_serie * w) / n)
+        y = fftshift(fft(self.y_serie * w, n=nfft) / n)
 
         return DSPSpectrum(
             name="DSPSpectrum %s" % self.name,
             samplingStart=-0.5 / self.samplingPeriod,
-            samplingPeriod=1 / self.samplingPeriod / n,
+            samplingPeriod=1 / self.samplingPeriod / nfft,
             y_serie=y,
         )
 
@@ -412,7 +415,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
             The resulting DSPSignal
 
         """
-        ac = self.correlate(self)
+        ac = self.correlate(self, win=win)
         return ac
 
     def applyFunction(self, fct: Callable) -> "blocksim.dsp.DSPSignal.DSPSignal":
@@ -456,9 +459,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
     ) -> "blocksim.dsp.DSPSignal.DSPSignal":
         return self.convolve(y)
 
-    def convolve(
-        self, y: "blocksim.dsp.DSPSignal.DSPSignal"
-    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
+    def convolve(self, y: "blocksim.dsp.DSPSignal.DSPSignal") -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Returns the convolution with another DSPSignal
 
         Args:
@@ -471,9 +472,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         z = y.reverse().conj()
         return self.correlate(z)
 
-    def forceSamplingStart(
-        self, samplingStart: float
-    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
+    def forceSamplingStart(self, samplingStart: float) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Moves the first sample timestamp to the spec ified value.
         All the other samples are shifted by the same value.
 
@@ -489,6 +488,75 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
             samplingStart=samplingStart,
             samplingPeriod=self.samplingPeriod,
             y_serie=self.y_serie,
+            default_transform=self.default_transform,
+        )
+        return res
+
+    def decimate(self, q: int, win: str = "ones") -> "blocksim.dsp.DSPSignal.DSPSignal":
+        from .DSPFilter import BandpassDSPFilter
+
+        Nt = 64
+        q_casc = Nt // 8
+
+        log_q_casc = log2(q_casc)
+        x = log2(q) / log_q_casc
+        fr, nb_casc = np.modf(x)
+        nb_casc = int(nb_casc)
+        q_fin = int(np.round(2 ** (fr * log_q_casc), 0))
+
+        # Here we have **roughly**: q = q_casc**nb_casc * q_fin
+        q_eff = q_casc**nb_casc * q_fin
+
+        samps = self.y_serie
+        dtf = 0.0
+        for k_casc in range(nb_casc):
+            filt = BandpassDSPFilter(
+                name="decim",
+                f_low=0,
+                f_high=1 / (2 * q_casc * self.samplingPeriod),
+                numtaps=Nt,
+                samplingPeriod=self.samplingPeriod,
+                win=win,
+            )
+
+            dtf += filt.getGroupDelay()
+
+            y_filt = filt.process(samps)
+
+            samps = y_filt[::q_casc]
+
+        if q_fin > 1:
+            filt = BandpassDSPFilter(
+                name="decim",
+                f_low=0,
+                f_high=1 / (2 * q_fin * self.samplingPeriod),
+                numtaps=Nt,
+                samplingPeriod=self.samplingPeriod,
+                win=win,
+            )
+
+            dtf += filt.getGroupDelay()
+
+            y_filt = filt.process(samps)
+
+            samps = y_filt[::q_fin]
+
+        res = DSPSignal(
+            name=self.name,
+            samplingStart=self.samplingStart - dtf,
+            samplingPeriod=self.samplingPeriod * q_eff,
+            y_serie=samps,
+            default_transform=self.default_transform,
+        )
+
+        return res
+
+    def removeDC(self) -> "blocksim.dsp.DSPSignal.DSPSignal":
+        res = DSPSignal(
+            name=self.name,
+            samplingStart=self.samplingStart,
+            samplingPeriod=self.samplingPeriod,
+            y_serie=self.y_serie - np.mean(self.y_serie),
             default_transform=self.default_transform,
         )
         return res

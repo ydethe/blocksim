@@ -57,9 +57,7 @@ def plot_polar_view(cfg: Munch, tplot=None, axe=None):
     if axe is None:
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
-        axe = fig.add_baxe(
-            title=title, spec=gs[0, 0], projection=AxeProjection.NORTH_POLAR
-        )
+        axe = fig.add_baxe(title=title, spec=gs[0, 0], projection=AxeProjection.NORTH_POLAR)
 
     list_az = []
     list_el = []

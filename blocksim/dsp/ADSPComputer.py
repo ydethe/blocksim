@@ -77,9 +77,7 @@ class ADSPComputer(AComputer):
         """
         if len(data.shape) == 1:
             assert len(data) % self.input_size == 0
-            data = data.reshape(
-                (self.input_size, len(data) // self.input_size), order="F"
-            )
+            data = data.reshape((self.input_size, len(data) // self.input_size), order="F")
 
         ny, n = data.shape
         assert ny == self.input_size
@@ -149,9 +147,7 @@ class ADSPComputer(AComputer):
         ny = self.output_size
 
         if len(strm) % ny != 0:
-            raise AssertionError(
-                f"strm shall have a length multiple of {ny}. Got {strm.shape}"
-            )
+            raise AssertionError(f"strm shall have a length multiple of {ny}. Got {strm.shape}")
 
         n = len(strm) // ny
 

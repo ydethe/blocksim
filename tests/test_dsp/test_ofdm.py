@@ -29,17 +29,12 @@ class TestOFDM(TestBase):
         # Random QPSK payload
         inv_sq_2 = 1 / sqrt(2)
         self.data = (
-            (
-                np.random.randint(low=0, high=2, size=(len(self.dataCarriers), nsymb))
-                * 2
-                - 1
-            )
+            (np.random.randint(low=0, high=2, size=(len(self.dataCarriers), nsymb)) * 2 - 1)
             * inv_sq_2
             * 1j
         )
         self.data += (
-            np.random.randint(low=0, high=2, size=(len(self.dataCarriers), nsymb)) * 2
-            - 1
+            np.random.randint(low=0, high=2, size=(len(self.dataCarriers), nsymb)) * 2 - 1
         ) * inv_sq_2
 
     @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})

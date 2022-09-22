@@ -17,18 +17,23 @@ class TestSpectre(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_spectre(self):
         fs = 200
-        f0 = 10
+        f0 = 9.1
         ns = int(fs / f0)
 
         t1 = np.arange(ns) / fs
         x1 = exp(1j * 2 * pi * f0 * t1) + 2 * exp(1j * 2 * pi * 3 * f0 * t1)
         s1 = DSPSignal(name="s1", samplingStart=0, samplingPeriod=1 / fs, y_serie=x1)
-        sp = s1.fft()
+        sp = s1.fft(nfft=64)
+        sp0 = s1.fft()
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
         axe = fig.add_baxe(title="", spec=gs[0, 0])
-        axe.plot(sp)
+
+        axe.plot(([f0, f0], [0, 4]), linestyle="--", color="black", label="Expected")
+        axe.plot(([3 * f0, 3 * f0], [0, 4]), linestyle="--", color="black")
+        axe.plot(sp, label="nfft=64")
+        axe.plot(sp0, label="nfft=None")
 
         return fig.render()
 
@@ -72,4 +77,12 @@ class TestSpectre(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+    # exit(0)
+
+    from blocksim.graphics import showFigures
+
+    a = TestSpectre()
+    a.test_spectre()
+
+    showFigures()

@@ -7,28 +7,21 @@ from scipy import linalg as lin
 
 from skyfield.api import Loader
 
-import pytest
-
-try:
-    panda3d = pytest.importorskip("panda3d")
-
-    from direct.showbase.ShowBase import ShowBase
-    from panda3d.core import (
-        GeomVertexFormat,
-        GeomVertexData,
-        GeomVertexWriter,
-        Geom,
-        GeomNode,
-        Texture,
-        PointLight,
-        TextureStage,
-        GeomTristrips,
-        GeomLinestrips,
-        NodePath,
-        LVecBase3,
-    )
-except BaseException as e:
-    ShowBase = object
+from direct.showbase.ShowBase import ShowBase
+from panda3d.core import (
+    GeomVertexFormat,
+    GeomVertexData,
+    GeomVertexWriter,
+    Geom,
+    GeomNode,
+    Texture,
+    PointLight,
+    TextureStage,
+    GeomTristrips,
+    GeomLinestrips,
+    NodePath,
+    LVecBase3,
+)
 
 from ..utils import resource_path
 from ..constants import Req, rf
@@ -181,9 +174,7 @@ class B3DPlotter(ShowBase):
 
         return nodePath
 
-    def plotCube(
-        self, itrf_position: list, size: float, color: list = None
-    ) -> "NodePath":
+    def plotCube(self, itrf_position: list, size: float, color: list = None) -> "NodePath":
         """
         Plots a cube
 
@@ -278,9 +269,7 @@ class B3DPlotter(ShowBase):
             number_of_latcircles=45,
         )
 
-    def plotSphere(
-        self, texture: str, number_of_meridians, number_of_latcircles
-    ) -> "NodePath":
+    def plotSphere(self, texture: str, number_of_meridians, number_of_latcircles) -> "NodePath":
         """
         Plots a textured sphere
 

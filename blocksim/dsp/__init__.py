@@ -133,33 +133,31 @@ def phase_unfold_deg(sig: NDArray[Any, Any], eps: float = 1e-9) -> NDArray[Any, 
     return 180 / pi * phase_unfold(sig, eps=eps)
 
 
-def analyse_DV(
-    wavelength: float,
+def delay_doppler_analysis(
     period: float,
-    dist0: float,
-    damb: float,
-    vrad0: float,
-    vamb: float,
+    delay_search_center: float,
+    delay_search_win: float,
+    doppler_search_center: float,
+    doppler_search_win: float,
     seq: "blocksim.dsp.DSPSignal.DSPSignal",
     rxsig: "blocksim.dsp.DSPSignal.DSPSignal",
-    nv: int,
+    ndop: int,
     n_integration: int = -1,
     coherent: bool = True,
     progress_bar: bool = False,
     corr_window: str = "hamming",
 ) -> "blocksim.dsp.DSPMap.DSPRectilinearMap":
-    """Distance / velocity analysis for acquisition
+    """Delay / doppler analysis for acquisition
 
     Args:
-        wavelength: Wavelength of the carrier (m)
         period: Window length (s)
-        dist0: Center of the distance research domain (m)
-        damb: Width of the distance research domain (m)
-        vrad0: Center of the velocity research domain (m/s)
-        vamb: Width of the velocity research domain (m/s)
+        delay_search_center: Center of the delay research domain (s)
+        delay_search_win: Width of the delay research domain (s)
+        doppler_search_center: Center of the doppler research domain (Hz)
+        doppler_search_win: Width of the velocity research domain (m/s)
         seq: Local replica of the signal
         rxsig: Received signal to be analysed
-        nv: Number of velocity hypothesis to be tested
+        ndop: Number of doppler hypothesis to be tested
         n_integration: Number of period to sum. A value of -1 means to sum everything
         coherent: To use coherent integration. Non coherent otherwise
         progress_bar: To turn on the display of a progress bar
@@ -173,40 +171,46 @@ def analyse_DV(
     from .DSPMap import DSPRectilinearMap
     from ..graphics import getUnitAbbrev
 
-    if nv % 2 == 0:
-        nv += 1
+    if ndop % 2 == 0:
+        ndop += 1
 
     dt = rxsig.samplingPeriod
 
-    if period < damb / c:
+    if period < delay_search_win:
         disp_p, _, lbl_p, unit_p = getUnitAbbrev(samp=period, unit="s")
-        disp_d, _, lbl_d, unit_d = getUnitAbbrev(samp=damb / c, unit="s")
+        disp_d, _, lbl_d, unit_d = getUnitAbbrev(samp=delay_search_win, unit="s")
         raise AssertionError(
-            f"Period window is shorter than distance window ({disp_p:.2f} {lbl_p}{unit_p} vs {disp_d:.2f} {lbl_d}{unit_d})"
+            f"Period window is shorter than delay window ({disp_p:.2f} {lbl_p}{unit_p} vs {disp_d:.2f} {lbl_d}{unit_d})"
         )
 
     # Number of sample in a period
     nb_samples_in_period = int(period / dt)
 
-    # Number of samples in a distance window
-    nb_samples_in_damb = int(damb / c / dt)
+    # Number of samples in a delay window
+    nb_samples_in_delay_win = int(delay_search_win / dt)
 
-    # Sample index of the center distance in the first window
-    n0 = int(dist0 / c / dt)
+    # Sample index of the center delay in the first window
+    n0 = int(delay_search_center / dt)
 
-    kmin = n0 - nb_samples_in_damb // 2
-    kmax = kmin + nb_samples_in_damb
-    img = np.empty((nb_samples_in_damb, nv), dtype=np.complex128)
+    kmin = n0 - nb_samples_in_delay_win // 2
+    kmax = kmin + nb_samples_in_delay_win
 
-    tab_v = np.linspace(vrad0 - vamb / 2, vrad0 + vamb / 2, nv)
+    if kmax > nb_samples_in_period:
+        raise AssertionError(f"Doppler window larger than period")
+
+    img = np.empty((nb_samples_in_delay_win, ndop), dtype=np.complex128)
+
+    tab_dop = np.linspace(
+        doppler_search_center - doppler_search_win / 2,
+        doppler_search_center + doppler_search_win / 2,
+        ndop,
+    )
     if progress_bar:
-        v_gen = rp.track(tab_v)
+        dop_gen = rp.track(tab_dop, description="DV analyze...")
     else:
-        v_gen = tab_v
+        dop_gen = tab_dop
 
-    for kv, vrad in enumerate(v_gen):
-        fd = -vrad / wavelength
-
+    for kd, fd in enumerate(dop_gen):
         # Doppler compensation
         dop_free = rxsig.applyDopplerFrequency(fdop=-fd)
 
@@ -221,19 +225,20 @@ def analyse_DV(
             coherent=coherent,
         )
 
-        img[:, kv] = zi.y_serie[kmin:kmax]
+        img[:, kd] = zi.y_serie[kmin:kmax]
 
     spg = DSPRectilinearMap(
         name="spg",
-        samplingXStart=tab_v[0] - vrad0,
-        samplingXPeriod=tab_v[1] - tab_v[0],
+        samplingXStart=tab_dop[0],
+        samplingXPeriod=tab_dop[1] - tab_dop[0],
         samplingYStart=zi.samplingStart,
         samplingYPeriod=zi.samplingPeriod,
         img=img,
         default_transform=np.abs,
     )
-    spg.name_of_x_var = "Radial Velocity (%.1f m/s delta)" % vrad0
-    spg.unit_of_x_var = "m/s"
+
+    spg.name_of_x_var = "Doppler"
+    spg.unit_of_x_var = "Hz"
     spg.name_of_y_var = "Delay"
     spg.unit_of_y_var = "s"
 
@@ -284,9 +289,9 @@ def createGoldSequence(
     sv: Union[List[int], int],
     repeat=1,
     chip_rate: float = 1.023e6,
-    sampling_rate: float = 10.23e6,
     samplingStart: float = 0,
     bitmap=[-1, 1],
+    samples_per_chip: int = 1,
 ) -> "blocksim.dsp.DSPSignal.DSPSignal":
     """Builds Gold sequence
 
@@ -295,9 +300,9 @@ def createGoldSequence(
         sv: Identifier of the SV. Can be either the PRN number (int), or the code tap selection (list of 2 int)
         repeat: Number of copies of a 1023 Gold sequence
         chip_rate: Chip rate (Hz)
-        sampling_rate: Sampling frequency of the signal (Hz)
         samplingStart: First date of the sample of the signal (s)
         bitmap: List of 2 values to map the bits on. [0, 1] returns a sequence with 0 and 1
+        samples_per_chip: Number of samples per chip
 
     Returns:
         The DSPSignal. All the samples are in the given bitmap
@@ -350,22 +355,19 @@ def createGoldSequence(
     ca = []
     for _ in range(1023):
         g1 = shift(G1, [3, 10], [10])  # feedback 3,10, output 10
-        g2 = shift(
-            G2, [2, 3, 6, 8, 9, 10], sv
-        )  # feedback 2,3,6,8,9,10, output sv for sat
+        g2 = shift(G2, [2, 3, 6, 8, 9, 10], sv)  # feedback 2,3,6,8,9,10, output sv for sat
         ca.extend([(g1 + g2) % 2])
 
     ca = np.array(ca, dtype=np.int8)
-    itp = interp1d(np.linspace(0, 1, 1023), ca, kind="nearest", assume_sorted=True)
-    cb = itp(np.linspace(0, 1, int(np.round(1023 * sampling_rate / chip_rate, 0))))
+    ca = np.repeat(ca, samples_per_chip)
 
-    bits = np.tile(cb, reps=repeat)
+    bits = np.tile(ca, reps=repeat)
     a, b = bitmap
     seq = (b - a) * bits + a
     sig = DSPSignal(
         name=name,
         samplingStart=samplingStart,
-        samplingPeriod=1 / sampling_rate,
+        samplingPeriod=1 / chip_rate / samples_per_chip,
         y_serie=seq,
         dtype=np.int64,
     )
@@ -410,7 +412,5 @@ def createZadoffChu(
     from .DSPSignal import DSPSignal
 
     seq = zadoff_chu(u, n_zc)
-    sig = DSPSignal(
-        name=name, samplingStart=0, samplingPeriod=1 / sampling_freq, y_serie=seq
-    )
+    sig = DSPSignal(name=name, samplingStart=0, samplingPeriod=1 / sampling_freq, y_serie=seq)
     return sig

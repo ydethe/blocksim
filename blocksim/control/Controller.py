@@ -73,9 +73,7 @@ class PIDController(AController):
 
     __slots__ = []
 
-    def __init__(
-        self, name: str, shape_estimation: tuple, snames: Iterable[str], coeffs: float
-    ):
+    def __init__(self, name: str, shape_estimation: tuple, snames: Iterable[str], coeffs: float):
         AController.__init__(
             self,
             name,

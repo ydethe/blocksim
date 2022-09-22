@@ -270,10 +270,7 @@ class AWGNOutput(Output):
     def resetCallback(self, t0: float):
         np.random.seed(self.seed)
 
-        if (
-            self.mean.shape[0] != self.cov.shape[0]
-            or self.mean.shape[0] != self.cov.shape[1]
-        ):
+        if self.mean.shape[0] != self.cov.shape[0] or self.mean.shape[0] != self.cov.shape[1]:
             raise ValueError(
                 "[ERROR]Bad dimensions for the covariance. %s instead of %s"
                 % (str(self.cov.shape), str((self.mean.shape[0], self.mean.shape[0])))
@@ -552,9 +549,7 @@ class AComputer(ABaseNode):
             An 2D array of the output
 
         """
-        val = logger.getMatrixOutput(
-            name="%s_%s" % (self.getName(), output_name), dtype=dtype
-        )
+        val = logger.getMatrixOutput(name="%s_%s" % (self.getName(), output_name), dtype=dtype)
         return val
 
     def resetCallback(self, t0: float):
@@ -576,9 +571,7 @@ class AComputer(ABaseNode):
 
         return isinstance(self, AController)
 
-    def setInitialStateForOutput(
-        self, initial_state: NDArray[Any, Any], output_name: str
-    ):
+    def setInitialStateForOutput(self, initial_state: NDArray[Any, Any], output_name: str):
         """Sets the initial state vector for a given output
 
         Args:

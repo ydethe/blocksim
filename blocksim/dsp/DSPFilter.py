@@ -281,9 +281,7 @@ class ArbitraryDSPFilter(ADSPFilter):
                     - Bessel/Thomson: 'bessel'
 
         """
-        b, a = iirdesign(
-            wp, ws, gpass, gstop, analog=False, ftype=ftype, output="ba", fs=fs
-        )
+        b, a = iirdesign(wp, ws, gpass, gstop, analog=False, ftype=ftype, output="ba", fs=fs)
         filt = ArbitraryDSPFilter(
             name=name,
             samplingPeriod=1 / fs,
@@ -439,20 +437,16 @@ class BandpassDSPFilter(ADSPFilter):
             nt = numtaps
         self.createParameter(name="numtaps", value=nt)
 
-    def _estimNumTaps(self, d: float = 10e-2) -> int:
-        nt = int(
-            -2
-            / 3
-            * log10(10 * d**2)
-            * self.samplingPeriod
-            / (self.f_high - self.f_low)
-        )
+    def _estimNumTaps(self, d1: float = 1e-4, d2=1e-3) -> int:
+        # https://dsp.stackexchange.com/a/31077
+        fs = 1 / self.samplingPeriod
+        Df = self.f_high - self.f_low
+        nt = int(-2 / 3 * log10(10 * d1 * d2) * fs / Df)
         return nt
 
     def generateCoefficients(self) -> NDArray[Any, Any]:
         fs = 1 / self.samplingPeriod
 
-        # https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need/31077
         d = 10e-2
         if self._estimNumTaps(d) > self.numtaps:
             raise ValueError(self.numtaps, nt)

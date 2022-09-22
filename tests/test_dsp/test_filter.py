@@ -116,9 +116,7 @@ class TestFilter(TestBase):
             fstart=-bp / 2,
             fend=bp / 2,
         )
-        s2 = s1.resample(
-            samplingStart=-1, samplingPeriod=1 / fs, samplingStop=s1.samplingStop + 1
-        )
+        s2 = s1.resample(samplingStart=-1, samplingPeriod=1 / fs, samplingStop=s1.samplingStop + 1)
         s3 = s2.applyDopplerFrequency(fdop=50)
         sim.addComputer(s3)
 
@@ -164,9 +162,7 @@ class TestFilter(TestBase):
             fstart=-bp / 2,
             fend=bp / 2,
         )
-        sig = s1.resample(
-            samplingStart=-1, samplingPeriod=1 / fs, samplingStop=s1.samplingStop + 1
-        )
+        sig = s1.resample(samplingStart=-1, samplingPeriod=1 / fs, samplingStop=s1.samplingStop + 1)
         # sig = sig.applyGaussianNoise(2e-3)
 
         tps = np.arange(ns) / fs
@@ -215,9 +211,7 @@ class TestFilter(TestBase):
             axe_amp.plot(bode, transform=bode.to_db_lim(-100), label=method)
             axe_pha.plot(bode, transform=phase_unfold_deg)
 
-        axe_amp.plot(
-            plottable=((2, 3), (0, 0)), linestyle="--", color="black", linewidth=2
-        )
+        axe_amp.plot(plottable=((2, 3), (0, 0)), linestyle="--", color="black", linewidth=2)
 
         return fig.render()
 
@@ -247,9 +241,7 @@ class TestFilter(TestBase):
 
         sys = dlti(num, den, dt=1 / fs)
         w, mag, phase = sys.bode()
-        axe_amp.plot(
-            plottable=(w / (2 * pi), mag), label="scipy"
-        )  # Bode magnitude plot
+        axe_amp.plot(plottable=(w / (2 * pi), mag), label="scipy")  # Bode magnitude plot
         axe_pha.plot(plottable=(w / (2 * pi), phase), label="scipy")  # Bode phase plot
 
         return fig.render()
@@ -314,9 +306,7 @@ class TestFilter(TestBase):
         axe_pha.plot(bode, transform=phase_unfold_deg)
 
         w, mag, phase = sys.bode(n=100)
-        axe_amp.plot(
-            plottable=(w / (2 * pi), mag), label="scipy"
-        )  # Bode magnitude plot
+        axe_amp.plot(plottable=(w / (2 * pi), mag), label="scipy")  # Bode magnitude plot
         axe_pha.plot(plottable=(w / (2 * pi), phase), label="scipy")  # Bode phase plot
 
         return fig.render()

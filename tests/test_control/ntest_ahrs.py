@@ -133,9 +133,7 @@ class TestAHRS(TestBase):
         # Rotation autour de l'axe de tangage
         # ==================================================
         x0 = np.zeros(13)
-        x0[:3] = geodetic_to_itrf(
-            lon=rad(1.4433625157254533), lat=rad(43.60441294247197), h=143
-        )
+        x0[:3] = geodetic_to_itrf(lon=rad(1.4433625157254533), lat=rad(43.60441294247197), h=143)
         x0[10:13] = np.array([0.0, wangle, 0.0])
         q = euler_to_quat(roll=0.0, pitch=angle_ini, yaw=pi / 2)
         x0[6:10] = q

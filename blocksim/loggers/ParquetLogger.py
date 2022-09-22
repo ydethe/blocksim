@@ -65,9 +65,7 @@ class Logger(object, metaclass=Singleton):
         return True
 
     @hookimpl
-    def getRawValue(
-        self, log: "blocksim.loggers.Logger.Logger", name: str
-    ) -> NDArray[Any, Any]:
+    def getRawValue(self, log: "blocksim.loggers.Logger.Logger", name: str) -> NDArray[Any, Any]:
         return
 
     @hookimpl
@@ -125,7 +123,5 @@ class Logger(object, metaclass=Singleton):
         return 0
 
     @hookimpl
-    def log(
-        self, log: "blocksim.loggers.Logger.Logger", name: str, val: float, tindex: int
-    ) -> int:
+    def log(self, log: "blocksim.loggers.Logger.Logger", name: str, val: float, tindex: int) -> int:
         return 1

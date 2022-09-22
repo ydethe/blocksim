@@ -39,9 +39,7 @@ class TestSignalOperations(TestBase):
         self.assertAlmostEqual(Et, 150.0, delta=1e-12)
 
     def test_truncate(self):
-        sig = DSPSignal(
-            name="sig", samplingStart=0, samplingPeriod=1, y_serie=np.arange(10)
-        )
+        sig = DSPSignal(name="sig", samplingStart=0, samplingPeriod=1, y_serie=np.arange(10))
         sig2 = sig.truncate(samplingStart=-1.2, samplingStop=10.0, zero_padding=True)
 
         x_ref = np.arange(-1, 11)
@@ -54,9 +52,7 @@ class TestSignalOperations(TestBase):
         assert_array_almost_equal_nulp(sig2.y_serie, y_ref)
 
     def test_resample(self):
-        sig = DSPSignal(
-            name="sig", samplingStart=0, samplingPeriod=1, y_serie=np.arange(10)
-        )
+        sig = DSPSignal(name="sig", samplingStart=0, samplingPeriod=1, y_serie=np.arange(10))
         sig2 = sig.resample(samplingStart=-1.2, samplingStop=10.8)
 
         x_ref = np.arange(13) - 1.2
@@ -75,15 +71,11 @@ class TestSignalOperations(TestBase):
 
         t1 = np.arange(ns) / fs
         x1 = exp(1j * 2 * pi * f0 * t1)
-        s1 = DSPSignal(
-            name="s1", samplingStart=t1[0], samplingPeriod=1 / fs, y_serie=x1
-        )
+        s1 = DSPSignal(name="s1", samplingStart=t1[0], samplingPeriod=1 / fs, y_serie=x1)
 
         t2 = -1 / fs + np.arange(3 * ns - 3) / (3 * fs)
         x2 = exp(-1j * 2 * pi * f0 * t2)
-        s2 = DSPSignal(
-            name="s2", samplingStart=t2[0], samplingPeriod=1 / (3 * fs), y_serie=x2
-        )
+        s2 = DSPSignal(name="s2", samplingStart=t2[0], samplingPeriod=1 / (3 * fs), y_serie=x2)
 
         z = s1 * s2
 
@@ -100,15 +92,11 @@ class TestSignalOperations(TestBase):
 
         z = s1 * 2
 
-        self.assertAlmostEqual(
-            np.max(np.abs(z.y_serie - 2 * s1.y_serie)), 0, delta=1e-3
-        )
+        self.assertAlmostEqual(np.max(np.abs(z.y_serie - 2 * s1.y_serie)), 0, delta=1e-3)
 
         z2 = 3 * s1
 
-        self.assertAlmostEqual(
-            np.max(np.abs(z2.y_serie - 3 * s1.y_serie)), 0, delta=1e-3
-        )
+        self.assertAlmostEqual(np.max(np.abs(z2.y_serie - 3 * s1.y_serie)), 0, delta=1e-3)
 
     def test_add(self):
         fs = 200
@@ -121,9 +109,7 @@ class TestSignalOperations(TestBase):
 
         t2 = np.arange(3 * ns - 2) / (3 * fs)
         x2 = exp(-1j * 2 * pi * f0 * t2)
-        s2 = DSPSignal(
-            name="s2", samplingStart=0, samplingPeriod=1 / (3 * fs), y_serie=x2
-        )
+        s2 = DSPSignal(name="s2", samplingStart=0, samplingPeriod=1 / (3 * fs), y_serie=x2)
 
         z = s1 + s2
         z_ref = 2 * np.cos(2 * pi * f0 * t2)
@@ -158,9 +144,7 @@ class TestSignalOperations(TestBase):
 
         t2 = np.arange(3 * ns - 2) / (3 * fs)
         x2 = exp(-1j * 2 * pi * f0 * t2)
-        s2 = DSPSignal(
-            name="s2", samplingStart=0, samplingPeriod=1 / (3 * fs), y_serie=x2
-        )
+        s2 = DSPSignal(name="s2", samplingStart=0, samplingPeriod=1 / (3 * fs), y_serie=x2)
 
         z = s1 - s2
         z_ref = 2 * 1j * np.sin(2 * pi * f0 * t2)

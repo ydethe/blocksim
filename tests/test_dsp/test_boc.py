@@ -21,7 +21,7 @@ class TestBOC(TestBase):
         fc = 1.023e6
         m = 1
         n = 1
-        prn = createGoldSequence(name="PRN", sv=[3, 7], chip_rate=fc)
+        prn = createGoldSequence(name="PRN", sv=[3, 7], chip_rate=fc, samples_per_chip=10)
         boc = BOCMapping(name="BOC", f_ref=fc, m=m, n=n)
 
         sim = Simulation()
@@ -77,8 +77,8 @@ class TestBOC(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
-    exit(0)
+    # unittest.main()
+    # exit(0)
 
     from blocksim.graphics import showFigures
 

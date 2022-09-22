@@ -26,9 +26,7 @@ class TestGNSSSimPlot(TestBase):
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 2)
-        axe = fig.add_baxe(
-            title=cfg.cfg_file, spec=gs[0, 0], projection=AxeProjection.NORTH_POLAR
-        )
+        axe = fig.add_baxe(title=cfg.cfg_file, spec=gs[0, 0], projection=AxeProjection.NORTH_POLAR)
         plot_polar_view(cfg, axe=axe)
 
         axe = fig.add_baxe(title="", spec=gs[0, 1])

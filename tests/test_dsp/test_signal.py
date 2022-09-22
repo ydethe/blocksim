@@ -17,6 +17,29 @@ from TestBase import TestBase
 
 class TestSignal(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_decimate(self):
+        fs = 192 * 203
+        f0 = 9.1
+        ns = int(fs / f0)
+
+        t1 = np.arange(ns) / fs
+        x1 = exp(1j * 2 * pi * f0 * t1) + 2 * exp(1j * 2 * pi * 3 * f0 * t1)
+        s1 = DSPSignal(name="s1", samplingStart=0, samplingPeriod=1 / fs, y_serie=x1)
+        s2 = s1.decimate(192)  # type: DSPSignal
+        sp = s2.fft()
+        print(1 / s2.samplingPeriod)
+
+        print(sp.findPeaksWithTransform(nb_peaks=2))
+
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0])
+
+        axe.plot(sp)
+
+        return fig.render()
+
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_correlation(self):
         fs = 20e6
         bp = fs / 5
@@ -87,9 +110,7 @@ class TestSignal(TestBase):
         pha_ref = 2 * pi * f0 * tps + pi / 2
 
         x = np.exp(1j * pha_ref)
-        sig = DSPSignal(
-            name="sig", samplingStart=tps[0], samplingPeriod=1 / fs, y_serie=x
-        )
+        sig = DSPSignal(name="sig", samplingStart=tps[0], samplingPeriod=1 / fs, y_serie=x)
 
         pha = sig.getUnfoldedPhase()
 
@@ -169,9 +190,7 @@ class TestSignal(TestBase):
             y_serie=np.zeros_like(tps),
         )
 
-        sig = DSPSignal.fromBinaryRandom(
-            name="sig", samplingPeriod=0.1, size=10, seed=14887
-        )
+        sig = DSPSignal.fromBinaryRandom(name="sig", samplingPeriod=0.1, size=10, seed=14887)
         testing.assert_equal(sig.y_serie, [0, 1, 0, 0, 0, 1, 0, 0, 0, 0])
         self.assertEqual(sig.energy, 2)
 
@@ -238,9 +257,10 @@ if __name__ == "__main__":
     # a.test_instanciation()
     # a.test_resample()
     # a.test_polyfit()
-    a.test_superheterodyne()
+    # a.test_superheterodyne()
     # a.test_correlation()
     # a.test_delay()
     # a.test_phase_unfold()
+    a.test_decimate()
 
     showFigures()

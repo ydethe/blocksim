@@ -16,9 +16,7 @@ class GVariable(object):
 
     __slots__ = ["name", "data", "unit", "path"]
 
-    def __init__(
-        self, data: list = [], name: str = "", unit: str = "-", path: str = ""
-    ):
+    def __init__(self, data: list = [], name: str = "", unit: str = "-", path: str = ""):
         self.data = data
         self.name = name
         self.unit = unit
@@ -84,9 +82,7 @@ class GVariable(object):
         p = Polynomial.fit(x, y, deg=deg)
         ret = np.array(y) - p(x)
 
-        rdesc = GVariable(
-            data=ret, name=self.name + " (detrended)", unit=self.unit, path=self.path
-        )
+        rdesc = GVariable(data=ret, name=self.name + " (detrended)", unit=self.unit, path=self.path)
 
         return rdesc
 
@@ -103,9 +99,7 @@ class GVariable(object):
         return rdesc
 
     def __neg__(self) -> "blocksim.graphics.GPlottable.GVariable":
-        rdesc = GVariable(
-            data=-np.array(self.data), name=self.name, unit=self.unit, path=self.path
-        )
+        rdesc = GVariable(data=-np.array(self.data), name=self.name, unit=self.unit, path=self.path)
 
         return rdesc
 

@@ -110,14 +110,10 @@ class FiniteDelayLine(ADelayLine):
         zb = self._l_samples[itime + 1]
 
         if np.isnan(ta) or ta > x:
-            raise AssertionError(
-                "Violation of constraint ta <= x : ta=%g, x=%g" % (ta, x)
-            )
+            raise AssertionError("Violation of constraint ta <= x : ta=%g, x=%g" % (ta, x))
 
         if np.isnan(tb) or x > tb:
-            raise AssertionError(
-                "Violation of constraint x < tb : x=%g, tb=%g" % (x, tb)
-            )
+            raise AssertionError("Violation of constraint x < tb : x=%g, tb=%g" % (x, tb))
 
         samp = (zb - za) / (tb - ta) * (x - ta) + za
 

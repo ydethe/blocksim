@@ -112,9 +112,7 @@ class ASystem(AComputer):
         command: NDArray[Any, Any],
         state: NDArray[Any, Any],
     ) -> dict:
-        self.__integ.set_initial_value(state, t1).set_f_params(command).set_jac_params(
-            command
-        )
+        self.__integ.set_initial_value(state, t1).set_f_params(command).set_jac_params(command)
 
         if t1 != t2:
             try:
@@ -232,15 +230,11 @@ class LTISystem(ASystem):
         Ad, Bd, _, _, _ = cont2discrete(sys, dt, method, alpha)
         return Ad, Bd
 
-    def transition(
-        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
-    ) -> NDArray[Any, Any]:
+    def transition(self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> NDArray[Any, Any]:
         dX = self.matA @ x + self.matB @ u
         return dX
 
-    def jacobian(
-        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
-    ) -> NDArray[Any, Any]:
+    def jacobian(self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> NDArray[Any, Any]:
         return self.matA
 
 
@@ -303,9 +297,7 @@ class G6DOFSystem(ASystem):
             dtype=np.float64,
             method="dop853",
         )
-        self.defineOutput(
-            name="euler", snames=["roll", "pitch", "yaw"], dtype=np.float64
-        )
+        self.defineOutput(name="euler", snames=["roll", "pitch", "yaw"], dtype=np.float64)
         self.setInitialStateForOutput(
             np.array([0, 0, 0, 0, 0, 0, 1.0, 0.0, 0, 0, 0, 0, 0]), output_name="state"
         )
@@ -325,9 +317,7 @@ class G6DOFSystem(ASystem):
             Vector x expressed in Earth's frame
 
         """
-        px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = self.getDataForOutput(
-            oname="state"
-        )
+        px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = self.getDataForOutput(oname="state")
         return vecBodyToEarth(np.array([qw, qx, qy, qz]), x)
 
     def vecEarthToBody(self, x: NDArray[Any, Any]) -> NDArray[Any, Any]:
@@ -340,14 +330,10 @@ class G6DOFSystem(ASystem):
             Vector x expressed in the body frame
 
         """
-        px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = self.getDataForOutput(
-            oname="state"
-        )
+        px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = self.getDataForOutput(oname="state")
         return vecEarthToBody(np.array([qw, qx, qy, qz]), x)
 
-    def transition(
-        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
-    ) -> NDArray[Any, Any]:
+    def transition(self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> NDArray[Any, Any]:
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = x
         force = u[:3]
         torque = u[3:6]
@@ -355,9 +341,7 @@ class G6DOFSystem(ASystem):
         q = np.array([qw, qx, qy, qz])
 
         w = np.array([wx, wy, wz])
-        W = np.array(
-            [[0, -wx, -wy, -wz], [wx, 0, wz, -wy], [wy, -wz, 0, wx], [wz, wy, -wx, 0]]
-        )
+        W = np.array([[0, -wx, -wy, -wz], [wx, 0, wz, -wy], [wy, -wz, 0, wx], [wz, wy, -wx, 0]])
 
         dvx, dvy, dvz = force / self.m
 
@@ -428,9 +412,9 @@ class G6DOFSystem(ASystem):
                 ]
             )
             # We use the sinc function to handle the case where Nwk is close to zero
-            E = np.cos(1.0 / 2.0 * h * b[i] * Nwk) * np.eye(4) + W * h * b[
-                i
-            ] / 2 * np.sinc(h * b[i] * Nwk / (2 * np.pi))
+            E = np.cos(1.0 / 2.0 * h * b[i] * Nwk) * np.eye(4) + W * h * b[i] / 2 * np.sinc(
+                h * b[i] * Nwk / (2 * np.pi)
+            )
             q = E @ q
 
         Nq2 = np.sum(q**2)
@@ -493,9 +477,7 @@ class TransferFunctionSystem(AComputer):
         AComputer.__init__(self, name=name)
 
         ns, _ = A.shape
-        self.defineOutput(
-            name="inner", snames=[f"is{i}" for i in range(ns)], dtype=dtype
-        )
+        self.defineOutput(name="inner", snames=[f"is{i}" for i in range(ns)], dtype=dtype)
         self.defineOutput(name="state", snames=[sname], dtype=dtype)
         self.defineInput("command", (1,), dtype)
 
@@ -508,9 +490,7 @@ class TransferFunctionSystem(AComputer):
         self.createParameter(name="matD", value=D, read_only=True)
 
     @lru_cache(maxsize=None)
-    def discretize(
-        self, method: str = "zoh", alpha: float = None
-    ) -> Iterable[np.array]:
+    def discretize(self, method: str = "zoh", alpha: float = None) -> Iterable[np.array]:
         """Turns the continous system into a discrete one
 
         Args:

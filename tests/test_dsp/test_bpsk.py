@@ -41,9 +41,7 @@ class TestBPSK(TestBase):
 
         sim = Simulation()
 
-        bs0 = DSPSignal.fromBinaryRandom(
-            name="bs0", samplingPeriod=1 / fs, size=ntot, seed=9948457
-        )
+        bs0 = DSPSignal.fromBinaryRandom(name="bs0", samplingPeriod=1 / fs, size=ntot, seed=9948457)
 
         psk_co = PSKMapping(name="map", mapping=mapping, output_size=1)
         awgn = DSPAWGN(
@@ -90,7 +88,7 @@ class TestBPSK(TestBase):
             name="PRN",
             sv=[2, 6],
             chip_rate=1.023e6,
-            sampling_rate=1.023e6 * p_samp,
+            samples_per_chip=p_samp,
             bitmap=[0, 1],
         )
         bpsk = PSKMapping(name="bpsk", mapping=[0, pi])

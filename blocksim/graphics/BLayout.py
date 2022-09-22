@@ -39,9 +39,7 @@ class BGridSpec(object):
 
     __slots__ = ["figure", "nrow", "ncol"]
 
-    def __init__(
-        self, figure: "blocksim.graphics.BFigure.ABFigure", nrow: int, ncol: int
-    ):
+    def __init__(self, figure: "blocksim.graphics.BFigure.ABFigure", nrow: int, ncol: int):
         self.figure = figure
         self.nrow = nrow
         self.ncol = ncol

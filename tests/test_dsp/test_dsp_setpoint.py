@@ -23,9 +23,7 @@ class System(ASystem):
         ASystem.__init__(self, name, shape_command=1, snames_state=["x", "v"])
         self.setInitialStateForOutput(np.zeros(2), "state")
 
-    def transition(
-        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
-    ) -> NDArray[Any, Any]:
+    def transition(self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> NDArray[Any, Any]:
         k = 10
         f = 5
         m = 1

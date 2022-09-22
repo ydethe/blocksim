@@ -48,9 +48,7 @@ class Trajectory(object):
             A DataFrame containing the time stamp, x, y, and z data (m)
 
         """
-        df = pd.DataFrame(
-            {"t": self.t, "x_itrf": self.x, "y_itrf": self.y, "z_itrf": self.z}
-        )
+        df = pd.DataFrame({"t": self.t, "x_itrf": self.x, "y_itrf": self.y, "z_itrf": self.z})
         return df
 
     def GeodesicToDataFrame(self) -> "DataFrame":
@@ -69,9 +67,7 @@ class Trajectory(object):
             lo, la, alt[k] = itrf_to_geodetic(pos)
             lon[k] = lo
             lat[k] = la
-        df = pd.DataFrame(
-            {"t": self.t, "longitude": lon, "latitude": lat, "altitude": alt}
-        )
+        df = pd.DataFrame({"t": self.t, "longitude": lon, "latitude": lat, "altitude": alt})
         return df
 
     def __repr__(self):

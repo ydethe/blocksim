@@ -59,13 +59,13 @@ class ConvergedGainMatrix(Output):
         # The matrix Pp is the prediction error covariance matrix in steady state which is the positive solution of the DARE
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.solve_discrete_are.html
         Pp = dare(a=Ad.T, b=Cd.T, q=estim.matQ, r=estim.matR)
-        # a = Ad.T
-        # b = Cd.T
-        # q = estim.matQ
-        # r = estim.matR
-        # x = Pp
-        # aH = np.conj(a.T)
-        # bH = np.conj(b.T)
+        a = Ad.T
+        b = Cd.T
+        q = estim.matQ
+        r = estim.matR
+        x = Pp
+        aH = np.conj(a.T)
+        bH = np.conj(b.T)
 
         # v = aH @ x @ a - x - (aH @ x @ b) @ lin.inv(r + bH @ x @ b) @ (bH @ x @ a) + q
         # err = np.max(np.abs(v))
@@ -390,12 +390,8 @@ class AKalmanFilter(AEstimator):
         statecov: NDArray[Any, Any],
         matK: NDArray[Any, Any],
     ) -> dict:
-        xest_pred, meas_pred, P_pred = self._prediction(
-            state, statecov, command, t1, t2
-        )
-        xest, K, P = self._update(
-            xest_pred, meas_pred, P_pred, command, measurement, t1, t2
-        )
+        xest_pred, meas_pred, P_pred = self._prediction(state, statecov, command, t1, t2)
+        xest, K, P = self._update(xest_pred, meas_pred, P_pred, command, measurement, t1, t2)
 
         outputs = {}
         outputs["output"] = meas_pred
@@ -474,9 +470,7 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         self.createParameter("matR", value=0)
 
     @lru_cache(maxsize=None)
-    def discretize(
-        self, dt: float, method: str = "zoh", alpha: float = None
-    ) -> Iterable[np.array]:
+    def discretize(self, dt: float, method: str = "zoh", alpha: float = None) -> Iterable[np.array]:
         """Turns the continous system into a discrete one
 
         Args:
@@ -641,9 +635,7 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         statecov: NDArray[Any, Any],
         matK: NDArray[Any, Any],
     ) -> dict:
-        xest_pred, meas_pred, P_pred = self._prediction(
-            state, statecov, command, t1, t2
-        )
+        xest_pred, meas_pred, P_pred = self._prediction(state, statecov, command, t1, t2)
 
         # Modified update with converged gain matrix
         y = measurement - meas_pred
@@ -760,9 +752,7 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
 
         return sys2
 
-    def getEstimatingFilter(
-        self, name: str, ma_freq: Iterable[int] = None
-    ) -> ArbitraryDSPFilter:
+    def getEstimatingFilter(self, name: str, ma_freq: Iterable[int] = None) -> ArbitraryDSPFilter:
         """Returns the filter equivalent to the SISO system
         that takes as input the measured sample, and as output the estimated signal
 
@@ -777,9 +767,7 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         """
         sys = self.to_dlti(ma_freq=ma_freq)
 
-        filt = ArbitraryDSPFilter(
-            name=name, samplingPeriod=self.dt, num=sys.num, den=sys.den
-        )
+        filt = ArbitraryDSPFilter(name=name, samplingPeriod=self.dt, num=sys.num, den=sys.den)
 
         return filt
 
@@ -833,9 +821,7 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
         statecov: NDArray[Any, Any],
         matK: NDArray[Any, Any],
     ) -> dict:
-        xest_pred, meas_pred, P_pred = self._prediction(
-            state, statecov, np.zeros(1), t1, t2
-        )
+        xest_pred, meas_pred, P_pred = self._prediction(state, statecov, np.zeros(1), t1, t2)
 
         # Modified update with converged gain matrix
         y = measurement - meas_pred
@@ -1044,8 +1030,7 @@ class MadgwickFilter(AComputer):
             -_2q2 * (2.0 * q1q3 - _2q0q2 - ax)
             + _2q1 * (2.0 * q0q1 + _2q2q3 - ay)
             - _2bz * q2 * (_2bx * (0.5 - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx)
-            + (-_2bx * q3 + _2bz * q1)
-            * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
+            + (-_2bx * q3 + _2bz * q1) * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
             + _2bx * q2 * (_2bx * (q0q2 + q1q3) + _2bz * (0.5 - q1q1 - q2q2) - mz)
         )
         s1 = (
@@ -1053,34 +1038,25 @@ class MadgwickFilter(AComputer):
             + _2q0 * (2.0 * q0q1 + _2q2q3 - ay)
             - 4.0 * q1 * (1 - 2.0 * q1q1 - 2.0 * q2q2 - az)
             + _2bz * q3 * (_2bx * (0.5 - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx)
-            + (_2bx * q2 + _2bz * q0)
-            * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
-            + (_2bx * q3 - _4bz * q1)
-            * (_2bx * (q0q2 + q1q3) + _2bz * (0.5 - q1q1 - q2q2) - mz)
+            + (_2bx * q2 + _2bz * q0) * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
+            + (_2bx * q3 - _4bz * q1) * (_2bx * (q0q2 + q1q3) + _2bz * (0.5 - q1q1 - q2q2) - mz)
         )
         s2 = (
             -_2q0 * (2.0 * q1q3 - _2q0q2 - ax)
             + _2q3 * (2.0 * q0q1 + _2q2q3 - ay)
             - 4.0 * q2 * (1 - 2.0 * q1q1 - 2.0 * q2q2 - az)
-            + (-_4bx * q2 - _2bz * q0)
-            * (_2bx * (0.5 - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx)
-            + (_2bx * q1 + _2bz * q3)
-            * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
-            + (_2bx * q0 - _4bz * q2)
-            * (_2bx * (q0q2 + q1q3) + _2bz * (0.5 - q1q1 - q2q2) - mz)
+            + (-_4bx * q2 - _2bz * q0) * (_2bx * (0.5 - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx)
+            + (_2bx * q1 + _2bz * q3) * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
+            + (_2bx * q0 - _4bz * q2) * (_2bx * (q0q2 + q1q3) + _2bz * (0.5 - q1q1 - q2q2) - mz)
         )
         s3 = (
             _2q1 * (2.0 * q1q3 - _2q0q2 - ax)
             + _2q2 * (2.0 * q0q1 + _2q2q3 - ay)
-            + (-_4bx * q3 + _2bz * q1)
-            * (_2bx * (0.5 - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx)
-            + (-_2bx * q0 + _2bz * q2)
-            * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
+            + (-_4bx * q3 + _2bz * q1) * (_2bx * (0.5 - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx)
+            + (-_2bx * q0 + _2bz * q2) * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my)
             + _2bx * q1 * (_2bx * (q0q2 + q1q3) + _2bz * (0.5 - q1q1 - q2q2) - mz)
         )
-        recipNorm = 1.0 / np.sqrt(
-            s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3
-        )  # normalise step magnitude
+        recipNorm = 1.0 / np.sqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3)  # normalise step magnitude
         s0 *= recipNorm
         s1 *= recipNorm
         s2 *= recipNorm

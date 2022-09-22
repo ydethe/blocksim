@@ -139,15 +139,9 @@ class AttPilot(AController):
         z5 = yaw - y_cons
         z6 = x6 - dx5_cons + al5 * z5
 
-        Gr = (
-            -z1 - al2 * z2 - a1 * x4 * x6 + d2x1_cons - al1 * x2 + al1 * dx1_cons
-        ) * J1
-        Gp = (
-            -z3 - al4 * z4 - a2 * x2 * x6 + d2x3_cons - al3 * x4 + al3 * dx3_cons
-        ) * J2
-        Gy = (
-            -z5 - al6 * z6 - a3 * x2 * x4 + d2x5_cons - al5 * x6 + al5 * dx5_cons
-        ) * J3
+        Gr = (-z1 - al2 * z2 - a1 * x4 * x6 + d2x1_cons - al1 * x2 + al1 * dx1_cons) * J1
+        Gp = (-z3 - al4 * z4 - a2 * x2 * x6 + d2x3_cons - al3 * x4 + al3 * dx3_cons) * J2
+        Gy = (-z5 - al6 * z6 - a3 * x2 * x4 + d2x5_cons - al5 * x6 + al5 * dx5_cons) * J3
 
         ss1 = (
             A_cons * self.sys.m * self.mot.k * self.sys.l

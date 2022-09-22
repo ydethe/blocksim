@@ -44,9 +44,7 @@ class Motor(ASystem):
         self.createParameter("k", 2.9e-5)
         self.createParameter("Umax", 12)
 
-    def transition(
-        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
-    ) -> NDArray[Any, Any]:
+    def transition(self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> NDArray[Any, Any]:
         (s,) = x
         (u0,) = u
         ds = (

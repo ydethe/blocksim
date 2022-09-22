@@ -66,23 +66,15 @@ class Test8PSK(TestBase):
 
         sim = Simulation()
 
-        bs0 = DSPSignal.fromBinaryRandom(
-            name="bs0", samplingPeriod=1 / fs, size=ntot, seed=9948457
-        )
-        bs1 = DSPSignal.fromBinaryRandom(
-            name="bs1", samplingPeriod=1 / fs, size=ntot, seed=167847
-        )
-        bs2 = DSPSignal.fromBinaryRandom(
-            name="bs2", samplingPeriod=1 / fs, size=ntot, seed=7338557
-        )
+        bs0 = DSPSignal.fromBinaryRandom(name="bs0", samplingPeriod=1 / fs, size=ntot, seed=9948457)
+        bs1 = DSPSignal.fromBinaryRandom(name="bs1", samplingPeriod=1 / fs, size=ntot, seed=167847)
+        bs2 = DSPSignal.fromBinaryRandom(name="bs2", samplingPeriod=1 / fs, size=ntot, seed=7338557)
 
         grp_inp = dict()
         grp_inp["in0"] = (1,)
         grp_inp["in1"] = (1,)
         grp_inp["in2"] = (1,)
-        grp = Group(
-            name="grp", inputs=grp_inp, snames=["g0", "g1", "g2"], dtype=np.int32
-        )
+        grp = Group(name="grp", inputs=grp_inp, snames=["g0", "g1", "g2"], dtype=np.int32)
 
         psk_co = PSKMapping(name="map", mapping=mapping, output_size=1)
         awgn = DSPAWGN(

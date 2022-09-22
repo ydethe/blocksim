@@ -89,9 +89,7 @@ class TestMadgwick(TestBase):
             dtype_out=np.float64,
         )
 
-        ctrl = PIDController(
-            name="ctrl", shape_estimation=2, snames=["u"], coeffs=[1.0, 0.0, 0.0]
-        )
+        ctrl = PIDController(name="ctrl", shape_estimation=2, snames=["u"], coeffs=[1.0, 0.0, 0.0])
 
         mux = GenericComputer(
             name="mux",
@@ -173,15 +171,11 @@ class TestMadgwick(TestBase):
         x0[6:10] = q
         self.sys.setInitialStateForOutput(x0, "state")
 
-        self.est.setMagnetometerCalibration(
-            offset=np.arange(3), softiron_matrix=np.eye(3) / 2
-        )
+        self.est.setMagnetometerCalibration(offset=np.arange(3), softiron_matrix=np.eye(3) / 2)
         b, m = self.est.getMagnetometerCalibration()
         self.assertAlmostEqual(lin.norm(b - np.arange(3)), 0.0, delta=1.0e-6)
         self.assertAlmostEqual(lin.norm(m - np.eye(3) / 2), 0.0, delta=1.0e-6)
-        self.est.setMagnetometerCalibration(
-            offset=np.zeros(3), softiron_matrix=np.eye(3)
-        )
+        self.est.setMagnetometerCalibration(offset=np.zeros(3), softiron_matrix=np.eye(3))
 
         tfin = -2 * angle_ini / wangle
         tps = np.arange(0.0, tfin, self.dt)
@@ -387,15 +381,11 @@ class TestMahony(TestBase):
         self.sys.setInitialStateForOutput(x0, "state")
 
         self.est.Ki = 0.0
-        self.est.setMagnetometerCalibration(
-            offset=np.arange(3), softiron_matrix=np.eye(3) / 2
-        )
+        self.est.setMagnetometerCalibration(offset=np.arange(3), softiron_matrix=np.eye(3) / 2)
         b, m = self.est.getMagnetometerCalibration()
         self.assertAlmostEqual(lin.norm(b - np.arange(3)), 0.0, delta=1.0e-6)
         self.assertAlmostEqual(lin.norm(m - np.eye(3) / 2), 0.0, delta=1.0e-6)
-        self.est.setMagnetometerCalibration(
-            offset=np.zeros(3), softiron_matrix=np.eye(3)
-        )
+        self.est.setMagnetometerCalibration(offset=np.zeros(3), softiron_matrix=np.eye(3))
 
         tfin = -2 * angle_ini / wangle
         tps = np.arange(0.0, tfin, self.dt)

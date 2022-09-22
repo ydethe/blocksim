@@ -63,12 +63,8 @@ class TestB3DPlotter(TestBase):
         device.resetCallback(0.0)
 
         nb_per = 3
-        traj = satellite.geocentricITRFTrajectory(
-            number_of_periods=nb_per, color=(1, 0, 0, 1)
-        )
-        traj_sim = sim.geocentricITRFTrajectory(
-            number_of_periods=nb_per, color=(1, 1, 0, 1)
-        )
+        traj = satellite.geocentricITRFTrajectory(number_of_periods=nb_per, color=(1, 0, 0, 1))
+        traj_sim = sim.geocentricITRFTrajectory(number_of_periods=nb_per, color=(1, 1, 0, 1))
 
         psat = satellite.getGeocentricITRFPositionAt(0)[:3]
         psat_sim = sim.getGeocentricITRFPositionAt(0)[:3]

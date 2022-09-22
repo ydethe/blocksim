@@ -171,9 +171,7 @@ class TestGraphics(TestBase):
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
         axe = fig.add_baxe(title="", spec=gs[0, 0])
-        axe.plot(
-            ({"data": t, "unit": "s", "name": "Time"}, {"data": data1, "name": "exp"})
-        )
+        axe.plot(({"data": t, "unit": "s", "name": "Time"}, {"data": data1, "name": "exp"}))
 
         axe.plot(
             ({"data": t, "unit": "s", "name": "Time"}, {"data": data2, "name": "sin"}),

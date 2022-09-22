@@ -93,9 +93,7 @@ class AntennaNetwork(AComputer):
             for r, theta in enumerate(used_theta):
                 for k in range(self.num_elem):
                     p, q = self.mapping(k)
-                    d = self.th_profile(theta) - sin(theta) * (
-                        cos(psi) * p + sin(psi) * q
-                    )
+                    d = self.th_profile(theta) - sin(theta) * (cos(psi) * p + sin(psi) * q)
                     m[r, s] += self._coeff[k] * cexp(d / self.wavelength)
 
                 if np.abs(m[r, s]) > Emax:

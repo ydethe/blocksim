@@ -141,9 +141,7 @@ class TestCmdAtt(TestBase):
         tau = 50e-3
         Ks = 0.0
 
-        ctl_mot0 = AntiWindupPIDController(
-            "ctlmot0", snames=["u"], shape_estimation=(2,)
-        )
+        ctl_mot0 = AntiWindupPIDController("ctlmot0", snames=["u"], shape_estimation=(2,))
         ctl_mot0.D = 0.0
         ctl_mot0.I = mot0.km / tau
         ctl_mot0.P = ctl_mot0.I * mot0.Jr * mot0.R / mot0.km**2
@@ -151,9 +149,7 @@ class TestCmdAtt(TestBase):
         ctl_mot0.Umin = -mot0.Umax
         ctl_mot0.Umax = mot0.Umax
 
-        ctl_mot1 = AntiWindupPIDController(
-            "ctlmot1", snames=["u"], shape_estimation=(2,)
-        )
+        ctl_mot1 = AntiWindupPIDController("ctlmot1", snames=["u"], shape_estimation=(2,))
         ctl_mot1.D = 0.0
         ctl_mot1.I = mot0.km / tau
         ctl_mot1.P = ctl_mot1.I * mot0.Jr * mot0.R / mot0.km**2
@@ -161,9 +157,7 @@ class TestCmdAtt(TestBase):
         ctl_mot1.Umin = -mot0.Umax
         ctl_mot1.Umax = mot0.Umax
 
-        ctl_mot2 = AntiWindupPIDController(
-            "ctlmot2", snames=["u"], shape_estimation=(2,)
-        )
+        ctl_mot2 = AntiWindupPIDController("ctlmot2", snames=["u"], shape_estimation=(2,))
         ctl_mot2.D = 0.0
         ctl_mot2.I = mot0.km / tau
         ctl_mot2.P = ctl_mot2.I * mot0.Jr * mot0.R / mot0.km**2
@@ -171,9 +165,7 @@ class TestCmdAtt(TestBase):
         ctl_mot2.Umin = -mot0.Umax
         ctl_mot2.Umax = mot0.Umax
 
-        ctl_mot3 = AntiWindupPIDController(
-            "ctlmot3", snames=["u"], shape_estimation=(2,)
-        )
+        ctl_mot3 = AntiWindupPIDController("ctlmot3", snames=["u"], shape_estimation=(2,))
         ctl_mot3.D = 0.0
         ctl_mot3.I = mot0.km / tau
         ctl_mot3.P = ctl_mot3.I * mot0.Jr * mot0.R / mot0.km**2

@@ -37,9 +37,7 @@ class TestGNSS(TestBase):
 
         x_ref, y_ref, z_ref = geodetic_to_itrf(rad(lon), rad(lat), alt)
 
-        rec = GNSSReceiver(
-            name="UE", nsat=nsat, lon=rad(lon), lat=rad(lat), alt=alt, tsync=tsync
-        )
+        rec = GNSSReceiver(name="UE", nsat=nsat, lon=rad(lon), lat=rad(lat), alt=alt, tsync=tsync)
         rec.algo = "ranging"
         rec.optim = "trust-constr"
 
@@ -325,12 +323,8 @@ class TestGNSS(TestBase):
         meas = log.getMatrixOutput("tkr_measurement")[:, -1]
         ephem = log.getMatrixOutput("tkr_ephemeris")[:, -1]
 
-        testing.assert_allclose(
-            actual=meas, desired=self.meas_ref, rtol=5e-4, equal_nan=True
-        )
-        testing.assert_allclose(
-            actual=ephem, desired=self.ephem_ref, rtol=5e-4, equal_nan=True
-        )
+        testing.assert_allclose(actual=meas, desired=self.meas_ref, rtol=5e-4, equal_nan=True)
+        testing.assert_allclose(actual=ephem, desired=self.ephem_ref, rtol=5e-4, equal_nan=True)
         self.assertEqual(vissat, 9)
 
         self.assertAlmostEqual(x, self.x_ref, delta=0.5)

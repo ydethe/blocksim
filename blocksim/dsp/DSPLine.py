@@ -293,9 +293,7 @@ class ADSPLine(metaclass=ABCMeta):
         dsig.unit_of_x_var = self.unit_of_x_var
         return dsig
 
-    def findPeaksWithTransform(
-        self, transform: Callable = None, nb_peaks: int = 3
-    ) -> List[Peak]:
+    def findPeaksWithTransform(self, transform: Callable = None, nb_peaks: int = 3) -> List[Peak]:
         """Finds the peaks in a DSPRectilinearLine.
         The search is performed on the transformed samples (with the argument *transform*, or the attribute *default_transform*)
 
@@ -362,11 +360,22 @@ class ADSPLine(metaclass=ABCMeta):
         """
         return self.samplingStart + (len(self) - 1) * self.samplingPeriod
 
+    @property
+    def duration(self) -> float:
+        """Gets the spread of the x-coord of the line
+
+        Returns:
+            Spread of the x-coord of the line
+
+        """
+        return (len(self) - 1) * self.samplingPeriod
+
     def truncate(
         self,
         samplingStart: float = None,
         samplingStop: float = None,
         zero_padding: bool = True,
+        new_sampling_start: float = None,
     ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
         """Truncates a line between x=samplingStart and x=samplingStop.
 
@@ -374,6 +383,7 @@ class ADSPLine(metaclass=ABCMeta):
             samplingStart: Beginning abscissa of the new line
             samplingStop: End abscissa of the new line (included)
             zero_padding: Add zero padding if samplingStart or samplingStop are beyond the bounds of the signal
+            new_sampling_start: Forces samplingStart in the new DSPLine
 
         Returns:
             A truncated new line with the same spacing
@@ -393,6 +403,7 @@ class ADSPLine(metaclass=ABCMeta):
         nzl = max(-istart, 0)
         nzr = max(iend - len(self), 0)
         if zero_padding and (nzl > 0 or nzr > 0):
+            logger.debug(f"Padding with {(nzl, nzr)} zeros")
             yp = np.pad(array=self.y_serie, pad_width=(nzl, nzr), mode="constant")
             samplingStart = self.samplingStart - nzl * dt
         elif not zero_padding and (nzl > 0 or nzr > 0):
@@ -406,9 +417,12 @@ class ADSPLine(metaclass=ABCMeta):
             yp = self.y_serie[iok]
             samplingStart = self.generateXSerie(istart)
 
+        if new_sampling_start is None:
+            new_sampling_start = samplingStart
+
         res = self.__class__(
             name=self.name,
-            samplingStart=samplingStart,
+            samplingStart=new_sampling_start,
             samplingPeriod=self.samplingPeriod,
             y_serie=yp,
             default_transform=self.default_transform,
@@ -440,7 +454,7 @@ class ADSPLine(metaclass=ABCMeta):
             The result of the test
 
         """
-        if isinstance(y, float) or isinstance(y, int):
+        if isinstance(y, (float, int)):
             dty = y
             t0y = self.generateXSerie(0)
         elif isinstance(y, tuple):
@@ -468,6 +482,8 @@ class ADSPLine(metaclass=ABCMeta):
         """Resamples the line using a cubic interpolation.
         If the new bounds are larger than the original ones, the line is filled with 0
         The resulting signal keeps the timestamp of samples
+
+        TODO: regarder l'effet du resample par interpolation temporelle sur le spectre (repliement ?)
 
         Args:
             samplingStart: First x-coord of the sample of the line after resampling
@@ -510,6 +526,7 @@ class ADSPLine(metaclass=ABCMeta):
 
             nz = nech - len(y_serie)
             if zero_padding and nz > 0:
+                logger.debug(f"Padding with {nz} zeros")
                 y_serie = np.pad(array=y_serie, pad_width=(0, nz), mode="constant")
 
             res = self.__class__(
@@ -585,13 +602,20 @@ class ADSPLine(metaclass=ABCMeta):
 
     def __getitem__(self, idx: int):
         if isinstance(idx, slice):
-            pass
+            k = idx.indices(len(self))
+            res = self.__class__(
+                name=self.name,
+                samplingStart=self.samplingStart + self.samplingPeriod * k[0],
+                samplingPeriod=self.samplingPeriod,
+                y_serie=self.y_serie[idx],
+                default_transform=self.default_transform,
+            )
         elif isinstance(idx, int):
-            lid = idx
+            res = self.y_serie[idx]
         else:
             raise TypeError("Invalid argument type.")
 
-        return self.y_serie[lid]
+        return res
 
     def derivate(
         self, rank: int = 1, order: int = None
@@ -630,8 +654,8 @@ class ADSPLine(metaclass=ABCMeta):
         t_stop = max(self.samplingStop, y.samplingStop)
         nech = int((t_stop - t_start) / dt + 1)
 
-        rx = self.resample(samplingStart=t_start, samplingPeriod=dt, nech=nech)
-        ry = y.resample(samplingStart=t_start, samplingPeriod=dt, nech=nech)
+        rx = self.resample(samplingStart=t_start, samplingPeriod=dt, nech=nech, zero_padding=True)
+        ry = y.resample(samplingStart=t_start, samplingPeriod=dt, nech=nech, zero_padding=True)
 
         return t_start, dt, rx, ry
 
@@ -809,9 +833,7 @@ class DSPRectilinearLine(ADSPLine):
             f = self.default_transform
         else:
             f = transform
-        hist, bin_edges = np.histogram(
-            f(self.y_serie), bins=bins, weights=weights, density=density
-        )
+        hist, bin_edges = np.histogram(f(self.y_serie), bins=bins, weights=weights, density=density)
         delta = bin_edges[1] - bin_edges[0]
 
         if cumulative:

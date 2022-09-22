@@ -131,6 +131,8 @@ class APlottable(metaclass=ABCMeta):
             name_of_x_var=name_of_x_var,
             unit_of_x_var=unit_of_x_var,
         )
+        for p in lpeaks:
+            logger.info(f"Found peak : {p}")
 
         # X bounds shall be determined be examining all shared axes
         xmin, xmax = axe.xbounds
@@ -248,13 +250,9 @@ class APlottable(metaclass=ABCMeta):
         elif len(info["args"]) == 2:
             (xd, yd) = info["args"]
             if not np.isnan(amp_x):
-                _, x_mult, x_lbl, x_unit = getUnitAbbrev(
-                    amp_x, unit=info["unit_of_x_var"]
-                )
+                _, x_mult, x_lbl, x_unit = getUnitAbbrev(amp_x, unit=info["unit_of_x_var"])
             if not np.isnan(amp_y):
-                _, y_mult, y_lbl, y_unit = getUnitAbbrev(
-                    amp_y, unit=info["unit_of_y_var"]
-                )
+                _, y_mult, y_lbl, y_unit = getUnitAbbrev(amp_y, unit=info["unit_of_y_var"])
             scaled_args = (xd / x_mult, yd / y_mult)
         else:
             scaled_args = args
@@ -334,15 +332,11 @@ class Plottable6DDLPosition(APlottable):
 
     def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
         if not axe.projection in self.__class__.compatible_baxe:
-            raise AssertionError(
-                f"{axe.projection} is not in {self.__class__.compatible_baxe}"
-            )
+            raise AssertionError(f"{axe.projection} is not in {self.__class__.compatible_baxe}")
 
         mpl_kwargs = self.kwargs.copy()
         if not "size" in mpl_kwargs:
-            raise AssertionError(
-                f"Missing 'size' argument when plotting a Earth6DDLPosition"
-            )
+            raise AssertionError(f"Missing 'size' argument when plotting a Earth6DDLPosition")
 
         _ = mpl_kwargs.pop("annotations", None)
         info = {
@@ -431,9 +425,7 @@ class PlottableGraph(APlottable):
 
         """
         if not axe.projection in self.__class__.compatible_baxe:
-            raise AssertionError(
-                f"{axe.projection} is not in {self.__class__.compatible_baxe}"
-            )
+            raise AssertionError(f"{axe.projection} is not in {self.__class__.compatible_baxe}")
 
         kwds = self.kwargs.copy()
         if not "node_size" in kwds.keys():
@@ -650,9 +642,7 @@ class PlottableTrajectory(APlottable):
 
     def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
         if not axe.projection in self.__class__.compatible_baxe:
-            raise AssertionError(
-                f"{axe.projection} is not in {self.__class__.compatible_baxe}"
-            )
+            raise AssertionError(f"{axe.projection} is not in {self.__class__.compatible_baxe}")
 
         if axe.figure.projection == FigureProjection.EARTH3D:
             app = axe.figure.mpl_fig
@@ -695,9 +685,7 @@ class APlottableDSPMap(APlottable):
 
     def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
         if not axe.projection in self.__class__.compatible_baxe:
-            raise AssertionError(
-                f"{axe.projection} is not in {self.__class__.compatible_baxe}"
-            )
+            raise AssertionError(f"{axe.projection} is not in {self.__class__.compatible_baxe}")
 
         mline = self.plottable
 
@@ -732,6 +720,8 @@ class APlottableDSPMap(APlottable):
         args = (X, Y, Z)
 
         lpeaks = mline.findPeaksWithTransform(transform=transform, nb_peaks=find_peaks)
+        for p in lpeaks:
+            logger.info(f"Found peak : {p}")
 
         if np.all(np.isnan(Y)):
             ymin = np.nan

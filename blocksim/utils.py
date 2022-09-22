@@ -151,7 +151,7 @@ def find1dpeak(
     Args:
         nb_peaks: Max number of peaks to seach. Only the highest are kept
         xd: Array of X samples
-        yd: Array of Y samples
+        yd: Array of Y samples. Cannot be complex samples
         name_of_x_var: Name of the X coordinate
         unit_of_x_var: Unit of the X coordinate
 
@@ -164,7 +164,6 @@ def find1dpeak(
 
     n = len(yd)
     lpeak = []
-    ep = 1
     _x_itp = interp1d(
         x=np.arange(n),
         y=xd,
@@ -173,20 +172,26 @@ def find1dpeak(
         bounds_error=True,
         assume_sorted=True,
     )
-    for p0 in range(ep, n - ep):
-        if yd[p0 - ep] < yd[p0] and yd[p0] > yd[p0 + ep]:
-            b = (yd[p0 + ep] - yd[p0 - ep]) / (2 * ep)
-            c = -(-yd[p0 + ep] - yd[p0 - ep] + 2 * yd[p0]) / (2 * ep**2)
-            dp = -b / (2 * c)
-            dval = -(b**2) / (4 * c)
-            x0 = _x_itp(p0 + dp)
-            p = Peak(
-                coord_label=(name_of_x_var,),
-                coord_unit=(unit_of_x_var,),
-                coord=(x0,),
-                value=yd[p0] + dval,
-            )
-            lpeak.append(p)
+
+    b = (yd[2:] - yd[:-2]) / 2
+    a = (yd[2:] + yd[:-2] - 2 * yd[1:-1]) / 2
+
+    ip = np.where(a < 0)[0]
+    ip = np.intersect1d(ip, np.where(np.abs(b) < -a)[0])
+
+    dp = -b[ip] / (2 * a[ip])
+    dval = -b[ip] ** 2 / (4 * a[ip])
+
+    for kp in range(len(ip)):
+        p0 = 1 + ip[kp]
+        x0 = _x_itp(p0 + dp[kp])
+        p = Peak(
+            coord_label=(name_of_x_var,),
+            coord_unit=(unit_of_x_var,),
+            coord=(x0,),
+            value=yd[p0] + dval[kp],
+        )
+        lpeak.append(p)
 
     lpeak.sort(key=lambda x: x.value, reverse=True)
 
@@ -254,9 +259,21 @@ def find2dpeak(
         ]
     )
 
+    if nb_peaks == 1:
+        ir, ic = zd.shape
+        ipeak = np.argmax(zd)
+
+        q0 = ipeak % ic
+        p0 = (ipeak - q0) // ic
+        p_lookup = [p0]
+        q_lookup = [q0]
+    else:
+        p_lookup = range(ep, Np - ep)
+        q_lookup = range(eq, Nq - eq)
+
     lpeak = []
-    for p0 in range(ep, Np - ep):
-        for q0 in range(eq, Nq - eq):
+    for p0 in p_lookup:
+        for q0 in q_lookup:
             Z00 = zd[p0, q0]
             B = np.array(
                 [
@@ -450,9 +467,10 @@ def assignVector(
         try:
             res = np.array(v.copy(), dtype=dtype)
         except Exception as e:
-            txt = (
-                "Element '%s' : Argument '%s' - impossible to instantiate array:\n%s"
-                % (dst_name, src_name, str(e))
+            txt = "Element '%s' : Argument '%s' - impossible to instantiate array:\n%s" % (
+                dst_name,
+                src_name,
+                str(e),
             )
             raise WrongDataType(txt)
 
@@ -580,9 +598,7 @@ def euler_to_matrix(roll: float, pitch: float, yaw: float) -> NDArray[Any, Any]:
         True
 
     """
-    Ry = np.array(
-        [[np.cos(yaw), -np.sin(yaw), 0], [np.sin(yaw), np.cos(yaw), 0], [0, 0, 1]]
-    )
+    Ry = np.array([[np.cos(yaw), -np.sin(yaw), 0], [np.sin(yaw), np.cos(yaw), 0], [0, 0, 1]])
     Rp = np.array(
         [
             [np.cos(pitch), 0, np.sin(pitch)],
@@ -590,9 +606,7 @@ def euler_to_matrix(roll: float, pitch: float, yaw: float) -> NDArray[Any, Any]:
             [-np.sin(pitch), 0, np.cos(pitch)],
         ]
     )
-    Rr = np.array(
-        [[1, 0, 0], [0, np.cos(roll), -np.sin(roll)], [0, np.sin(roll), np.cos(roll)]]
-    )
+    Rr = np.array([[1, 0, 0], [0, np.cos(roll), -np.sin(roll)], [0, np.sin(roll), np.cos(roll)]])
     R = Ry @ Rp @ Rr
     return R
 
@@ -681,9 +695,7 @@ def euler_to_quat(roll: float, pitch: float, yaw: float) -> Iterable[float]:
     return qr, qi, qj, qk
 
 
-def vecBodyToEarth(
-    attitude: NDArray[Any, Any], x: NDArray[Any, Any]
-) -> NDArray[Any, Any]:
+def vecBodyToEarth(attitude: NDArray[Any, Any], x: NDArray[Any, Any]) -> NDArray[Any, Any]:
     """Expresses a vector from the body frame to the Earth's frame
 
     Args:
@@ -705,9 +717,7 @@ def vecBodyToEarth(
     return R @ x
 
 
-def vecEarthToBody(
-    attitude: NDArray[Any, Any], x: NDArray[Any, Any]
-) -> NDArray[Any, Any]:
+def vecEarthToBody(attitude: NDArray[Any, Any], x: NDArray[Any, Any]) -> NDArray[Any, Any]:
     """Expresses a vector from Earth's frame to the body's frame
 
     Args:
@@ -769,9 +779,7 @@ def anomaly_true_to_mean(ecc: float, v: float) -> float:
     return M
 
 
-def build_local_matrix(
-    pos: NDArray[Any, Any], xvec: NDArray[Any, Any] = None
-) -> NDArray[Any, Any]:
+def build_local_matrix(pos: NDArray[Any, Any], xvec: NDArray[Any, Any] = None) -> NDArray[Any, Any]:
     """Builds a ENV frame at a given position
 
     Args:
@@ -831,9 +839,7 @@ def geodetic_to_itrf(lon: float, lat: float, h: float) -> NDArray[Any, Any]:
     return np.array([X, Y, Z])
 
 
-def __Iter_phi_h(
-    x: float, y: float, z: float, eps: float = 1e-6
-) -> Tuple[float, float]:
+def __Iter_phi_h(x: float, y: float, z: float, eps: float = 1e-6) -> Tuple[float, float]:
     r = lin.norm((x, y, z))
     p = sqrt(x**2 + y**2)
 
@@ -963,12 +969,7 @@ def teme_to_orbital(pv: NDArray[Any, Any]):
     if vel @ pos < 0:
         tano = -tano
     node = arctan2(hx, -hy)
-    argp = (
-        arctan2(
-            (y * cos(node) - x * sin(node)) / cos(inc), x * cos(node) + y * sin(node)
-        )
-        - tano
-    )
+    argp = arctan2((y * cos(node) - x * sin(node)) / cos(inc), x * cos(node) + y * sin(node)) - tano
     mano = anomaly_true_to_mean(e, tano)
     return a, e, argp, inc, mano, node
 
@@ -1016,12 +1017,10 @@ def orbital_to_teme(
     vr = ecc * p * sin(tano) * dtano / (ecc * cos(tano) + 1) ** 2
 
     vx = r * (
-        -cos(node) * dtano * sin(tano + argp)
-        - cos(inc) * sin(node) * dtano * cos(tano + argp)
+        -cos(node) * dtano * sin(tano + argp) - cos(inc) * sin(node) * dtano * cos(tano + argp)
     ) + vr * (cos(node) * cos(tano + argp) - cos(inc) * sin(node) * sin(tano + argp))
     vy = r * (
-        cos(inc) * cos(node) * dtano * cos(tano + argp)
-        - sin(node) * dtano * sin(tano + argp)
+        cos(inc) * cos(node) * dtano * cos(tano + argp) - sin(node) * dtano * sin(tano + argp)
     ) + vr * (cos(inc) * cos(node) * sin(tano + argp) + sin(node) * cos(tano + argp))
     vz = sin(inc) * vr * sin(tano + argp) + sin(inc) * r * dtano * cos(tano + argp)
 
@@ -1064,9 +1063,7 @@ def itrf_to_geodetic(position: NDArray[Any, Any]) -> Tuple[float, float, float]:
     return lon, lat, alt
 
 
-def azeld_to_itrf(
-    azeld: NDArray[Any, Any], obs: NDArray[Any, Any]
-) -> NDArray[Any, Any]:
+def azeld_to_itrf(azeld: NDArray[Any, Any], obs: NDArray[Any, Any]) -> NDArray[Any, Any]:
     """Converts an ITRF position & velocity into
     azimut, elevation, distance, radial velocity, slope of velocity, azimut of velocity
 
@@ -1107,9 +1104,7 @@ def azeld_to_itrf(
     return np.hstack((sat, vsat))
 
 
-def azelalt_to_itrf(
-    azelalt: NDArray[Any, Any], sat: NDArray[Any, Any]
-) -> NDArray[Any, Any]:
+def azelalt_to_itrf(azelalt: NDArray[Any, Any], sat: NDArray[Any, Any]) -> NDArray[Any, Any]:
     """Converts to an ITRF position & velocity from azimut, elevation
     so that the observer is at the specified altitude
 
@@ -1244,9 +1239,7 @@ def itrf_to_azeld(
     return az, el, dist, azr, elr, vr
 
 
-def itrf_to_llavpa(
-    pv: NDArray[Any, Any]
-) -> Tuple[float, float, float, float, float, float]:
+def itrf_to_llavpa(pv: NDArray[Any, Any]) -> Tuple[float, float, float, float, float, float]:
     """Converts an ITRF position & velocity into
     longitude, latitude, altitude (WGS84) and velocity, slope of velocity, azimut of velocity
     Velocity is the speed of sat in ITRF frame

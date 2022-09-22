@@ -107,9 +107,7 @@ class Logger(object):
             nd = len(data.keys())
             np = len(self.getParameters())
             if nd != np:
-                raise AssertionError(
-                    f"Mismatch : {nd} keys in data, {np} parameters declared"
-                )
+                raise AssertionError(f"Mismatch : {nd} keys in data, {np} parameters declared")
         self.__data = data
 
     def getRawData(self) -> dict:
@@ -265,9 +263,7 @@ class Logger(object):
         # Handling of the logged value by the pugins
         ldata = plugin_manager.hook.log(log=self, name=name, val=val, tindex=tindex)
 
-    def buildParameterNameFromComputerElements(
-        self, cname: str, oname: str, sname: str
-    ) -> str:
+    def buildParameterNameFromComputerElements(self, cname: str, oname: str, sname: str) -> str:
         """Determines the name of Logger parameter from the name of the AComputer, Output and scalar.
 
         Args:
@@ -338,9 +334,7 @@ class Logger(object):
 
         return res
 
-    def getValueForComputer(
-        self, comp: AComputer, output_name: str
-    ) -> NDArray[Any, Any]:
+    def getValueForComputer(self, comp: AComputer, output_name: str) -> NDArray[Any, Any]:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -416,9 +410,7 @@ class Logger(object):
             data = self.getRawData()
             return np.array(data[name])
         else:
-            raise ValueError(
-                "Too many loggers to handle file '%s'" % self.getLoadedFile()
-            )
+            raise ValueError("Too many loggers to handle file '%s'" % self.getLoadedFile())
 
     def findExpressionUnit(self, expr: str) -> str:
         """Given an expression, gives the unit of the expression
@@ -499,9 +491,7 @@ class Logger(object):
 
         return foo_func(self)
 
-    def getSignal(
-        self, name: str, raw: bool = False
-    ) -> "blocksim.dsp.DSPSignal.DSPSignal":
+    def getSignal(self, name: str, raw: bool = False) -> "blocksim.dsp.DSPSignal.DSPSignal":
         """Get the value of a logged variable
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos

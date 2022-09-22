@@ -36,9 +36,7 @@ class TestSynchro(TestBase):
         # =========================
         # Definition of the sensors
         # =========================
-        cpt = LinearSensors(
-            name="cpt", shape_state=(2,), shape_command=(1,), snames=["x", "v"]
-        )
+        cpt = LinearSensors(name="cpt", shape_state=(2,), shape_command=(1,), snames=["x", "v"])
         cpt.setMean(np.zeros(2))
         cpt.setCovariance(np.zeros((2, 2)))
         cpt.matC = np.eye(2)
