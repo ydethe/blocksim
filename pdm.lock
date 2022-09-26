@@ -1274,7 +1274,7 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 
 [metadata]
 lock_version = "4.0"
-content_hash = "sha256:755d0fec0c1b02fa59675c61ad604e19fd6ada98bf9c8935025c7a6500626e92"
+content_hash = "sha256:ea0915b722426fc2bef1596fe7f5211caf74bd40e7e0ce85dff17e81077f9b53"
 
 [metadata.files]
 "ahrs 0.3.1" = [
@@ -1359,7 +1359,6 @@ content_hash = "sha256:755d0fec0c1b02fa59675c61ad604e19fd6ada98bf9c8935025c7a650
 ]
 "cartopy 0.19.0.post1" = [
     {url = "https://files.pythonhosted.org/packages/ed/ca/524ce33692df3faeaa56852fb6a33b0b410be94cc288417565b96fef3f64/Cartopy-0.19.0.post1.tar.gz", hash = "sha256:4b8b4773a98ed7009fe17d9b6ec87ac3ac62b7d14634d7768c190eadc647d576"},
-    {url = "https://pypi.fury.io/manawenuz/-/ver_1wfGKO/Cartopy-0.19.0.post1-cp38-cp38-linux_x86_64.whl", hash = "sha256:bdcab13a8a9d3a7d529cf34546fc01a6ac4d15fc2c013f8d547657fb05399c86"},
 ]
 "certifi 2022.9.14" = [
     {url = "https://files.pythonhosted.org/packages/6a/34/cd29f4dd8a23ce45f2b8ce9631ff2d4205fb74eddb412a3dc4fd1e4aa800/certifi-2022.9.14-py3-none-any.whl", hash = "sha256:e232343de1ab72c2aa521b625c80f699e356830fd0e2c620b465b304b17b0516"},
