@@ -78,10 +78,10 @@ class Earth6DDLPosition(object):
         """
 
         Examples:
-        >>> e = Earth6DDLPosition(position=np.array([6378137.0, 0.0, 0.0]))
+        >>> e = Earth6DDLPosition(time=datetime(2020,1,1),position=np.array([6378137.0, 0.0, 0.0]))
         >>> md = e.magneticDeclination()
         >>> (md*1e9).astype(np.int64)
-        array([16081, -2034, 27523])
+        array([16022, -2248, 27536])
 
         """
         lon, lat, alt = self.positionToGeodetic()
