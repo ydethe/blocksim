@@ -125,7 +125,7 @@ class TestAHRS(TestBase):
         self.sim = sim
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
-    def test_poney(self):
+    def test_poney(self, pb=False):
         angle_ini = -60 * np.pi / 180.0
         wangle = 10.0 * np.pi / 180.0
 
@@ -142,7 +142,7 @@ class TestAHRS(TestBase):
         tfin = -2 * angle_ini / wangle
         tps = np.arange(0.0, tfin, self.dt)
 
-        self.sim.simulate(tps, progress_bar=False)
+        self.sim.simulate(tps, progress_bar=pb)
 
         self.log = self.sim.getLogger()
 
@@ -181,6 +181,6 @@ if __name__ == "__main__":
 
     a = TestAHRS()
     a.setUp()
-    a.test_poney()
+    a.test_poney(pb=True)
 
     showFigures()

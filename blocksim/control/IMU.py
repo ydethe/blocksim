@@ -49,7 +49,8 @@ class IMU(ASensors):
         gy = wy
         gz = wz
         ax, ay, az = R.T @ np.array([0, 0, 1]) * 9.81
-        mx, my, mz = R.T @ ep.magneticDeclination(frame="ENU")
+        # mx, my, mz = R.T @ ep.magneticDeclination(frame="ENU")
+        mx, my, mz = R.T @ ep.magneticDeclination(frame="ITRF")
         meas = np.array([gx, gy, gz, ax, ay, az, mx, my, mz])
 
         outputs = {}
