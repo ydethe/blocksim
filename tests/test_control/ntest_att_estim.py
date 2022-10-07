@@ -16,7 +16,7 @@ from blocksim.control.IMU import IMU
 from blocksim.control.Controller import PIDController
 from blocksim.control.SetPoint import Step
 from blocksim.control.Estimator import MadgwickFilter, MahonyFilter
-from blocksim.utils import deg, euler_to_quat
+from blocksim.utils import deg, euler_to_quat, geodetic_to_itrf, rad
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
@@ -52,7 +52,7 @@ class TestMadgwick(TestBase):
         sim.connect("sys.state", "imu.state")
         sim.connect("imu.measurement", "madg.measurement")
 
-        self.dt = 5e-3
+        self.dt = 5e-2
         self.sys = sys
         self.est = est
         self.sim = sim
@@ -158,14 +158,19 @@ class TestMadgwick(TestBase):
         )
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
-    def test_madgwick_pitch(self):
+    def test_madgwick_pitch(self, pb: bool = False):
         angle_ini = -60 * np.pi / 180.0
-        wangle = 10.0 * np.pi / 180.0
+        # wangle = 10.0 * np.pi / 180.0
+        # tfin=60.
+
+        tfin = 60.0
+        wangle = -2 * angle_ini / tfin
 
         # ==================================================
         # Rotation autour de l'axe de tangage
         # ==================================================
         x0 = np.zeros(13)
+        x0[:3] = geodetic_to_itrf(lon=rad(1.4433625157254533), lat=rad(43.60441294247197), h=143)
         x0[10:13] = np.array([0.0, wangle, 0.0])
         q = euler_to_quat(roll=0.0, pitch=angle_ini, yaw=pi / 2)
         x0[6:10] = q
@@ -177,10 +182,9 @@ class TestMadgwick(TestBase):
         self.assertAlmostEqual(lin.norm(m - np.eye(3) / 2), 0.0, delta=1.0e-6)
         self.est.setMagnetometerCalibration(offset=np.zeros(3), softiron_matrix=np.eye(3))
 
-        tfin = -2 * angle_ini / wangle
         tps = np.arange(0.0, tfin, self.dt)
 
-        self.sim.simulate(tps, progress_bar=False)
+        self.sim.simulate(tps, progress_bar=pb)
 
         self.log = self.sim.getLogger()
 
@@ -476,6 +480,6 @@ if __name__ == "__main__":
     a = TestMadgwick()
     a.setUp()
     # a.test_madgwick_all_dof()
-    a.test_madgwick_pitch()
+    a.test_madgwick_pitch(pb=True)
 
     showFigures()
