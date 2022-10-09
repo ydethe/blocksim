@@ -16,7 +16,7 @@ from blocksim.Simulation import Simulation
 from blocksim.control.System import G6DOFSystem
 from blocksim.control.IMU import IMU
 from blocksim.control.SetPoint import Step
-from blocksim.utils import deg, euler_to_quat, geodetic_to_itrf, quat_to_euler, rad
+from blocksim.utils import deg, euler_to_quat, geodetic_to_itrf, quat_to_euler, quat_to_matrix, rad
 from blocksim.graphics import plotVerif, showFigures
 
 
@@ -59,7 +59,7 @@ class AHRSFilter(AComputer):
 
         if dt == 0:
             tilt = Tilt()
-            state = tilt.estimate(acc=acc, mag=mag * 1e9)
+            state = tilt.estimate(acc=acc, mag=mag * 1e3)
 
         # https://ahrs.readthedocs.io/en/latest/filters/madgwick.html#ahrs.filters.madgwick.Madgwick.updateMARG
         if self.algo == "AngularRate":
@@ -70,10 +70,10 @@ class AHRSFilter(AComputer):
             new_q = self.__ahrs.updateMARG(q=state, gyr=gyr, acc=acc, mag=mag * 1e9)
         elif self.algo == "AQUA":
             self.__ahrs.Dt = dt
-            new_q = self.__ahrs.updateMARG(q=state, gyr=gyr, acc=acc, mag=mag * 1e9)
+            new_q = self.__ahrs.updateMARG(q=state, gyr=gyr, acc=acc, mag=mag * 1e3)
         elif self.algo == "EKF":
             self.__ahrs.Dt = dt
-            new_q = self.__ahrs.update(q=state, gyr=gyr, acc=acc, mag=mag * 1e9)
+            new_q = self.__ahrs.update(q=state, gyr=gyr, acc=acc, mag=mag * 1e6)
 
         output = {}
         output["state"] = new_q
@@ -95,7 +95,7 @@ class TestAHRS(object):
         sys = G6DOFSystem("sys")
 
         imu = IMU(name="imu")
-        cov = np.diag(3 * [np.pi / 180] + 3 * [1e-3 * 9.81] + 3 * [1.0e-6])
+        cov = np.diag(3 * [np.pi / 180] + 3 * [1e-3 * 9.81] + 3 * [(100e-9) ** 2])
         imu.setCovariance(cov)
         moy = np.zeros(9)
         moy[0] = 0.5 * np.pi / 180
@@ -103,9 +103,9 @@ class TestAHRS(object):
         moy[2] = 1.5 * np.pi / 180
         imu.setMean(moy)
 
-        est = AHRSFilter("ahrs", algo="AngularRate")
+        # est = AHRSFilter("ahrs", algo="AngularRate")
         # est = AHRSFilter("ahrs", algo="Madgwick")
-        # est = AHRSFilter("ahrs", algo="AQUA")
+        est = AHRSFilter("ahrs", algo="AQUA")
         # est = AHRSFilter("ahrs", algo="EKF")
 
         sim = Simulation()
@@ -125,11 +125,11 @@ class TestAHRS(object):
         self.sim = sim
 
     def test_poney(self, pb=False):
-        angle_ini = -60 * np.pi / 180.0
+        angle_ini = -45 * np.pi / 180.0
         # wangle = 10.0 * np.pi / 180.0
         # tfin=60.
 
-        tfin = 6.0
+        tfin = 30
         wangle = -2 * angle_ini / tfin
 
         # ==================================================
@@ -138,7 +138,7 @@ class TestAHRS(object):
         x0 = np.zeros(13)
         x0[:3] = geodetic_to_itrf(lon=rad(1.4433625157254533), lat=rad(43.60441294247197), h=143)
         x0[10:13] = np.array([0.0, wangle, 0.0])
-        q = euler_to_quat(roll=0.0, pitch=angle_ini, yaw=pi / 2)
+        q = euler_to_quat(roll=0.0, pitch=angle_ini, yaw=pi / 6)
         x0[6:10] = q
         self.sys.setInitialStateForOutput(x0, "state")
 
@@ -149,6 +149,21 @@ class TestAHRS(object):
         self.log = self.sim.getLogger()
 
         w = angle_ini + tps * wangle
+
+        fig = plotVerif(
+            self.log,
+            "Figure 1",
+            [
+                {"var": "imu_measurement_mx", "label": "Mx", "color": "red"},
+                {"var": "imu_measurement_my", "label": "My", "color": "green"},
+                {"var": "imu_measurement_mz", "label": "Mz", "color": "blue"},
+            ],
+            [
+                {"var": "imu_measurement_ax", "label": "Ax", "color": "red"},
+                {"var": "imu_measurement_ay", "label": "Ay", "color": "green"},
+                {"var": "imu_measurement_az", "label": "Az", "color": "blue"},
+            ],
+        )
 
         fig = plotVerif(
             self.log,
