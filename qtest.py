@@ -74,6 +74,9 @@ class AHRSFilter(AComputer):
         elif self.algo == "EKF":
             self.__ahrs.Dt = dt
             new_q = self.__ahrs.update(q=state, gyr=gyr, acc=acc, mag=mag * 1e6)
+        elif self.algo == "TILT":
+            tilt = Tilt()
+            new_q = tilt.estimate(acc=acc, mag=mag * 1e3)
 
         output = {}
         output["state"] = new_q
@@ -105,7 +108,8 @@ class TestAHRS(object):
 
         # est = AHRSFilter("ahrs", algo="AngularRate")
         # est = AHRSFilter("ahrs", algo="Madgwick")
-        est = AHRSFilter("ahrs", algo="AQUA")
+        # est = AHRSFilter("ahrs", algo="AQUA")
+        est = AHRSFilter("ahrs", algo="TILT")
         # est = AHRSFilter("ahrs", algo="EKF")
 
         sim = Simulation()
@@ -178,6 +182,8 @@ class TestAHRS(object):
                     "color": "black",
                     "linestyle": "--",
                 },
+                {"var": 30 + 0 * w, "color": "black", "linestyle": "--"},
+                {"var": 0 * w, "color": "black", "linestyle": "--"},
             ],
         )
 
