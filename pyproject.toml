@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = [
     "ahrs~=0.3.0",
-    "cartopy<0.20.0",
+    "cartopy>0.18.0",
     "control~=0.9.0",
     "geopandas~=0.11.0",
     "lazy-property~=0.0.1",
