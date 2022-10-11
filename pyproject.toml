@@ -3,11 +3,11 @@ name = "blocksim"
 dynamic = ["version"]
 description = "A library to simulate a closed-loop system"
 authors = [
-    { name = "Yann BLAUDIN DE THE", email = "yann.blaudin-de-the@thalesaleniaspace.com" },
+    { name = "Yann de Thé", email = "ydethe@gmail.com" },
 ]
 dependencies = [
     "ahrs~=0.3.0",
-    "cartopy>0.18.0",
+    "cartopy>=0.20.0",
     "control~=0.9.0",
     "geopandas~=0.11.0",
     "lazy-property~=0.0.1",
@@ -35,9 +35,9 @@ dependencies = [
 requires-python = ">=3.8,<3.12"
 
 [project.urls]
-"Bug Tracker" = "https://git:8443/projects/DNFSND/repos/blocksim/browse/issues"
-Homepage = "https://git:8443/projects/DNFSND/repos/blocksim/browse"
-Source = "https://git:8443/projects/DNFSND/repos/blocksim/browse"
+"Bug Tracker" = "https://gitlab.com/ydethe/blocksim/-/issues"
+Homepage = "https://gitlab.com/ydethe/blocksim"
+Source = "https://gitlab.com/ydethe/blocksim"
 
 [tool.pylint.main]
 ignore-patterns = ["kt_*.py"]
