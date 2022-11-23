@@ -11,7 +11,7 @@ import importlib
 from dataclasses import dataclass
 
 from scipy import linalg as lin
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, interp2d
 from scipy.optimize import root_scalar, minimize
 from nptyping import NDArray
 import numpy as np
@@ -19,6 +19,7 @@ from numpy import pi, arcsin, arccos, arctan, arctan2, tan, sin, cos, sqrt, exp
 from skyfield.api import load, utc
 from skyfield.timelib import Time
 from skyfield.sgp4lib import theta_GMST1982
+from scipy.special import ellipe, ellipkinc, ellipeinc
 
 from . import logger
 from .constants import *
@@ -70,6 +71,8 @@ __all__ = [
     "pdot",
     "cexp",
     "load_antenna_config",
+    "mean_variance_2dgauss_norm",
+    "mean_variance_3dgauss_norm",
 ]
 
 
@@ -1271,7 +1274,7 @@ def itrf_to_llavpa(pv: NDArray[Any, Any]) -> Tuple[float, float, float, float, f
         vs = arcsin(vv / nv)
     va = arctan2(ve, vn)
 
-    return lon, lat, alt, nv, vs, va
+    return np.array([lon, lat, alt, nv, vs, va])
 
 
 def llavpa_to_itrf(llavpa: NDArray[Any, Any]) -> NDArray[Any, Any]:
@@ -1393,3 +1396,56 @@ def load_antenna_config(config: str):
     spec.loader.exec_module(ac)
 
     return ac
+
+
+def mean_variance_2dgauss_norm(cov):
+    r"""If \(X\) is a 2D random variable that follows a 2D-gaussian law
+    with 0 mean and covariance \(\Sigma\), computes the mean and variance of \(\| X \|\)
+
+    Args:
+        cov: Covariance of \(X\), noted \(\Sigma\) above. Must be symmetric, positive-definite
+
+    Returns:
+
+        * The mean of \(\| X \|\)
+        * The variance of \(\| X \|\)
+
+    """
+    sp = np.real(lin.eigvals(cov))
+    sp.sort()
+    l2, l1 = sp
+
+    esq = np.trace(cov)
+
+    m = (l1 - l2) / l1
+    sqe = 2 * l1 / pi * ellipe(m) ** 2
+
+    return sqrt(sqe), esq - sqe
+
+
+def mean_variance_3dgauss_norm(cov):
+    r"""If \(X\) is a 3D random variable that follows a 3D-gaussian law
+    with 0 mean and covariance \(\Sigma\), computes the mean and variance of \(\| X \|\).
+
+    Args:
+        cov: Covariance of \(X\), noted \(\Sigma\) above. Must be symmetric, positive-definite
+
+    Returns:
+
+        * The mean of \(\| X \|\)
+        * The variance of \(\| X \|\)
+
+    """
+    sp = np.real(lin.eigvals(cov))
+    sp.sort()
+    l3, l2, l1 = sp
+
+    esq = np.trace(cov)
+
+    Ae = sqrt(l1 - l3)
+    Af = l3 / Ae
+    m = (l2 - l1) / (l3 - l1)
+    th0 = arccos(sqrt(l3 / l1))  # c/a
+    sqe = 4 / (2 * pi) * (sqrt(l3 * l2 / l1) + Af * ellipkinc(th0, m) + Ae * ellipeinc(th0, m)) ** 2
+
+    return sqrt(sqe), esq - sqe

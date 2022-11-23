@@ -2,7 +2,7 @@ from typing import Tuple, Any
 
 from nptyping import NDArray
 import numpy as np
-from numpy import sqrt
+from numpy import pi
 import scipy.linalg as lin
 
 from ..utils import build_local_matrix, itrf_to_azeld
@@ -32,6 +32,9 @@ def computeDOP(
         * DOP for velocity error
 
     """
+    if elev_mask is None:
+        elev_mask = 0.0
+
     pos = pv_ue[:3]
     nsat = len(ephem) // 6
     nval = 0
@@ -50,13 +53,9 @@ def computeDOP(
         spv = ephem[6 * k : 6 * k + 6]
         if np.isnan(spos[0]):
             continue
-        elif not elev_mask is None:
-            _, el, _, _, _, _ = itrf_to_azeld(pv_ue, spv)
-            if el < elev_mask:
-                continue
         else:
             _, el, _, _, _, _ = itrf_to_azeld(pv_ue, spv)
-            if el < 0:
+            if el < elev_mask:
                 continue
 
         R = spos - pos

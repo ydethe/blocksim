@@ -81,7 +81,7 @@ class PSKMapping(ADSPComputer):
         return outputs
 
     def plotConstellation(self, axe: ABaxe):
-        """Plots the PSK constellation on a matplotlib axe
+        """Plots the PSK constellation on an axe
 
         Args:
             axe: The axe to draw on

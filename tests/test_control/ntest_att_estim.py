@@ -5,7 +5,6 @@ from pathlib import Path
 import numpy as np
 from numpy import pi
 import scipy.linalg as lin
-from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.exceptions import TooWeakAcceleration, TooWeakMagneticField

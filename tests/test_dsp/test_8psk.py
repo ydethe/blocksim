@@ -4,8 +4,7 @@ import unittest
 
 import pytest
 import numpy as np
-from numpy import pi, exp, log10, sqrt
-from matplotlib import pyplot as plt
+from numpy import pi
 
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp.DSPAWGN import DSPAWGN

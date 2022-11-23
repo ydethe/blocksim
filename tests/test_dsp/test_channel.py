@@ -7,7 +7,6 @@ import pytest
 from skyfield.api import utc
 import numpy as np
 from numpy import exp, pi
-from matplotlib import pyplot as plt
 
 from blocksim.control.SetPoint import Step
 from blocksim.dsp.DSPSignal import DSPSignal

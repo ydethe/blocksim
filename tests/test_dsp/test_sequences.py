@@ -2,9 +2,6 @@ import sys
 from pathlib import Path
 import unittest
 
-import numpy as np
-from numpy import pi, exp
-from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.graphics.BFigure import FigureFactory

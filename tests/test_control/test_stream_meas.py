@@ -3,7 +3,6 @@ from pathlib import Path
 import unittest
 
 import numpy as np
-from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.control.Sensors import StreamCSVSensors

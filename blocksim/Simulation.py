@@ -10,7 +10,6 @@ from datetime import datetime
 import rich.progress as rp
 from nptyping import NDArray
 import numpy as np
-import matplotlib.animation as animation
 import networkx as nx
 
 from .exceptions import *
@@ -58,6 +57,19 @@ class Simulation(object):
         for n, data in self.__graph.nodes(data=True):
             comp = data["computer"]
             yield comp
+
+    def createComputer(self, cls, *args, **kwargs) -> AComputer:
+        """Creates a AComputer and adds it to the simulation
+
+        Args:
+            cls: Class to use to create the computer
+            args: Positional arguments
+            kwargs: Keyword arguments
+
+        """
+        c = cls(*args, **kwargs)
+        self.addComputer(c)
+        return c
 
     def addComputer(self, *computers: Iterable[AComputer]):
         """Adds one or several computers to the simulation
@@ -261,7 +273,6 @@ class Simulation(object):
         tps: NDArray[Any, Any],
         progress_bar: bool = True,
         error_on_unconnected: bool = True,
-        fig=None,
     ) -> "FuncAnimation":
         """Resets the simulator, and simulates the closed-loop system
         up to the date given as an argument :
@@ -272,14 +283,10 @@ class Simulation(object):
             tps: Dates to be simulated (s)
             progress_bar: True to display a progress bar in the terminal
             error_on_unconnected: True to raise an exception is an input is not connected. If an input is not connected and error_on_unconnected is False, the input will be padded with zeros
-            fig: In the case of a realtime plot (use of RTPlotter for example), must be the figure that is updated in real time
-
-        Returns:
-            The matplotlib FuncAnimation if fig is not None
 
         """
         # Remove cycles in Simulation graph
-        if nx.is_directed_acyclic_graph(self.__graph) and fig is None:
+        if nx.is_directed_acyclic_graph(self.__graph):
             sg = self.__graph
         else:
             sg = self.computeAcyclicGraph()
@@ -292,31 +299,13 @@ class Simulation(object):
 
         self.__init_sim(clist, t0, error_on_unconnected=error_on_unconnected)
 
-        if progress_bar and fig is None:
+        if progress_bar:
             itr = rp.track(range(len(tps) - 1))
         else:
             itr = range(len(tps) - 1)
 
-        def _anim_func(k):
+        for k in itr:
             self.update(clist, tps[k], tps[k + 1], error_on_unconnected=error_on_unconnected)
-
-        if fig is None:
-            for k in itr:
-                _anim_func(k)
-            ani = None
-        else:
-            dt = np.mean(np.diff(tps))
-            ani = animation.FuncAnimation(
-                fig,
-                func=_anim_func,
-                init_func=None,
-                frames=itr,
-                interval=1000 * dt,
-                blit=False,
-                repeat=False,
-            )
-
-        return ani
 
     def getLogger(self) -> Logger:
         """Gets the Logger used for the simulation

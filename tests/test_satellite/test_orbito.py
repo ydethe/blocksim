@@ -5,9 +5,6 @@ import unittest
 import numpy as np
 from numpy import testing
 
-# from matplotlib import pyplot as plt
-# import pytest
-
 from blocksim.utils import *
 
 sys.path.insert(0, str(Path(__file__).parent.parent))

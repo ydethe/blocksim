@@ -201,14 +201,14 @@ class ADSPLine(metaclass=ABCMeta):
         elif self.dspline_type == DSPLineType.NORTH_POLAR:
             return AxeProjection.NORTH_POLAR
 
-    def quickPlot(self, **kwargs) -> "AxesSubplot":
-        """Quickly plots the line on a matplotlib axe
+    def quickPlot(self, **kwargs) -> "blocksim.graphics.BAxe.ABaxe":
+        """Quickly plots the line
 
         Args:
             kwargs: Plotting options
 
         Returns:
-            The Axes used by matplotlib
+            The ABAxe used
 
         """
         from ..graphics import quickPlot

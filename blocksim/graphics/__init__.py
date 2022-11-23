@@ -249,7 +249,7 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "blocksim.graphics.BFigure.
     return fig
 
 
-def quickPlot(*args, **kwargs) -> "blocksim.graphics.BFigure.MplFigure":
+def quickPlot(*args, **kwargs) -> "blocksim.graphics.BAxe.ABaxe":
     """Quickly plots data
 
     Args:
@@ -291,7 +291,6 @@ def showFigures(
     if len(factory.figures) == 0:
         return
 
-    mfig = None
     for f in factory.figures:
         mfig = f.render(tight_layout=tight_layout)
         if save_fig:

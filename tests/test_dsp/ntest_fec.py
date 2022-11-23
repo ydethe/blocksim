@@ -4,11 +4,8 @@ import unittest
 
 import pytest
 import numpy as np
-from numpy import log10, sqrt
-from matplotlib import pyplot as plt
 
 from blocksim import logger
-
 from blocksim.dsp.FEC import FECCoder, FECDecoder
 
 sys.path.insert(0, str(Path(__file__).parent.parent))

@@ -11,6 +11,8 @@ import scipy.linalg as lin
 from sgp4.api import Satrec, WGS84
 from sgp4.functions import days2mdhms
 
+from ..Simulation import Simulation
+from ..control.Route import Group
 from ..core.Node import AComputer
 from .. import logger
 from ..constants import *
@@ -146,7 +148,7 @@ class ASatellite(AComputer):
 
     def subpoint(self, itrf_pos_vel: NDArray[Any, Any]) -> Tuple[float, float]:
         """
-        Return the latitude and longitude directly beneath this position.
+        Return the longitude and latitude directly beneath this position.
 
         Args:
             itrf_pos_vel: ITRF position (m) and velocity (m/s)
@@ -757,14 +759,22 @@ def createSatellites(
     tsync: datetime,
     prop: ASatellite = SGP4Satellite,
     name_prefix: str = "",
+    sim: Simulation = None,
+    connect_to: str = "tkr",
 ) -> List[ASatellite]:
     """Creates a list of satellites from a TLE file, using the specified subclass of ASatellite
+    If sim is not None and connect_to is not "", the created satellites will be:
+    * inserted in sim
+    * grouped in a Group AComputer
+    * connected together to the GNSSTracker
 
     Args:
         tle_file: TLE file path or URL
         tsync: Time that corresponds to the simulation time zero
         prop: Propagator to use, as a subclass of ASatellite
         name_prefix: Prefix to use to modify the satellites' name
+        sim: Instance of a Simulation
+        connect_to: Name of the GNSSTracker to use in the simulation
 
     Returns:
         A list of instances of ASatellite (following prop argument),
@@ -780,5 +790,28 @@ def createSatellites(
         sat.getName
         satellites.append(sat)
         iline += 1
+
+    nom_coord = ["px", "py", "pz", "vx", "vy", "vz"]
+    if not sim is None and not connect_to == "":
+        grp_snames = []
+        grp_inp = dict()
+        for k, sat in enumerate(satellites):
+            sim.addComputer(sat)
+
+            grp_inp["itrf%i" % k] = (6,)
+            grp_snames.extend(["%s%i" % (n, k) for n in nom_coord])
+
+        grp = Group(
+            "grp",
+            inputs=grp_inp,
+            snames=grp_snames,
+        )
+
+        sim.addComputer(grp)
+
+        for k, sat in enumerate(satellites):
+            sim.connect("%s.itrf" % sat.getName(), "grp.itrf%i" % k)
+
+        sim.connect("grp.grouped", "tkr.state")
 
     return satellites

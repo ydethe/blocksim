@@ -114,6 +114,7 @@ class MplFigure(ABFigure):
 
         for axe in self.axe_factories:
             maxe = axe.createMplAxe(mfig, mgs)
+            # maxe.arrow(0,0,1,0,head_width=0.1,shape='right')
             axe.render(maxe)
 
         if tight_layout:

@@ -62,7 +62,7 @@ class GNSSTracker(ASensors):
 
     Args:
         name: Name of the element
-        nsat: Number of satellites flollowed by the tracker
+        nsat: Number of satellites followed by the tracker
 
     """
 

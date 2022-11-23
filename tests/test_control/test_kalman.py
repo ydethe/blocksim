@@ -5,7 +5,6 @@ import unittest
 import numpy as np
 from numpy import cos, sin, sqrt, exp, pi
 from scipy import linalg as lin
-from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.control.SetPoint import Step

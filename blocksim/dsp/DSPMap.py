@@ -4,8 +4,10 @@ from typing import Callable, List, Any
 
 from nptyping import NDArray
 import numpy as np
+from scipy.interpolate import interp2d
 
 from .. import logger
+from .DSPLine import DSPRectilinearLine
 from ..utils import find2dpeak, Peak
 from ..graphics.GraphicSpec import AxeProjection, DSPMapType
 
@@ -62,10 +64,135 @@ class ADSPMap(metaclass=ABCMeta):
         self.name_of_y_var = "Frequency"
         self.unit_of_y_var = "Hz"
 
+        x = self.generateXSerie()
+        y = self.generateYSerie()
+        self.__itp2d_re = interp2d(x, y, np.real(img), kind="cubic")
+        self.__itp2d_im = interp2d(x, y, np.imag(img), kind="cubic")
+
+    def interpolate(self, x: float, y: float) -> float | np.complex128:
+        """Interpolates in the data.
+        If x or y is an array, the returned value is a 2D array.
+        Else, it is a scalar.
+
+        Args:
+            x: X coordinates
+            y: Y coordinates
+
+        Returns:
+            The interpolated data
+
+        """
+        res_re = self.__itp2d_re(x, y)
+
+        if self.img.dtype in [np.complex128, np.complex64]:
+            res_im = 1j * self.__itp2d_im(x, y)
+        else:
+            res_im = 0.0
+
+        res = res_re + res_im
+        if not hasattr(x, "__iter__") and not hasattr(y, "__iter__"):
+            return res[0]
+        else:
+            return res
+
+    def sectionX(self, y0: float) -> DSPRectilinearLine:
+        """Section of the map following X axis
+
+        Args:
+            y0: Y coordinate where the section is made
+
+        Returns:
+            A `DSPRectilinearLine` that represents the section
+
+        """
+        x = self.generateXSerie()
+
+        z = self.interpolate(x, y0)
+
+        res = DSPRectilinearLine(
+            name=self.name,
+            samplingStart=x[0],
+            samplingPeriod=x[1] - x[0],
+            y_serie=z,
+            default_transform=self.default_transform,
+        )
+        res.name_of_x_var = self.name_of_x_var
+        res.unit_of_x_var = self.unit_of_x_var
+
+        return res
+
+    def sectionY(self, x0: float) -> DSPRectilinearLine:
+        """Section of the map following Y axis
+
+        Args:
+            x0: X coordinate where the section is made
+
+        Returns:
+            A `DSPRectilinearLine` that represents the section
+
+        """
+        y = self.generateYSerie()
+
+        z = self.interpolate(x0, y)
+
+        res = DSPRectilinearLine(
+            name=self.name,
+            samplingStart=y[0],
+            samplingPeriod=y[1] - y[0],
+            y_serie=z,
+            default_transform=self.default_transform,
+        )
+        res.name_of_x_var = self.name_of_y_var
+        res.unit_of_x_var = self.unit_of_y_var
+
+        return res
+
     @property
     @abstractmethod
     def dspmap_type(self) -> DSPMapType:
         pass
+
+    def __add__(self, x):
+        if issubclass(x.__class__, ADSPMap):
+            new_img = self.img + x.img
+        else:
+            new_img = self.img + x
+
+        res = self.__class__(
+            name=self.name,
+            samplingXStart=self.samplingXStart,
+            samplingXPeriod=self.samplingXPeriod,
+            samplingYStart=self.samplingYStart,
+            samplingYPeriod=self.samplingYPeriod,
+            img=new_img,
+            default_transform=self.default_transform,
+        )
+        res.name_of_x_var = self.name_of_x_var
+        res.unit_of_x_var = self.unit_of_x_var
+        res.name_of_y_var = self.name_of_y_var
+        res.unit_of_y_var = self.unit_of_y_var
+
+        return res
+
+    def __neg__(self):
+        res = self.__class__(
+            name=self.name,
+            samplingXStart=self.samplingXStart,
+            samplingXPeriod=self.samplingXPeriod,
+            samplingYStart=self.samplingYStart,
+            samplingYPeriod=self.samplingYPeriod,
+            img=-self.img,
+            default_transform=self.default_transform,
+        )
+        res.name_of_x_var = self.name_of_x_var
+        res.unit_of_x_var = self.unit_of_x_var
+        res.name_of_y_var = self.name_of_y_var
+        res.unit_of_y_var = self.unit_of_y_var
+
+        return res
+
+    def __sub__(self, x):
+        return self + (-x)
 
     def generateXSerie(self, index: int = None) -> NDArray[Any, Any]:
         """Generates the x samples of the map
@@ -111,14 +238,14 @@ class ADSPMap(metaclass=ABCMeta):
         elif self.dspmap_type == DSPMapType.NORTH_POLAR:
             return AxeProjection.NORTH_POLAR
 
-    def quickPlot(self, **kwargs) -> "AxesSubplot":
+    def quickPlot(self, **kwargs) -> "blocksim.graphics.BAxe.ABaxe":
         """Quickly plots the map
 
         Args:
             kwargs: Plotting options
 
         Returns:
-            The Axes used by matplotlib
+            The ABaxe created
 
         """
         from ..graphics.BFigure import FigureFactory

@@ -30,6 +30,6 @@ class TestGNSSSimMain(TestBase):
 
 
 if __name__ == "__main__":
-    a = TestGNSSSim()
+    a = TestGNSSSimMain()
     a.test_cmd_mtcl()
     # a.test_cmd_plot()

@@ -5,7 +5,6 @@ from pathlib import Path
 import numpy as np
 from scipy.linalg import inv
 import scipy.linalg as lin
-from matplotlib import pyplot as plt
 import pytest
 
 from blocksim.control.System import G6DOFSystem
