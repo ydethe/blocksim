@@ -14,9 +14,9 @@ from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.Simulation import Simulation
 
 
-class TestRTPlotter(TestBase):
+class NTestRTPlotter(TestBase):
     @patch("matplotlib.pyplot.show")
-    def test_rtplotter(self, mock_pyplot):
+    def ntest_rtplotter(self, mock_pyplot):
         fig = plt.figure()
         axe = fig.add_subplot(111)
 
@@ -41,6 +41,6 @@ class TestRTPlotter(TestBase):
 
 
 if __name__ == "__main__":
-    a = TestRTPlotter()
+    a = NTestRTPlotter()
     a.setUp()
-    a.test_rtplotter()
+    a.ntest_rtplotter()
