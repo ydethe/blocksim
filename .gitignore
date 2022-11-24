@@ -6,6 +6,7 @@ tests/quadri.csv
 blocksim/version.py
 .pdm.toml
 
+__pypackages__
 *.parq
 *.pkl
 .ipynb/
