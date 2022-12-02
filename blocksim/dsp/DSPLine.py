@@ -14,6 +14,7 @@ from . import derivative_coeff
 from .. import logger
 from ..utils import find1dpeak, Peak
 from ..graphics.GraphicSpec import AxeProjection, DSPLineType
+from ..loggers.Logger import Logger
 
 __all__ = [
     "ADSPLine",
@@ -46,6 +47,69 @@ class ADSPLine(metaclass=ABCMeta):
 
         with open(fic, "rb") as f:
             res = load(f)
+        return res
+
+    @classmethod
+    def fromLogger(
+        cls,
+        bs_log: Logger,
+        name_y: str,
+        name_x: str = "t",
+        unit_x: str = "s",
+        name_line: str = None,
+        default_transform=lambda x: x,
+        allow_resampling: bool = True,
+        force_raw: bool = False,
+    ) -> "ADSPLine":
+        """Creates a ADSPLine from a Logger instance
+
+        Args:
+            bs_log: Instance of Logger that contains data
+            name_y: Name of the Y variable in the Logger
+            name_x: Name of the X variable in the Logger
+            unit_x: Unit of the X variable
+            name_line: Name of the created ADSPLine
+            default_transform: Function to apply to the samples before plotting.
+                Shall be vectorized
+            allow_resampling: If False, raises an error if the X variable is not evenly spaced
+            force_raw: If True, forbids formulae in variables name
+
+        Returns:
+            The ADSPLine instance
+
+        """
+        x = bs_log.getValue(name_x, raw=force_raw)
+        y = bs_log.getValue(name_y, raw=force_raw)
+
+        arr_dx = np.diff(x)
+        dx = np.min(np.abs(arr_dx))
+        if np.std(arr_dx) / dx < 1e-6:
+            x0 = x[0]
+            dx = x[1] - x0
+            y_new = y
+        elif allow_resampling:
+            x0 = x[0]
+            xf = x[-1]
+            x_new = np.arange(x0, xf + dx, dx)
+            y_new = np.interp(x_new, x, y)
+        else:
+            msg = f"The variable '{name_x}' is not evenly spaced"
+            logger.error(msg)
+            raise AssertionError(msg)
+
+        if name_line is None:
+            name_line = name_y
+
+        res = cls(
+            name=name_line,
+            samplingStart=x0,
+            samplingPeriod=dx,
+            y_serie=y_new,
+            default_transform=default_transform,
+        )
+        res.unit_of_x_var = unit_x
+        res.name_of_x_var = name_x
+
         return res
 
     def __init__(

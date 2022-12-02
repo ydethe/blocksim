@@ -17,7 +17,7 @@ Req = 6378137.0
 #: Polar Earth radius in WGS84 (m)
 Rpo = 6356752.3
 
-#: Inverse of flattening in WGS84 (-)
+#: Inverse of flattening in WGS84 (-), =Req/(Req-Rpo)
 rf = 298.257223563
 
 #: Earth sideral revolution pulsation (rad/s)

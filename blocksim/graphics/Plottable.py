@@ -818,6 +818,12 @@ class APlottableDSPMap(APlottable):
         elif info["fill"] == "contour":
             maxe.clabel(ret, inline=True, fontsize=10)
 
+        if axe.projection == AxeProjection.PLATECARREE and info["fill"] in [
+            "contourf",
+            "pcolormesh",
+        ]:
+            maxe.coastlines()
+
         return info
 
 

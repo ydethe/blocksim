@@ -462,6 +462,7 @@ class Logger(object):
 
         Args:
             name: Name or expression
+            raw: If True, forces the use of getRawValue
 
         Returns:
             An array of the values

@@ -4,8 +4,6 @@ from functools import lru_cache
 
 import numpy as np
 from numpy import pi, sqrt, cos, sin
-import cartopy.crs as ccrs
-from cartopy.geodesic import Geodesic
 
 from .. import logger
 from .B3DPlotter import B3DPlotter
@@ -485,6 +483,8 @@ class BAxePlateCarree(ABaxe):
     projection = AxeProjection.PLATECARREE
 
     def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "Axes":
+        import cartopy.crs as ccrs
+
         if not self.mpl_axe is None:
             return self.mpl_axe
 
@@ -523,6 +523,7 @@ class BAxePlateCarree(ABaxe):
             The created APlottable
 
         """
+        from cartopy.geodesic import Geodesic
 
         g_lon, g_lat = coord
 

@@ -54,6 +54,8 @@ __all__ = [
     "anomaly_true_to_mean",
     "build_local_matrix",
     "geodetic_to_itrf",
+    "geodetic_to_geocentric",
+    "geocentric_to_geodetic",
     "orbital_to_teme",
     "teme_to_orbital",
     "itrf_to_geodetic",
@@ -818,8 +820,7 @@ def build_local_matrix(pos: NDArray[Any, Any], xvec: NDArray[Any, Any] = None) -
 
 
 def geodetic_to_itrf(lon: float, lat: float, h: float) -> NDArray[Any, Any]:
-    """
-    Compute the Geocentric (Cartesian) Coordinates X, Y, Z
+    """Compute the Geocentric (Cartesian) Coordinates X, Y, Z
     given the Geodetic Coordinates lat, lon + Ellipsoid Height h
 
     Args:
@@ -840,6 +841,54 @@ def geodetic_to_itrf(lon: float, lat: float, h: float) -> NDArray[Any, Any]:
     Z = ((1 - 1 / rf) ** 2 * N + h) * sin(lat)
 
     return np.array([X, Y, Z])
+
+
+def geodetic_to_geocentric(lon: float, lat: float, h: float) -> NDArray[Any, Any]:
+    """Compute the geocentric coordinates lambda, theta, r
+    given the geodetic coordinates lon, lat, and ellipsoid height h
+
+    Args:
+        lon: Longitude (rad)
+        lat: Geodetic latitude (rad)
+        h: Geodetic height (m)
+
+    Returns:
+        A array of longitude, geocentric latitude and distance from the Earth center
+
+    Examples:
+        >>> lon,theta,r = geodetic_to_geocentric(0,0,0)
+
+    """
+    x, y, z = geodetic_to_itrf(lon, lat, h)
+    r = lin.norm((x, y, z))
+    p = sqrt(x**2 + y**2)
+    theta = arctan2(z, p)
+    return np.array([lon, theta, r])
+
+
+def geocentric_to_geodetic(lon: float, theta: float, r: float) -> NDArray[Any, Any]:
+    """Compute the geodetic coordinates lambda, theta, r
+    given the geocentric coordinates lon, theta, and r
+
+    Args:
+        lon: Longitude (rad)
+        theta: Geocentric latitude (rad)
+        r: Geocentric distance (m)
+
+    Returns:
+        A array of longitude, geodetic latitude and height
+
+    Examples:
+        >>> lon,lat,h = geocentric_to_geodetic(0,0,6378137)
+
+    """
+    x = cos(lon) * cos(theta)
+    y = sin(lon) * cos(theta)
+    z = sin(theta)
+
+    pos = r * np.array([x, y, z])
+
+    return itrf_to_geodetic(pos)
 
 
 def __Iter_phi_h(x: float, y: float, z: float, eps: float = 1e-6) -> Tuple[float, float]:

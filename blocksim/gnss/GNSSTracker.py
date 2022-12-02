@@ -9,7 +9,7 @@ from ..control.Sensors import ASensors
 from ..core.Node import AWGNOutput
 
 from .. import logger
-from ..constants import mu
+from ..constants import mu, omega
 from ..utils import itrf_to_azeld
 
 
@@ -131,15 +131,23 @@ class GNSSTracker(ASensors):
             # Calcul elevation
             azim, elev, dist, _, _, vrad = itrf_to_azeld(ueposition, spv)
 
-            # Calcul arad et jrad
+            # Quelques variables auxiliaires
             dst = p_s[:3] - p_t[:3]
             u = dst / dist
             r_s = lin.norm(p_s)
-            a_s = -mu / r_s**3 * p_s
-            arad = -(vrad**2) / dist + v_s @ v_s / dist + a_s @ u
+            om = np.array([0, 0, omega])
 
-            d_r_s = p_s @ v_s / r_s
-            j_s = -mu / r_s**4 * (r_s * v_s - 3 * d_r_s * p_s)
+            # Calcul des accélération et jerk du satellite en ECEF
+            a_s = -mu / r_s**3 * p_s - np.cross(om, np.cross(om, p_s)) - 2 * np.cross(om, v_s)
+            j_s = (
+                -mu / r_s**3 * v_s
+                + 3 * mu / r_s**5 * (p_s @ v_s) * p_s
+                - np.cross(om, np.cross(om, v_s))
+                - 2 * np.cross(om, a_s)
+            )
+
+            # Calcul arad et jrad
+            arad = -(vrad**2) / dist + v_s @ v_s / dist + a_s @ u
             jrad = -3 * arad * vrad / dist + 3 * v_s @ a_s / dist + j_s @ u
 
             obscoord[6 * k] = azim

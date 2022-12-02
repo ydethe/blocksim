@@ -2,17 +2,22 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
+import pytest
 import numpy as np
 from numpy import nan, testing
 from skyfield.api import utc
 
 from blocksim.control.Route import Group
 from blocksim.Simulation import Simulation
+from blocksim.loggers.Logger import Logger
 from blocksim.utils import rad
 from blocksim.utils import geodetic_to_itrf
 from blocksim.satellite.Satellite import createSatellites
 from blocksim.gnss.GNSSTracker import GNSSTracker
 from blocksim.gnss.GNSSReceiver import GNSSReceiver
+from blocksim.graphics import showFigures
+from blocksim.graphics.BFigure import FigureFactory
+from blocksim.dsp.DSPLine import DSPRectilinearLine
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
@@ -373,14 +378,52 @@ class TestGNSS(TestBase):
         self.assertAlmostEqual(dp_est, self.tkr.dp, delta=0.5)
         self.assertAlmostEqual(dv_est, self.tkr.dv, delta=0.5)
 
+    @pytest.mark.mpl_image_compare(tolerance=24, savefig_kwargs={"dpi": 150})
+    def test_tkr_vaj(self, pb: bool = False):
+        self.rec.algo = "ranging"
+
+        tps = np.arange(0, 3600, 300)
+
+        self.sim.simulate(tps, progress_bar=pb)
+        log = self.sim.getLogger()
+
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(3, 1)
+
+        nsat = 2
+
+        d = DSPRectilinearLine.fromLogger(log, f"tkr_obscoord_dist{nsat}", force_raw=True)
+
+        axe_v = fig.add_baxe(title="Radial velocity", spec=gs[0, 0])
+        vr = DSPRectilinearLine.fromLogger(log, f"tkr_obscoord_vrad{nsat}", force_raw=True)
+        axe_v.plot(vr, linewidth=4, color="black")
+        axe_v.plot(d.derivate(), color="yellow")
+
+        axe_a = fig.add_baxe(title="Radial acceleration", spec=gs[1, 0], sharex=axe_v)
+        ar = DSPRectilinearLine.fromLogger(log, f"tkr_obscoord_arad{nsat}", force_raw=True)
+        axe_a.plot(ar, linewidth=4, color="black")
+        axe_a.plot(vr.derivate(), color="yellow")
+
+        axe_j = fig.add_baxe(title="Radial jerk", spec=gs[2, 0], sharex=axe_v)
+        jr = DSPRectilinearLine.fromLogger(log, f"tkr_obscoord_jrad{nsat}", force_raw=True)
+        axe_j.plot(jr, linewidth=4, color="black")
+        axe_j.plot(ar.derivate(), color="yellow")
+
+        return fig.render()
+
 
 if __name__ == "__main__":
     a = TestGNSS()
-    a.setUp()
-    a.test_gnss_ranging()
+    # a.setUp()
+    # a.test_gnss_ranging()
+
+    # a.setUp()
+    # a.test_gnss_doppler()
+
+    # a.setUp()
+    # a.test_gnss_dv()
 
     a.setUp()
-    a.test_gnss_doppler()
+    a.test_tkr_vaj(pb=True)
 
-    a.setUp()
-    a.test_gnss_dv()
+    showFigures()

@@ -1,15 +1,22 @@
 from enum import Enum
 from abc import ABCMeta, abstractmethod
+from pathlib import Path
 from typing import Callable, List, Any
+import re
+from datetime import datetime, timezone
 
 from nptyping import NDArray
 import numpy as np
+from numpy import pi
 from scipy.interpolate import interp2d
+import fortranformat as ff
 
 from .. import logger
 from .DSPLine import DSPRectilinearLine
-from ..utils import find2dpeak, Peak
+from ..utils import find2dpeak, Peak, geocentric_to_geodetic, geodetic_to_geocentric
 from ..graphics.GraphicSpec import AxeProjection, DSPMapType
+from ..gnss.utils import read_ionex_metadata
+
 
 __all__ = ["ADSPMap", "DSPRectilinearMap", "DSPPolarMap", "DSPNorthPolarMap"]
 
@@ -341,6 +348,96 @@ class DSPRectilinearMap(ADSPMap):
     @property
     def dspmap_type(self) -> DSPMapType:
         return DSPMapType.RECTILINEAR
+
+    @classmethod
+    def from_ionex(cls, pth: Path, map_index: int = 0):
+        """Builds the TEC map from a IONEX filex. The map stores the TEC in \( 10^{15} \\mathrm{el}/\\mathrm{m}^2 \)
+
+        Args:
+            pth: Path to the IONEX file
+            map_index: index of the map read in the file
+
+        Returns:
+            The TEC map
+
+        """
+        # Adapted from : https://notebook.community/daniestevez/jupyter_notebooks/IONEX
+        with open(pth.expanduser().resolve()) as f:
+            ionex = f.read()
+
+        sections = ionex.split("START OF TEC MAP")
+        metadata = read_ionex_metadata(sections[0])
+        tecmap = [t for t in sections[1:]][map_index]
+        for k in tecmap.split("\n"):
+            if "EPOCH OF CURRENT MAP" in k:
+                ff_fmt = ff.FortranRecordReader("(6I6,24X)")
+                yr, mo, da, hr, mn, sc = ff_fmt.read(k)
+
+                map_epoch = datetime(yr, mo, da, hr, mn, sc, tzinfo=timezone.utc)
+                metadata["map_epoch"] = map_epoch
+        tecmap = re.split(".*END OF TEC MAP", tecmap)[0]
+        img = (
+            np.stack(
+                [
+                    np.fromstring(l, sep=" ")
+                    for l in re.split(".*LAT/LON1/LON2/DLON/H\\n", tecmap)[1:]
+                ]
+            )
+            * 10 ** metadata["exponent"]
+        )
+
+        ny, nx = img.shape
+        x = (
+            np.arange(
+                metadata["lon1"],
+                metadata["lon2"] + metadata["dlon"],
+                metadata["dlon"],
+            )
+            * pi
+            / 180
+        )
+        y = (
+            np.arange(
+                metadata["lat1"],
+                metadata["lat2"] + metadata["dlat"],
+                metadata["dlat"],
+            )
+            * pi
+            / 180
+        )
+
+        assert len(x) == nx
+        assert len(y) == ny
+
+        # IONEX TEC grid are given in geocentric latitudes
+        r0 = (metadata["base_radius"] + metadata["hgt1"]) * 1000
+        y_geod = np.empty_like(y)
+        for k in range(len(y)):
+            _, y_geod[k], _ = geocentric_to_geodetic(0, y[k], r0)
+
+        itp = interp2d(x, y_geod, img, kind="cubic")
+        img2 = np.empty_like(img)
+
+        for i in range(ny):
+            for j in range(nx):
+                img2[i, j] = itp(x[j], y[i])
+
+        res = cls(
+            name="tec",
+            samplingXStart=x[0],
+            samplingXPeriod=x[1] - x[0],
+            samplingYStart=y[0],
+            samplingYPeriod=y[1] - y[0],
+            img=img2,
+        )
+        res.unit_of_x_var = "deg"
+        res.unit_of_y_var = "deg"
+        res.name_of_x_var = "Longitude"
+        res.name_of_y_var = "Latitude"
+
+        res.metadata = metadata
+
+        return res
 
 
 class DSPPolarMap(ADSPMap):
