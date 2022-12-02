@@ -8,7 +8,7 @@ import numpy as np
 from numpy import exp, pi
 import pytest
 
-from blocksim.control.Estimator import SpectrumEstimator
+from blocksim.control.Estimator import KalmanSpectrumEstimator
 from blocksim.Simulation import Simulation
 from blocksim.dsp import phase_unfold_deg
 from blocksim.graphics.BFigure import FigureFactory
@@ -56,7 +56,7 @@ class TestTrackingSteadyState(TestBase):
     def test_tracking_steadystate_cplxe(self):
         nb_tracks = len(self.tracks)
 
-        kal = SpectrumEstimator(
+        kal = KalmanSpectrumEstimator(
             name="kal",
             dt=self.dt,
             sname_output="x_kal",
@@ -102,7 +102,7 @@ class TestTrackingSteadyState(TestBase):
     def test_bode_steadystate_cplxe(self):
         nb_tracks = len(self.tracks)
 
-        kal = SpectrumEstimator(
+        kal = KalmanSpectrumEstimator(
             name="kal",
             dt=self.dt,
             sname_output="x_kal",
@@ -130,7 +130,7 @@ class TestTrackingSteadyState(TestBase):
     def ntest_bode3_steadystate_cplxe(self):
         nb_tracks = len(self.tracks)
 
-        kal = SpectrumEstimator(
+        kal = KalmanSpectrumEstimator(
             name="kal",
             dt=self.dt,
             sname_output="x_kal",

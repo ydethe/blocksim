@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Iterable, Any
 from functools import lru_cache
 
-from nptyping import NDArray, Shape
+from nptyping import NDArray
 import numpy as np
 from numpy import exp, pi
 from scipy import linalg as lin
@@ -21,7 +21,7 @@ __all__ = [
     "AKalmanFilter",
     "TimeInvariantKalmanFilter",
     "SteadyStateKalmanFilter",
-    "SpectrumEstimator",
+    "KalmanSpectrumEstimator",
     "MadgwickFilter",
     "MahonyFilter",
 ]
@@ -651,7 +651,7 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         return outputs
 
 
-class SpectrumEstimator(SteadyStateKalmanFilter):
+class KalmanSpectrumEstimator(SteadyStateKalmanFilter):
     r"""Frequency tracker based on a Kalman filter.
     The number of frequencies to be tracked in *tracks* and the number of states shall be equal
 
@@ -687,8 +687,11 @@ class SpectrumEstimator(SteadyStateKalmanFilter):
 
     Args:
         name: Name of the system
-        name_of_outputs: Names of the outputs of the element
-        name_of_states: Names of the states of the element
+        dt: The sampling period of the inpnut  signal
+        snames_state: Name of each of the scalar components of the state.
+          Its shape defines the shape of the data
+        snames_output: Name of each of the scalar components of the output.
+          Its shape defines the shape of the data
         tracks: List of the frequencies to be tracked (Hz)
 
     """

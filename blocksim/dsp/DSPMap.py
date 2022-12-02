@@ -76,7 +76,7 @@ class ADSPMap(metaclass=ABCMeta):
         self.__itp2d_re = interp2d(x, y, np.real(img), kind="cubic")
         self.__itp2d_im = interp2d(x, y, np.imag(img), kind="cubic")
 
-    def interpolate(self, x: float, y: float) -> float | np.complex128:
+    def interpolate(self, x: float, y: float) -> float:
         """Interpolates in the data.
         If x or y is an array, the returned value is a 2D array.
         Else, it is a scalar.

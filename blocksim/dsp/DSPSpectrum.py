@@ -2,13 +2,18 @@ from typing import Any
 
 from nptyping import NDArray, Shape
 import numpy as np
+from numpy import exp, pi
 from numpy.fft import ifft, fftshift
 from scipy.signal import get_window
 
 from .DSPLine import DSPRectilinearLine
+from .DSPMap import DSPRectilinearMap
+from ..core.CircularBuffer import CircularBuffer
+from ..core.Node import AComputer
+from ..loggers.Logger import Logger
 
 
-__all__ = ["DSPSpectrum"]
+__all__ = ["DSPSpectrum", "RecursiveSpectrumEstimator"]
 
 
 class DSPSpectrum(DSPRectilinearLine):
@@ -71,3 +76,98 @@ class DSPSpectrum(DSPRectilinearLine):
             samplingPeriod=1 / n / df,
             y_serie=y,
         )
+
+
+class RecursiveSpectrumEstimator(AComputer):
+    r"""Spectrum estimator.
+
+    The input of the element is **measurement**
+
+    Args:
+        name: Name of the system
+        dt: The sampling period of the inpnut  signal
+        nfft: Number of samples used to compute the spectrum
+
+    """
+
+    __slots__ = ["__x_buf", "__vec"]
+
+    def __init__(
+        self,
+        name: str,
+        dt: float,
+        nfft: int,
+    ):
+        AComputer.__init__(
+            self,
+            name=name,
+        )
+        self.createParameter("dt", dt)
+        self.createParameter("nfft", nfft)
+
+        self.__x_buf = CircularBuffer(size=nfft, dtype=np.complex128)
+
+        self.defineInput("measurement", shape=1, dtype=np.complex128)
+        self.defineOutput(
+            name="spectrum", snames=[f"y_est_{i}" for i in range(nfft)], dtype=np.complex128
+        )
+
+    def getSpectrogram(self, log: Logger) -> DSPRectilinearMap:
+        """Gets the map from the Logger after simulation
+
+        Args:
+            log: The Logger after simulation
+
+        Returns:
+            The map
+
+        """
+        t_sim = log.getValue("t")
+        fs = 1 / (t_sim[1] - t_sim[0])
+
+        img = np.empty((self.nfft, len(t_sim)), dtype=np.complex128)
+        otp = self.getOutputByName("spectrum")
+        ns = otp.getScalarNames()
+        for k in range(self.nfft):
+            vname = "%s_%s_%s" % (self.getName(), otp.getName(), ns[k])
+            x = log.getValue(vname)
+            img[k, :] = x
+
+        spg = DSPRectilinearMap(
+            name="map",
+            samplingXStart=-self.nfft / fs / 2 + t_sim[0],
+            samplingXPeriod=1 / fs,
+            samplingYStart=-fs / 2,
+            samplingYPeriod=fs / self.nfft,
+            img=fftshift(img, axes=0),
+            default_transform=np.abs,
+        )
+        spg.name_of_x_var = "Time"
+        spg.unit_of_x_var = "s"
+        spg.name_of_y_var = "Frequency"
+        spg.unit_of_y_var = "Hz"
+
+        return spg
+
+    def resetCallback(self, t0: float):
+        super().resetCallback(t0)
+        self.__x_buf.reset()
+        n = np.arange(self.nfft)
+        self.__vec = exp(2 * pi * 1j * n / self.nfft)
+
+    def update(
+        self,
+        t1: float,
+        t2: float,
+        measurement: NDArray[Any, Any],
+        spectrum: NDArray[Any, Any],
+    ) -> dict:
+        self.__x_buf.append(measurement[0])
+        prev_meas = self.__x_buf[0]
+        spectrum = self.__vec * (spectrum - prev_meas + measurement[0])
+        # print(prev_meas , measurement[0])
+
+        outputs = {}
+        outputs["spectrum"] = spectrum
+
+        return outputs
