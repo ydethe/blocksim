@@ -9,6 +9,7 @@ dependencies = [
     "ahrs~=0.3.0",
     "cartopy~=0.20.0",
     "control~=0.9.0",
+    "fortranformat~=1.2.2",
     "geopandas~=0.11.0",
     "lazy-property~=0.0.1",
     "matplotlib~=3.5.0",
@@ -125,3 +126,7 @@ doc.shell = """\
     dot -Tpng build/htmldoc/classes_blocksim.dot -o build/htmldoc/blocksim/classes.png
 """
 baseline.shell = "pytest --mpl-generate-path=tests/baseline tests"
+inst_doc.shell = """\
+    mkdir -p /var/www/html/blocksim
+    cp -r build/htmldoc/* /var/www/html/blocksim
+"""

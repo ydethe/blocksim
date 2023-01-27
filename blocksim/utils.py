@@ -15,7 +15,7 @@ from scipy.interpolate import interp1d, interp2d
 from scipy.optimize import root_scalar, minimize
 from nptyping import NDArray
 import numpy as np
-from numpy import pi, arcsin, arccos, arctan, arctan2, tan, sin, cos, sqrt, exp
+from numpy import pi, arcsin, arccos, arctan, arctan2, tan, sin, cos, sqrt, exp, log
 from skyfield.api import load, utc
 from skyfield.timelib import Time
 from skyfield.sgp4lib import theta_GMST1982
@@ -1495,6 +1495,10 @@ def mean_variance_3dgauss_norm(cov):
     Af = l3 / Ae
     m = (l2 - l1) / (l3 - l1)
     th0 = arccos(sqrt(l3 / l1))  # c/a
-    sqe = 4 / (2 * pi) * (sqrt(l3 * l2 / l1) + Af * ellipkinc(th0, m) + Ae * ellipeinc(th0, m)) ** 2
+    if 1 - m < 1e-5:  # This case make ellipkinc return np.inf
+        AfF = (log((4 * l1) / l3) * l3) / (2 * sqrt(l1))
+    else:
+        AfF = Af * ellipkinc(th0, m)
+    sqe = 4 / (2 * pi) * (sqrt(l3 * l2 / l1) + AfF + Ae * ellipeinc(th0, m)) ** 2
 
     return sqrt(sqe), esq - sqe

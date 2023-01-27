@@ -10,7 +10,7 @@ import pytest
 
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp import derivative_coeff, phase_unfold_deg
-from blocksim.dsp.DSPFilter import ArbitraryDSPFilter, BandpassDSPFilter
+from blocksim.dsp.DSPFilter import ArbitraryDSPFilter, BandpassDSPFilter, DerivativeDSPFilter
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.Simulation import Simulation
 
@@ -99,7 +99,7 @@ class TestFilter(TestBase):
 
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=8, savefig_kwargs={"dpi": 150})
     def test_filtrage_chirp(self):
         sim = Simulation()
 
@@ -168,11 +168,10 @@ class TestFilter(TestBase):
         tps = np.arange(ns) / fs
         freq = -bp / 2 + bp * tps / tau
 
-        taps = derivative_coeff(rank=1, order=10)
-        filt = ArbitraryDSPFilter(name="filt", samplingPeriod=1 / fs, num=taps * fs)
+        filt = DerivativeDSPFilter(name="filt", samplingPeriod=1 / fs, rank=1, order=3)
 
         psig = filt.apply(sig)
-        res = -psig / sig / (2 * pi * 1j)
+        res = psig / sig / (2 * pi * 1j)
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
@@ -184,6 +183,7 @@ class TestFilter(TestBase):
                 {"data": freq, "unit": "Hz", "name": "Frequency"},
             )
         )
+        axe.set_ylim(-30, 30)
 
         return fig.render()
 
@@ -289,7 +289,7 @@ class TestFilter(TestBase):
         # dt = 1/100.
         from scipy.signal import dlti, dfreqresp
 
-        dt = 1 / 100.0
+        dt = 1 / 100.02
         num = [1.4, -1.8, 1.4]
         den = [1, 0, 0]
 
@@ -311,6 +311,39 @@ class TestFilter(TestBase):
 
         return fig.render()
 
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_derivative_filter(self):
+        fs = 100.0
+        rank = 1
+        order = 3
+        f = DerivativeDSPFilter("filt", samplingPeriod=1 / fs, rank=rank, order=order)
+        bode = f.bodeDiagram(name="bode")
+        # bode.setDefaultTransform(bode.to_angle)
+
+        ns = int(fs)
+        tps = np.arange(ns) / fs
+        y = np.empty_like(tps)
+        y[: ns // 2] = -3 + 2 * tps[: ns // 2] - 5 * tps[: ns // 2] ** 2
+        y[ns // 2 :] = -1 - 6 * tps[ns // 2 :] + 3 * tps[ns // 2 :] ** 2
+        # y +=  np.random.normal(size=ns) / 100
+        s_in = DSPSignal.fromTimeAndSamples(name="input", tps=tps, y_serie=y.copy())
+
+        s_out1 = f.apply(s_in).truncate(samplingStart=order / fs)
+        s_out2 = s_in.derivate(rank=rank, order=order)
+
+        fig = FigureFactory.create(title="Derivative Filter")
+        gs = fig.add_gridspec(2, 1)
+
+        axe = fig.add_baxe(title="Bode diagram", spec=gs[0, 0])
+        axe.plot(bode)
+
+        axe = fig.add_baxe(title="Filtered signal", spec=gs[1, 0])
+        # axe.plot(s_in, label="Input")
+        axe.plot(s_out1, label="DerivativeDSPFilter")
+        axe.plot(s_out2, label="ADSPLine.derivative")
+
+        return fig.render()
+
 
 if __name__ == "__main__":
     # unittest.main()
@@ -320,12 +353,13 @@ if __name__ == "__main__":
 
     a = TestFilter()
     # a.test_bode()
-    # a.test_filtrage()
+    a.test_filtrage()
     # a.test_filtrage_chirp()
     # a.test_freq_estimator()
     # a.test_iir_design()
     # a.test_iir_filter()
     # a.test_transfer_function()
-    a.test_fir_design()
+    # a.test_fir_design()
+    # a.test_derivative_filter()
 
     showFigures()

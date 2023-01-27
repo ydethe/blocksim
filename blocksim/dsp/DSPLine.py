@@ -10,7 +10,7 @@ from numpy.polynomial import Polynomial
 from scipy.interpolate import interp1d
 from scipy import linalg as lin
 
-from . import derivative_coeff
+from . import derivative_coeff, phase_unfold_deg
 from .. import logger
 from ..utils import find1dpeak, Peak
 from ..graphics.GraphicSpec import AxeProjection, DSPLineType
@@ -127,6 +127,15 @@ class ADSPLine(metaclass=ABCMeta):
         self.__default_transform = default_transform
         self.name_of_x_var = "Samples"
         self.unit_of_x_var = "ech"
+
+    def setDefaultTransform(self, fct: Callable):
+        """Set the fonction called when plotting
+
+        Args:
+            fct : Function
+
+        """
+        self.__default_transform = fct
 
     def save(self, fic: Path):
         from pickle import dump
@@ -565,9 +574,13 @@ class ADSPLine(metaclass=ABCMeta):
 
         if samplingStop is None and nech is None:
             samplingStop = self.samplingStop
-            nech = 1 + int(np.ceil((samplingStop - samplingStart) / samplingPeriod))
+            nech = int(
+                np.ceil((samplingStop + samplingPeriod / 2 - samplingStart) / samplingPeriod)
+            )
         elif not samplingStop is None and nech is None:
-            nech = 1 + int(np.ceil((samplingStop - samplingStart) / samplingPeriod))
+            nech = int(
+                np.ceil((samplingStop + samplingPeriod / 2 - samplingStart) / samplingPeriod)
+            )
         elif samplingStop is None and not nech is None:
             samplingStop = (nech - 1) * samplingPeriod + samplingStart
         else:
@@ -607,6 +620,20 @@ class ADSPLine(metaclass=ABCMeta):
         res.unit_of_x_var = self.unit_of_x_var
 
         return res
+
+    @classmethod
+    def to_angle(cls, x: NDArray[Any, Any]) -> NDArray[Any, Any]:
+        """Converts the samples into their phase, in degrees.
+        The returned phae is unwrapped
+
+        Args:
+            x: The array of samples
+
+        Returns:
+            The phase of the serie *x* (deg)
+
+        """
+        return phase_unfold_deg(x)
 
     @classmethod
     def to_db_lim(cls, low: float) -> Callable:

@@ -109,7 +109,9 @@ class RecursiveSpectrumEstimator(AComputer):
 
         self.defineInput("measurement", shape=1, dtype=np.complex128)
         self.defineOutput(
-            name="spectrum", snames=[f"y_est_{i}" for i in range(nfft)], dtype=np.complex128
+            name="spectrum",
+            snames=[f"y_est_{i}" for i in range(nfft)],
+            dtype=np.complex128,
         )
 
     def getSpectrogram(self, log: Logger) -> DSPRectilinearMap:

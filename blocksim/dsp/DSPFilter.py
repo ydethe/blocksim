@@ -17,14 +17,20 @@ from scipy.signal import (
 )
 
 from .. import logger
-from ..dsp import phase_unfold
+from ..dsp import phase_unfold, derivative_coeff
 from ..core.Node import AComputer, TFOutput
 from .DSPSignal import DSPSignal
 from .DSPLine import ADSPLine
 from ..graphics.GraphicSpec import DSPLineType
 
 
-__all__ = ["DSPBodeDiagram", "ADSPFilter", "BandpassDSPFilter", "ArbitraryDSPFilter"]
+__all__ = [
+    "DSPBodeDiagram",
+    "ADSPFilter",
+    "BandpassDSPFilter",
+    "ArbitraryDSPFilter",
+    "DerivativeDSPFilter",
+]
 
 
 class DSPBodeDiagram(ADSPLine):
@@ -73,7 +79,7 @@ class ADSPFilter(AComputer):
         if len(a) == len(b) and np.abs(a[0] - 1) < 1e-9 and lin.norm(a[1:]) < 1e-9:
             # FIR filter case
             numtaps = len(b)
-            gd = numtaps * self.samplingPeriod / 2
+            gd = (numtaps - 1) * self.samplingPeriod / 2
         else:
             # IIR filter case
             # https://www.dsprelated.com/showarticle/69.php
@@ -470,4 +476,41 @@ class BandpassDSPFilter(ADSPFilter):
 
         a = np.zeros_like(b)
         a[0] = 1
+        return b, a
+
+
+class DerivativeDSPFilter(ADSPFilter):
+    """A filter that derivates the input signal
+
+    Args:
+        name: Name of the spectrum
+        samplingPeriod: The sampling period of the input signal
+        rank: Rank of the derivative
+        order: Order of the Taylor serie used to estimate the derivative. Shall be >= rank
+            The default value is *rank*
+
+    """
+
+    __slots__ = []
+
+    def __init__(
+        self,
+        name: str,
+        samplingPeriod: float,
+        rank: int = 1,
+        order: int = None,
+        dtype=np.complex128,
+    ):
+        ADSPFilter.__init__(self, name=name, samplingPeriod=samplingPeriod, dtype=dtype)
+
+        self.createParameter(name="rank", value=rank)
+        self.createParameter(name="order", value=order)
+
+    def generateCoefficients(self) -> Tuple["array", "array"]:
+        b = derivative_coeff(self.rank, self.order)
+        b /= (-self.samplingPeriod)**self.rank
+
+        a = np.zeros_like(b)
+        a[0] = 1
+
         return b, a

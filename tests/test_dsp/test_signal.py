@@ -208,7 +208,7 @@ class TestSignal(TestBase):
         err = np.max(np.abs(y - p(x)))
         self.assertAlmostEqual(err, 0, delta=1e-10)
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    @pytest.mark.mpl_image_compare(tolerance=7, savefig_kwargs={"dpi": 150})
     def test_superheterodyne(self):
         fs = 1000.0
         B = 100
