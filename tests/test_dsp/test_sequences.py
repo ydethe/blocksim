@@ -5,7 +5,7 @@ import unittest
 import pytest
 
 from blocksim.graphics.BFigure import FigureFactory
-from blocksim.dsp import createGoldSequence, createZadoffChu
+from blocksim.dsp import createGNSSSequence, createZadoffChu
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
@@ -41,11 +41,11 @@ class TestSignal(TestBase):
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_gold_crosscorr(self):
-        s1 = createGoldSequence(
-            name="s1", sv=[2, 6], repeat=1, chip_rate=1.023e6, samples_per_chip=10
+        s1 = createGNSSSequence(
+            name="s1", modulation="L1CA", sv=1, repeat=1, chip_rate=1.023e6, samples_per_chip=10
         )
-        s2 = createGoldSequence(
-            name="s2", sv=[3, 7], repeat=1, chip_rate=1.023e6, samples_per_chip=10
+        s2 = createGNSSSequence(
+            name="s2", modulation="L1CA", sv=2, repeat=1, chip_rate=1.023e6, samples_per_chip=10
         )
 
         y = s1.correlate(s2)
@@ -59,8 +59,8 @@ class TestSignal(TestBase):
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_gold_autocorr(self):
-        s1 = createGoldSequence(
-            name="s1", sv=[2, 6], repeat=1, chip_rate=1.023e6, samples_per_chip=10
+        s1 = createGNSSSequence(
+            name="s1", modulation="L1CA", sv=1, repeat=1, chip_rate=1.023e6, samples_per_chip=10
         )
 
         y = s1.correlate(s1)
@@ -75,13 +75,13 @@ class TestSignal(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_gold_corr_integ(self):
         # Reference Gold sequence
-        y1 = createGoldSequence(
-            name="s1", sv=[2, 6], repeat=1, chip_rate=1.023e6, samples_per_chip=10
+        y1 = createGNSSSequence(
+            name="s1", modulation="L1CA", sv=1, repeat=1, chip_rate=1.023e6, samples_per_chip=10
         )
 
         # Noisy received signal
-        y = createGoldSequence(
-            name="s1", sv=[2, 6], repeat=20, chip_rate=1.023e6, samples_per_chip=10
+        y = createGNSSSequence(
+            name="s1", modulation="L1CA", sv=1, repeat=20, chip_rate=1.023e6, samples_per_chip=10
         )
         y = y.applyGaussianNoise(pwr=200)
 
@@ -108,9 +108,6 @@ class TestSignal(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
-    exit(0)
-
     from blocksim.graphics import showFigures
 
     a = TestSignal()

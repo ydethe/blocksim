@@ -15,6 +15,8 @@ from numpy.fft import fft, ifft
 from scipy import linalg as lin
 from scipy.interpolate import interp1d
 
+from ..gnss.GNSScodegen import GNSScodegen
+
 
 def derivative_coeff(rank: int = 1, order: int = None) -> NDArray[Any, Any]:
     """Computes the coefficients of a derivaive estimator
@@ -284,9 +286,10 @@ def shift(register: list, feedback: list, output: list):
     return out
 
 
-def createGoldSequence(
+def createGNSSSequence(
     name: str,
-    sv: Union[List[int], int],
+    modulation: str,
+    sv: int,
     repeat=1,
     chip_rate: float = 1.023e6,
     samplingStart: float = 0,
@@ -297,7 +300,13 @@ def createGoldSequence(
 
     Args:
         name: Name of the signal
-        sv: Identifier of the SV. Can be either the PRN number (int), or the code tap selection (list of 2 int)
+        modulation:
+
+        * GPS: L1CA, L2CM, L2CL, L5I, L5Q.
+        * Galileo: E1B, E1C, E5aI, E5aQ, E5bI, E5bQ, E6-B, E6-C.
+        * BeiDou: B1I.
+
+        sv: Identifier of the SV
         repeat: Number of copies of a 1023 Gold sequence
         chip_rate: Chip rate (Hz)
         samplingStart: First date of the sample of the signal (s)
@@ -310,60 +319,12 @@ def createGoldSequence(
     """
     from .DSPSignal import DSPSignal
 
-    SV_list = {
-        1: [2, 6],
-        2: [3, 7],
-        3: [4, 8],
-        4: [5, 9],
-        5: [1, 9],
-        6: [2, 10],
-        7: [1, 8],
-        8: [2, 9],
-        9: [3, 10],
-        10: [2, 3],
-        11: [3, 4],
-        12: [5, 6],
-        13: [6, 7],
-        14: [7, 8],
-        15: [8, 9],
-        16: [9, 10],
-        17: [1, 4],
-        18: [2, 5],
-        19: [3, 6],
-        20: [4, 7],
-        21: [5, 8],
-        22: [6, 9],
-        23: [1, 3],
-        24: [4, 6],
-        25: [5, 7],
-        26: [6, 8],
-        27: [7, 9],
-        28: [8, 10],
-        29: [1, 6],
-        30: [2, 7],
-        31: [3, 8],
-        32: [4, 9],
-    }
-
-    if not hasattr(sv, "__iter__"):
-        sv = SV_list[sv]
-
-    # init registers
-    G1 = [1 for _ in range(10)]
-    G2 = [1 for _ in range(10)]
-
-    ca = []
-    for _ in range(1023):
-        g1 = shift(G1, [3, 10], [10])  # feedback 3,10, output 10
-        g2 = shift(G2, [2, 3, 6, 8, 9, 10], sv)  # feedback 2,3,6,8,9,10, output sv for sat
-        ca.extend([(g1 + g2) % 2])
-
-    ca = np.array(ca, dtype=np.int8)
+    ca = GNSScodegen(sv, modulation)
     ca = np.repeat(ca, samples_per_chip)
 
     bits = np.tile(ca, reps=repeat)
     a, b = bitmap
-    seq = (b - a) * bits + a
+    seq = (b - a) / 2 * bits + (b + a) / 2
     sig = DSPSignal(
         name=name,
         samplingStart=samplingStart,

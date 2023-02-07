@@ -12,7 +12,7 @@ from blocksim.dsp.DSPAWGN import DSPAWGN
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.Simulation import Simulation
 
-from blocksim.dsp import createGoldSequence
+from blocksim.dsp import createGNSSSequence
 from blocksim.dsp.PSKMod import PSKMapping, PSKDemapping
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -84,9 +84,10 @@ class TestBPSK(TestBase):
     @pytest.mark.mpl_image_compare(tolerance=40, savefig_kwargs={"dpi": 150})
     def test_bpsk_spectrum(self):
         p_samp = 7
-        prn = createGoldSequence(
+        prn = createGNSSSequence(
             name="PRN",
-            sv=[2, 6],
+            modulation="L1CA",
+            sv=1,
             chip_rate=1.023e6,
             samples_per_chip=p_samp,
             bitmap=[0, 1],

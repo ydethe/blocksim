@@ -9,7 +9,7 @@ from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.Simulation import Simulation
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp.BOCMod import BOCMapping
-from blocksim.dsp import createGoldSequence
+from blocksim.dsp import createGNSSSequence
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from TestBase import TestBase
@@ -21,7 +21,9 @@ class TestBOC(TestBase):
         fc = 1.023e6
         m = 1
         n = 1
-        prn = createGoldSequence(name="PRN", sv=[3, 7], chip_rate=fc, samples_per_chip=10)
+        prn = createGNSSSequence(
+            name="PRN", modulation="L1CA", sv=2, chip_rate=fc, samples_per_chip=10
+        )
         boc = BOCMapping(name="BOC", f_ref=fc, m=m, n=n)
 
         sim = Simulation()

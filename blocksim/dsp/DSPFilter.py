@@ -508,7 +508,7 @@ class DerivativeDSPFilter(ADSPFilter):
 
     def generateCoefficients(self) -> Tuple["array", "array"]:
         b = derivative_coeff(self.rank, self.order)
-        b /= (-self.samplingPeriod)**self.rank
+        b /= (-self.samplingPeriod) ** self.rank
 
         a = np.zeros_like(b)
         a[0] = 1
