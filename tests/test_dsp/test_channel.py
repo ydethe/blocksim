@@ -10,6 +10,7 @@ from numpy import exp, pi
 
 from blocksim.control.SetPoint import Step
 from blocksim.dsp.DSPSignal import DSPSignal
+from blocksim.dsp.DSPSpectrum import DSPSpectrum
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.Simulation import Simulation
 from blocksim.utils import azelalt_to_itrf, itrf_to_azeld
@@ -97,7 +98,8 @@ class TestChannel(TestBase):
         log = sim.getLogger()
 
         rxsig = log.getSignal("chn_rxsig_y")
-        sp = rxsig.fft()
+        sp: DSPSpectrum = rxsig.fft()
+        sp.setDefaultTransform(lambda x: np.real(x * np.conj(x)), unit_of_y_var="-")
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(2, 1)
@@ -111,9 +113,6 @@ class TestChannel(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
-    exit(0)
-
     from blocksim.graphics import showFigures
 
     a = TestChannel()

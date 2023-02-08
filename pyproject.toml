@@ -18,7 +18,7 @@ dependencies = [
     "nptyping~=2.0.1",
     "numpy>=1.22.0",
     "openpyxl~=3.0.0",
-    "panda3d~=1.10.0",
+    "panda3d==1.10.13",
     "pandas~=1.4.0",
     "parse~=1.19.0",
     "plotly~=5.11.0",

@@ -132,7 +132,7 @@ if __name__ == "__main__":
     from blocksim.graphics import showFigures
 
     a = TestSpectre()
-    # a.test_spectre()
-    a.test_recursive_spectrum_est()
+    a.test_spectre()
+    # a.test_recursive_spectrum_est()
 
     showFigures()

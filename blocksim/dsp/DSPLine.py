@@ -127,14 +127,24 @@ class ADSPLine(metaclass=ABCMeta):
         self.__default_transform = default_transform
         self.name_of_x_var = "Samples"
         self.unit_of_x_var = "ech"
+        self.unit_of_y_var = "-"
+        self.name_of_y_var = ""
 
-    def setDefaultTransform(self, fct: Callable):
+    def setDefaultTransform(
+        self, fct: Callable, unit_of_y_var: str = None, name_of_y_var: str = None
+    ):
         """Set the fonction called when plotting
 
         Args:
             fct : Function
+            unit_of_y_var: New unit for the Y axis. Unchanged by default
+            name_of_y_var: New name for the Y axis. Unchanged by default
 
         """
+        if not unit_of_y_var is None:
+            self.unit_of_y_var = unit_of_y_var
+        if not name_of_y_var is None:
+            self.name_of_y_var = name_of_y_var
         self.__default_transform = fct
 
     def save(self, fic: Path):
@@ -441,7 +451,8 @@ class ADSPLine(metaclass=ABCMeta):
             Spread of the x-coord of the line
 
         """
-        return (len(self) - 1) * self.samplingPeriod
+        # return (len(self) - 1) * self.samplingPeriod
+        return len(self) * self.samplingPeriod
 
     def truncate(
         self,

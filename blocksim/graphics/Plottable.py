@@ -497,8 +497,9 @@ class PlottableDSPRectilinearLine(APlottable):
             name_of_x_var = "-"
 
         unit_of_x_var = getattr(self.plottable, "unit_of_x_var", "-")
-        name_of_y_var = ""
-        unit_of_y_var = "-"
+
+        name_of_y_var = getattr(self.plottable, "name_of_y_var", "")
+        unit_of_y_var = getattr(self.plottable, "unit_of_y_var", "-")
 
         return xd, yd, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
 
