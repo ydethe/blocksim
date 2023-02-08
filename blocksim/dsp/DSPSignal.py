@@ -41,6 +41,10 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
         y_serie: NDArray[Any, Any] = None,
         default_transform=np.real,
         dtype=np.complex128,
+        name_of_x_var: str = "Time",
+        unit_of_x_var: str = "s",
+        unit_of_y_var: str = "-",
+        name_of_y_var: str = "",
     ):
         ASetPoint.__init__(
             self,
@@ -55,10 +59,11 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
             samplingPeriod=samplingPeriod,
             y_serie=y_serie,
             default_transform=default_transform,
+            name_of_x_var=name_of_x_var,
+            unit_of_x_var=unit_of_x_var,
+            unit_of_y_var=unit_of_y_var,
+            name_of_y_var=name_of_y_var,
         )
-
-        self.name_of_x_var = "Time"
-        self.unit_of_x_var = "s"
 
     def update(
         self,
@@ -256,7 +261,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
             samplingStart=self.samplingStart,
             samplingPeriod=self.samplingPeriod,
             y_serie=self.y_serie * np.exp(1j * 2 * np.pi * fdop * self.generateXSerie()),
-            default_transform=np.real,
+            default_transform=self.default_transform,
         )
 
     def applyGaussianNoise(self, pwr: float) -> "blocksim.dsp.DSPSignal.DSPSignal":
@@ -402,7 +407,7 @@ class DSPSignal(DSPRectilinearLine, ASetPoint):
             samplingStart=t_start,
             samplingPeriod=dt,
             y_serie=z,
-            default_transform=self.to_db,
+            default_transform=lambda x: np.real(x * np.conj(x)),
         )
 
     def autoCorrelation(self, win="ones") -> "blocksim.dsp.DSPSignal.DSPSignal":

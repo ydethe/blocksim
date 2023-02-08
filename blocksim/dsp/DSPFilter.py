@@ -34,6 +34,30 @@ __all__ = [
 
 
 class DSPBodeDiagram(ADSPLine):
+    def __init__(
+        self,
+        name: str,
+        samplingStart: float = None,
+        samplingPeriod: float = None,
+        y_serie: NDArray[Any, Any] = None,
+        default_transform=...,
+        name_of_x_var: str = "Frequency",
+        unit_of_x_var: str = "Hz",
+        unit_of_y_var: str = "-",
+        name_of_y_var: str = "",
+    ):
+        super().__init__(
+            name,
+            samplingStart,
+            samplingPeriod,
+            y_serie,
+            default_transform,
+            name_of_x_var,
+            unit_of_x_var,
+            unit_of_y_var,
+            name_of_y_var,
+        )
+
     @property
     def dspline_type(self) -> DSPLineType:
         return DSPLineType.BODE_DIAG

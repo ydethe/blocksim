@@ -1,6 +1,8 @@
+import bz2
 from enum import Enum
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
+import pickle
 from typing import Callable, List, Any
 
 from lazy_property import LazyProperty
@@ -47,6 +49,19 @@ class ADSPLine(metaclass=ABCMeta):
 
         with open(fic, "rb") as f:
             res = load(f)
+        return res
+
+    @classmethod
+    def fromBsline(cls, path: Path):
+        with bz2.BZ2File(path, "rb") as f:
+            obj = pickle.load(f)
+
+        info: dict = obj.pop("information", {})
+        res = cls(**obj)
+
+        for k in info.keys():
+            setattr(res, k, info[k])
+
         return res
 
     @classmethod
@@ -119,16 +134,20 @@ class ADSPLine(metaclass=ABCMeta):
         samplingPeriod: float = None,
         y_serie: NDArray[Any, Any] = None,
         default_transform=lambda x: x,
+        name_of_x_var: str = "Samples",
+        unit_of_x_var: str = "ech",
+        unit_of_y_var: str = "-",
+        name_of_y_var: str = "",
     ):
         self.__name = name
         self.__samplingStart = samplingStart
         self.__samplingPeriod = samplingPeriod
         self.__y_serie = y_serie
         self.__default_transform = default_transform
-        self.name_of_x_var = "Samples"
-        self.unit_of_x_var = "ech"
-        self.unit_of_y_var = "-"
-        self.name_of_y_var = ""
+        self.name_of_x_var = name_of_x_var
+        self.unit_of_x_var = unit_of_x_var
+        self.unit_of_y_var = unit_of_y_var
+        self.name_of_y_var = name_of_y_var
 
     def setDefaultTransform(
         self, fct: Callable, unit_of_y_var: str = None, name_of_y_var: str = None
@@ -173,6 +192,9 @@ class ADSPLine(metaclass=ABCMeta):
         buf = (ech / dyn * 127).astype(np.int8)
         with open(fic.expanduser().resolve(), "wb") as f:
             buf.tofile(f)
+
+    def getTransformedSamples(self):
+        return self.__default_transform(self.y_serie)
 
     @property
     @abstractmethod
@@ -370,6 +392,30 @@ class ADSPLine(metaclass=ABCMeta):
             samplingStart=self.samplingStart,
             samplingPeriod=self.samplingPeriod,
             y_serie=np.tile(self.y_serie, reps=repeats),
+            default_transform=self.default_transform,
+        )
+        dsig.name_of_x_var = self.name_of_x_var
+        dsig.unit_of_x_var = self.unit_of_x_var
+        return dsig
+
+    def repeatToFit(self, other: "ADSPLine") -> "blocksim.dsp.DSPLine.ADSPLine":
+        """Repeats the samples serie until it exactly covers the size of *other*.
+        Resampling is done if needed to match *other* sampling
+
+        Args:
+            other: Another ADSPLine
+
+        Returns:
+            The repeated ADSPLine
+
+        """
+        dsig = self.__class__(
+            name=self.name,
+            samplingStart=self.samplingStart,
+            samplingPeriod=self.samplingPeriod,
+            y_serie=np.interp(
+                other.generateXSerie(), self.generateXSerie(), self.y_serie, period=self.duration
+            ),
             default_transform=self.default_transform,
         )
         dsig.name_of_x_var = self.name_of_x_var

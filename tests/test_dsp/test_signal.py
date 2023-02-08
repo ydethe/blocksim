@@ -16,6 +16,44 @@ from TestBase import TestBase
 
 
 class TestSignal(TestBase):
+    def test_repeat_to_fit(self):
+        sig = DSPRectilinearLine(
+            name="sig", samplingStart=-5, samplingPeriod=1, y_serie=np.zeros(20)
+        )
+        rep = DSPRectilinearLine(
+            name="rep", samplingStart=0, samplingPeriod=1, y_serie=np.arange(6)
+        )
+
+        rep2: DSPRectilinearLine = rep.repeatToFit(sig)
+
+        actual = rep2.y_serie
+        desired = np.array(
+            [
+                1.0,
+                2.0,
+                3.0,
+                4.0,
+                5.0,
+                0.0,
+                1.0,
+                2.0,
+                3.0,
+                4.0,
+                5.0,
+                0.0,
+                1.0,
+                2.0,
+                3.0,
+                4.0,
+                5.0,
+                0.0,
+                1.0,
+                2.0,
+            ]
+        )
+
+        testing.assert_allclose(actual, desired)
+
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_decimate(self):
         fs = 192 * 203
@@ -60,7 +98,10 @@ class TestSignal(TestBase):
 
         y = rep.correlate(rep)
         y1 = rep.correlate(s)
+        y1.setDefaultTransform(y1.to_db_lim(-100), unit_of_y_var="dB")
+
         y2 = s.correlate(rep)
+        y2.setDefaultTransform(y2.to_db_lim(-100), unit_of_y_var="dB")
 
         z = y2 - y1
         self.assertAlmostEqual(np.max(np.abs(z)), 0, delta=1e-8)
@@ -254,6 +295,7 @@ if __name__ == "__main__":
     from blocksim.graphics import showFigures
 
     a = TestSignal()
+    a.test_repeat_to_fit()
     # a.test_instanciation()
     # a.test_resample()
     # a.test_polyfit()
@@ -261,6 +303,6 @@ if __name__ == "__main__":
     # a.test_correlation()
     # a.test_delay()
     # a.test_phase_unfold()
-    a.test_decimate()
+    # a.test_decimate()
 
-    showFigures()
+    # showFigures()

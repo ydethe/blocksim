@@ -3,6 +3,7 @@ from pathlib import Path
 import unittest
 
 import pytest
+from blocksim.dsp.DSPSignal import DSPSignal
 
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp import createGNSSSequence, createZadoffChu
@@ -18,6 +19,7 @@ class TestSignal(TestBase):
         s2 = createZadoffChu(name="s2", n_zc=1021, u=75, sampling_freq=1e6)
 
         y = s1.correlate(s2)
+        y.setDefaultTransform(y.to_db_lim(-100), unit_of_y_var="dB")
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
@@ -31,6 +33,7 @@ class TestSignal(TestBase):
         s1 = createZadoffChu(name="s1", n_zc=1021, u=1, sampling_freq=1e6)
 
         y = s1.correlate(s1)
+        y.setDefaultTransform(y.to_db_lim(-100), unit_of_y_var="dB")
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
@@ -48,7 +51,8 @@ class TestSignal(TestBase):
             name="s2", modulation="L1CA", sv=2, repeat=1, chip_rate=1.023e6, samples_per_chip=10
         )
 
-        y = s1.correlate(s2)
+        y: DSPSignal = s1.correlate(s2)
+        y.setDefaultTransform(y.to_db_lim(-100), unit_of_y_var="dB")
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
@@ -64,6 +68,7 @@ class TestSignal(TestBase):
         )
 
         y = s1.correlate(s1)
+        y.setDefaultTransform(y.to_db_lim(-100), unit_of_y_var="dB")
 
         fig = FigureFactory.create()
         gs = fig.add_gridspec(1, 1)
@@ -87,6 +92,7 @@ class TestSignal(TestBase):
 
         # Correlation
         z = y.correlate(y1)
+        z.setDefaultTransform(z.to_db_lim(-100), unit_of_y_var="dB")
 
         # Integration
         zi = z.integrate(period=1e-3, offset=511 / (1.023e6))

@@ -36,6 +36,10 @@ class DSPSpectrum(DSPRectilinearLine):
         samplingPeriod: float = None,
         y_serie: NDArray[Any, Any] = None,
         default_transform=DSPRectilinearLine.to_db_lim(-80),
+        name_of_x_var: str = "Frequency",
+        unit_of_x_var: str = "Hz",
+        unit_of_y_var: str = "dB",
+        name_of_y_var: str = "",
     ):
         DSPRectilinearLine.__init__(
             self,
@@ -44,11 +48,11 @@ class DSPSpectrum(DSPRectilinearLine):
             samplingPeriod=samplingPeriod,
             y_serie=y_serie,
             default_transform=default_transform,
+            name_of_x_var=name_of_x_var,
+            unit_of_x_var=unit_of_x_var,
+            unit_of_y_var=unit_of_y_var,
+            name_of_y_var=name_of_y_var,
         )
-
-        self.name_of_x_var = "Frequency"
-        self.unit_of_x_var = "Hz"
-        self.unit_of_y_var = "dB"
 
     @property
     def energy(self) -> float:
