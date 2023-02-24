@@ -340,7 +340,7 @@ class ADSPLine(metaclass=ABCMeta):
             >>> line = DSPRectilinearLine(name="line", samplingStart=0, samplingPeriod=1, y_serie=y)
             >>> p = line.polyfit(deg=1)
             >>> p.coef
-            [-4.+1.j,  2.-3.j]
+            array([-4.+1.j,  2.-3.j])
 
         """
         x = self.generateXSerie()
