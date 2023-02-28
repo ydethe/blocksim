@@ -16,8 +16,8 @@ test:
     - pip3 install pdm
     - pdm install
     - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 pdm build
-    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 pdm doc
     - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 pdm run pytest
+    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 pdm doc
   artifacts:
     when: always
     paths:
