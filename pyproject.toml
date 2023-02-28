@@ -108,13 +108,35 @@ test = [
     "pytest-html~=3.1.1",
 ]
 
+[tool.pytest.ini_options]
+# pythonpath = [
+#   "src/"
+# ]
+addopts = [
+    "--import-mode=importlib",
+    "--html=build/htmldoc/tests/report.html",
+    "--self-contained-html",
+    "--junitxml=build/junit.xml",
+    "--cov-config=tests/.coveragerc",
+    "--cov=blocksim",
+    "--doctest-modules",
+    "--mpl",
+    "--mpl-generate-summary=html",
+    "--mpl-results-always",
+    "--mpl-baseline-path=tests/baseline",
+    "--mpl-results-path=build/htmldoc/tests/results"
+]
+testpaths = [
+    "tests/",
+]
+
 [tool.pdm.scripts]
 site_packages = true
-test.shell = """\
-    mkdir -p build/htmldoc/tests
-    pytest --html=build/htmldoc/tests/report.html --self-contained-html --mpl --mpl-generate-summary=html --mpl-results-always --mpl-baseline-path=tests/baseline --mpl-results-path=build/htmldoc/tests/results --junitxml=build/junit.xml --cov-config=.coveragerc --cov blocksim tests --doctest-modules blocksim
-    coverage html -d build/htmldoc/coverage
-"""
+# test.shell = """\
+#     mkdir -p build/htmldoc/tests
+#     pytest --html=build/htmldoc/tests/report.html --self-contained-html --mpl --mpl-generate-summary=html --mpl-results-always --mpl-baseline-path=tests/baseline --mpl-results-path=build/htmldoc/tests/results --junitxml=build/junit.xml --cov-config=.coveragerc --cov blocksim tests --doctest-modules blocksim
+#     coverage html -d build/htmldoc/coverage
+# """
 doc.shell = """\
     mkdir -p build/htmldoc/blocksim
     mkdir -p build/htmldoc/examples
@@ -124,6 +146,7 @@ doc.shell = """\
     pdoc --html --force --config latex_math=True --template-dir dev/template -o build/htmldoc blocksim examples
     pyreverse -s0 blocksim -k --colorized -p blocksim -m no --ignore=exceptions.py,LogFormatter.py,CSVLogger.py,PickleLogger.py,XlsLogger.py -d build/htmldoc
     dot -Tpng build/htmldoc/classes_blocksim.dot -o build/htmldoc/blocksim/classes.png
+    coverage html -d build/htmldoc/coverage
 """
 baseline.shell = "pytest --mpl-generate-path=tests/baseline tests"
 inst_doc.shell = """\
