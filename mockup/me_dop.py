@@ -15,6 +15,7 @@ from blocksim.utils import (
     itrf_to_geodetic,
     itrf_to_llavpa,
     llavpa_to_itrf,
+    mean_variance_3dgauss_norm,
     rad,
 )
 from blocksim.satellite.Satellite import CircleSatellite
@@ -68,6 +69,9 @@ def calcul(alt_sat: float, pos_lat_ue: float, azim_vsat: float, latency: float, 
         ephem[6 * k : 6 * k + 6] = pv_sat
 
     Q = computeDOP(algo="ranging", ephem=ephem, pv_ue=pv_ue, elev_mask=0)
+    om = Q[:3, :3]
+    m, v = mean_variance_3dgauss_norm(om)
+
     iQ = np.diag_indices(4)
     if np.any(Q[iQ] < 0):
         EDOP = np.nan
@@ -89,7 +93,7 @@ def calcul(alt_sat: float, pos_lat_ue: float, azim_vsat: float, latency: float, 
     # print(f"TDOP: {TDOP:.3f}")
     # print(f"With 50 ns UERE: {PDOP*50e-9*c*1e-3:.3f} km")
 
-    llavpa = itrf_to_llavpa(pv_ue)
+    # llavpa = itrf_to_llavpa(pv_ue)
 
     # fig = FigureFactory.create(title="Geometry")
     # gs = fig.add_gridspec(1, 1)
@@ -105,12 +109,14 @@ def calcul(alt_sat: float, pos_lat_ue: float, azim_vsat: float, latency: float, 
                 str(deg(azim_vsat)),
                 str(latency),
                 str(nb_epoch),
-                str(EDOP),
-                str(NDOP),
-                str(VDOP),
-                str(PDOP),
-                str(TDOP),
-                str(PDOP * 50e-9 * c * 1e-3),
+                # str(EDOP),
+                # str(NDOP),
+                # str(VDOP),
+                # str(PDOP),
+                # str(TDOP),
+                # str(PDOP * 50e-9 * c * 1e-3),
+                str(sqrt(v)),
+                str(sqrt(v) * 50e-9 * c * 1e-3),
             ]
         )
     )
@@ -122,7 +128,7 @@ print(
 
 for azim_vsat in [0, 90]:
     for pos_ue in [0, 12.5e3, 50e3]:
-        for latency in [2, 5, 10, 20, 50, 100]:
+        for latency in [500]:
             calcul(
                 alt_sat=600e3, pos_lat_ue=pos_ue, azim_vsat=azim_vsat, latency=latency, nb_epoch=5
             )

@@ -1,3 +1,9 @@
+[![pdm-managed](https://img.shields.io/badge/pdm-managed-blueviolet)](https://pdm.fming.dev)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![Python](https://img.shields.io/badge/python-3.8%7C3.9%7C3.10-green)
+![Doc](build/htmldoc/doc_badge.svg)
+![Coverage](build/htmldoc/cov_badge.svg)
+
 # Quick look
 
 A library to simulate a open- and closed-loop system. Includes :
@@ -16,11 +22,11 @@ A library to simulate a open- and closed-loop system. Includes :
 -   Advanced plotting functions
 -   DSP tools
 
-blocksim is hosted here https://gitlab.com/ydethe/blocksim
+blocksim is hosted here https://git.aes.alcatel.fr:8443/projects/DNFSND/repos/blocksim/browse
 
-# Setup
+# Setup for simple usage
 
-Create a virtual environment named bs_env for example. You do not have to create one env per project or per simulation.
+reate a virtual environment named bs_env for example. You do not have to create one env per project or per simulation.
 But you need one where blocksim will be installed.
 See https://realpython.com/python-virtual-environments-a-primer/ and https://www.dataquest.io/blog/a-complete-guide-to-python-virtual-environments/ to learn more about python environments.
 
@@ -38,16 +44,24 @@ In the first 2 cases, the line to type is:
 
     source /path/to/root/folder/bs_env/bin/activate
 
-Once the env is active, clone the repository. Note that the repository can be cloned in any other folder:
+# Setup for developement
 
-    git clone git@gitlab.com:ydethe/blocksim.git
+First, clone the repository:
+
+    git clone ssh://git@git:7999/dnfsnd/blocksim.git
     cd blocksim
 
-In your virtual env:
+Create a virtual env:
 
-    pip install -r dev/dev_requirements_3_9.txt
-    python3 setup.py develop
-    python3 -m ipykernel install --user --name=bs_env
+    pdm venv create
+
+Tell pdm to use the newly created venv. It should be like `/path/to/current/dir/.venv/bin/python`:
+
+    pdm use
+
+Install the dependencies, and the paquet itself as editable:
+
+    pdm install
 
 That's it ! You are now ready to use blocksim library.
 In the folder tests and examples are a lot of examples that can be used as a starting point.
@@ -56,11 +70,9 @@ In the folder tests and examples are a lot of examples that can be used as a sta
 
 Just run:
 
-    hatch run doc:build
+    pdm doc
 
 This will create the doc in build/htmldoc
 
 A few guidelines for updating the doc
 https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html
-
-For now, it is hosted here: https://ydethe.gitlab.io/blocksim/blocksim/
