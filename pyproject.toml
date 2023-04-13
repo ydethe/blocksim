@@ -120,7 +120,7 @@ addopts = [
     "--html=build/htmldoc/tests/report.html",
     "--self-contained-html",
     "--junitxml=build/junit.xml",
-    "--cov-config=tests/.coveragerc",
+    "--cov-config=tests/coverage.conf",
     "--cov=blocksim",
     "--doctest-modules",
     "--mpl",
@@ -135,11 +135,6 @@ testpaths = [
 
 [tool.pdm.scripts]
 site_packages = true
-# test.shell = """\
-#     mkdir -p build/htmldoc/tests
-#     pytest --html=build/htmldoc/tests/report.html --self-contained-html --mpl --mpl-generate-summary=html --mpl-results-always --mpl-baseline-path=tests/baseline --mpl-results-path=build/htmldoc/tests/results --junitxml=build/junit.xml --cov-config=.coveragerc --cov blocksim tests --doctest-modules blocksim
-#     coverage html -d build/htmldoc/coverage
-# """
 doc.shell = """\
     mkdir -p build/htmldoc/blocksim
     mkdir -p build/htmldoc/examples
