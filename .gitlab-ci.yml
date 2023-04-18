@@ -15,9 +15,9 @@ test:
     - python3 --version
     - pip3 install pdm
     - pdm install
-    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 pdm build
-    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 pdm run pytest
-    - SETUPTOOLS_SCM_PRETEND_VERSION=0.0.1 pdm doc
+    - PDM_BUILD_SCM_VERSION=${CI_COMMIT_SHA} pdm build
+    - PDM_BUILD_SCM_VERSION=${CI_COMMIT_SHA} pdm run pytest
+    - PDM_BUILD_SCM_VERSION=${CI_COMMIT_SHA} pdm doc
   artifacts:
     when: always
     paths:
@@ -30,6 +30,10 @@ pages:
   - test
   script:
     - cp -r build/htmldoc public
+    - pdm config --global repository.gitlab.url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
+    - pdm config --global repository.gitlab.username gitlab-ci-token
+    - pdm config --global repository.gitlab.password ${CI_JOB_TOKEN}
+    - pdm publish -r gitlab
   artifacts:
     paths:
       - public
