@@ -14,10 +14,10 @@ test:
     - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends python3-pip python3-dev python3-venv graphviz libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl
     - python3 --version
     - pip3 install pdm
-    - pdm install
-    - PDM_BUILD_SCM_VERSION=${CI_COMMIT_SHA} pdm build
-    - PDM_BUILD_SCM_VERSION=${CI_COMMIT_SHA} pdm run pytest
-    - PDM_BUILD_SCM_VERSION=${CI_COMMIT_SHA} pdm doc
+    - PDM_BUILD_SCM_VERSION=0.0.0.dev${CI_COMMIT_TAG} pdm install
+    - PDM_BUILD_SCM_VERSION=0.0.0.dev${CI_COMMIT_TAG} pdm build
+    - PDM_BUILD_SCM_VERSION=0.0.0.dev${CI_COMMIT_TAG} pdm run pytest
+    - PDM_BUILD_SCM_VERSION=0.0.0.dev${CI_COMMIT_TAG} pdm doc
   artifacts:
     when: always
     paths:
