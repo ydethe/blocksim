@@ -1,4 +1,4 @@
-image: python:3.10-bullseye
+image: ubuntu:22.04
 
 stages:
   - test
@@ -8,7 +8,7 @@ stages:
 test:
   stage: test
   script:
-    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends python3-dev graphviz libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl
+    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends python3.10-venv python3.10-dev python3.10-pip graphviz libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl
     - pip3 install pdm
     - echo ${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"}
     - PDM_BUILD_SCM_VERSION=${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"} pdm install
