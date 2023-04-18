@@ -5,6 +5,10 @@ stages:
   - deploy
   - release
 
+variables:
+  GIT_DEPTH: 0
+  GIT_STRATEGY: clone
+
 test:
   stage: test
   script:
@@ -25,6 +29,16 @@ pages:
   dependencies:
   - test
   script:
+    - cp -r build/htmldoc public
+  artifacts:
+    paths:
+      - public
+
+package:
+  stage: deploy
+  dependencies:
+  - test
+  script:
     - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends python3-pip
     - pip3 install pdm
     - cp -r build/htmldoc public
@@ -33,6 +47,6 @@ pages:
     - pdm config --global repository.gitlab.password ${CI_JOB_TOKEN}
     - PDM_BUILD_SCM_VERSION=${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"} pdm build
     - pdm publish -r gitlab
-  artifacts:
-    paths:
-      - public
+  only:
+    - tags
+    - master
