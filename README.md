@@ -1,4 +1,5 @@
 [![pdm-managed](https://img.shields.io/badge/pdm-managed-blueviolet)](https://pdm.fming.dev)
+[![Build Status](https://gitlab.com/ydethe/blocksim/badges/master/pipeline.svg)](https://gitlab.com/ydethe/blocksim/-/pipelines)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![Python](https://img.shields.io/badge/python-3.8%7C3.9%7C3.10-green)
 ![Doc](../doc_badge.svg)

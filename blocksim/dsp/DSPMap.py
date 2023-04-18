@@ -1,5 +1,5 @@
-from enum import Enum
 from abc import ABCMeta, abstractmethod
+import gzip
 from pathlib import Path
 from typing import Callable, List, Any
 import re
@@ -11,9 +11,8 @@ from numpy import pi
 from scipy.interpolate import interp2d
 import fortranformat as ff
 
-from .. import logger
 from .DSPLine import DSPRectilinearLine
-from ..utils import find2dpeak, Peak, geocentric_to_geodetic, geodetic_to_geocentric
+from ..utils import find2dpeak, Peak, geocentric_to_geodetic
 from ..graphics.GraphicSpec import AxeProjection, DSPMapType
 from ..gnss.utils import read_ionex_metadata
 
@@ -369,10 +368,11 @@ class DSPRectilinearMap(ADSPMap):
             The TEC map
 
         """
-        # Adapted from : https://notebook.community/daniestevez/jupyter_notebooks/IONEX
-        with open(pth.expanduser().resolve()) as f:
+        rpth = pth.expanduser().resolve()
+        with open(rpth) as f:
             ionex = f.read()
 
+        # Adapted from : https://notebook.community/daniestevez/jupyter_notebooks/IONEX
         sections = ionex.split("START OF TEC MAP")
         metadata = read_ionex_metadata(sections[0])
         tecmap = [t for t in sections[1:]][map_index]

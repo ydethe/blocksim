@@ -4,9 +4,9 @@ examples/example_*.py
 blocksim/classes.png
 tests/quadri.csv
 blocksim/version.py
-.pdm.toml
-
+.pdm-python
 __pypackages__
+
 *.parq
 *.pkl
 .ipynb/

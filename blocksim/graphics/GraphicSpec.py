@@ -37,7 +37,9 @@ class AxeProjection(Enum):
     PLATECARREE = 7
     #: For 3D plots
     DIM3D = 8
+    #: For planar graphs
     GRAPH = 9
+    #: For interactive 3D app
     PANDA3D = 10
 
 

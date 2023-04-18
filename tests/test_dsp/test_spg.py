@@ -1,18 +1,29 @@
 import sys
 from pathlib import Path
-import unittest
 
 import numpy as np
 import pytest
 
 from blocksim.dsp.DSPMap import DSPRectilinearMap
 from blocksim.graphics.BFigure import FigureFactory
+from blocksim.graphics.GraphicSpec import AxeProjection
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase, plotAnalyticsolution
+from TestBase import TestBase
 
 
 class TestDSPSpectrogram(TestBase):
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_ionex(self, ionex_pth: Path = Path("tests/test_dsp/c1pg1080.23i")):
+        spg = DSPRectilinearMap.from_ionex(ionex_pth)
+
+        fig = FigureFactory.create()
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(title="", spec=gs[0, 0], projection=AxeProjection.PLATECARREE)
+        axe.plot(spg)
+
+        return fig.render()
+
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_2d_peak(self):
         def f(x, y):
@@ -46,12 +57,10 @@ class TestDSPSpectrogram(TestBase):
 
 
 if __name__ == "__main__":
-    unittest.main()
-    exit(0)
-
     from blocksim.graphics import showFigures
 
     a = TestDSPSpectrogram()
-    a.test_2d_peak()
+    # a.test_2d_peak()
+    a.test_ionex()
 
     showFigures()
