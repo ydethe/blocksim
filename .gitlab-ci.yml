@@ -12,14 +12,12 @@ test:
     - pip3 install pdm
     - echo ${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"}
     - PDM_BUILD_SCM_VERSION=${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"} pdm install
-    - PDM_BUILD_SCM_VERSION=${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"} pdm build
     - PDM_BUILD_SCM_VERSION=${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"} pdm run pytest
     - PDM_BUILD_SCM_VERSION=${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"} pdm doc
   artifacts:
     when: always
     paths:
       - build/htmldoc
-      - dist
 
 # https://ydethe.gitlab.io/blocksim/htmldoc/blocksim/
 pages:
@@ -32,6 +30,7 @@ pages:
     - pdm config --global repository.gitlab.url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
     - pdm config --global repository.gitlab.username gitlab-ci-token
     - pdm config --global repository.gitlab.password ${CI_JOB_TOKEN}
+    - PDM_BUILD_SCM_VERSION=${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"} pdm build
     - pdm publish -r gitlab
   artifacts:
     paths:
