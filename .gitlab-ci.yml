@@ -25,6 +25,7 @@ pages:
   dependencies:
   - test
   script:
+    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends python3-pip
     - pip3 install pdm
     - cp -r build/htmldoc public
     - pdm config --global repository.gitlab.url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
