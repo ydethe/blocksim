@@ -18,6 +18,7 @@ test:
     when: always
     paths:
       - build/htmldoc
+      - dist
 
 # https://ydethe.gitlab.io/blocksim/htmldoc/blocksim/
 pages:
