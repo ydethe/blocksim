@@ -1,4 +1,4 @@
-image: ubuntu:22.04
+image: seven45/pdm-ci:3.8
 
 stages:
   - test
@@ -12,8 +12,7 @@ variables:
 test:
   stage: test
   script:
-    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends python3-venv python3-dev python3-pip graphviz libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl
-    - pip3 install pdm
+    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends graphviz libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl
     - echo ${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"}
     - PDM_BUILD_SCM_VERSION=${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"} pdm install
     - PDM_BUILD_SCM_VERSION=${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"} pdm run pytest
@@ -39,8 +38,6 @@ package:
   dependencies:
   - test
   script:
-    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends python3-pip
-    - pip3 install pdm
     - pdm config --global repository.gitlab.url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
     - pdm config --global repository.gitlab.username gitlab-ci-token
     - pdm config --global repository.gitlab.password ${CI_JOB_TOKEN}
