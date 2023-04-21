@@ -1,4 +1,4 @@
-image: seven45/pdm-ci:3.8
+image: seven45/pdm-ci:3.10
 
 stages:
   - test
