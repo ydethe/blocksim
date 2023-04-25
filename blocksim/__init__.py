@@ -162,7 +162,8 @@ plugin_manager = pluggy.PluginManager("blocksim")
 plugin_manager.add_hookspecs(LoggerSpec)
 
 eps = entry_points()
-plugins = eps.select(group="blocksim")
+# plugins = eps.select(group="blocksim") # python3.10
+plugins = eps["blocksim"]  # python3.8
 
 for ep in plugins:
     if ep.name.startswith("logger_"):
