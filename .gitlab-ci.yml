@@ -1,4 +1,4 @@
-image: python:3.8-bullseye
+image: ubuntu:22.04
 
 stages:
   - test
