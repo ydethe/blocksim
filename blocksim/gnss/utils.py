@@ -1,19 +1,19 @@
-from typing import Tuple, Any
+from typing import Tuple
 from datetime import datetime, timezone
 
-from nptyping import NDArray
+
 import numpy as np
 import scipy.linalg as lin
 import fortranformat as ff
 
-from ..utils import build_local_matrix, itrf_to_azeld
+from ..utils import FloatArr, build_local_matrix, itrf_to_azeld
 
 
 __all__ = ["computeDOP", "read_ionex_metadata"]
 
 
 def computeDOP(
-    algo: str, ephem: NDArray[Any, Any], pv_ue: NDArray[Any, Any], elev_mask: float = 0
+    algo: str, ephem: FloatArr, pv_ue: FloatArr, elev_mask: float = 0
 ) -> Tuple[complex, complex, complex, complex, complex]:
     """Computes the DOPs
 
@@ -151,18 +151,18 @@ def read_ionex_metadata(header: str) -> dict:
     elem = header.strip().split("\n")
     desc = ""
     metadata = dict(exponent=-1)
-    for l in elem:
-        ls = l.strip()
+    for kth_elem in elem:
+        ls = kth_elem.strip()
         if ls.endswith("IONEX VERSION / TYPE"):
             ff_fmt = ff.FortranRecordReader("(F8.1,7X,A1,19X,A3,17X)")
-            ionex_version, file_type, ionex_model = ff_fmt.read(l)
+            ionex_version, file_type, ionex_model = ff_fmt.read(kth_elem)
             metadata["ionex_version"] = ionex_version
             metadata["file_type"] = file_type
             metadata["ionex_model"] = ionex_model
 
         elif ls.endswith("PGM / RUN BY / DATE"):
             ff_fmt = ff.FortranRecordReader("(A20,A20,A20)")
-            raw = ff_fmt.read(l)
+            raw = ff_fmt.read(kth_elem)
             pgm, run_by, date = [x.strip() for x in raw]
 
             run_date = datetime.strptime(date, "%d-%b-%y %H:%M").replace(tzinfo=timezone.utc)
@@ -172,92 +172,92 @@ def read_ionex_metadata(header: str) -> dict:
 
         elif ls.endswith("DESCRIPTION"):
             ff_fmt = ff.FortranRecordReader("(A60)")
-            s = ff_fmt.read(l)[0].strip()
+            s = ff_fmt.read(kth_elem)[0].strip()
 
             desc += f" {s}"
         elif ls.endswith("EPOCH OF FIRST MAP"):
             ff_fmt = ff.FortranRecordReader("(6I6,24X)")
-            yr, mo, da, hr, mn, sc = ff_fmt.read(l)
+            yr, mo, da, hr, mn, sc = ff_fmt.read(kth_elem)
 
             epoch_first_map = datetime(yr, mo, da, hr, mn, sc, tzinfo=timezone.utc)
             metadata["epoch_first_map"] = epoch_first_map
 
         elif ls.endswith("EPOCH OF LAST MAP"):
             ff_fmt = ff.FortranRecordReader("(6I6,24X)")
-            yr, mo, da, hr, mn, sc = ff_fmt.read(l)
+            yr, mo, da, hr, mn, sc = ff_fmt.read(kth_elem)
 
             epoch_last_map = datetime(yr, mo, da, hr, mn, sc, tzinfo=timezone.utc)
             metadata["epoch_last_map"] = epoch_last_map
 
         elif ls.endswith("INTERVAL"):
             ff_fmt = ff.FortranRecordReader("(I6,54X)")
-            interval = ff_fmt.read(l)[0]
+            interval = ff_fmt.read(kth_elem)[0]
             metadata["interval"] = interval
 
         elif ls.endswith("# OF MAPS IN FILE"):
             ff_fmt = ff.FortranRecordReader("(I6,54X)")
-            num_of_maps = ff_fmt.read(l)[0]
+            num_of_maps = ff_fmt.read(kth_elem)[0]
             metadata["num_of_maps"] = num_of_maps
 
         elif ls.endswith("MAPPING FUNCTION"):
             ff_fmt = ff.FortranRecordReader("(2X,A4,54X)")
-            mapping_function = ff_fmt.read(l)[0]
+            mapping_function = ff_fmt.read(kth_elem)[0]
             metadata["mapping_function"] = mapping_function
 
         elif ls.endswith("ELEVATION CUTOFF"):
             ff_fmt = ff.FortranRecordReader("(F8.1)")
-            elevation_cutoff = ff_fmt.read(l)[0]
+            elevation_cutoff = ff_fmt.read(kth_elem)[0]
             metadata["elevation_cutoff"] = elevation_cutoff
 
         elif ls.endswith("OBSERVABLES USED"):
             ff_fmt = ff.FortranRecordReader("(A60)")
-            observables_used = ff_fmt.read(l)[0].strip()
+            observables_used = ff_fmt.read(kth_elem)[0].strip()
             metadata["observables_used"] = observables_used
 
         elif ls.endswith("# OF STATIONS"):
             ff_fmt = ff.FortranRecordReader("(I6,54X)")
-            num_of_stations = ff_fmt.read(l)[0]
+            num_of_stations = ff_fmt.read(kth_elem)[0]
             metadata["num_of_stations"] = num_of_stations
 
         elif ls.endswith("# OF SATELLITES"):
             ff_fmt = ff.FortranRecordReader("(I6,54X)")
-            num_of_satellites = ff_fmt.read(l)[0]
+            num_of_satellites = ff_fmt.read(kth_elem)[0]
             metadata["num_of_satellites"] = num_of_satellites
 
         elif ls.endswith("BASE RADIUS"):
             ff_fmt = ff.FortranRecordReader("(F8.1)")
-            base_radius = ff_fmt.read(l)[0]
+            base_radius = ff_fmt.read(kth_elem)[0]
             metadata["base_radius"] = base_radius
 
         elif ls.endswith("MAP DIMENSION"):
             ff_fmt = ff.FortranRecordReader("(I6)")
-            map_dimension = ff_fmt.read(l)[0]
+            map_dimension = ff_fmt.read(kth_elem)[0]
             metadata["map_dimension"] = map_dimension
 
         elif ls.endswith("HGT1 / HGT2 / DHGT"):
             ff_fmt = ff.FortranRecordReader("(2X,3F6.1)")
-            hgt1, hgt2, dhgt = ff_fmt.read(l)
+            hgt1, hgt2, dhgt = ff_fmt.read(kth_elem)
             metadata["hgt1"] = hgt1
             metadata["hgt2"] = hgt2
             metadata["dhgt"] = dhgt
 
         elif ls.endswith("LAT1 / LAT2 / DLAT"):
             ff_fmt = ff.FortranRecordReader("(2X,3F6.1)")
-            lat1, lat2, dlat = ff_fmt.read(l)
+            lat1, lat2, dlat = ff_fmt.read(kth_elem)
             metadata["lat1"] = lat1
             metadata["lat2"] = lat2
             metadata["dlat"] = dlat
 
         elif ls.endswith("LON1 / LON2 / DLON"):
             ff_fmt = ff.FortranRecordReader("(2X,3F6.1)")
-            lon1, lon2, dlon = ff_fmt.read(l)
+            lon1, lon2, dlon = ff_fmt.read(kth_elem)
             metadata["lon1"] = lon1
             metadata["lon2"] = lon2
             metadata["dlon"] = dlon
 
         elif ls.endswith("EXPONENT"):
             ff_fmt = ff.FortranRecordReader("(I6)")
-            exponent = ff_fmt.read(l)[0]
+            exponent = ff_fmt.read(kth_elem)[0]
             metadata["exponent"] = exponent
 
     metadata["description"] = desc

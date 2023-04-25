@@ -1,7 +1,3 @@
-import sys
-from pathlib import Path
-import unittest
-
 import pytest
 import numpy as np
 from numpy import pi
@@ -15,8 +11,8 @@ from blocksim.Simulation import Simulation
 from blocksim.dsp import createGNSSSequence
 from blocksim.dsp.PSKMod import PSKMapping, PSKDemapping
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestBPSK(TestBase):
@@ -72,7 +68,7 @@ class TestBPSK(TestBase):
         sim.simulate(tps, progress_bar=False)
         log = sim.getLogger()
 
-        m = log.getValue("awgn_noisy_n0")
+        log.getValue("awgn_noisy_n0")
 
         ref = log.getValue("bs0_setpoint_bs0")
         est = log.getValue("demap_output_s0")

@@ -5,7 +5,6 @@
 .. include:: README.md
 
 """
-import sys
 import os
 from pathlib import Path
 
@@ -48,7 +47,7 @@ def __render_notebook(exporter, fic, nb, md_pth):
     with open(md_pth, "w") as f:
         f.write(body.replace("![png](", f"![png]({rt}_"))
 
-    imgdir = Path("build/htmldoc") / "examples"
+    imgdir = Path("htmldoc") / "examples"
     imgdir.mkdir(parents=True, exist_ok=True)
     for pth_img in resources["outputs"].keys():
         bn = rt + "_" + pth_img
@@ -62,7 +61,7 @@ def __create_py(src, dst):
     rt = os.path.basename(src).replace(".ipynb", "")
     _bsprint("   ", dst)
     with open(dst, "w") as f:
-        f.write(f'"""\n.. include:: ../build/htmldoc/{rt}.md\n"""')
+        f.write(f'"""\n.. include:: ../htmldoc/{rt}.md\n"""')
 
 
 exporter = MarkdownExporter()

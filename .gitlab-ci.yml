@@ -1,4 +1,4 @@
-image: ubuntu:22.04
+image: python:3.8-bullseye
 
 stages:
   - test
@@ -12,7 +12,9 @@ variables:
 test:
   stage: test
   script:
-    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends python3-venv python3-dev python3-pip graphviz libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl
+    - apt-get update --allow-releaseinfo-change
+    - apt-get install -yqq --no-install-recommends graphviz cmake gfortran gcc g++ make curl
+    - python3 --version
     - pip3 install pdm
     - echo ${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"}
     - PDM_BUILD_SCM_VERSION=${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"} pdm install
@@ -21,7 +23,7 @@ test:
   artifacts:
     when: always
     paths:
-      - build/htmldoc
+      - htmldoc
 
 # https://ydethe.gitlab.io/blocksim/htmldoc/blocksim/
 pages:
@@ -29,7 +31,7 @@ pages:
   dependencies:
   - test
   script:
-    - cp -r build/htmldoc public
+    - cp -r htmldoc public
   artifacts:
     paths:
       - public

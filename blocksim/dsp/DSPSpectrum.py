@@ -1,16 +1,21 @@
-from typing import Any
-
-from nptyping import NDArray, Shape
+from typing import TYPE_CHECKING
 import numpy as np
 from numpy import exp, pi
 from numpy.fft import ifft, fftshift
 from scipy.signal import get_window
+
+from ..utils import FloatArr
 
 from .DSPLine import DSPRectilinearLine
 from .DSPMap import DSPRectilinearMap
 from ..core.CircularBuffer import CircularBuffer
 from ..core.Node import AComputer
 from ..loggers.Logger import Logger
+
+if TYPE_CHECKING:
+    from .DSPSignal import DSPSignal
+else:
+    DSPSignal = "blocksim.dsp.DSPSignal.DSPSignal"
 
 
 __all__ = ["DSPSpectrum", "RecursiveSpectrumEstimator"]
@@ -34,7 +39,7 @@ class DSPSpectrum(DSPRectilinearLine):
         name: str,
         samplingStart: float = None,
         samplingPeriod: float = None,
-        y_serie: NDArray[Any, Any] = None,
+        y_serie: FloatArr = None,
         default_transform=DSPRectilinearLine.to_db_lim(-80),
         name_of_x_var: str = "Frequency",
         unit_of_x_var: str = "Hz",
@@ -58,7 +63,7 @@ class DSPSpectrum(DSPRectilinearLine):
     def energy(self) -> float:
         return np.real(self.y_serie @ self.y_serie.conj() * len(self))
 
-    def ifft(self, win: str = "ones") -> "blocksim.dsp.DSPSignal.DSPSignal":
+    def ifft(self, win: str = "ones") -> DSPSignal:
         """Applies the inverse discrete Fourier transform
 
         Args:
@@ -166,8 +171,8 @@ class RecursiveSpectrumEstimator(AComputer):
         self,
         t1: float,
         t2: float,
-        measurement: NDArray[Any, Any],
-        spectrum: NDArray[Any, Any],
+        measurement: FloatArr,
+        spectrum: FloatArr,
     ) -> dict:
         self.__x_buf.append(measurement[0])
         prev_meas = self.__x_buf[0]

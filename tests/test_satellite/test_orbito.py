@@ -1,14 +1,23 @@
-import sys
-from pathlib import Path
 import unittest
 
 import numpy as np
 from numpy import testing
 
-from blocksim.utils import *
+from blocksim.utils import (
+    anomaly_mean_to_ecc,
+    anomaly_ecc_to_mean,
+    anomaly_ecc_to_true,
+    anomaly_true_to_ecc,
+    anomaly_mean_to_true,
+    anomaly_true_to_mean,
+    orbital_to_teme,
+    teme_to_orbital,
+    teme_to_itrf,
+    itrf_to_teme,
+)
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestOrbito(TestBase):

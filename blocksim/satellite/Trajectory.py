@@ -1,11 +1,10 @@
-from typing import Tuple, Any
+from typing import Tuple
 
 import pandas as pd
-from nptyping import NDArray
 import numpy as np
 
 from ..loggers.Logger import Logger
-from ..utils import itrf_to_geodetic
+from ..utils import itrf_to_geodetic, FloatArr
 
 
 class Trajectory(object):
@@ -29,10 +28,10 @@ class Trajectory(object):
         self,
         name: str,
         color: tuple,
-        t: NDArray[Any, Any] = np.array([]),
-        x: NDArray[Any, Any] = np.array([]),
-        y: NDArray[Any, Any] = np.array([]),
-        z: NDArray[Any, Any] = np.array([]),
+        t: FloatArr = np.array([]),
+        x: FloatArr = np.array([]),
+        y: FloatArr = np.array([]),
+        z: FloatArr = np.array([]),
     ):
         self.name = name
         self.t = t
@@ -41,7 +40,7 @@ class Trajectory(object):
         self.z = z
         self.color = color
 
-    def ITRFToDataFrame(self) -> "DataFrame":
+    def ITRFToDataFrame(self) -> pd.DataFrame:
         """Converts the Trajectory into a pandas.DataFrame
 
         Returns:
@@ -51,11 +50,11 @@ class Trajectory(object):
         df = pd.DataFrame({"t": self.t, "x_itrf": self.x, "y_itrf": self.y, "z_itrf": self.z})
         return df
 
-    def GeodesicToDataFrame(self) -> "DataFrame":
+    def GeodesicToDataFrame(self) -> pd.DataFrame:
         """Converts the Trajectory into a pandas.DataFrame
 
         Returns:
-            A DataFrame containing the time stamp, longitude, latitude and altitude data (s, rad and m)
+            A DataFrame containing timestamp, longitude, latitude and altitude data (s, rad and m)
 
         """
         ns = len(self)
@@ -87,14 +86,16 @@ class Trajectory(object):
         color: tuple,
         npoint: int = -1,
         raw_value: bool = True,
-    ) -> "blocksim.satellite.Trajectory.Trajectory":
+    ) -> "Trajectory":
         """Instanciates a Trajectory from a Logger
 
         Args:
             log: The Logger that contains the information
             name: Name of the Trajectory
-            npoint: Number of samples to read. The npoint first samples are read. If negative, all the points are read
-            params: A tuple with the 4 names of values (T, X, Y, Z) to read in log. These values shall be ITRF meter coordinates
+            npoint: Number of samples to read. The npoint first samples are read.
+                    If negative, all the points are read
+            params: A tuple with the 4 names of values (T, X, Y, Z) to read in log.
+                    These values shall be ITRF meter coordinates
             color: The color as a 4-elements tuple:
 
             *  r between 0 and 1
@@ -158,7 +159,7 @@ class Trajectory(object):
         for t, x, y, z in zip(self.t, self.x, self.y, self.z):
             yield np.array([t, x, y, z])
 
-    def getGroundTrack(self) -> Tuple["array", "array"]:
+    def getGroundTrack(self) -> Tuple[FloatArr, FloatArr]:
         """Returns latitude and longitude array
 
         Returns:

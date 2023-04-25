@@ -1,9 +1,5 @@
-import sys
-from pathlib import Path
-from typing import Any
 import unittest
 
-from nptyping import NDArray
 import numpy as np
 import pytest
 
@@ -11,9 +7,8 @@ from blocksim.control.SetPoint import Step
 from blocksim.control.System import ASystem
 from blocksim.control.Controller import PIDController
 from blocksim.Simulation import Simulation
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase, plotAnalyticsolution
+from blocksim.utils import FloatArr
+from blocksim.testing import TestBase, plotAnalyticsolution
 
 
 ref_repr = """   ========================
@@ -32,7 +27,7 @@ class System(ASystem):
         ASystem.__init__(self, name, shape_command=1, snames_state=["x", "v"])
         self.setInitialStateForOutput(np.zeros(2), "state")
 
-    def transition(self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def transition(self, t: float, x: FloatArr, u: FloatArr) -> FloatArr:
         k = 10
         f = 5
         m = 1
@@ -50,12 +45,12 @@ class TestSimpleControl(TestBase):
         k = 10
         m = 1
         a = 8
-        P = -k + 3 * a**2 * m
-        I = a**3 * m
-        D = 3 * a * m
+        Kprop = -k + 3 * a**2 * m
+        Kinteg = a**3 * m
+        Kderiv = 3 * a * m
 
         stp = Step("stp", snames=["c"], cons=np.array([1]))
-        ctl = PIDController("ctl", shape_estimation=2, snames=["u"], coeffs=(P, I, D))
+        ctl = PIDController("ctl", shape_estimation=2, snames=["u"], coeffs=(Kprop, Kinteg, Kderiv))
         sys = System("sys")
         self.assertEqual(str(sys), ref_repr)
 

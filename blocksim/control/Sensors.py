@@ -1,10 +1,9 @@
-from typing import Iterable, Any
+from typing import Iterable
 
-from nptyping import NDArray, Shape
+
 import numpy as np
 
-from .. import logger
-from ..exceptions import *
+from ..utils import FloatArr
 from ..core.Node import AComputer, AWGNOutput
 
 
@@ -49,7 +48,7 @@ class ASensors(AComputer):
         otp.cov = np.eye(n)
         otp.mean = np.zeros(n)
 
-    def setCovariance(self, cov: NDArray[Any, Any], oname: str = "measurement"):
+    def setCovariance(self, cov: FloatArr, oname: str = "measurement"):
         """Defines the covariance matrix of the gaussian noise on the output
 
         Args:
@@ -63,7 +62,7 @@ class ASensors(AComputer):
             raise ValueError(cov.shape, (n, n))
         otp.cov = cov
 
-    def setMean(self, mean: NDArray[Any, Any], oname: str = "measurement"):
+    def setMean(self, mean: FloatArr, oname: str = "measurement"):
         """Defines the mean vector of the gaussian noise on the output
 
         Args:
@@ -77,7 +76,7 @@ class ASensors(AComputer):
             raise ValueError(mean.shape[0], n)
         otp.mean = mean
 
-    def getCovariance(self, oname: str = "measurement") -> NDArray[Any, Any]:
+    def getCovariance(self, oname: str = "measurement") -> FloatArr:
         """Gets the covariance matrix of the gaussian noise on the output
 
         Args:
@@ -90,7 +89,7 @@ class ASensors(AComputer):
         otp = self.getOutputByName(oname)
         return otp.cov
 
-    def getMean(self, oname: str = "measurement") -> NDArray[Any, Any]:
+    def getMean(self, oname: str = "measurement") -> FloatArr:
         """Gets the mean vector of the gaussian noise on the output
 
         Args:
@@ -138,8 +137,8 @@ class ProportionalSensors(ASensors):
         self,
         t1: float,
         t2: float,
-        measurement: NDArray[Any, Any],
-        state: NDArray[Any, Any],
+        measurement: FloatArr,
+        state: FloatArr,
     ) -> dict:
         meas = self.matC @ state
 
@@ -195,9 +194,9 @@ class LinearSensors(ASensors):
         self,
         t1: float,
         t2: float,
-        command: NDArray[Any, Any],
-        measurement: NDArray[Any, Any],
-        state: NDArray[Any, Any],
+        command: FloatArr,
+        measurement: FloatArr,
+        state: FloatArr,
     ) -> dict:
         meas = self.matC @ state + self.matD @ command
 
@@ -215,7 +214,8 @@ class StreamSensors(AComputer):
 
     Args:
         name: Name of the element
-        strm_data: The data. Must be a dict, with a key named 't', and the others determine the name of the outputs.
+        strm_data: The data. Must be a dict, with a key named 't', and the others determine
+            the name of the outputs.
             Each key must be a np.array with the values of the output variables
 
     """
@@ -234,7 +234,7 @@ class StreamSensors(AComputer):
         self,
         t1: float,
         t2: float,
-        measurement: NDArray[Any, Any],
+        measurement: FloatArr,
     ) -> dict:
         meas = self.getOutputByName("measurement")
 

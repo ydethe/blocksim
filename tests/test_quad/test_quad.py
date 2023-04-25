@@ -1,7 +1,3 @@
-import sys
-from pathlib import Path
-import unittest
-
 import numpy as np
 import pytest
 
@@ -14,10 +10,9 @@ from blocksim.control.Route import Group, Split
 from blocksim.quadcopter.Quadri import Quadri
 from blocksim.quadcopter.AttPilot import AttPilot
 from blocksim.quadcopter.Motor import Motor
-from blocksim.graphics.BFigure import FigureFactory
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestQuad(TestBase):

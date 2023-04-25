@@ -1,15 +1,20 @@
 from abc import abstractmethod
-from typing import Iterable, Iterator, List, Any
+from typing import Iterable, Iterator, List
 from itertools import product
 from uuid import UUID
 
-from nptyping import NDArray, Shape
 import numpy as np
 from numpy import sqrt
 
 from .. import logger
-from ..utils import assignVector, calc_cho
-from ..exceptions import *
+from ..loggers.Logger import Logger
+from ..utils import FloatArr, assignVector, calc_cho
+from ..exceptions import (
+    DuplicateInput,
+    DuplicateOutput,
+    UnknownInput,
+    UnknownOutput,
+)
 from .ABaseNode import ABaseNode
 from .CircularBuffer import CircularBuffer
 
@@ -37,7 +42,7 @@ class Input(ABaseNode):
             self.__shape = shape
         self.__dtype = dtype
 
-    def getDefaultInputData(self) -> NDArray[Any, Any]:
+    def getDefaultInputData(self) -> FloatArr:
         return np.zeros(self.getDataShape(), dtype=self.getDataType())
 
     def __repr__(self):
@@ -50,7 +55,7 @@ class Input(ABaseNode):
     def getDataType(self) -> int:
         return self.__dtype
 
-    def process(self, data: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def process(self, data: FloatArr) -> FloatArr:
         """Applies a transform to the incoming data.
         By default, does nothing.
 
@@ -107,16 +112,17 @@ class Output(ABaseNode):
         self.__shape = self.__snames.shape
         self.setInitialState(np.zeros(self.__shape, dtype=dtype))
 
-    def setComputer(self, comp: "blocksim.core.Node.AComputer"):
-        if not self.__computer is None:
+    def setComputer(self, comp: "AComputer"):
+        if self.__computer is not None:
             if self.__computer.getName() != comp.getName():
                 logger.warning(
-                    f"Replacing AComputer associated with Output '{self.getName()}': '{self.__computer.getName()}' to '{comp.getName()}'"
+                    f"Replacing AComputer associated with Output '{self.getName()}':"
+                    f"'{self.__computer.getName()}' to '{comp.getName()}'"
                 )
 
         self.__computer = comp
 
-    def getComputer(self) -> "blocksim.core.Node.AComputer":
+    def getComputer(self) -> "AComputer":
         return self.__computer
 
     def __repr__(self):
@@ -128,7 +134,7 @@ class Output(ABaseNode):
         dat = self.getInitialeState()
         self.setData(dat)
 
-    def setInitialState(self, initial_state: NDArray[Any, Any]):
+    def setInitialState(self, initial_state: FloatArr):
         """Sets the element's initial state vector
 
         Args:
@@ -187,7 +193,7 @@ class Output(ABaseNode):
         for iscal in iter_ind:
             yield self.__snames[iscal], self.__units[iscal], self.__tdata[iscal]
 
-    def getInitialeState(self) -> NDArray[Any, Any]:
+    def getInitialeState(self) -> FloatArr:
         """Gets the element's initial state vector
 
         Returns:
@@ -202,7 +208,7 @@ class Output(ABaseNode):
     def getDataType(self):
         return self.__dtype
 
-    def setData(self, data: NDArray[Any, Any], cname: str = "?"):
+    def setData(self, data: FloatArr, cname: str = "?"):
         """Sets the data for the Output
         data is the data **before** applying `Output.process`
 
@@ -219,7 +225,7 @@ class Output(ABaseNode):
 
     def _getUnprocessedData(
         self,
-    ) -> NDArray[Any, Any]:
+    ) -> FloatArr:
         """Gets the data for the Output
 
         Returns:
@@ -230,7 +236,7 @@ class Output(ABaseNode):
 
     def getData(
         self,
-    ) -> NDArray[Any, Any]:
+    ) -> FloatArr:
         """Gets the data for the Output
 
         Returns:
@@ -239,7 +245,7 @@ class Output(ABaseNode):
         """
         return self.__tdata.copy()
 
-    def process(self, data: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def process(self, data: FloatArr) -> FloatArr:
         """Applies a transform to the outgoing data.
         By default, does nothing.
         The **transformed** data is stored
@@ -280,7 +286,7 @@ class AWGNOutput(Output):
 
         super().resetCallback(t0)
 
-    def process(self, state: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def process(self, state: FloatArr) -> FloatArr:
         """Adds a gaussian noise to a state vector
 
         Args:
@@ -339,7 +345,7 @@ class TFOutput(Output):
         self.__a_buf.append(self.__yprev)
         self.__b_buf.append(sample)
         na = len(self.__a_buf)
-        nb = len(self.__b_buf)
+        len(self.__b_buf)
         ba = self.__a_buf.getAsArray()
         bb = self.__b_buf.getAsArray()
         a0 = self.__a_taps[0]
@@ -349,7 +355,7 @@ class TFOutput(Output):
         self.__yprev = y
         return y
 
-    def process(self, data: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def process(self, data: FloatArr) -> FloatArr:
         res = np.empty_like(data)
         rs = res.shape
         li = []
@@ -525,17 +531,17 @@ class AComputer(ABaseNode):
 
         for k in self.__parameters.keys():
             val = self.__parameters[k]
-            l = "%s:\t%s\n" % (k, val)
-            s += l
+            line = "%s:\t%s\n" % (k, val)
+            s += line
 
         return s
 
     def getValueFromLogger(
         self,
-        logger: "blocksim.loggers.Logger.Logger",
+        logger: Logger,
         output_name: str,
         dtype=np.complex128,
-    ) -> NDArray[Any, Any]:
+    ) -> FloatArr:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -571,7 +577,7 @@ class AComputer(ABaseNode):
 
         return isinstance(self, AController)
 
-    def setInitialStateForOutput(self, initial_state: NDArray[Any, Any], output_name: str):
+    def setInitialStateForOutput(self, initial_state: FloatArr, output_name: str):
         """Sets the initial state vector for a given output
 
         Args:
@@ -582,7 +588,7 @@ class AComputer(ABaseNode):
         otp = self.getOutputByName(output_name)
         otp.setInitialState(initial_state)
 
-    def getInitialStateForOutput(self, output_name: str) -> NDArray[Any, Any]:
+    def getInitialStateForOutput(self, output_name: str) -> FloatArr:
         """Sets the initial state vector for a given output
 
         Args:
@@ -774,7 +780,7 @@ class AComputer(ABaseNode):
             The Output
 
         """
-        if not output_id in self.__outputs.keys():
+        if output_id not in self.__outputs.keys():
             logger.error("In '%s' : id not found '%s'" % (self.getName(), output_id))
             raise UnknownOutput(self.getName(), output_id)
         return self.__outputs[output_id]
@@ -807,7 +813,7 @@ class AComputer(ABaseNode):
             The Input
 
         """
-        if not input_id in self.__inputs.keys():
+        if input_id not in self.__inputs.keys():
             logger.error("In '%s' : id not found '%s'" % (self.getName(), input_id))
             raise UnknownInput(self.getName(), input_id)
         return self.__inputs[input_id]
@@ -830,7 +836,7 @@ class AComputer(ABaseNode):
         logger.error("In '%s' : input name not found '%s'" % (self.getName(), name))
         raise UnknownInput(self.getName(), name)
 
-    def getDataForOutput(self, oname: str) -> NDArray[Any, Any]:
+    def getDataForOutput(self, oname: str) -> FloatArr:
         otp = self.getOutputByName(name=oname)
         return otp.getData()
 

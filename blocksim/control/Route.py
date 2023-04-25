@@ -1,9 +1,9 @@
-from typing import Iterable, Any
-from itertools import product
+from typing import Iterable
 
-from nptyping import NDArray, Shape
+from itertools import product
 import numpy as np
 
+from ..utils import FloatArr
 from ..core.Node import AComputer
 
 
@@ -35,9 +35,7 @@ class IQExtract(AComputer):
         self.defineInput("signal", shape=(1,), dtype=np.complex128)
         self.defineOutput("iq", snames=["s_i", "s_q"], dtype=np.float64)
 
-    def update(
-        self, t1: float, t2: float, signal: NDArray[Any, Any], iq: NDArray[Any, Any]
-    ) -> dict:
+    def update(self, t1: float, t2: float, signal: FloatArr, iq: FloatArr) -> dict:
         (z,) = signal
 
         outputs = {}
@@ -71,7 +69,7 @@ class Clip(AComputer):
         >>> out["clipped"]
         array([3., 1.]...
 
-    """
+    """  # noqa: E501
 
     __slots__ = []
 
@@ -95,8 +93,8 @@ class Clip(AComputer):
         self,
         t1: float,
         t2: float,
-        signal: NDArray[Any, Any],
-        clipped: NDArray[Any, Any],
+        signal: FloatArr,
+        clipped: FloatArr,
     ) -> dict:
         res = np.empty(clipped.shape, clipped.dtype)
 
@@ -167,7 +165,7 @@ class Split(AComputer):
         self,
         t1: float,
         t2: float,
-        signal: NDArray[Any, Any],
+        signal: FloatArr,
         **lotp,
     ) -> dict:
         outputs = {}
@@ -225,7 +223,7 @@ class Group(AComputer):
         self,
         t1: float,
         t2: float,
-        grouped: NDArray[Any, Any],
+        grouped: FloatArr,
         **inputs,
     ) -> dict:
         res = []
@@ -291,8 +289,8 @@ class Multiplier(AComputer):
         self,
         t1: float,
         t2: float,
-        signal: NDArray[Any, Any],
-        multiplied: NDArray[Any, Any],
+        signal: FloatArr,
+        multiplied: FloatArr,
     ) -> dict:
         res = signal * self.coeff
 

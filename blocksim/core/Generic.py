@@ -1,9 +1,10 @@
-from typing import Callable, Any
+from typing import Callable
 
-from nptyping import NDArray, Shape
+
 import numpy as np
 
 from .Node import AComputer
+from ..utils import FloatArr
 
 
 __all__ = ["GenericComputer"]
@@ -30,7 +31,7 @@ class GenericComputer(AComputer):
         >>> out["xout"]
         10
 
-    """
+    """  # noqa: E501
 
     __slots__ = []
 
@@ -57,8 +58,8 @@ class GenericComputer(AComputer):
         self,
         t1: float,
         t2: float,
-        xin: NDArray[Any, Any],
-        xout: NDArray[Any, Any],
+        xin: FloatArr,
+        xout: FloatArr,
     ) -> dict:
         outputs = {}
         outputs["xout"] = self.callable(xin)

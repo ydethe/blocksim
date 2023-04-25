@@ -1,9 +1,3 @@
-import sys
-import unittest
-from pathlib import Path
-from typing import Iterable, Any
-
-from nptyping import NDArray
 import numpy as np
 from numpy import pi
 import pytest
@@ -19,10 +13,8 @@ from blocksim.Simulation import Simulation
 from blocksim.control.System import G6DOFSystem
 from blocksim.control.IMU import IMU
 from blocksim.control.SetPoint import Step
-from blocksim.utils import deg, euler_to_quat, geodetic_to_itrf, quat_to_euler, rad
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+from blocksim.utils import FloatArr, deg, euler_to_quat, geodetic_to_itrf, quat_to_euler, rad
+from blocksim.testing import TestBase
 
 
 class AHRSFilter(AComputer):
@@ -52,9 +44,9 @@ class AHRSFilter(AComputer):
         self,
         t1: float,
         t2: float,
-        measurement: NDArray[Any, Any],
-        state: NDArray[Any, Any],
-        euler: NDArray[Any, Any],
+        measurement: FloatArr,
+        state: FloatArr,
+        euler: FloatArr,
     ) -> dict:
         dt = t2 - t1
 
@@ -146,11 +138,11 @@ class TestAHRS(TestBase):
 
         self.log = self.sim.getLogger()
 
-        err_t = np.max(np.abs(self.log.getValue("t") - tps))
+        np.max(np.abs(self.log.getValue("t") - tps))
 
         iok = np.where(tps > 2.0)[0]
         w = angle_ini + tps * wangle
-        err_a = np.max(np.abs(self.log.getValue("ahrs_euler_pitch")[iok] - w[iok]))
+        np.max(np.abs(self.log.getValue("ahrs_euler_pitch")[iok] - w[iok]))
 
         # self.assertAlmostEqual(err_t, 0.0, delta=1e-9)
         # self.assertAlmostEqual(err_a, 0.0, delta=5e-2)

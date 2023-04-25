@@ -1,16 +1,13 @@
 from datetime import datetime, timezone
 
 import numpy as np
-from numpy import sqrt, cos, sin, pi
+from numpy import sqrt, cos, sin
 from scipy import linalg as lin
 
 from blocksim.gnss.utils import computeDOP
 from blocksim.utils import (
-    azelalt_to_itrf,
-    azeld_to_itrf,
     build_local_matrix,
     deg,
-    geodetic_to_itrf,
     itrf_to_azeld,
     itrf_to_geodetic,
     itrf_to_llavpa,
@@ -19,10 +16,7 @@ from blocksim.utils import (
     rad,
 )
 from blocksim.satellite.Satellite import CircleSatellite
-from blocksim.constants import Req, c, mu, omega
-from blocksim.graphics import showFigures
-from blocksim.graphics.BFigure import FigureFactory
-from blocksim.graphics.GraphicSpec import AxeProjection
+from blocksim.constants import Req, c, mu
 
 
 def calcul(alt_sat: float, pos_lat_ue: float, azim_vsat: float, latency: float, nb_epoch: int):
@@ -63,9 +57,6 @@ def calcul(alt_sat: float, pos_lat_ue: float, azim_vsat: float, latency: float, 
         lon[k], lat[k] = sat.subpoint(pv_sat)
         az, el, _, _, _, _ = itrf_to_azeld(obs=pv_ue, sat=pv_sat)
         _, _, alts = itrf_to_geodetic(position=pv_sat)
-        # print(
-        #     f"t={t:.2f} s, elev_sat={deg(el):.2f} deg, azim_sat={deg(az):.2f} deg, alt={alts/1000:.2f} km"
-        # )
         ephem[6 * k : 6 * k + 6] = pv_sat
 
     Q = computeDOP(algo="ranging", ephem=ephem, pv_ue=pv_ue, elev_mask=0)
@@ -77,14 +68,12 @@ def calcul(alt_sat: float, pos_lat_ue: float, azim_vsat: float, latency: float, 
         EDOP = np.nan
         NDOP = np.nan
         VDOP = np.nan
-        TDOP = np.nan
-        PDOP = np.nan
     else:
         EDOP = np.sqrt(Q[0, 0])
         NDOP = np.sqrt(Q[1, 1])
         VDOP = np.sqrt(Q[2, 2])
-        TDOP = np.sqrt(Q[3, 3])
-        PDOP = lin.norm((EDOP, VDOP, NDOP))
+        np.sqrt(Q[3, 3])
+        lin.norm((EDOP, VDOP, NDOP))
 
     # print(f"EDOP: {EDOP:.3f}")
     # print(f"NDOP: {NDOP:.3f}")
@@ -123,7 +112,8 @@ def calcul(alt_sat: float, pos_lat_ue: float, azim_vsat: float, latency: float, 
 
 
 print(
-    f"Scenario Hsat (km), pos UE (km), azimut vsat (deg), latency (s), nb epochs, EDOP, NDOP, VDOP, PDOP, TDOP, Global error with 50 ns UERE"
+    "Scenario Hsat (km), pos UE (km), azimut vsat (deg), latency (s), "
+    "nb epochs, EDOP, NDOP, VDOP, PDOP, TDOP, Global error with 50 ns UERE"
 )
 
 for azim_vsat in [0, 90]:

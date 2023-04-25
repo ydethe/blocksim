@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 import requests
 
 import numpy as np
-from munch import munchify, Munch
-from skyfield.api import utc
+from munch import munchify, Munch  # type: ignore
+from skyfield.api import utc  # type: ignore
 
 from ..Simulation import Simulation
 from ..control.Route import Group
@@ -37,23 +37,23 @@ def load_config(cfg_file: str, simid: int = -1) -> Munch:
     dat["cfg_file"] = cfg_file
 
     valid = True
-    if not "setup" in dat.keys():
+    if "setup" not in dat.keys():
         logger.error("No setup section in configuration file")
         valid = False
     for p in ["tsync"]:
-        if not p in dat["setup"].keys():
+        if p not in dat["setup"].keys():
             logger.error("No %s parameter in setup section" % p)
             valid = False
-    if not "logfile" in dat["setup"].keys():
+    if "logfile" not in dat["setup"].keys():
         logger.error("No logfile parameter in setup section")
         valid = False
     elif simid > 0:
         dat["setup"]["logfile"] += "?sim_id=%i" % simid
-    if not "nb_points" in dat["setup"].keys():
+    if "nb_points" not in dat["setup"].keys():
         dat["setup"]["nb_points"] = 1
-    if not "tend" in dat["setup"].keys():
+    if "tend" not in dat["setup"].keys():
         dat["setup"]["tend"] = dat["setup"]["tsync"]
-    if not "n_epoch" in dat["setup"].keys():
+    if "n_epoch" not in dat["setup"].keys():
         dat["setup"]["n_epoch"] = 1
         dat["setup"]["dt_epoch"] = 0
 
@@ -69,10 +69,10 @@ def load_config(cfg_file: str, simid: int = -1) -> Munch:
     tend = tend.replace(tzinfo=utc)
     dat["setup"]["tend"] = datetime.combine(tend.date(), tend.time(), timezone.utc)
 
-    if not "satellites" in dat.keys():
+    if "satellites" not in dat.keys():
         logger.error("No satellites section in configuration file")
         valid = False
-    if not "TLE" in dat["satellites"].keys():
+    if "TLE" not in dat["satellites"].keys():
         logger.error("No TLE parameter in satellites section")
         valid = False
     else:
@@ -81,27 +81,27 @@ def load_config(cfg_file: str, simid: int = -1) -> Munch:
             valid = False
     if "prop" in dat["satellites"].keys():
         prop = dat["satellites"]["prop"]
-        if not prop in ["circle", "SGP4"]:
+        if prop not in ["circle", "SGP4"]:
             raise AssertionError("satellites.prop=%s. Should be 'circle' or 'SGP4'" % prop)
     else:
         dat["satellites"]["prop"] = "SGP4"
 
-    if not "receiver" in dat.keys():
+    if "receiver" not in dat.keys():
         logger.error("No receiver section")
         valid = False
     else:
-        if not "algo" in dat["receiver"].keys():
+        if "algo" not in dat["receiver"].keys():
             logger.error("No %s parameter in receiver section" % p)
             valid = False
 
         lla_ok = True
         for p in ["lat", "lon", "alt"]:
-            if not p in dat["receiver"].keys():
+            if p not in dat["receiver"].keys():
                 lla_ok = False
 
         azeld_ok = True
         for p in ["azimut", "elevation"]:
-            if not p in dat["receiver"].keys():
+            if p not in dat["receiver"].keys():
                 azeld_ok = False
 
         if azeld_ok and not lla_ok:
@@ -128,15 +128,15 @@ def load_config(cfg_file: str, simid: int = -1) -> Munch:
         dat["receiver"]["lat"] = lat
         dat["receiver"]["alt"] = alt
 
-        if not "optim" in dat["receiver"].keys():
+        if "optim" not in dat["receiver"].keys():
             dat["receiver"]["optim"] = "trust-constr"
 
-    if not "tracker" in dat.keys():
+    if "tracker" not in dat.keys():
         valid = False
         logger.error("No tracker section")
     else:
         for p in ["dp", "dv", "elev_mask", "uere", "ueve"]:
-            if not p in dat["tracker"].keys():
+            if p not in dat["tracker"].keys():
                 logger.error("No %s parameter in tracker section" % p)
                 valid = False
         dat["tracker"]["elev_mask"] = rad(dat["tracker"]["elev_mask"])
@@ -150,7 +150,6 @@ def load_config(cfg_file: str, simid: int = -1) -> Munch:
 
 
 def create_simulation(cfg: Munch) -> Simulation:
-    logfile = cfg.setup.logfile
 
     satellites = []
     prop = cfg.satellites.prop

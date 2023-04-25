@@ -1,8 +1,7 @@
-from typing import Any
-
-from nptyping import NDArray, Shape
 import numpy as np
 import scipy.linalg as lin
+
+from ..utils import FloatArr
 
 from ..control.Controller import LQRegulator
 
@@ -12,8 +11,8 @@ class VTOLPilot(LQRegulator):
 
     Attributes:
         grav: Gravitation constant (m/s²)
-        pitch_d_max: Pitch security : the controller forbids a pitch setpoint of more than pitch_d_max (rad)
-        roll_d_max: Roll security : the controller forbids a roll setpoint of more than roll_d_max (rad)
+        pitch_d_max: The controller forbids a pitch setpoint of more than pitch_d_max (rad)
+        roll_d_max: The controller forbids a roll setpoint of more than roll_d_max (rad)
 
     Args:
         name: name of the VTOLPilot
@@ -51,10 +50,10 @@ class VTOLPilot(LQRegulator):
         self,
         t1: float,
         t2: float,
-        setpoint: NDArray[Any, Any],
-        estimation: NDArray[Any, Any],
-        att: NDArray[Any, Any],
-        command: NDArray[Any, Any],
+        setpoint: FloatArr,
+        estimation: FloatArr,
+        att: FloatArr,
+        command: FloatArr,
     ) -> dict:
         pos_d = setpoint[:3]
         yaw_d = setpoint[3]

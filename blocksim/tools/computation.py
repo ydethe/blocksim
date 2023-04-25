@@ -1,5 +1,6 @@
 import numpy as np
 from munch import Munch
+from matplotlib.figure import Figure  # type: ignore
 
 from ..loggers.Logger import Logger
 from .. import logger
@@ -27,7 +28,7 @@ def buildTimeArray(cfg: Munch):
     return tps
 
 
-def mtcl(cfg: Munch) -> "figure":
+def mtcl(cfg: Munch) -> Figure:
     """
     Runs a Monte-Carlo simulation
     """

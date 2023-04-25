@@ -1,16 +1,12 @@
-from typing import Any
-
 import scipy.linalg as lin
-from nptyping import NDArray, Shape
+
 import numpy as np
-from numpy import pi
 
 from ..control.Sensors import ASensors
 from ..core.Node import AWGNOutput
 
-from .. import logger
 from ..constants import mu, omega
-from ..utils import itrf_to_azeld
+from ..utils import FloatArr, itrf_to_azeld
 
 
 class GNSSTracker(ASensors):
@@ -55,7 +51,8 @@ class GNSSTracker(ASensors):
     Attributes:
         mean: Mean of the gaussian noise. Dimension (n,1)
         cov: Covariance of the gaussian noise. Dimension (n,n)
-        cho: Cholesky decomposition of cov, computed after a first call to *updateAllOutput*. Dimension (n,n)
+        cho: Cholesky decomposition of cov, computed after a first call to *updateAllOutput*.
+             Dimension (n,n)
         elev_mask: Elevation mask to determine if a satellite is visible (rad)
         dp: Systematic error on the ranging measurement (m)
         dv: Systematic error on the radial velocity measurement (m/s)
@@ -108,12 +105,12 @@ class GNSSTracker(ASensors):
         self,
         t1: float,
         t2: float,
-        measurement: NDArray[Any, Any],
-        ephemeris: NDArray[Any, Any],
-        ueposition: NDArray[Any, Any],
-        state: NDArray[Any, Any],
-        vissat: NDArray[Any, Any],
-        obscoord: NDArray[Any, Any],
+        measurement: FloatArr,
+        ephemeris: FloatArr,
+        ueposition: FloatArr,
+        state: FloatArr,
+        vissat: FloatArr,
+        obscoord: FloatArr,
     ) -> dict:
         nsat = len(state) // 6
 

@@ -1,18 +1,13 @@
-import sys
-import unittest
-from pathlib import Path
-
 import numpy as np
-from scipy.linalg import inv
 import scipy.linalg as lin
 import pytest
 
 from blocksim.control.System import G6DOFSystem
 from blocksim.Simulation import Simulation
-from blocksim.control.SetPoint import Step, Rectangular
+from blocksim.control.SetPoint import Step
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class Test6DOFSys(TestBase):

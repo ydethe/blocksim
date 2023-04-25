@@ -1,12 +1,8 @@
-from typing import Any
-
-from nptyping import NDArray, Shape
 import numpy as np
-from numpy import log10, exp, pi, sqrt, cos, sin
-from scipy.signal import firwin2, firwin, lfilter_zi, lfilter
 
-from ..core.Node import AComputer, Input, AWGNOutput
-from .DSPSignal import DSPSignal
+from ..utils import FloatArr
+
+from ..core.Node import AComputer, AWGNOutput
 
 
 __all__ = ["DSPAWGN"]
@@ -29,8 +25,8 @@ class DSPAWGN(AComputer):
     def __init__(
         self,
         name: str,
-        mean: NDArray[Any, Any],
-        cov: NDArray[Any, Any],
+        mean: FloatArr,
+        cov: FloatArr,
         dtype=np.float64,
     ):
         AComputer.__init__(self, name=name)
@@ -48,7 +44,7 @@ class DSPAWGN(AComputer):
         self.setMean(mean)
         self.setCovariance(cov)
 
-    def setCovariance(self, cov: NDArray[Any, Any]):
+    def setCovariance(self, cov: FloatArr):
         """Sets the covariance matrix of the gaussian distribution
 
         Args:
@@ -61,7 +57,7 @@ class DSPAWGN(AComputer):
             raise ValueError(cov.shape, (n, n))
         otp.cov = cov
 
-    def setMean(self, mean: NDArray[Any, Any]):
+    def setMean(self, mean: FloatArr):
         """Sets the mean vector of the gaussian distribution
 
         Args:
@@ -74,7 +70,7 @@ class DSPAWGN(AComputer):
             raise ValueError(mean.shape[0], n)
         otp.mean = mean
 
-    def getCovariance(self) -> NDArray[Any, Any]:
+    def getCovariance(self) -> FloatArr:
         """Returns the covariance matrix of the gaussian distribution
 
         Returns:
@@ -84,7 +80,7 @@ class DSPAWGN(AComputer):
         otp = self.getOutputByName("noisy")
         return otp.cov
 
-    def getMean(self) -> NDArray[Any, Any]:
+    def getMean(self) -> FloatArr:
         """Returns the mean vector of the gaussian distribution
 
         Returns:
@@ -98,8 +94,8 @@ class DSPAWGN(AComputer):
         self,
         t1: float,
         t2: float,
-        noiseless: NDArray[Any, Any],
-        noisy: NDArray[Any, Any],
+        noiseless: FloatArr,
+        noisy: FloatArr,
     ) -> dict:
         noisy = noiseless
 

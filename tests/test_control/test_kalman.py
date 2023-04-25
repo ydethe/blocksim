@@ -1,14 +1,11 @@
-import sys
-from pathlib import Path
 import unittest
 
 import numpy as np
-from numpy import cos, sin, sqrt, exp, pi
 from scipy import linalg as lin
 import pytest
 
 from blocksim.control.SetPoint import Step
-from blocksim.control.System import LTISystem, G6DOFSystem
+from blocksim.control.System import LTISystem
 from blocksim.control.Controller import (
     PIDController,
     LQRegulator,
@@ -19,12 +16,11 @@ from blocksim.control.Estimator import (
     TimeInvariantKalmanFilter,
 )
 from blocksim.control.Sensors import LinearSensors, ProportionalSensors
-from blocksim.control.IMU import IMU
 from blocksim.control.Route import Split
 from blocksim.Simulation import Simulation
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestKalman(TestBase):
@@ -65,14 +61,17 @@ class TestKalman(TestBase):
         self.assertAlmostEqual(err_mean, 0, delta=1e-9)
 
         a = 8
-        P = -k + 3 * a**2 * m
-        I = a**3 * m
-        D = 3 * a * m
+        Kprop = -k + 3 * a**2 * m
+        Kinteg = a**3 * m
+        Kderiv = 3 * a * m
         Umin = -100
         Umax = 100
         Ks = 0
         ctl = AntiWindupPIDController(
-            "ctl", shape_estimation=(2,), snames=["u"], coeffs=(P, I, D, Umin, Umax, Ks)
+            "ctl",
+            shape_estimation=(2,),
+            snames=["u"],
+            coeffs=(Kprop, Kinteg, Kderiv, Umin, Umax, Ks),
         )
 
         stp = Step(name="stp", snames=["c"], cons=np.array([1]))
@@ -147,10 +146,12 @@ class TestKalman(TestBase):
         self.assertAlmostEqual(err_mean, 0, delta=1e-9)
 
         a = 8
-        P = -k + 3 * a**2 * m
-        I = a**3 * m
-        D = 3 * a * m
-        ctl = PIDController("ctl", shape_estimation=(2,), snames=["u"], coeffs=(P, I, D))
+        Kprop = -k + 3 * a**2 * m
+        Kinteg = a**3 * m
+        Kderiv = 3 * a * m
+        ctl = PIDController(
+            "ctl", shape_estimation=(2,), snames=["u"], coeffs=(Kprop, Kinteg, Kderiv)
+        )
 
         stp = Step(name="stp", snames=["c"], cons=np.array([1]))
 
@@ -250,7 +251,7 @@ class TestKalman(TestBase):
         sim.connect("split.split", "ctl.estimation")
 
         tps = np.arange(0, 4, dt)
-        frame = sim.simulate(tps, progress_bar=False)
+        sim.simulate(tps, progress_bar=False)
 
         self.log = sim.getLogger()
         kal_bias = self.log.getValue("kal_state_b")

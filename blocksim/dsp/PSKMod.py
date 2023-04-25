@@ -1,27 +1,30 @@
-from typing import Any
-
-from nptyping import NDArray
 import numpy as np
 from numpy import pi, exp, cos, sin, log2
 
+from ..utils import FloatArr
+
 from .ADSPComputer import ADSPComputer
 from ..graphics.BAxe import ABaxe
-from .. import logger
 
 
 class PSKMapping(ADSPComputer):
     """Phase Shift Keying modulator.
     To determine the type of modulation, the *mapping* argument must tell what keying is used :
-    For example, in 8-PSK, the block '010' in decimal is 2. So the phase is mapping[2], and the symbol is exp(1j*mapping[2])
+    For example, in 8-PSK, the block '010' in decimal is 2. So the phase is mapping[2],
+    and the symbol is exp(1j*mapping[2])
     The number of values in *mapping* shall be a power of 2: len(mapping) == 2**mu.
 
-    To initiate the modulator, mu-1 samples shall be processed. The mu-th sample will trigger the conversion of the mu previous samples into a symbol.
-    Then the following mu-1 samples are memorised and the last symbol is repeated on the output mu-1 times.
+    To initiate the modulator, mu-1 samples shall be processed.
+    The mu-th sample will trigger the conversion of the mu previous samples into a symbol.
+    Then the following mu-1 samples are memorised and the last symbol is repeated
+    on the output mu-1 times.
 
     Args:
         name: Name of the computer
-        mapping: List of phase values. For example, in QPSK, [pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4]
-        output_size: Number of symbols computed in parallel. The size of the input vector shall therefore be output_size*mu
+        mapping: List of phase values. For example, in QPSK,
+                [pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4]
+        output_size: Number of symbols computed in parallel.
+                The size of the input vector shall therefore be output_size*mu
         p_samp: For one input bit, the PSK symbol is repeated p_samp times
 
     """
@@ -54,8 +57,8 @@ class PSKMapping(ADSPComputer):
         self,
         t1: float,
         t2: float,
-        input: NDArray[Any, Any],
-        output: NDArray[Any, Any],
+        input: FloatArr,
+        output: FloatArr,
     ) -> dict:
         if len(input.shape) == 1:
             n = 1
@@ -105,7 +108,8 @@ class PSKMapping(ADSPComputer):
 class PSKDemapping(ADSPComputer):
     """Phase Shift Keying demodulator.
     To determine the type of modulation, the *mapping* argument must tell what keying is used :
-    For example, in 8-PSK, the block '010' in decimal is 2. So the phase is mapping[2], and the symbol is exp(1j*mapping[2])
+    For example, in 8-PSK, the block '010' in decimal is 2.
+    So the phase is mapping[2], and the symbol is exp(1j*mapping[2])
     The number of values in *mapping* shall be a power of 2: len(mapping) == 2**mu.
 
     To initiate the demodulator, 1 symbol shall be processed to store the mu bits.
@@ -114,8 +118,10 @@ class PSKDemapping(ADSPComputer):
 
     Args:
         name: Name of the computer
-        mapping: List of phase values. For example, in QPSK, [pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4]
-        output_size: Number of bits computed in parallel. The size of the input vector shall therefore be output_size//mu
+        mapping: List of phase values. For example, in QPSK,
+                 [pi / 4, 3 * pi / 4, 5 * pi / 4, 7 * pi / 4]
+        output_size: Number of bits computed in parallel.
+                     The size of the input vector shall therefore be output_size//mu
 
     """
 
@@ -150,8 +156,8 @@ class PSKDemapping(ADSPComputer):
         self,
         t1: float,
         t2: float,
-        input: NDArray[Any, Any],
-        output: NDArray[Any, Any],
+        input: FloatArr,
+        output: FloatArr,
     ) -> dict:
         if len(input.shape) == 1:
             n = 1

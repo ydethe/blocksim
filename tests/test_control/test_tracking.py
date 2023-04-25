@@ -1,9 +1,3 @@
-import sys
-from pathlib import Path
-from typing import Any
-import unittest
-
-from nptyping import NDArray
 import numpy as np
 from numpy import exp, pi
 import pytest
@@ -14,11 +8,12 @@ from blocksim.dsp import phase_unfold_deg
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp.DSPSignal import DSPSignal
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
+from blocksim.utils import FloatArr
 
 
-def generate_lin_fm(ns: int, fs: float, f1: float, f2: float) -> NDArray[Any, Any]:
+def generate_lin_fm(ns: int, fs: float, f1: float, f2: float) -> FloatArr:
     t = np.arange(ns) / fs
     tau = ns / fs
     x = exp(1j * (pi * t * (2 * f1 * tau + f2 * t - f1 * t)) / tau)

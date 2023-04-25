@@ -1,6 +1,3 @@
-import sys
-from pathlib import Path
-
 import numpy as np
 from scipy import linalg as lin
 import pytest
@@ -9,8 +6,8 @@ from blocksim.tools.config import load_config
 from blocksim.tools.plot import plot_dop
 from blocksim.tools.computation import simu
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestGNSSSimCalcul(TestBase):

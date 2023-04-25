@@ -1,6 +1,3 @@
-import sys
-from pathlib import Path
-
 import numpy as np
 from numpy import pi, exp
 
@@ -10,8 +7,8 @@ from blocksim.control.Route import Group
 from blocksim.Simulation import Simulation
 from blocksim.dsp.PSKMod import PSKMapping, PSKDemapping
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestQPSK(TestBase):
@@ -74,8 +71,8 @@ class TestQPSK(TestBase):
         sim.simulate(tps, progress_bar=False)
         log = sim.getLogger()
 
-        m = log.getValue("awgn_noisy_n0")
-        const = exp(1j * mapping)
+        log.getValue("awgn_noisy_n0")
+        exp(1j * mapping)
 
         ref = log.getValue("beven_setpoint_beven")
         est = log.getValue("demap_output_s0")

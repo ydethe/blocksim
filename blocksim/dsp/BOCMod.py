@@ -1,14 +1,9 @@
-from typing import Any
-
-from nptyping import NDArray, Shape
 import numpy as np
-from numpy import sqrt, sign, pi, exp, cos, sin, log2
+
+from ..utils import FloatArr
 
 from .ADSPComputer import ADSPComputer
-from .DSPSpectrum import DSPSpectrum
 from .DSPSignal import DSPSignal
-
-from .. import logger
 
 
 class BOCMapping(ADSPComputer):
@@ -94,15 +89,15 @@ class BOCMapping(ADSPComputer):
 
         return sig
 
-    def adaptTimeSerie(self, tps: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def adaptTimeSerie(self, tps: FloatArr) -> FloatArr:
         return tps / (self.n_boc * self.p_samp)
 
     def update(
         self,
         t1: float,
         t2: float,
-        input: NDArray[Any, Any],
-        output: NDArray[Any, Any],
+        input: FloatArr,
+        output: FloatArr,
     ) -> dict:
         seq = self.boc_seq.y_serie
         p = len(seq)

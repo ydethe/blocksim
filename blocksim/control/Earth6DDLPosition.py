@@ -1,12 +1,11 @@
 from datetime import datetime
-from typing import Iterable, Any
+from typing import Iterable
 
-from numpy import pi
 import numpy as np
-from nptyping import NDArray
 from ahrs.utils import WMM
 
-from blocksim.utils import (
+from ..utils import (
+    FloatArr,
     build_local_matrix,
     quat_to_euler,
     quat_to_matrix,
@@ -32,10 +31,10 @@ class Earth6DDLPosition(object):
         cls,
         name: str = "",
         time: datetime = None,
-        position: NDArray[Any, Any] = np.zeros(3),
-        velocity: NDArray[Any, Any] = np.zeros(3),
-        attitude: NDArray[Any, Any] = np.zeros(4),
-        angular_rate: NDArray[Any, Any] = np.zeros(3),
+        position: FloatArr = np.zeros(3),
+        velocity: FloatArr = np.zeros(3),
+        attitude: FloatArr = np.zeros(4),
+        angular_rate: FloatArr = np.zeros(3),
     ) -> None:
         pass
 
@@ -43,10 +42,10 @@ class Earth6DDLPosition(object):
         self,
         name: str = "",
         time: datetime = None,
-        position: NDArray[Any, Any] = np.zeros(3),
-        velocity: NDArray[Any, Any] = np.zeros(3),
-        attitude: NDArray[Any, Any] = np.zeros(4),
-        angular_rate: NDArray[Any, Any] = np.zeros(3),
+        position: FloatArr = np.zeros(3),
+        velocity: FloatArr = np.zeros(3),
+        attitude: FloatArr = np.zeros(4),
+        angular_rate: FloatArr = np.zeros(3),
     ) -> None:
         self.name = name
         self.time = time
@@ -55,10 +54,10 @@ class Earth6DDLPosition(object):
         self.attitude = attitude
         self.angular_rate = angular_rate
 
-    def attitudeToQuaternion(self) -> NDArray[Any, Any]:
+    def attitudeToQuaternion(self) -> FloatArr:
         return self.attitude
 
-    def attitudeToDCM(self) -> NDArray[Any, Any]:
+    def attitudeToDCM(self) -> FloatArr:
         return quat_to_matrix(*self.attitude)
 
     def attitudeToEuler(self) -> Iterable[float]:
@@ -74,7 +73,7 @@ class Earth6DDLPosition(object):
         M = build_local_matrix(origin.position)
         return M.T @ (self.position - origin.position)
 
-    def magneticDeclination(self, frame="ITRF") -> NDArray[Any, Any]:
+    def magneticDeclination(self, frame="ITRF") -> FloatArr:
         """
 
         Examples:
@@ -107,12 +106,12 @@ class Earth6DDLPosition(object):
 
         return vm
 
-    def gravity(self, frame="ITRF") -> NDArray[Any, Any]:
+    def gravity(self, frame="ITRF") -> FloatArr:
         return np.zeros(3)
 
 
 if __name__ == "__main__":
-    from blocksim.utils import rad, geodetic_to_itrf
+    from ..utils import rad, geodetic_to_itrf
 
     pos = geodetic_to_itrf(lon=rad(0), lat=rad(0), h=0)
     ep = Earth6DDLPosition(name="IMU", position=pos)

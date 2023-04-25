@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 
 .. include:: ../README.md
@@ -31,7 +32,8 @@ To run tests, just run:
 
 ## Baseline images generation
 
-If needed (for example, a new test with its associated baseline image), we might have to regenerate the baseline images. In this case, run:
+If needed (for example, a new test with its associated baseline image), we might have to
+regenerate the baseline images. In this case, run:
 
     pdm baseline
 
@@ -47,27 +49,28 @@ If needed (for example, a new test with its associated baseline image), we might
 
 ![classes](./classes.png "Class diagram")
 
+.. include:: ../CHANGELOG.md
+
 """
 
 # __init__.py
 import os
-from pkg_resources import get_distribution
 import logging
 from importlib import import_module
 from importlib.metadata import entry_points
+from typing import TYPE_CHECKING
 
-from pluggy import PluginManager
+import pluggy
 import control
 import numpy
 from rich.logging import RichHandler
 
+if TYPE_CHECKING:
+    from .loggers.Logger import Logger
+else:
+    Logger = "blocksim.loggers.Logger.Logger"
+
 control.use_numpy_matrix(flag=False, warn=True)
-
-from .loggers.LoggerSpec import LoggerSpec
-
-
-__author__ = "Y. BLAUDIN DE THE"
-__email__ = "yann.blaudin-de-the@thalesaleniaspace.com"
 
 
 # création de l'objet logger qui va nous servir à écrire dans les logs
@@ -79,11 +82,87 @@ logger.addHandler(stream_handler)
 
 numpy.seterr(all="raise")
 
-plugin_manager = PluginManager("blocksim")
+hookspec = pluggy.HookspecMarker("blocksim")
+
+
+class LoggerSpec(object):
+    """Specification for all plugins that extend the `blocksim.loggers.Logger.Logger` capacities"""
+
+    @hookspec
+    def test_suitable(self, uri: str) -> bool:
+        """Tests weeather a log:'Logger' can handle a fic
+
+        Args:
+            uri: The path or URI indicated by the user
+
+        Returns:
+            The result of the test
+
+        """
+
+    @hookspec
+    def loadLogFile(self, log: Logger, uri: str) -> bool:
+        """Load log file
+
+        Args:
+            log: The `blocksim.loggers.Logger.Logger` that contains the data
+            uri: The path or URI where the data will be written
+
+        Return:
+            True if the file could be loaded
+
+        """
+
+    @hookspec
+    def getRawValue(self, log: Logger, name: str):
+        """If implemented, subsequent calls to `blocksim.loggers.Logger.Logger.getRawValue`
+        will use this method. Otherwise, the internal dictionary of
+        `blocksim.loggers.Logger.Logger` is used.
+
+        Args:
+            log: The `blocksim.loggers.Logger.Logger` that contains the data
+            name: Name of the variable to read
+
+        Return:
+            The array of values for the variable *name*
+
+        """
+
+    @hookspec
+    def export(self, log: Logger, uri: str) -> int:
+        """Export the log into a file
+
+        Args:
+            log: The `blocksim.loggers.Logger.Logger` that contains the data
+            uri: The path or URI to write in
+
+        Return:
+            A positive or null value if the export was successful
+
+        """
+
+    @hookspec
+    def log(self, log: Logger, name: str, val: float, tindex: int) -> int:
+        """Export the log into a file
+
+        Args:
+            log: The `blocksim.loggers.Logger.Logger` that contains the data
+            name: Name of the parameter. Nothing is logged if *name* == '_'
+            val: Value to log
+            tindex: Index where the value should be written in the inner data dictionary.
+                If Logger.allocate has not been called before, raises an error
+
+        Return:
+            A positive or null value if the export was successful
+
+        """
+
+
+plugin_manager = pluggy.PluginManager("blocksim")
 plugin_manager.add_hookspecs(LoggerSpec)
 
 eps = entry_points()
-plugins = eps["blocksim"]
+plugins = eps.select(group="blocksim")
 
 for ep in plugins:
     if ep.name.startswith("logger_"):

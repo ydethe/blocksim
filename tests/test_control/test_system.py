@@ -1,16 +1,13 @@
-import sys
-from pathlib import Path
 import unittest
 
 import numpy as np
-import pytest
 
 from blocksim.control.SetPoint import Step
 from blocksim.control.System import LTISystem, TransferFunctionSystem
 from blocksim.Simulation import Simulation
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase, plotAnalyticsolution
+
+from blocksim.testing import TestBase, plotAnalyticsolution
 
 
 class TestSystem(TestBase):

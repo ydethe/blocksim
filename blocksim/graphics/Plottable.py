@@ -1,21 +1,18 @@
 from abc import ABCMeta, abstractmethod
-from ast import Assert
-from asyncio.log import logger
-from typing import Tuple
+from typing import TYPE_CHECKING, Tuple
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from pandas import Timedelta, Timestamp
-from parse import parse
-import networkx as nx
+from pandas import Timestamp
 from networkx.classes.graph import Graph
 import numpy as np
 from numpy import pi
 import matplotlib.image as mpimg
+from matplotlib.axes import Axes
 import pandas as pd
 
-from .GPlottable import GPlottable, GVariable
-from ..utils import find1dpeak
+from .GPlottable import GPlottable
+from ..utils import find1dpeak, FloatArr
 from ..dsp.DSPLine import (
     DSPRectilinearLine,
     DSPPolarLine,
@@ -24,12 +21,41 @@ from ..dsp.DSPLine import (
 )
 from .. import logger
 from ..dsp.DSPFilter import DSPBodeDiagram
-from ..loggers.Logger import Logger
 from ..dsp.DSPMap import DSPRectilinearMap, DSPPolarMap, DSPNorthPolarMap
 from .GraphicSpec import AxeProjection, FigureProjection
 from ..satellite.Trajectory import Trajectory
 from ..control.Earth6DDLPosition import Earth6DDLPosition
 from . import getUnitAbbrev
+
+if TYPE_CHECKING:
+    from ..loggers.Logger import Logger
+    from .BAxe import ABaxe
+    from .BFigure import ABFigure
+    from .GraphicSpec import FigureSpec
+else:
+    Logger = "blocksim.loggers.Logger.Logger"
+    ABaxe = "blocksim.graphics.BAxe.ABaxe"
+    ABFigure = "blocksim.graphics.BFigure.ABFigure"
+    FigureSpec = "blocksim.graphics.GraphicSpec.FigureSpec"
+
+__all__ = [
+    "APlottable",
+    "Plottable6DDLPosition",
+    "PlottableGraph",
+    "PlottableDSPRectilinearLine",
+    "PlottableBodeDiagram",
+    "PlottableDSPPolarLine",
+    "PlottableDSPNorthPolarLine",
+    "PlottableDSPHistogram",
+    "PlottableGeneric",
+    "PlottableTrajectory",
+    "APlottableDSPMap",
+    "PlottableImage",
+    "PlottableDSPRectilinearMap",
+    "PlottableDSPPolarMap",
+    "PlottableDSPNorthPolarMap",
+    "PlottableFactory",
+]
 
 
 class APlottable(metaclass=ABCMeta):
@@ -37,12 +63,12 @@ class APlottable(metaclass=ABCMeta):
 
     Daughter classes shall make sure that the class attribute *compatible_baxe* is up to date.
 
-    * `blocksim.control.Earth6DDLPosition.Earth6DDLPosition` instances. See `PlottableCube`
+    * `blocksim.control.Earth6DDLPosition.Earth6DDLPosition` instances. See `Plottable6DDLPosition`
     * networkx graphs. See `PlottableGraph`
     * `blocksim.dsp.DSPLine.ADSPLine`. See `PlottableDSPLine`
     * simple arrays. See `PlottableArray`
     * `blocksim.satellite.Trajectory.Trajectory` instances. See `PlottableTrajectory`
-    * `blocksim.dsp.DSPMap.ADSPMap`. See `PlottableDSPSpectrogram`
+    * `blocksim.dsp.DSPMap.ADSPMap`. See `PlottableDSPRectilinearMap`
     * tuple of arrays or dictionaries, see `PlottableGeneric`. The dictionaries keys are:
 
         * data
@@ -66,9 +92,7 @@ class APlottable(metaclass=ABCMeta):
         self.kwargs = kwargs
 
     @abstractmethod
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
+    def _make_mline(self, axe: ABaxe) -> Tuple[FloatArr, FloatArr, str, str, str, str]:
         """This makes the job of turning a generic plotable into a tuple of useful values
 
         Returns:
@@ -82,7 +106,7 @@ class APlottable(metaclass=ABCMeta):
         """
         pass
 
-    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+    def preprocess(self, axe: ABaxe) -> dict:
         """Makes the final preparation before plotting with matplotlib
 
         Args:
@@ -138,10 +162,10 @@ class APlottable(metaclass=ABCMeta):
         xmin, xmax = axe.xbounds
         ns = len(xd)
         iok = list(range(ns - 1))
-        if not xmin is None:
+        if xmin is not None:
             iok = np.intersect1d(np.where(xd > xmin)[0], iok)
 
-        if not xmax is None:
+        if xmax is not None:
             iok = np.intersect1d(np.where(xd <= xmax)[0], iok)
 
         if len(iok) == 0 or np.all(np.isnan(yd[iok])):
@@ -185,8 +209,8 @@ class APlottable(metaclass=ABCMeta):
 
     def render(
         self,
-        axe: "blocksim.graphics.BAxe.ABAxe",
-        maxe: "Axes",
+        axe: ABaxe,
+        maxe: Axes,
         info: dict,
         amp_x: float,
         amp_y: float,
@@ -207,7 +231,8 @@ class APlottable(metaclass=ABCMeta):
                 * plottable: this instance
                 * plot_method: the callable plot method to use to plot the data
                 * fill: for 3D plots, the fill method
-                * args: the data to be plotted with matplotlib. 2 or 3 elements tuple with numpy arrays
+                * args: the data to be plotted with matplotlib.
+                        2 or 3 elements tuple with numpy arrays
                 * mpl_kwargs: the plotting options useable with matplotlib
                 * peaks: the peaks found in the data
                 * name_of_x_var: name of the X variable
@@ -218,7 +243,8 @@ class APlottable(metaclass=ABCMeta):
                 * xmax: largest X value
                 * ymin: smallest Y value
                 * ymax: largest Y value
-                * scaled_args: the scaled data to be plotted with matplotlib. 2 or 3 elements tuple with numpy arrays
+                * scaled_args: the scaled data to be plotted with matplotlib.
+                               2 or 3 elements tuple with numpy arrays
                 * scaled_peaks: the peaks found in the data with scaled coordinates
                 * scaled_annotations: the peaks found in the data with scaled coordinates
             The label to use for X axis
@@ -325,18 +351,16 @@ class Plottable6DDLPosition(APlottable):
 
     compatible_baxe = [AxeProjection.PANDA3D]
 
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
+    def _make_mline(self, axe: ABaxe) -> Tuple[FloatArr, FloatArr, str, str, str, str]:
         pass
 
-    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
-        if not axe.projection in self.__class__.compatible_baxe:
+    def preprocess(self, axe: ABaxe) -> dict:
+        if axe.projection not in self.__class__.compatible_baxe:
             raise AssertionError(f"{axe.projection} is not in {self.__class__.compatible_baxe}")
 
         mpl_kwargs = self.kwargs.copy()
-        if not "size" in mpl_kwargs:
-            raise AssertionError(f"Missing 'size' argument when plotting a Earth6DDLPosition")
+        if "size" not in mpl_kwargs:
+            raise AssertionError("Missing 'size' argument when plotting a Earth6DDLPosition")
 
         _ = mpl_kwargs.pop("annotations", None)
         info = {
@@ -362,8 +386,8 @@ class Plottable6DDLPosition(APlottable):
 
     # def render(
     #     self,
-    #     axe: "blocksim.graphics.BAxe.ABAxe",
-    #     maxe: "Axes",
+    #     axe: ABaxe,
+    #     maxe: Axes,
     #     info: dict,
     #     amp_x: float,
     #     amp_y: float,
@@ -396,10 +420,10 @@ class PlottableGraph(APlottable):
 
     compatible_baxe = [AxeProjection.GRAPH]
 
-    def _make_mline(self, axe: "blocksim.graphics.BAxe.ABaxe"):
+    def _make_mline(self, axe: ABaxe):
         pass
 
-    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+    def preprocess(self, axe: ABaxe) -> dict:
         """Makes the final preparation before plotting with matplotlib
 
         Args:
@@ -424,11 +448,11 @@ class PlottableGraph(APlottable):
             * ymax: largest Y value
 
         """
-        if not axe.projection in self.__class__.compatible_baxe:
+        if axe.projection not in self.__class__.compatible_baxe:
             raise AssertionError(f"{axe.projection} is not in {self.__class__.compatible_baxe}")
 
         kwds = self.kwargs.copy()
-        if not "node_size" in kwds.keys():
+        if "node_size" not in kwds.keys():
             kwds["node_size"] = 1000
         _ = kwds.pop("annotations", None)
 
@@ -454,8 +478,8 @@ class PlottableGraph(APlottable):
 
     def render(
         self,
-        axe: "blocksim.graphics.BAxe.ABAxe",
-        maxe: "Axes",
+        axe: ABaxe,
+        maxe: Axes,
         info: dict,
         amp_x: float,
         amp_y: float,
@@ -486,9 +510,7 @@ class PlottableDSPRectilinearLine(APlottable):
         # AxeProjection.PLATECARREE,
     ]
 
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
+    def _make_mline(self, axe: ABaxe) -> Tuple[FloatArr, FloatArr, str, str, str, str]:
         transform = self.kwargs.get("transform", self.plottable.default_transform)
         xd = self.plottable.generateXSerie()
         yd = transform(np.array(self.plottable.y_serie))
@@ -541,7 +563,7 @@ class PlottableDSPHistogram(PlottableDSPRectilinearLine):
         AxeProjection.LOGY,
     ]
 
-    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+    def preprocess(self, axe: ABaxe) -> dict:
         info = super().preprocess(axe)
         plottable = info["plottable"]
         kwargs = info["mpl_kwargs"]
@@ -567,9 +589,7 @@ class PlottableGeneric(APlottable):
     def __init__(self, plottable, kwargs: dict) -> None:
         super().__init__(plottable, kwargs)
 
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
+    def _make_mline(self, axe: ABaxe) -> Tuple[FloatArr, FloatArr, str, str, str, str]:
         transform = self.kwargs.get("transform", lambda x: x)
 
         (
@@ -608,9 +628,7 @@ class PlottableTrajectory(APlottable):
         AxeProjection.RECTILINEAR,
     ]
 
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
+    def _make_mline(self, axe: ABaxe) -> Tuple[FloatArr, FloatArr, str, str, str, str]:
         # Only used if axe.figure.projection==FigureProjection.MPL
         lon, lat = self.plottable.getGroundTrack()
 
@@ -641,12 +659,11 @@ class PlottableTrajectory(APlottable):
 
         return lon, lat, name_of_x_var, unit_of_x_var, name_of_y_var, unit_of_y_var
 
-    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
-        if not axe.projection in self.__class__.compatible_baxe:
+    def preprocess(self, axe: ABaxe) -> dict:
+        if axe.projection not in self.__class__.compatible_baxe:
             raise AssertionError(f"{axe.projection} is not in {self.__class__.compatible_baxe}")
 
         if axe.figure.projection == FigureProjection.EARTH3D:
-            app = axe.figure.mpl_fig
             kwargs = self.kwargs.copy()
             _ = kwargs.pop("transform", None)
             info = {
@@ -684,8 +701,8 @@ class APlottableDSPMap(APlottable):
 
     __slots__ = []
 
-    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
-        if not axe.projection in self.__class__.compatible_baxe:
+    def preprocess(self, axe: ABaxe) -> dict:
+        if axe.projection not in self.__class__.compatible_baxe:
             raise AssertionError(f"{axe.projection} is not in {self.__class__.compatible_baxe}")
 
         mline = self.plottable
@@ -760,8 +777,8 @@ class APlottableDSPMap(APlottable):
 
     def render(
         self,
-        axe: "blocksim.graphics.BAxe.ABAxe",
-        maxe: "Axes",
+        axe: ABaxe,
+        maxe: Axes,
         info: dict,
         amp_x: float,
         amp_y: float,
@@ -843,12 +860,10 @@ class PlottableImage(APlottableDSPMap):
         AxeProjection.RECTILINEAR,
     ]
 
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
+    def _make_mline(self, axe: ABaxe) -> Tuple[FloatArr, FloatArr, str, str, str, str]:
         pass
 
-    def preprocess(self, axe: "blocksim.graphics.BAxe.ABaxe") -> dict:
+    def preprocess(self, axe: ABaxe) -> dict:
         img = mpimg.imread(str(self.plottable))
 
         kwargs = self.kwargs.copy()
@@ -896,9 +911,7 @@ class PlottableDSPRectilinearMap(APlottableDSPMap):
         AxeProjection.DIM3D,
     ]
 
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
+    def _make_mline(self, axe: ABaxe) -> Tuple[FloatArr, FloatArr, str, str, str, str]:
         mline = self.plottable
 
         x_samp = mline.generateXSerie()
@@ -926,9 +939,7 @@ class PlottableDSPPolarMap(PlottableDSPRectilinearMap):
         AxeProjection.DIM3D,
     ]
 
-    def _make_mline(
-        self, axe: "blocksim.graphics.BAxe.ABaxe"
-    ) -> Tuple["array", "array", str, str, str, str]:
+    def _make_mline(self, axe: ABaxe) -> Tuple[FloatArr, FloatArr, str, str, str, str]:
         mline = self.plottable
 
         x_samp = mline.generateXSerie()
@@ -955,7 +966,8 @@ class PlottableDSPNorthPolarMap(PlottableDSPPolarMap):
 
 
 class PlottableFactory(object):
-    """Factory class that instanciates the adapted daughter class of `APlottable` to handle the object to plot"""
+    """Factory class that instanciates the adapted daughter class
+    of `APlottable` to handle the object to plot"""
 
     __slots__ = []
 
@@ -1018,7 +1030,7 @@ class PlottableFactory(object):
 
         elif isinstance(mline, tuple):
             if len(mline) == 0:
-                raise AssertionError(f"Plottable reduced to an empty tuple")
+                raise AssertionError("Plottable reduced to an empty tuple")
 
             if np.isscalar(mline[0]):
                 gp = GPlottable.from_serie(sy=mline)

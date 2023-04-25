@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -8,8 +7,8 @@ from blocksim.dsp.DSPMap import DSPRectilinearMap
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.graphics.GraphicSpec import AxeProjection
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestDSPSpectrogram(TestBase):

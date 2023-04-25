@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from pickle import load
 
-from numpy import pi, cos, arcsin
+from numpy import pi, cos
 
 from blocksim.constants import c
 

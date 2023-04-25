@@ -1,6 +1,4 @@
 from pathlib import Path
-import sys
-import unittest
 
 import pytest
 
@@ -9,8 +7,8 @@ from blocksim.graphics.GraphicSpec import AxeProjection
 from blocksim.utils import load_antenna_config
 from blocksim.dsp.AntennaNetwork import AntennaNetwork
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestAntennaNetwork(TestBase):

@@ -3,24 +3,36 @@
 """
 import ast
 from collections import defaultdict
-from typing import Iterable, Any
+from typing import TYPE_CHECKING, Iterable, Any
 from keyword import iskeyword
 from types import FunctionType
 from datetime import datetime, timezone
 
 import pluggy
-from nptyping import NDArray
+
 import numpy as np
-from numpy import *
 from scipy.signal import firwin, fftconvolve
 
+from ..utils import (
+    FloatArr,
+    deg,  # noqa: F401
+    rad,  # noqa: F401
+    q_function,  # noqa: F401
+    datetime_to_skyfield,  # noqa: F401
+    skyfield_to_datetime,  # noqa: F401
+    cexp,  # noqa: F401
+)
 from .. import logger
-from ..core.Node import AComputer
-from ..exceptions import *
-from ..utils import deg, rad
 from .. import plugin_manager
 from .Parameter import Parameter
+from ..exceptions import NameIsPythonKeyword
 
+if TYPE_CHECKING:
+    from ..dsp.DSPSignal import DSPSignal
+    from ..core.Node import AComputer
+else:
+    DSPSignal = "blocksim.dsp.DSPSignal.DSPSignal"
+    AComputer = "blocksim.core.Node.AComputer"
 
 __all__ = ["Logger"]
 
@@ -230,7 +242,7 @@ class Logger(object):
         if name == "_":
             return
 
-        if not name in self.__params.keys():
+        if name not in self.__params.keys():
             if iskeyword(name) or name == "keep_up":
                 raise NameIsPythonKeyword(name)
             typ, pck_f, unpck_f, sze = self._findType(val)
@@ -246,11 +258,11 @@ class Logger(object):
             if tindex is None:
                 tindex = self.__index
 
-            if not name in self.__data.keys():
+            if name not in self.__data.keys():
                 self.__data[name] = np.empty(self.__alloc, dtype=dtyp)
             self.__data[name][tindex] = dtyp(val)
         else:
-            if not tindex is None:
+            if tindex is not None:
                 raise ValueError("tindex specified in a non allocated Logger")
             else:
                 tindex = self.__index
@@ -261,10 +273,11 @@ class Logger(object):
             self.__index += 1
 
         # Handling of the logged value by the pugins
-        ldata = plugin_manager.hook.log(log=self, name=name, val=val, tindex=tindex)
+        plugin_manager.hook.log(log=self, name=name, val=val, tindex=tindex)
 
     def buildParameterNameFromComputerElements(self, cname: str, oname: str, sname: str) -> str:
-        """Determines the name of Logger parameter from the name of the AComputer, Output and scalar.
+        """Determines the name of Logger parameter
+        from the name of the AComputer, Output and scalar
 
         Args:
             cname: Name of the AComputer
@@ -310,7 +323,7 @@ class Logger(object):
 
         return len(data0)
 
-    def getFlattenOutput(self, name: str, dtype=np.complex128) -> NDArray[Any, Any]:
+    def getFlattenOutput(self, name: str, dtype=np.complex128) -> FloatArr:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -334,7 +347,7 @@ class Logger(object):
 
         return res
 
-    def getValueForComputer(self, comp: AComputer, output_name: str) -> NDArray[Any, Any]:
+    def getValueForComputer(self, comp: AComputer, output_name: str) -> FloatArr:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -348,7 +361,7 @@ class Logger(object):
         val = self.getMatrixOutput(name="%s_%s" % (comp.getName(), output_name))
         return val
 
-    def getMatrixOutput(self, name: str) -> NDArray[Any, Any]:
+    def getMatrixOutput(self, name: str) -> FloatArr:
         """Gets the list of output vectors for a computer's output
 
         Args:
@@ -377,7 +390,7 @@ class Logger(object):
 
         return res
 
-    def getRawValue(self, name: str) -> NDArray[Any, Any]:
+    def getRawValue(self, name: str) -> FloatArr:
         """Get the value of a logged variable
         The argument *cannot* be an expression.
 
@@ -399,11 +412,11 @@ class Logger(object):
         lnames = self.getParametersName()
         if len(lnames) == 0:
             raise SystemError("Logger empty")
-        if not name in lnames:
+        if name not in lnames:
             raise SystemError("Logger has no variable '%s'" % name)
 
         ldata = plugin_manager.hook.getRawValue(log=self, name=name)
-        lok = [x for x in ldata if not x is None]
+        lok = [x for x in ldata if x is not None]
         if len(lok) == 1:
             return lok[0]
         elif len(lok) == 0:
@@ -436,26 +449,25 @@ class Logger(object):
         ln.visit(m)
 
         unit = "-"
-        from_param = ""
         for n in ln.names:
-            if not n in self.getParametersName():
+            if n not in self.getParametersName():
                 continue
             p = self.getParameter(n)
             if p.unit == "" or p.unit == "-":
                 continue
             if unit == "-":
                 unit = p.unit
-                from_param = p.name
             else:
                 if unit != p.unit:
                     logger.debug(
-                        f"Inconsistent unit in '{expr}': {p.name} [{p.unit}] instead of {from_param} [{unit}]"
+                        f"Inconsistent unit in '{expr}': {p.name} [{p.unit}] "
+                        "instead of {from_param} [{unit}]"
                     )
 
         # return unit
         return "-"
 
-    def getValue(self, name: str, raw: bool = False) -> NDArray[Any, Any]:
+    def getValue(self, name: str, raw: bool = False) -> FloatArr:
         """Get the value of a logged variable
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos
@@ -482,6 +494,8 @@ class Logger(object):
         if raw:
             return self.getRawValue(name)
 
+        # from ..utils import *
+
         expr = "def __tmp(lg):\n"
         for k in self.getParametersName():
             expr += "   %s=lg.getRawValue(name='%s')\n" % (k, k)
@@ -492,7 +506,7 @@ class Logger(object):
 
         return foo_func(self)
 
-    def getSignal(self, name: str, raw: bool = False) -> "blocksim.dsp.DSPSignal.DSPSignal":
+    def getSignal(self, name: str, raw: bool = False) -> "DSPSignal":
         """Get the value of a logged variable
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos
@@ -520,7 +534,7 @@ class Logger(object):
 
     def getFilteredValue(
         self, name: str, ntaps: int, cutoff: float, window: str = "hamming"
-    ) -> NDArray[Any, Any]:
+    ) -> FloatArr:
         """Get the value of a logged variable, and applies a low-pass filter
         The argument can be an expression. It can combine several variables
         numpy functions can be used with the module name 'np': for example : np.cos
@@ -537,7 +551,8 @@ class Logger(object):
         Examples:
             >>> ns=1000;fs=100;f0=10
             >>> log = Logger()
-            >>> _ = [(log.log(name='t',val=t,unit='s'),log.log(name='s',val=np.cos(np.pi*2*t*f0),unit='')) for t in np.arange(0,ns)/fs]
+            >>> _ = [log.log(name='t',val=t,unit='s') for t in np.arange(0,ns)/fs]
+            >>> _ = [log.log(name='s',val=np.cos(np.pi*2*t*f0),unit='') for t in np.arange(0,ns)/fs]
             >>> s = log.getValue('s')
             >>> e = np.sum(s**2)/ns
             >>> e # doctest: +ELLIPSIS

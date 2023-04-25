@@ -1,7 +1,3 @@
-import sys
-from pathlib import Path
-import unittest
-
 import numpy as np
 from numpy import pi
 import pytest
@@ -9,8 +5,8 @@ import pytest
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp import phase_unfold
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestUtils(TestBase):

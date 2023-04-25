@@ -1,10 +1,9 @@
 import rich.progress as rp
 import numpy as np
 from numpy import pi
-from scipy import linalg as lin
-from matplotlib import pyplot as plt
+from scipy import linalg as lin  # type: ignore
 from munch import Munch
-import pandas as pd
+import pandas as pd  # type: ignore
 
 from ..loggers.Logger import Logger
 from ..satellite.Satellite import ASatellite
@@ -163,7 +162,8 @@ def plot_dop(cfg: Munch):
     pdopv = np.empty(ns)
     for k in rp.track(range(ns)):
         if np.isnan(pdop_x[k]):
-            pdop[k] = np.nan
+            pdopp[k] = np.nan
+            pdopv[k] = np.nan
         else:
             pdop = np.array([pdop_x[k], pdop_y[k], pdop_z[k]])
             pdopp[k] = lin.norm(np.real(pdop))
@@ -254,7 +254,6 @@ def plot_mtcl(cfg: Munch):
 
 
 def plot_3d(cfg: Munch, npoint: int):
-    title = cfg.cfg_file
 
     log = Logger()
     log.loadLogFile(cfg.setup.logfile)
@@ -283,7 +282,6 @@ def plot_3d(cfg: Munch, npoint: int):
 
 
 def plot_ground_track(cfg: Munch, npoint: int):
-    title = cfg.cfg_file
 
     log = Logger()
     log.loadLogFile(cfg.setup.logfile)

@@ -5,8 +5,8 @@ import typer
 import rich.progress as rp
 import numpy as np
 from numpy import sqrt
-from scipy import linalg as lin
-from matplotlib import pyplot as plt
+from scipy import linalg as lin  # type: ignore
+from matplotlib import pyplot as plt  # type: ignore
 
 from ..utils import geodetic_to_itrf
 from ..gnss.utils import computeDOP
@@ -95,7 +95,7 @@ def sim(fic_cfg: str):
     print_config(cfg)
     log = fct_sim(cfg)
 
-    if not hasattr(cfg, "receiver") or cfg.receiver.algo == False:
+    if not hasattr(cfg, "receiver") or cfg.receiver.algo is False:
         return
 
     if not hasattr(cfg, "tracker") or not hasattr(cfg, "receiver"):
@@ -147,11 +147,10 @@ def mtcl(fic_cfg: str):
     Runs a Monte-Carlo simulation
     """
     from .computation import mtcl as fct_mtcl
-    from .plot import plot_mtcl
 
     cfg = load_config(fic_cfg)
     print_config(cfg)
-    log = fct_mtcl(cfg)
+    fct_mtcl(cfg)
 
     logger.info("Finished. You can plot the results with 'gnss_sim plot %s'" % fic_cfg)
 
@@ -192,7 +191,8 @@ def hist(
                     "%a, %d %b %Y %H:%M:%S GMT"
                 ),  # Time of original image creation (usually RFC 1123 format).
                 "Software": "gnss_sim",  # Software used to create the image.
-                "Comment": "https://git:8443/projects/DNFSND/repos/blocksim/browse",  # Miscellaneous comment; conversion from other image format.
+                # Miscellaneous comment; conversion from other image format.
+                "Comment": "https://git:8443/projects/DNFSND/repos/blocksim/browse",
             },
         )
 
@@ -248,7 +248,7 @@ def plot(
         fig = plot_dop(cfg)
     elif polar:
         fig, data = plot_polar_view(cfg, tplot=tplot)
-        if not tocsv is None:
+        if tocsv is not None:
             data.to_csv(tocsv, index=False)
     elif globe:
         app3d = plot_3d(cfg, npoint=int(npoint))
@@ -279,7 +279,8 @@ def plot(
                     "%a, %d %b %Y %H:%M:%S GMT"
                 ),  # Time of original image creation (usually RFC 1123 format).
                 "Software": "gnss_sim",  # Software used to create the image.
-                "Comment": "https://git:8443/projects/DNFSND/repos/blocksim/browse",  # Miscellaneous comment; conversion from other image format.
+                # Miscellaneous comment; conversion from other image format.
+                "Comment": "https://git:8443/projects/DNFSND/repos/blocksim/browse",
             },
         )
 

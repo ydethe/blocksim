@@ -1,4 +1,5 @@
-"""The control module allows the simulation of controlled system. It includes for example Kalman filters, LQ regulators, 6 DOF systems, and more.
+"""The control module allows the simulation of controlled system.
+It includes for example Kalman filters, LQ regulators, 6 DOF systems, and more.
 
 Example:
 >>> import numpy as np

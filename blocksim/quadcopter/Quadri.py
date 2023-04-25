@@ -1,12 +1,11 @@
-from typing import Iterable, Any
+from typing import Iterable
 
-from nptyping import NDArray, Shape
+
 import numpy as np
-import scipy.linalg as lin
 
 from ..core.Node import Input
 from ..control.System import G6DOFSystem
-from ..utils import vecBodyToEarth, vecEarthToBody
+from ..utils import vecBodyToEarth, FloatArr
 from .Motor import Motor
 
 
@@ -46,7 +45,7 @@ class Quadri(G6DOFSystem):
         self.createParameter("l", 22.5e-2)
         self.createParameter("Jr", 3.4e-5)
 
-    def getActions(self, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> Iterable["array"]:
+    def getActions(self, x: FloatArr, u: FloatArr) -> Iterable[FloatArr]:
         """From the state vector and the motors speed setpoints,
         derives force and torque applied on the system
 
@@ -75,7 +74,7 @@ class Quadri(G6DOFSystem):
 
         return force, torque
 
-    def transition(self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def transition(self, t: float, x: FloatArr, u: FloatArr) -> FloatArr:
         force, torque = self.getActions(x, u)
 
         a = np.hstack((force, torque))

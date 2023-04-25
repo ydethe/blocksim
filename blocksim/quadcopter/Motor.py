@@ -1,7 +1,6 @@
-from typing import Any
-
-from nptyping import NDArray, Shape
 import numpy as np
+
+from ..utils import FloatArr
 
 from ..control.System import ASystem
 
@@ -44,7 +43,7 @@ class Motor(ASystem):
         self.createParameter("k", 2.9e-5)
         self.createParameter("Umax", 12)
 
-    def transition(self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def transition(self, t: float, x: FloatArr, u: FloatArr) -> FloatArr:
         (s,) = x
         (u0,) = u
         ds = (
@@ -60,9 +59,9 @@ class Motor(ASystem):
         self,
         t1: float,
         t2: float,
-        command: NDArray[Any, Any],
-        state: NDArray[Any, Any],
-        vel: NDArray[Any, Any],
+        command: FloatArr,
+        state: FloatArr,
+        vel: FloatArr,
     ) -> dict:
         outputs = super().update(t1, t2, command, state)
 

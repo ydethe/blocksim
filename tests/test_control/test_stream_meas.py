@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 import unittest
 
@@ -9,8 +8,8 @@ from blocksim.control.Sensors import StreamCSVSensors
 from blocksim.control.SetPoint import Step
 from blocksim.Simulation import Simulation
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestStreamMeas(TestBase):

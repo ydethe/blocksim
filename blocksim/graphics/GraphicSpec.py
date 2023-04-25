@@ -1,6 +1,17 @@
-from typing import Iterable, List
+from typing import TYPE_CHECKING, Iterable, List
 from enum import Enum
 from dataclasses import dataclass
+
+if TYPE_CHECKING:
+    from ..loggers.Logger import Logger
+    from .BAxe import ABaxe
+    from .BFigure import ABFigure
+    from .GraphicSpec import FigureSpec
+else:
+    Logger = "blocksim.loggers.Logger.Logger"
+    ABaxe = "blocksim.graphics.BAxe.ABaxe"
+    ABFigure = "blocksim.graphics.BFigure.ABFigure"
+    FigureSpec = "blocksim.graphics.GraphicSpec.FigureSpec"
 
 
 @dataclass(init=True)
@@ -61,7 +72,8 @@ class AxeSpec(object):
             * coord for the position in the layout. Shall be a slice object
             * sharex is the numer of an axe whose X axe will be shared with the instance of AxeSpec
             * title for the title of the axe
-            * projection for the axe projection. Can be 'map', 'rectilinear', 'north_polar' or 'polar'
+            * projection for the axe projection.
+                Can be 'map', 'rectilinear', 'north_polar' or 'polar'
         lines: List of dict to specify the lines' spec. Supported keys :
 
             * the matplotlib keyword arguments of the funcion *plot*
@@ -87,12 +99,12 @@ class AxeSpec(object):
                 continue
             s += st + "%s:\t'%s'\n" % (k, self.props[k])
 
-        for k, l in enumerate(self.lines):
+        for k, line in enumerate(self.lines):
             s += st + 10 * "-" + " Line #%i " % (k + 1) + 10 * "-" + "\n"
-            kys = list(l.keys())
+            kys = list(line.keys())
             kys.sort()
             for k in kys:
-                s += 2 * st + "%s:\t'%s'\n" % (k, l[k])
+                s += 2 * st + "%s:\t'%s'\n" % (k, line[k])
 
         return s
 
@@ -125,7 +137,8 @@ class FigureSpec(object):
         """Representation of a FigureSpec
 
         Examples:
-            >>> fs = FigureSpec.specForOneAxeMultiLines([{'var':'th_mes','linestyle':'', 'marker':'+'}])
+            >>> spec = [{'var':'th_mes','linestyle':'', 'marker':'+'}]
+            >>> fs = FigureSpec.specForOneAxeMultiLines(spec)
             >>> _ = str(fs)
 
         """
@@ -140,16 +153,15 @@ class FigureSpec(object):
         return self.__repr__()
 
     @classmethod
-    def specForOneAxeMultiLines(
-        cls, line_list: Iterable[dict]
-    ) -> "blocksim.graphics.GraphicSpec.FigureSpec":
+    def specForOneAxeMultiLines(cls, line_list: Iterable[dict]) -> FigureSpec:
         """Returns a FigureSpec to draw all the given variables on one same axe
 
         Args:
             line_list: List of dictionary, whose keys are :
 
               * the matplotlib keyword arguments of the funcion *plot*
-              * varx for the name of the X variable. If not specified, varx will be assumed to be the time variable 't'
+              * varx for the name of the X variable.
+                    If not specified, varx will be assumed to be the time variable 't'
               * var or vary for the name of the y variable
 
         Returns
@@ -159,7 +171,7 @@ class FigureSpec(object):
         lines = []
         for var in line_list:
             line = var.copy()
-            if not "varx" in line.keys():
+            if "varx" not in line.keys():
                 line["varx"] = "t"
             if "var" in line.keys():
                 line["vary"] = line.pop("var")

@@ -1,7 +1,6 @@
 import numpy as np
 
-from .. import logger
-from ..core.Node import AComputer, Input
+from ..core.Node import AComputer
 
 
 class RTPlotter(AComputer):
@@ -13,7 +12,10 @@ class RTPlotter(AComputer):
         input_map: Ordered dictionary of inputs:
 
             * the keys are the names of the inputs
-            * the values are a tuple (indices of the chosen salars in the input vector, kwargs passed to plot)
+            * the values are a tuple:
+
+                * indices of the chosen salars in the input vector
+                * kwargs passed to plot
 
     """
 

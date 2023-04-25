@@ -1,16 +1,31 @@
 from abc import ABCMeta, abstractmethod
 import types
-from functools import lru_cache
+from typing import TYPE_CHECKING, Union
 
 import numpy as np
 from numpy import pi, sqrt, cos, sin
+import networkx as nx
+from matplotlib.figure import Figure
+from matplotlib.gridspec import SubplotSpec
+from matplotlib.axes import Axes
 
-from .. import logger
 from .B3DPlotter import B3DPlotter
 from ..constants import Req
-from .GraphicSpec import FigureProjection, AxeProjection
+from .GraphicSpec import AxeProjection
 from .BLayout import BGridElement
-from .Plottable import *
+from .Plottable import (
+    APlottable,
+    PlottableFactory,
+)
+
+if TYPE_CHECKING:
+    from ..loggers.Logger import Logger
+    from .BFigure import ABFigure
+    from .GraphicSpec import FigureSpec
+else:
+    Logger = "blocksim.loggers.Logger.Logger"
+    ABFigure = "blocksim.graphics.BFigure.ABFigure"
+    FigureSpec = "blocksim.graphics.GraphicSpec.FigureSpec"
 
 
 class ABaxe(metaclass=ABCMeta):
@@ -43,10 +58,10 @@ class ABaxe(metaclass=ABCMeta):
     projection = None
 
     @abstractmethod
-    def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "Axes":
+    def createMplAxe(self, mfig: Figure, mgs: SubplotSpec) -> Union[Axes, B3DPlotter]:
         pass
 
-    def render(self, maxe: "Axes") -> "AxesSubplot":
+    def render(self, maxe: Axes) -> Axes:
         """Creates a matplotlib axe according to the BAxe.plot commands
 
         Args:
@@ -177,22 +192,22 @@ class ABaxe(metaclass=ABCMeta):
 
         return maxe
 
-    def _solveSharedBAxes(self, mfig: "Figure", mgs: "SubplotSpec", maxe: "Axes"):
-        if not self.parent_sharex is None:
+    def _solveSharedBAxes(self, mfig: Figure, mgs: SubplotSpec, maxe: Axes):
+        if self.parent_sharex is not None:
             sharex = self.parent_sharex.createMplAxe(mfig, mgs)
             maxe.get_shared_x_axes().join(maxe, sharex)
 
-        if not self.parent_sharey is None:
+        if self.parent_sharey is not None:
             sharey = self.parent_sharey.createMplAxe(mfig, mgs)
             maxe.get_shared_y_axes().join(maxe, sharey)
 
     def __init__(
         self,
-        figure: "blocksim.graphics.BFigure.ABFigure",
+        figure: ABFigure,
         title: str,
         spec: BGridElement,
-        sharex: "blocksim.graphics.BAxe.ABaxe" = None,
-        sharey: "blocksim.graphics.BAxe.ABaxe" = None,
+        sharex: "ABaxe" = None,
+        sharey: "ABaxe" = None,
         kwargs={},
     ):
         self.figure = figure
@@ -219,19 +234,19 @@ class ABaxe(metaclass=ABCMeta):
         self.plottable_factories = []
         self.mpl_axe = None
 
-    def _addChildSharex(self, sharex: "blocksim.graphics.BAxe.ABaxe"):
+    def _addChildSharex(self, sharex: "ABaxe"):
         self.children_sharex.append(sharex)
 
-    def _addChildSharey(self, sharey: "blocksim.graphics.BAxe.ABaxe"):
+    def _addChildSharey(self, sharey: "ABaxe"):
         self.children_sharey.append(sharey)
 
-    def _findRootSharex(self) -> "blocksim.graphics.BAxe.ABaxe":
+    def _findRootSharex(self) -> "ABaxe":
         if self.parent_sharex is None:
             return self
         else:
             return self.parent_sharex._findRootSharex()
 
-    def _findRootSharey(self) -> "blocksim.graphics.BAxe.ABaxe":
+    def _findRootSharey(self) -> "ABaxe":
         if self.parent_sharey is None:
             return self
         else:
@@ -245,7 +260,7 @@ class ABaxe(metaclass=ABCMeta):
 
         """
 
-        if not self.projection in plottable.compatible_baxe:
+        if self.projection not in plottable.compatible_baxe:
             raise AssertionError(f"{self.projection} not in {plottable.compatible_baxe}")
 
         self.plottable_factories.append(plottable)
@@ -320,7 +335,7 @@ class ABaxe(metaclass=ABCMeta):
         """
         if plottable is None:
             return
-        if not "marker" in kwargs:
+        if "marker" not in kwargs:
             kwargs["marker"] = "+"
         kwargs["linestyle"] = ""
         return self.plot(plottable=plottable, **kwargs)
@@ -332,8 +347,8 @@ class BAxeGraph(ABaxe):
 
     projection = AxeProjection.GRAPH
 
-    def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "Axes":
-        if not self.mpl_axe is None:
+    def createMplAxe(self, mfig: Figure, mgs: SubplotSpec) -> Axes:
+        if self.mpl_axe is not None:
             return self.mpl_axe
 
         ge = self.spec
@@ -347,7 +362,7 @@ class BAxeGraph(ABaxe):
 
         return maxe
 
-    def render(self, maxe) -> "AxesSubplot":
+    def render(self, maxe: Axes) -> Axes:
         def _plotGraph(self, G, pos=None, arrows=None, with_labels=True, **kwds):
             nx.draw_networkx(G, pos=pos, arrows=arrows, with_labels=with_labels, ax=self, **kwds)
 
@@ -366,8 +381,8 @@ class BAxeRectilinear(ABaxe):
 
     projection = AxeProjection.RECTILINEAR
 
-    def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "Axes":
-        if not self.mpl_axe is None:
+    def createMplAxe(self, mfig: Figure, mgs: SubplotSpec) -> Axes:
+        if self.mpl_axe is not None:
             return self.mpl_axe
 
         ge = self.spec
@@ -390,7 +405,7 @@ class BAxeSemiLogX(BAxeRectilinear):
 
     projection = AxeProjection.LOGX
 
-    def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "Axes":
+    def createMplAxe(self, mfig: Figure, mgs: SubplotSpec) -> Axes:
         maxe = super().createMplAxe(mfig, mgs)
         maxe.set_xscale("log", nonpositive="mask")
 
@@ -403,7 +418,7 @@ class BAxeSemiLogY(BAxeRectilinear):
 
     projection = AxeProjection.LOGY
 
-    def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "Axes":
+    def createMplAxe(self, mfig: Figure, mgs: SubplotSpec) -> Axes:
         maxe = super().createMplAxe(mfig, mgs)
         maxe.set_yscale("log", nonpositive="mask")
 
@@ -416,7 +431,7 @@ class BAxeSemiLogXY(BAxeRectilinear):
 
     projection = AxeProjection.LOGXY
 
-    def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "Axes":
+    def createMplAxe(self, mfig: Figure, mgs: SubplotSpec) -> Axes:
         maxe = super().createMplAxe(mfig, mgs)
         maxe.set_xscale("log", nonpositive="mask")
         maxe.set_yscale("log", nonpositive="mask")
@@ -430,8 +445,8 @@ class BAxePolar(ABaxe):
 
     projection = AxeProjection.POLAR
 
-    def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "Axes":
-        if not self.mpl_axe is None:
+    def createMplAxe(self, mfig: Figure, mgs: SubplotSpec) -> Axes:
+        if self.mpl_axe is not None:
             return self.mpl_axe
 
         ge = self.spec
@@ -455,8 +470,8 @@ class BAxeNorthPolar(ABaxe):
 
     projection = AxeProjection.NORTH_POLAR
 
-    def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "Axes":
-        if not self.mpl_axe is None:
+    def createMplAxe(self, mfig: Figure, mgs: SubplotSpec) -> Axes:
+        if self.mpl_axe is not None:
             return self.mpl_axe
 
         ge = self.spec
@@ -482,10 +497,10 @@ class BAxePlateCarree(ABaxe):
 
     projection = AxeProjection.PLATECARREE
 
-    def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "Axes":
+    def createMplAxe(self, mfig: Figure, mgs: SubplotSpec) -> Axes:
         import cartopy.crs as ccrs
 
-        if not self.mpl_axe is None:
+        if self.mpl_axe is not None:
             return self.mpl_axe
 
         ge = self.spec
@@ -511,7 +526,8 @@ class BAxePlateCarree(ABaxe):
     ) -> APlottable:
         """Plots a line that represents the device reach
 
-        See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html for the possible values in kwargs
+        See https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html
+        for the possible values in kwargs
 
         Args:
             coord: The position of the point, in longitude/latitude (rad)
@@ -547,8 +563,8 @@ class BAxeDim3D(ABaxe):
 
     projection = AxeProjection.DIM3D
 
-    def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "Axes":
-        if not self.mpl_axe is None:
+    def createMplAxe(self, mfig: Figure, mgs: SubplotSpec) -> Axes:
+        if self.mpl_axe is not None:
             return self.mpl_axe
 
         ge = self.spec
@@ -572,30 +588,28 @@ class BAxePanda3D(ABaxe):
 
     projection = AxeProjection.PANDA3D
 
-    def createMplAxe(self, mfig: "Figure", mgs: "SubplotSpec") -> "Axes":
+    def createMplAxe(self, mfig: Figure, mgs: SubplotSpec) -> Axes:
         maxe = B3DPlotter()
         maxe.plotEarth()
 
         return maxe
 
-    # def render(self, maxe: "Axes") -> "AxesSubplot":
-    #     pass
-
 
 class BAxeFactory(object):
-    """Factory class that instanciates the adapted daughter class of `APlottable` to handle the object to plot"""
+    """Factory class that instanciates the adapted daughter class
+    of `APlottable` to handle the object to plot"""
 
     __slots__ = []
 
     @classmethod
     def create(
         cls,
-        figure: "blocksim.graphics.BFigure.ABFigure",
+        figure: ABFigure,
         title: str,
         spec: BGridElement,
         projection: AxeProjection,
-        sharex: "blocksim.graphics.BAxe.ABaxe" = None,
-        sharey: "blocksim.graphics.BAxe.ABaxe" = None,
+        sharex: ABaxe = None,
+        sharey: ABaxe = None,
         kwargs={},
     ) -> ABaxe:
         """Creates the adapted daughter class of `ABaxe`

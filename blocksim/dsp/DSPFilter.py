@@ -1,7 +1,6 @@
 from abc import abstractmethod
-from typing import Tuple, Any
+from typing import Tuple
 
-from nptyping import NDArray, Shape
 import numpy as np
 from numpy import log10, log2
 from scipy import linalg as lin
@@ -16,12 +15,12 @@ from scipy.signal import (
     freqz,
 )
 
-from .. import logger
-from ..dsp import phase_unfold, derivative_coeff
+from ..dsp import derivative_coeff
 from ..core.Node import AComputer, TFOutput
 from .DSPSignal import DSPSignal
 from .DSPLine import ADSPLine
 from ..graphics.GraphicSpec import DSPLineType
+from ..utils import FloatArr
 
 
 __all__ = [
@@ -39,7 +38,7 @@ class DSPBodeDiagram(ADSPLine):
         name: str,
         samplingStart: float = None,
         samplingPeriod: float = None,
-        y_serie: NDArray[Any, Any] = None,
+        y_serie: FloatArr = None,
         default_transform=...,
         name_of_x_var: str = "Frequency",
         unit_of_x_var: str = "Hz",
@@ -114,7 +113,7 @@ class ADSPFilter(AComputer):
         return gd
 
     @abstractmethod
-    def generateCoefficients(self) -> Tuple["array", "array"]:  # pragma: no cover
+    def generateCoefficients(self) -> Tuple[FloatArr, FloatArr]:  # pragma: no cover
         r"""Shall return a and b coefficient of numerator and denominator respectively
         Coefficients for both the numerator and denominator should be specified in descending exponent order
         (e.g. \( z^2 + 3.z + 5 \) would be represented as [1, 3, 5]).
@@ -124,15 +123,15 @@ class ADSPFilter(AComputer):
         Returns:
             A tuple of coefficients (b, a)
 
-        """
+        """  # noqa: E501
         pass
 
     def update(
         self,
         t1: float,
         t2: float,
-        unfilt: NDArray[Any, Any],
-        filt: NDArray[Any, Any],
+        unfilt: FloatArr,
+        filt: FloatArr,
     ) -> dict:
         assert len(unfilt) == 1
 
@@ -162,7 +161,7 @@ class ADSPFilter(AComputer):
             default_transform=np.real,
         )
 
-    def process(self, s: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def process(self, s: FloatArr) -> FloatArr:
         """Filters a signal without having to create a `blocksim.Simulation.Simulation`
 
         Args:
@@ -222,7 +221,8 @@ class ADSPFilter(AComputer):
 class ArbitraryDSPFilter(ADSPFilter):
     r"""A filter with custom taps
     https://en.wikipedia.org/wiki/Infinite_impulse_response
-    Coefficients for both the numerator and denominator should be specified in descending exponent order
+    Coefficients for both the numerator and denominator should be specified
+    in descending exponentorder
     (e.g. \( z^2 + 3.z + 5 \) would be represented as [1, 3, 5]).
 
     $$ H(z) = B(z)/A(z) = \frac{b_0.z^{nb-1} + b_1.z^{nb-2} + \dots + b_{nb-1}}{a_0.z^{na-1} + a_1.z^{na-2} + \dots + a_{na-1}} $$
@@ -233,7 +233,7 @@ class ArbitraryDSPFilter(ADSPFilter):
         num: Coefficients of the filter denominator
         den: Coefficients of the filter numerator
 
-    """
+    """  # noqa: E501
 
     __slots__ = []
 
@@ -241,8 +241,8 @@ class ArbitraryDSPFilter(ADSPFilter):
         self,
         name: str,
         samplingPeriod: float,
-        num: NDArray[Any, Any],
-        den: NDArray[Any, Any] = None,
+        num: FloatArr,
+        den: FloatArr = None,
         dtype=np.complex128,
     ):
         ADSPFilter.__init__(self, name=name, samplingPeriod=samplingPeriod, dtype=dtype)
@@ -280,7 +280,7 @@ class ArbitraryDSPFilter(ADSPFilter):
         gpass: float,
         gstop: float,
         ftype: str = "ellip",
-    ) -> "blocksim.dsp.DSPFilter.ArbitraryDSPFilter":
+    ) -> "ArbitraryDSPFilter":
         """Complete IIR digital and analog filter design.
 
         Given passband and stopband frequencies and gains, construct an analog or
@@ -289,8 +289,9 @@ class ArbitraryDSPFilter(ADSPFilter):
         Args:
             name: Name of the filter
             fs: The sampling frequency of the digital system (Hz)
-            wp, ws (float or array like, shape (2,)):  Passband and stopband edge frequencies in Hz. Possible values are scalars
-                (for lowpass and highpass filters) or ranges (for bandpass and bandstop filters).
+            wp, ws (float or array like, shape (2,)):  Passband and stopband edge frequencies in Hz.
+                Possible values are scalars (for lowpass and highpass filters)
+                or ranges (for bandpass and bandstop filters).
                 For example:
 
                     - Lowpass:   wp = 20,          ws = 30
@@ -327,11 +328,11 @@ class ArbitraryDSPFilter(ADSPFilter):
         name: str,
         fs: float,
         numtaps: int,
-        bands: NDArray[Any, Any],
-        desired: NDArray[Any, Any],
+        bands: FloatArr,
+        desired: FloatArr,
         method: str = "firwin2",
         **kwargs,
-    ) -> "blocksim.dsp.DSPFilter.ArbitraryDSPFilter":
+    ) -> "ArbitraryDSPFilter":
         """
         FIR filter design using the window method.
 
@@ -474,11 +475,12 @@ class BandpassDSPFilter(ADSPFilter):
         nt = int(-2 / 3 * log10(10 * d1 * d2) * fs / Df)
         return nt
 
-    def generateCoefficients(self) -> NDArray[Any, Any]:
+    def generateCoefficients(self) -> FloatArr:
         fs = 1 / self.samplingPeriod
 
         d = 10e-2
-        if self._estimNumTaps(d) > self.numtaps:
+        nt = self._estimNumTaps(d)
+        if nt > self.numtaps:
             raise ValueError(self.numtaps, nt)
 
         if self.f_low == 0:
@@ -530,7 +532,7 @@ class DerivativeDSPFilter(ADSPFilter):
         self.createParameter(name="rank", value=rank)
         self.createParameter(name="order", value=order)
 
-    def generateCoefficients(self) -> Tuple["array", "array"]:
+    def generateCoefficients(self) -> Tuple[FloatArr, FloatArr]:
         b = derivative_coeff(self.rank, self.order)
         b /= (-self.samplingPeriod) ** self.rank
 

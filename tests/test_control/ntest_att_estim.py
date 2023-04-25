@@ -1,7 +1,3 @@
-import sys
-import unittest
-from pathlib import Path
-
 import numpy as np
 from numpy import pi
 import scipy.linalg as lin
@@ -17,8 +13,8 @@ from blocksim.control.SetPoint import Step
 from blocksim.control.Estimator import MadgwickFilter, MahonyFilter
 from blocksim.utils import deg, euler_to_quat, geodetic_to_itrf, rad
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestMadgwick(TestBase):
@@ -187,11 +183,11 @@ class TestMadgwick(TestBase):
 
         self.log = self.sim.getLogger()
 
-        err_t = np.max(np.abs(self.log.getValue("t") - tps))
+        np.max(np.abs(self.log.getValue("t") - tps))
 
         iok = np.where(tps > 2.0)[0]
         w = angle_ini + tps * wangle
-        err_a = np.max(np.abs(self.log.getValue("madg_euler_pitch")[iok] - w[iok]))
+        np.max(np.abs(self.log.getValue("madg_euler_pitch")[iok] - w[iok]))
 
         # self.assertAlmostEqual(err_t, 0.0, delta=1e-9)
         # self.assertAlmostEqual(err_a, 0.0, delta=5e-2)
@@ -260,8 +256,8 @@ class TestMadgwick(TestBase):
 
     @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_madgwick_all_dof(self):
-        angle_ini = -60 * np.pi / 180.0
-        wangle = 10.0 * np.pi / 180.0
+        -60 * np.pi / 180.0
+        10.0 * np.pi / 180.0
 
         # ==================================================
         # Rotation autour de l'axe de tangage
@@ -282,7 +278,7 @@ class TestMadgwick(TestBase):
 
         self.log = self.sim.getLogger()
 
-        err_t = np.max(np.abs(self.log.getValue("t") - tps))
+        np.max(np.abs(self.log.getValue("t") - tps))
 
         iok = np.where(tps > 0.5)[0]
         mp = self.log.getValue("deg(madg_euler_pitch)")

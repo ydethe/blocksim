@@ -1,11 +1,10 @@
-from typing import Iterable, Any
+from typing import Iterable
 
-from nptyping import NDArray, Shape
 import numpy as np
 from scipy import linalg as lin
 
+from ..utils import FloatArr
 from ..core.Node import AComputer
-from .System import LTISystem
 
 
 __all__ = [
@@ -54,7 +53,8 @@ class PIDController(AController):
     The inputs of the computer are **estimation** and **setpoint**
     The outputs of the computer are **command** and **integral**
 
-    The **estimation** \\( \hat{X} \\) must contain the state you want to control \\( X \\) and its derivative \\( \dot{X} \\) in this order:
+    The **estimation** \\( \hat{X} \\) must contain the state you want to control \\( X \\)
+    and its derivative \\( \dot{X} \\) in this order:
 
     $$ \hat{X} = (X, \dot{X}, ...)^T $$
 
@@ -83,19 +83,19 @@ class PIDController(AController):
         )
         self.defineOutput("integral", snames=["int"], dtype=np.float64)
         self.setInitialStateForOutput(np.array([0]), "integral")
-        (P, I, D) = coeffs
-        self.createParameter("P", value=P)
-        self.createParameter("I", value=I)
-        self.createParameter("D", value=D)
+        (Kprop, Kinteg, Kderiv) = coeffs
+        self.createParameter("P", value=Kprop)
+        self.createParameter("I", value=Kinteg)
+        self.createParameter("D", value=Kderiv)
 
     def update(
         self,
         t1: float,
         t2: float,
-        integral: NDArray[Any, Any],
-        setpoint: NDArray[Any, Any],
-        estimation: NDArray[Any, Any],
-        command: NDArray[Any, Any],
+        integral: FloatArr,
+        setpoint: FloatArr,
+        estimation: FloatArr,
+        command: FloatArr,
     ) -> dict:
         (ix,) = integral
         x = estimation[0]
@@ -123,7 +123,8 @@ class AntiWindupPIDController(AController):
     The inputs of the computer are **estimation** and **setpoint**
     The outputs of the computer are **command** and **integral**
 
-    The **estimation** \\( \hat{X} \\) must contain the state you want to control \\( X \\) and its derivative \\( \dot{X} \\) in this order:
+    The **estimation** \\( \hat{X} \\) must contain the state you want to control \\( X \\)
+    and its derivative \\( \dot{X} \\) in this order:
 
     $$ \hat{X} = (X, \dot{X}, ...)^T $$
 
@@ -159,10 +160,10 @@ class AntiWindupPIDController(AController):
             snames=snames,
         )
         self.defineOutput("integral", snames=["int", "corr"], dtype=np.float64)
-        (P, I, D, Umin, Umax, Ks) = coeffs
-        self.createParameter("P", value=P)
-        self.createParameter("I", value=I)
-        self.createParameter("D", value=D)
+        (Kprop, Kinteg, Kderiv, Umin, Umax, Ks) = coeffs
+        self.createParameter("P", value=Kprop)
+        self.createParameter("I", value=Kinteg)
+        self.createParameter("D", value=Kderiv)
         self.createParameter("Umin", value=Umin)
         self.createParameter("Umax", value=Umax)
         self.createParameter("Ks", value=Ks)
@@ -171,10 +172,10 @@ class AntiWindupPIDController(AController):
         self,
         t1: float,
         t2: float,
-        integral: NDArray[Any, Any],
-        setpoint: NDArray[Any, Any],
-        estimation: NDArray[Any, Any],
-        command: NDArray[Any, Any],
+        integral: FloatArr,
+        setpoint: FloatArr,
+        estimation: FloatArr,
+        command: FloatArr,
     ) -> dict:
         int_x, corr = integral
 
@@ -309,9 +310,9 @@ class LQRegulator(AController):
         self,
         t1: float,
         t2: float,
-        setpoint: NDArray[Any, Any],
-        estimation: NDArray[Any, Any],
-        command: NDArray[Any, Any],
+        setpoint: FloatArr,
+        estimation: FloatArr,
+        command: FloatArr,
     ) -> dict:
         u = self.matN @ setpoint - self.matK @ estimation
 

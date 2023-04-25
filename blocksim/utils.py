@@ -6,28 +6,38 @@ import os
 import sys
 import glob
 import re
-from typing import Iterable, Tuple, Any, List
+from typing import Iterable, Tuple, List
 import importlib
 from dataclasses import dataclass
 
 from scipy import linalg as lin
-from scipy.interpolate import interp1d, interp2d
+from scipy.interpolate import interp1d
 from scipy.optimize import root_scalar, minimize
-from nptyping import NDArray
+
 import numpy as np
 from numpy import pi, arcsin, arccos, arctan, arctan2, tan, sin, cos, sqrt, exp, log
-from skyfield.api import load, utc
+import numpy.typing as npt
+from skyfield.api import load
 from skyfield.timelib import Time
 from skyfield.sgp4lib import theta_GMST1982
 from scipy.special import ellipe, ellipkinc, ellipeinc
 
-from . import logger
-from .constants import *
-from .exceptions import *
-from .constants import Req
+from .constants import (
+    Req,
+    Rpo,
+    rf,
+    mu,
+)
+from .exceptions import (
+    WrongDataType,
+    InvalidAssignedVector,
+)
 
 
 __all__ = [
+    "ComplexArr",
+    "FloatArr",
+    "IntArr",
     "Peak",
     "find1dpeak",
     "find2dpeak",
@@ -76,6 +86,11 @@ __all__ = [
     "mean_variance_2dgauss_norm",
     "mean_variance_3dgauss_norm",
 ]
+
+
+ComplexArr = npt.NDArray[np.complex128]
+FloatArr = npt.NDArray[np.float64]
+IntArr = npt.NDArray[np.int64]
 
 
 @dataclass(init=True)
@@ -146,8 +161,8 @@ def resource_path(resource: str, package: str = "blocksim") -> str:
 
 def find1dpeak(
     nb_peaks: int,
-    xd: NDArray[Any, Any],
-    yd: NDArray[Any, Any],
+    xd: FloatArr,
+    yd: FloatArr,
     name_of_x_var: str,
     unit_of_x_var: str,
 ) -> List[Peak]:
@@ -208,9 +223,9 @@ def find1dpeak(
 
 def find2dpeak(
     nb_peaks: int,
-    xd: NDArray[Any, Any],
-    yd: NDArray[Any, Any],
-    zd: NDArray[Any, Any],
+    xd: FloatArr,
+    yd: FloatArr,
+    zd: FloatArr,
     name_of_x_var: str,
     unit_of_x_var: str,
     name_of_y_var: str,
@@ -318,7 +333,7 @@ def find2dpeak(
     return lpeak
 
 
-def verif_mat_diag(A: NDArray[Any, Any]) -> bool:
+def verif_mat_diag(A: FloatArr) -> bool:
     """Tests if a square matrix is diagonal
 
     Args:
@@ -338,7 +353,7 @@ def verif_mat_diag(A: NDArray[Any, Any]) -> bool:
     return True
 
 
-def calc_cho(A: NDArray[Any, Any]) -> NDArray[Any, Any]:
+def calc_cho(A: FloatArr) -> FloatArr:
     """Returns the cholesky decomposition C of a symetric matrix A:
 
     $$ A = C.C^T $$
@@ -391,14 +406,15 @@ def rad(x: float) -> float:
 
 
 def assignVector(
-    v: NDArray[Any, Any], expected_shape: tuple, dst_name: str, src_name: str, dtype
-) -> NDArray[Any, Any]:
+    v: FloatArr, expected_shape: tuple, dst_name: str, src_name: str, dtype
+) -> FloatArr:
     """
 
     Args:
         v: NDArray[Any,Any] to assign
         expected_shape: Expected shape for v
-        dst_name: Name of the element where the assignement will take place. (To allow meaningfull error messages)
+        dst_name: Name of the element where the assignement will take place.
+                 (To allow meaningfull error messages)
         src_name: Name of the source vector. (To allow meaningfull error messages)
         dtype: Type of the assigned vector
 
@@ -414,13 +430,7 @@ def assignVector(
         array([0., 1., 2., 3., 4.])
 
     """
-    # if np.any(np.isnan(v)):
-    #     txt = "Element '%s' : Argument '%s'=%s has NaN" % (
-    #         dst_name,
-    #         src_name,
-    #         v,
-    #     )
-    #     logger.warning(txt)
+    from . import logger
 
     if expected_shape is None:
         expected_shape = len(v)
@@ -436,7 +446,7 @@ def assignVector(
     else:
         vshape = v.shape
 
-    if type(v) != type(np.empty(1)):
+    if not isinstance(v, np.ndarray):
         txt = "Element '%s' : Argument '%s'=%s is not a vector" % (
             dst_name,
             src_name,
@@ -460,7 +470,8 @@ def assignVector(
         v.dtype == np.complex64 or v.dtype == np.complex128
     ):
         txt = (
-            "Element '%s' : Argument '%s' - trying to affect a complex vector into a real or integer vector"
+            "Element '%s' : Argument '%s' - trying to affect "
+            "a complex vector into a real or integer vector"
             % (
                 dst_name,
                 src_name,
@@ -482,7 +493,7 @@ def assignVector(
     return res
 
 
-def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> NDArray[Any, Any]:
+def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> FloatArr:
     """
     https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix
 
@@ -516,7 +527,7 @@ def quat_to_matrix(qr: float, qi: float, qj: float, qk: float) -> NDArray[Any, A
     return res
 
 
-def matrix_to_quat(R: NDArray[Any, Any]) -> Iterable[float]:
+def matrix_to_quat(R: FloatArr) -> Iterable[float]:
     """
 
     Examples:
@@ -552,7 +563,7 @@ def matrix_to_quat(R: NDArray[Any, Any]) -> Iterable[float]:
     return np.array([-qr, qi, qj, qk])
 
 
-def matrix_to_euler(R: NDArray[Any, Any]) -> Iterable[float]:
+def matrix_to_euler(R: FloatArr) -> Iterable[float]:
     """
 
     https://www.learnopencv.com/rotation-matrix-to-euler-angles/
@@ -589,7 +600,7 @@ def matrix_to_euler(R: NDArray[Any, Any]) -> Iterable[float]:
     return r, p, y
 
 
-def euler_to_matrix(roll: float, pitch: float, yaw: float) -> NDArray[Any, Any]:
+def euler_to_matrix(roll: float, pitch: float, yaw: float) -> FloatArr:
     """
 
     https://www.learnopencv.com/rotation-matrix-to-euler-angles/
@@ -700,7 +711,7 @@ def euler_to_quat(roll: float, pitch: float, yaw: float) -> Iterable[float]:
     return qr, qi, qj, qk
 
 
-def vecBodyToEarth(attitude: NDArray[Any, Any], x: NDArray[Any, Any]) -> NDArray[Any, Any]:
+def vecBodyToEarth(attitude: FloatArr, x: FloatArr) -> FloatArr:
     """Expresses a vector from the body frame to the Earth's frame
 
     Args:
@@ -722,7 +733,7 @@ def vecBodyToEarth(attitude: NDArray[Any, Any], x: NDArray[Any, Any]) -> NDArray
     return R @ x
 
 
-def vecEarthToBody(attitude: NDArray[Any, Any], x: NDArray[Any, Any]) -> NDArray[Any, Any]:
+def vecEarthToBody(attitude: FloatArr, x: FloatArr) -> FloatArr:
     """Expresses a vector from Earth's frame to the body's frame
 
     Args:
@@ -784,12 +795,13 @@ def anomaly_true_to_mean(ecc: float, v: float) -> float:
     return M
 
 
-def build_local_matrix(pos: NDArray[Any, Any], xvec: NDArray[Any, Any] = None) -> NDArray[Any, Any]:
+def build_local_matrix(pos: FloatArr, xvec: FloatArr = None) -> FloatArr:
     """Builds a ENV frame at a given position
 
     Args:
         pos: Position (m) of a point in ITRF
-        xvec: If provided, the first column will be parallel to xvec. Else, the first column will be pointing to the East
+        xvec: If provided, the first column will be parallel to xvec.
+              Else, the first column will be pointing to the East
 
     Returns:
         Matrix whose columns are:
@@ -819,7 +831,7 @@ def build_local_matrix(pos: NDArray[Any, Any], xvec: NDArray[Any, Any] = None) -
     return env
 
 
-def geodetic_to_itrf(lon: float, lat: float, h: float) -> NDArray[Any, Any]:
+def geodetic_to_itrf(lon: float, lat: float, h: float) -> FloatArr:
     """Compute the Geocentric (Cartesian) Coordinates X, Y, Z
     given the Geodetic Coordinates lat, lon + Ellipsoid Height h
 
@@ -843,7 +855,7 @@ def geodetic_to_itrf(lon: float, lat: float, h: float) -> NDArray[Any, Any]:
     return np.array([X, Y, Z])
 
 
-def geodetic_to_geocentric(lon: float, lat: float, h: float) -> NDArray[Any, Any]:
+def geodetic_to_geocentric(lon: float, lat: float, h: float) -> FloatArr:
     """Compute the geocentric coordinates lambda, theta, r
     given the geodetic coordinates lon, lat, and ellipsoid height h
 
@@ -866,7 +878,7 @@ def geodetic_to_geocentric(lon: float, lat: float, h: float) -> NDArray[Any, Any
     return np.array([lon, theta, r])
 
 
-def geocentric_to_geodetic(lon: float, theta: float, r: float) -> NDArray[Any, Any]:
+def geocentric_to_geodetic(lon: float, theta: float, r: float) -> FloatArr:
     """Compute the geodetic coordinates lambda, theta, r
     given the geocentric coordinates lon, theta, and r
 
@@ -939,7 +951,7 @@ def time_to_jd_fraction(t_epoch: float) -> Tuple[float, float]:
     return jd, fraction
 
 
-def rotation_matrix(angle: float, axis: NDArray[Any, Any]):
+def rotation_matrix(angle: float, axis: FloatArr):
     """Builds the 3D rotation matrix from axis and angle
 
     Args:
@@ -956,7 +968,7 @@ def rotation_matrix(angle: float, axis: NDArray[Any, Any]):
     return R
 
 
-def teme_to_itrf(t_epoch: float, pv_teme: NDArray[Any, Any]) -> NDArray[Any, Any]:
+def teme_to_itrf(t_epoch: float, pv_teme: FloatArr) -> FloatArr:
     jd, fraction = time_to_jd_fraction(t_epoch)
 
     theta, theta_dot = theta_GMST1982(jd, fraction)
@@ -978,7 +990,7 @@ def teme_to_itrf(t_epoch: float, pv_teme: NDArray[Any, Any]) -> NDArray[Any, Any
     return pv
 
 
-def itrf_to_teme(t_epoch: float, pv_itrf: NDArray[Any, Any]) -> NDArray[Any, Any]:
+def itrf_to_teme(t_epoch: float, pv_itrf: FloatArr) -> FloatArr:
     jd, fraction = time_to_jd_fraction(t_epoch)
 
     theta, theta_dot = theta_GMST1982(jd, fraction)
@@ -996,7 +1008,7 @@ def itrf_to_teme(t_epoch: float, pv_itrf: NDArray[Any, Any]) -> NDArray[Any, Any
     return np.hstack((rTEME, vTEME))
 
 
-def teme_to_orbital(pv: NDArray[Any, Any]):
+def teme_to_orbital(pv: FloatArr):
     pos = np.array(pv[:3])
     x, y, z = pos
     vel = np.array(pv[3:])
@@ -1004,7 +1016,7 @@ def teme_to_orbital(pv: NDArray[Any, Any]):
     v2 = vel @ vel
     W = v2 / 2 - mu / r
     a = -mu / (2 * W)
-    v = sqrt(v2)
+    sqrt(v2)
     h = np.cross(pos, vel)
     hx, hy, hz = h
     h2 = h @ h
@@ -1033,7 +1045,7 @@ def orbital_to_teme(
     inc: float,
     mano: float,
     node: float,
-) -> NDArray[Any, Any]:
+) -> FloatArr:
     """
 
     Args:
@@ -1079,7 +1091,7 @@ def orbital_to_teme(
     return np.array([x, y, z, vx, vy, vz])
 
 
-def itrf_to_geodetic(position: NDArray[Any, Any]) -> Tuple[float, float, float]:
+def itrf_to_geodetic(position: FloatArr) -> Tuple[float, float, float]:
     """Converts the ITRF coordinates into latitude, longitude, altitude (WGS84)
 
     Args:
@@ -1115,7 +1127,7 @@ def itrf_to_geodetic(position: NDArray[Any, Any]) -> Tuple[float, float, float]:
     return lon, lat, alt
 
 
-def azeld_to_itrf(azeld: NDArray[Any, Any], obs: NDArray[Any, Any]) -> NDArray[Any, Any]:
+def azeld_to_itrf(azeld: FloatArr, obs: FloatArr) -> FloatArr:
     """Converts an ITRF position & velocity into
     azimut, elevation, distance, radial velocity, slope of velocity, azimut of velocity
 
@@ -1156,7 +1168,7 @@ def azeld_to_itrf(azeld: NDArray[Any, Any], obs: NDArray[Any, Any]) -> NDArray[A
     return np.hstack((sat, vsat))
 
 
-def azelalt_to_itrf(azelalt: NDArray[Any, Any], sat: NDArray[Any, Any]) -> NDArray[Any, Any]:
+def azelalt_to_itrf(azelalt: FloatArr, sat: FloatArr) -> FloatArr:
     """Converts to an ITRF position & velocity from azimut, elevation
     so that the observer is at the specified altitude
 
@@ -1172,7 +1184,6 @@ def azelalt_to_itrf(azelalt: NDArray[Any, Any], sat: NDArray[Any, Any]) -> NDArr
         Position (m) of the observed satellite in ITRF
 
     """
-    from blocksim.utils import deg
     from cartopy.geodesic import Geodesic
 
     class _tmp:
@@ -1241,9 +1252,7 @@ def azelalt_to_itrf(azelalt: NDArray[Any, Any], sat: NDArray[Any, Any]) -> NDArr
     return X
 
 
-def itrf_to_azeld(
-    obs: NDArray[Any, Any], sat: NDArray[Any, Any]
-) -> Tuple[float, float, float, float, float, float]:
+def itrf_to_azeld(obs: FloatArr, sat: FloatArr) -> Tuple[float, float, float, float, float, float]:
     """Converts an ITRF position & velocity into
     azimut, elevation, distance, azimut rate, elevation rate, radial velocity
 
@@ -1262,6 +1271,8 @@ def itrf_to_azeld(
         * Range rate (m/s)
 
     """
+    from . import logger
+
     # Local ENV for the observer
     obs_env = build_local_matrix(obs[:3])
     deltap = sat[:3] - obs[:3]
@@ -1291,7 +1302,7 @@ def itrf_to_azeld(
     return az, el, dist, azr, elr, vr
 
 
-def itrf_to_llavpa(pv: NDArray[Any, Any]) -> Tuple[float, float, float, float, float, float]:
+def itrf_to_llavpa(pv: FloatArr) -> Tuple[float, float, float, float, float, float]:
     """Converts an ITRF position & velocity into
     longitude, latitude, altitude (WGS84) and velocity, slope of velocity, azimut of velocity
     Velocity is the speed of sat in ITRF frame
@@ -1326,7 +1337,7 @@ def itrf_to_llavpa(pv: NDArray[Any, Any]) -> Tuple[float, float, float, float, f
     return np.array([lon, lat, alt, nv, vs, va])
 
 
-def llavpa_to_itrf(llavpa: NDArray[Any, Any]) -> NDArray[Any, Any]:
+def llavpa_to_itrf(llavpa: FloatArr) -> FloatArr:
     """Converts a LLAVPA into ITRF
     A LLAVPA is an array with
     longitude, latitude, altitude (WGS84) and velocity, slope of velocity, azimut of velocity
@@ -1393,7 +1404,7 @@ def skyfield_to_datetime(t: Time) -> datetime:
     return t.utc_datetime()
 
 
-def pdot(u: NDArray[Any, Any], v: NDArray[Any, Any]) -> float:
+def pdot(u: FloatArr, v: FloatArr) -> float:
     """Pseudo scalar product :
 
     $$ x.x'+y.y'+z.z'-t.t' $$

@@ -1,13 +1,9 @@
-from typing import Any
-
-from nptyping import NDArray, Shape
 import numpy as np
-from numpy import sqrt, sign, pi, exp
 from numpy.fft import fft, ifft
 
-from .ADSPComputer import ADSPComputer
+from ..utils import FloatArr
 
-from .. import logger
+from .ADSPComputer import ADSPComputer
 
 
 class OFDMMapping(ADSPComputer):
@@ -55,8 +51,8 @@ class OFDMMapping(ADSPComputer):
         self,
         t1: float,
         t2: float,
-        input: NDArray[Any, Any],
-        output: NDArray[Any, Any],
+        input: FloatArr,
+        output: FloatArr,
     ) -> dict:
         if len(input.shape) == 1:
             nsymb = 1
@@ -137,8 +133,8 @@ class OFDMDemapping(ADSPComputer):
         self,
         t1: float,
         t2: float,
-        input: NDArray[Any, Any],
-        output: NDArray[Any, Any],
+        input: FloatArr,
+        output: FloatArr,
     ) -> dict:
         if len(input.shape) == 1:
             nsymb = 1

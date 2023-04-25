@@ -1,10 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
-from nptyping import NDArray, Shape
 import numpy as np
 
 from ..core.CircularBuffer import CircularBuffer
-from .. import logger
 
 
 class ADelayLine(metaclass=ABCMeta):
@@ -117,6 +115,6 @@ class FiniteDelayLine(ADelayLine):
 
         samp = (zb - za) / (tb - ta) * (x - ta) + za
 
-        C = np.abs(samp) ** 2
+        np.abs(samp) ** 2
 
         return samp

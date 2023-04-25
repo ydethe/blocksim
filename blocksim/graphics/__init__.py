@@ -1,19 +1,29 @@
 """Advanced plotting functions.
-Allows plotting from a `blocksim.loggers.Logger.Logger`, or from `blocksim.dsp.DSPLine.DSPRectilinearLine`
+Allows plotting from a `blocksim.loggers.Logger.Logger`,
+or from `blocksim.dsp.DSPLine.DSPRectilinearLine`
 3D plot around Earth are also possible
 
 """
 import os
-from typing import Tuple
+from typing import TYPE_CHECKING, Tuple
 
 import numpy as np
 from numpy import log10
 
 from matplotlib import pyplot as plt
 
-from .. import logger
-from ..loggers.Logger import Logger
-from ..dsp import phase_unfold
+from .GraphicSpec import FigureProjection
+
+if TYPE_CHECKING:
+    from ..loggers.Logger import Logger
+    from .BAxe import ABaxe
+    from .BFigure import ABFigure
+    from .GraphicSpec import FigureSpec
+else:
+    Logger = "blocksim.loggers.Logger.Logger"
+    ABaxe = "blocksim.graphics.BAxe.ABaxe"
+    ABFigure = "blocksim.graphics.BFigure.ABFigure"
+    FigureSpec = "blocksim.graphics.GraphicSpec.FigureSpec"
 
 
 def getUnitAbbrev(samp: float, unit: str, force_mult: int = None) -> Tuple[float, float, str, str]:
@@ -122,11 +132,11 @@ def format_parameter(samp: float, unit: str) -> str:
 
 
 def createFigureFromSpec(
-    spec: "blocksim.graphics.GraphicSpec.FigureSpec",
+    spec: FigureSpec,
     log: Logger,
-    fig: "blocksim.graphics.BFigure.MplFigure" = None,
-) -> "blocksim.graphics.BFigure.MplFigure":
-    """Parses a FigureSpec to build a matplotlib figure, and returns it
+    fig: ABFigure = None,
+) -> ABFigure:
+    """Parses a FigureSpec to build a figure, and returns it
 
     Args:
         spec: A FigureSpec instance
@@ -134,7 +144,7 @@ def createFigureFromSpec(
         fig: A ABFigure. If None, the function creates ones
 
     Returns:
-        The matplotlib figure
+        The figure
 
     """
     from .GraphicSpec import AxeProjection
@@ -194,24 +204,24 @@ def createFigureFromSpec(
             else:
                 plottable = (log, varx, vary)
             if "label" in d.keys():
-                line = axe.plot(plottable, **lp)
-            elif type(vary) == type(""):
-                line = axe.plot(plottable, label=vary, **lp)
+                axe.plot(plottable, **lp)
+            elif isinstance(vary, str):
+                axe.plot(plottable, label=vary, **lp)
             else:
-                line = axe.plot(plottable, **lp)
+                axe.plot(plottable, **lp)
 
     return fig
 
 
-def plotVerif(log: Logger, fig_title: str, *axes) -> "blocksim.graphics.BFigure.MplFigure":
+def plotVerif(log: Logger, fig_title: str, *axes) -> ABFigure:
     """Plots a set of axes and curves on a single figure
 
     Args:
         log: Logger which contains the simulated values
         fig_title: Title of the figure
         axes: List of lists of dicts
-            Each list is the description of an axe, each dict the description of a line.
-            Each dict has a key "var", which is the name of a variable contained in *log*.
+            Each list is the description of an axe, each dict the description of a line
+            Each dict has a key "var", which is the name of a variable contained in *log*
             The other keys are keyword arguments for the plot method of matplotlib
 
     Returns:
@@ -229,15 +239,15 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "blocksim.graphics.BFigure.
         aProp["sharex"] = ind - 1 if ind > 0 else None
 
         lSpec = []
-        for l in l_lines:
-            if "title" in l.keys():
-                aProp["title"] = l.pop("title", "Axe %i" % (ind + 1))
-                aProp["sharex"] = l.pop("sharex", None)
-                aProp["coord"] = l["coord"], 0
+        for line in l_lines:
+            if "title" in line.keys():
+                aProp["title"] = line.pop("title", "Axe %i" % (ind + 1))
+                aProp["sharex"] = line.pop("sharex", None)
+                aProp["coord"] = line["coord"], 0
             else:
-                l["vary"] = l.pop("var")
-                l["varx"] = "t"
-                lSpec.append(l)
+                line["vary"] = line.pop("var")
+                line["varx"] = "t"
+                lSpec.append(line)
 
         aSpec = AxeSpec(aProp, lSpec)
 
@@ -249,7 +259,7 @@ def plotVerif(log: Logger, fig_title: str, *axes) -> "blocksim.graphics.BFigure.
     return fig
 
 
-def quickPlot(*args, **kwargs) -> "blocksim.graphics.BAxe.ABaxe":
+def quickPlot(*args, **kwargs) -> ABaxe:
     """Quickly plots data
 
     Args:
@@ -298,7 +308,13 @@ def showFigures(
             fic = f.title.replace(" ", "_").replace(",", "").replace(":", "_") + ".png"
             mfig.savefig(os.path.join(save_dir, fic))
         if one_by_one and show:
-            plt.show()
+            if f.projection == FigureProjection.EARTH3D:
+                mfig.run()
+            elif f.projection == FigureProjection.MPL:
+                plt.show()
 
     if not one_by_one and show:
-        plt.show()
+        if f.projection == FigureProjection.EARTH3D:
+            mfig.run()
+        elif f.projection == FigureProjection.MPL:
+            plt.show()

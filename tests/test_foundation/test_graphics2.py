@@ -3,7 +3,7 @@ import pytest
 
 import numpy as np
 from numpy import pi, sqrt
-from blocksim.dsp.DSPLine import DSPNorthPolarLine, DSPPolarLine, DSPRectilinearLine
+from blocksim.dsp.DSPLine import DSPPolarLine, DSPRectilinearLine
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp.DSPMap import DSPPolarMap, DSPRectilinearMap, DSPNorthPolarMap
 from blocksim.graphics.BFigure import FigureFactory

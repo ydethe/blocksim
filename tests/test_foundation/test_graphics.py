@@ -1,7 +1,4 @@
-import sys
-from pathlib import Path
 from datetime import datetime, timedelta
-import unittest
 
 import numpy as np
 from numpy import pi, sqrt, exp, cos
@@ -18,8 +15,8 @@ from blocksim.graphics import (
 from blocksim.graphics.GraphicSpec import AxeSpec, FigureSpec
 from blocksim.graphics.BFigure import FigureFactory
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestGraphics(TestBase):

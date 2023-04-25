@@ -1,21 +1,24 @@
 from abc import ABCMeta, abstractmethod
-import gzip
 from pathlib import Path
-from typing import Callable, List, Any
+from typing import TYPE_CHECKING, Callable, List
 import re
 from datetime import datetime, timezone
 
-from nptyping import NDArray
+
 import numpy as np
 from numpy import pi
 from scipy.interpolate import interp2d
 import fortranformat as ff
 
 from .DSPLine import DSPRectilinearLine
-from ..utils import find2dpeak, Peak, geocentric_to_geodetic
+from ..utils import FloatArr, find2dpeak, Peak, geocentric_to_geodetic
 from ..graphics.GraphicSpec import AxeProjection, DSPMapType
 from ..gnss.utils import read_ionex_metadata
 
+if TYPE_CHECKING:
+    from ..graphics.BAxe import ABaxe
+else:
+    ABaxe = "blocksim.graphics.BAxe.ABaxe"
 
 __all__ = ["ADSPMap", "DSPRectilinearMap", "DSPPolarMap", "DSPNorthPolarMap"]
 
@@ -55,7 +58,7 @@ class ADSPMap(metaclass=ABCMeta):
         samplingXPeriod: float = None,
         samplingYStart: float = None,
         samplingYPeriod: float = None,
-        img: NDArray[Any, Any] = None,
+        img: FloatArr = None,
         default_transform=np.abs,
         unit_of_x_var: str = "-",
         name_of_x_var: str = "",
@@ -208,7 +211,7 @@ class ADSPMap(metaclass=ABCMeta):
     def __sub__(self, x):
         return self + (-x)
 
-    def generateXSerie(self, index: int = None) -> NDArray[Any, Any]:
+    def generateXSerie(self, index: int = None) -> FloatArr:
         """Generates the x samples of the map
 
         Args:
@@ -226,7 +229,7 @@ class ADSPMap(metaclass=ABCMeta):
         x = index * self.samplingXPeriod + self.samplingXStart
         return x
 
-    def generateYSerie(self, index: int = None) -> NDArray[Any, Any]:
+    def generateYSerie(self, index: int = None) -> FloatArr:
         """Generates the y samples of the map
 
         Args:
@@ -252,7 +255,7 @@ class ADSPMap(metaclass=ABCMeta):
         elif self.dspmap_type == DSPMapType.NORTH_POLAR:
             return AxeProjection.NORTH_POLAR
 
-    def quickPlot(self, **kwargs) -> "blocksim.graphics.BAxe.ABaxe":
+    def quickPlot(self, **kwargs) -> ABaxe:
         """Quickly plots the map
 
         Args:
@@ -277,7 +280,8 @@ class ADSPMap(metaclass=ABCMeta):
 
     def findPeaksWithTransform(self, transform: Callable = None, nb_peaks: int = 1) -> List[Peak]:
         """Finds the peaks
-        The search is performed on the tranformed samples (with the argument *transform*, or the attribute *default_transform*)
+        The search is performed on the tranformed samples (with the argument *transform*,
+        or the attribute *default_transform*)
 
         Args:
             transform: A callable applied on samples before looking for the peaks
@@ -334,7 +338,7 @@ class ADSPMap(metaclass=ABCMeta):
         return _to_db
 
     @classmethod
-    def to_db(cls, x: NDArray[Any, Any], lim_db: float = -100) -> NDArray[Any, Any]:
+    def to_db(cls, x: FloatArr, lim_db: float = -100) -> FloatArr:
         """Converts the samples into their power, in dB.
         If a sample's power is below *low*, the dB value in clamped to *low*.
 
@@ -358,7 +362,8 @@ class DSPRectilinearMap(ADSPMap):
 
     @classmethod
     def from_ionex(cls, pth: Path, map_index: int = 0):
-        """Builds the TEC map from a IONEX filex. The map stores the TEC in \( 10^{15} \\mathrm{el}/\\mathrm{m}^2 \)
+        """Builds the TEC map from a IONEX filex. The map stores the TEC in
+        \( 10^{15} \\mathrm{el}/\\mathrm{m}^2 \)
 
         Args:
             pth: Path to the IONEX file
@@ -387,8 +392,8 @@ class DSPRectilinearMap(ADSPMap):
         img = (
             np.stack(
                 [
-                    np.fromstring(l, sep=" ")
-                    for l in re.split(".*LAT/LON1/LON2/DLON/H\\n", tecmap)[1:]
+                    np.fromstring(line, sep=" ")
+                    for line in re.split(".*LAT/LON1/LON2/DLON/H\\n", tecmap)[1:]
                 ]
             )
             * 10 ** metadata["exponent"]

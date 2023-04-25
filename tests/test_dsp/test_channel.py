@@ -1,6 +1,3 @@
-from pathlib import Path
-import sys
-import unittest
 from datetime import datetime
 
 import pytest
@@ -18,8 +15,8 @@ from blocksim.constants import Req, c
 from blocksim.dsp.DSPChannel import DSPChannel
 from blocksim.satellite.Satellite import SGP4Satellite
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestChannel(TestBase):

@@ -1,13 +1,10 @@
-import os
-import sys
 from pathlib import Path
 from unittest.mock import patch
-from pathlib import Path
 
 from blocksim.tools.gnss_sim import sim, mtcl, plot
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestGNSSSimMain(TestBase):

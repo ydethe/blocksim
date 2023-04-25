@@ -1,4 +1,4 @@
 """Data source such as Satellite
 
 """
-from .Satellite import *
+from .Satellite import ASatellite, CircleSatellite, SGP4Satellite, createSatellites  # noqa: F401

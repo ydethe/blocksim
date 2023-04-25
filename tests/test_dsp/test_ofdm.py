@@ -1,17 +1,12 @@
-import sys
-from pathlib import Path
-import unittest
-
 import pytest
 import numpy as np
 from numpy import sqrt
 
-from blocksim import logger
 from blocksim.dsp.OFDMA import OFDMMapping, OFDMDemapping
 from blocksim.graphics.BFigure import FigureFactory
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestOFDM(TestBase):

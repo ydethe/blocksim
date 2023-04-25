@@ -1,24 +1,31 @@
 """This module provides signal processing functions
-BOC and PSK modulator are available, as well as antenna network, Klobuchar model, delay lines and more.
+BOC and PSK modulator are available, as well as antenna network,
+Klobuchar model, delay lines and more.
 
 """
 
 from math import factorial
 from itertools import product
-from typing import List, Union, Any
+from typing import TYPE_CHECKING
 
 import rich.progress as rp
-from nptyping import NDArray, Shape
-import numpy as np
-from numpy import sqrt, sign, pi, exp
-from numpy.fft import fft, ifft
-from scipy import linalg as lin
-from scipy.interpolate import interp1d
 
+import numpy as np
+from numpy import pi, exp
+from scipy import linalg as lin
+
+from ..utils import FloatArr
 from ..gnss.GNSScodegen import GNSScodegen
 
+if TYPE_CHECKING:
+    from .DSPSignal import DSPSignal
+    from .DSPMap import DSPRectilinearMap
+else:
+    DSPSignal = "blocksim.dsp.DSPSignal.DSPSignal"
+    DSPRectilinearMap = "blocksim.dsp.DSPMap.DSPRectilinearMap"
 
-def derivative_coeff(rank: int = 1, order: int = None) -> NDArray[Any, Any]:
+
+def derivative_coeff(rank: int = 1, order: int = None) -> FloatArr:
     """Computes the coefficients of a derivaive estimator
 
     Args:
@@ -39,8 +46,8 @@ def derivative_coeff(rank: int = 1, order: int = None) -> NDArray[Any, Any]:
     k = int(np.ceil(order / 2))
 
     # Dans wxMaxima:
-    # k:3;A:genmatrix(lambda([i, j],(if (i # 0 or j+k#0) then (i^(j+k)/factorial(j+k)) else 1)), k,k,-k,-k);
-    # k:2$;invert(genmatrix(lambda([i, j],(if (i # 0 or j+k#0) then (i^(j+k)/factorial(j+k)) else 1)), k,k,-k,-k));
+    # k:3;A:genmatrix(lambda([i, j],(if (i # 0 or j+k#0) then (i^(j+k)/factorial(j+k)) else 1)), k,k,-k,-k);  # noqa: E501
+    # k:2$;invert(genmatrix(lambda([i, j],(if (i # 0 or j+k#0) then (i^(j+k)/factorial(j+k)) else 1)), k,k,-k,-k));  # noqa: E501
     n = 2 * k + 1
     A = np.empty((n, n))
     for r, s in product(range(n), repeat=2):
@@ -53,11 +60,13 @@ def derivative_coeff(rank: int = 1, order: int = None) -> NDArray[Any, Any]:
     return coeffs
 
 
-def get_window(win, n: int) -> NDArray[Any, Any]:
+def get_window(win, n: int) -> FloatArr:
     """Creates the samples of a window.
-    The resulting window guarantees that a CW with amplitude A will keep its amplitude after windowing
+    The resulting window guarantees that a CW
+    with amplitude A will keep its amplitude after windowing
 
-    See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html for the list of available windows
+    See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html
+    for the list of available windows
 
     Args:
         win: The window to use
@@ -75,7 +84,7 @@ def get_window(win, n: int) -> NDArray[Any, Any]:
     return w / nrm
 
 
-def phase_unfold(sig: NDArray[Any, Any], eps: float = 1e-9) -> NDArray[Any, Any]:
+def phase_unfold(sig: FloatArr, eps: float = 1e-9) -> FloatArr:
     """Unfolds the phase law of the given complex signal
 
     Args:
@@ -121,7 +130,7 @@ def phase_unfold(sig: NDArray[Any, Any], eps: float = 1e-9) -> NDArray[Any, Any]
     return pha
 
 
-def phase_unfold_deg(sig: NDArray[Any, Any], eps: float = 1e-9) -> NDArray[Any, Any]:
+def phase_unfold_deg(sig: FloatArr, eps: float = 1e-9) -> FloatArr:
     """Unfolds the phase law of the given complex signal
 
     Args:
@@ -141,14 +150,14 @@ def delay_doppler_analysis(
     delay_search_win: float,
     doppler_search_center: float,
     doppler_search_win: float,
-    seq: "blocksim.dsp.DSPSignal.DSPSignal",
-    rxsig: "blocksim.dsp.DSPSignal.DSPSignal",
+    seq: DSPSignal,
+    rxsig: DSPSignal,
     ndop: int,
     n_integration: int = -1,
     coherent: bool = True,
     progress_bar: bool = False,
     corr_window: str = "hamming",
-) -> "blocksim.dsp.DSPMap.DSPRectilinearMap":
+) -> DSPRectilinearMap:
     """Delay / doppler analysis for acquisition
 
     Args:
@@ -169,7 +178,6 @@ def delay_doppler_analysis(
         The DSPRectilinearMap of the analysis
 
     """
-    from ..constants import c
     from .DSPMap import DSPRectilinearMap
     from ..graphics import getUnitAbbrev
 
@@ -182,7 +190,8 @@ def delay_doppler_analysis(
         disp_p, _, lbl_p, unit_p = getUnitAbbrev(samp=period, unit="s")
         disp_d, _, lbl_d, unit_d = getUnitAbbrev(samp=delay_search_win, unit="s")
         raise AssertionError(
-            f"Period window is shorter than delay window ({disp_p:.2f} {lbl_p}{unit_p} vs {disp_d:.2f} {lbl_d}{unit_d})"
+            "Period window is shorter than delay window"
+            f"({disp_p:.2f} {lbl_p}{unit_p} vs {disp_d:.2f} {lbl_d}{unit_d})"
         )
 
     # Number of sample in a period
@@ -198,7 +207,7 @@ def delay_doppler_analysis(
     kmax = kmin + nb_samples_in_delay_win
 
     if kmax > nb_samples_in_period:
-        raise AssertionError(f"Doppler window larger than period")
+        raise AssertionError("Doppler window larger than period")
 
     img = np.empty((nb_samples_in_delay_win, ndop), dtype=np.complex128)
 
@@ -295,7 +304,7 @@ def createGNSSSequence(
     samplingStart: float = 0,
     bitmap=[-1, 1],
     samples_per_chip: int = 1,
-) -> "blocksim.dsp.DSPSignal.DSPSignal":
+) -> DSPSignal:
     """Builds Gold sequence
 
     Args:
@@ -358,7 +367,7 @@ def createZadoffChu(
     u: int,
     sampling_freq: float,
     samplingStart: float = 0,
-) -> "blocksim.dsp.DSPSignal.DSPSignal":
+) -> DSPSignal:
     """Builds DSPSignal defined by a Zadoff-Chu sequence
 
     Args:

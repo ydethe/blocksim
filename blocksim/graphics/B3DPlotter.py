@@ -1,12 +1,10 @@
 from datetime import datetime
 
-from nptyping import NDArray, Shape
 import numpy as np
 from numpy import pi
 from scipy import linalg as lin
 
 from skyfield.api import Loader
-
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import (
     GeomVertexFormat,
@@ -24,7 +22,7 @@ from panda3d.core import (
 )
 
 from ..utils import resource_path
-from ..constants import Req, rf
+from ..constants import Req
 from ..utils import datetime_to_skyfield, geodetic_to_itrf
 from ..satellite.Trajectory import Trajectory
 
@@ -340,7 +338,7 @@ class B3DPlotter(ShowBase):
         nodePath = self.render.attachNewNode(node)
         nodePath.reparentTo(self.render)
 
-        texture = loader.loadTexture(texture)
+        texture = loader.loadTexture(texture)  # noqa: F821
         texture.setWrapU(Texture.WMClamp)
         texture.setWrapV(Texture.WMClamp)
 
@@ -349,7 +347,7 @@ class B3DPlotter(ShowBase):
 
         nodePath.setTexture(stage, texture)
 
-        if not self.sun_light is None:
+        if self.sun_light is not None:
             nodePath.setLight(self.sun_light)
 
         return nodePath

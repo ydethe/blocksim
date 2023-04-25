@@ -1,13 +1,9 @@
-from pathlib import Path
-import sys
-import unittest
-
 from blocksim.control.Earth6DDLPosition import Earth6DDLPosition
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.graphics.GraphicSpec import FigureProjection
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestB3DPlotter(TestBase):
@@ -16,7 +12,6 @@ class TestB3DPlotter(TestBase):
 
         import numpy as np
         from numpy import pi
-        from scipy import linalg as lin
 
         from blocksim.constants import Req
         from blocksim.gnss.GNSSReceiver import GNSSReceiver
@@ -88,8 +83,6 @@ class TestB3DPlotter(TestBase):
 if __name__ == "__main__":
     # unittest.main()
     # exit(0)
-
-    from blocksim.graphics import showFigures
 
     a = TestB3DPlotter()
     app = a.test_3d_plot()

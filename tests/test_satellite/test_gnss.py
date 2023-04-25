@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 from datetime import datetime
 
@@ -9,7 +8,6 @@ from skyfield.api import utc
 
 from blocksim.control.Route import Group
 from blocksim.Simulation import Simulation
-from blocksim.loggers.Logger import Logger
 from blocksim.utils import rad
 from blocksim.utils import geodetic_to_itrf
 from blocksim.satellite.Satellite import createSatellites
@@ -19,8 +17,8 @@ from blocksim.graphics import showFigures
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp.DSPLine import DSPRectilinearLine
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestGNSS(TestBase):
@@ -345,8 +343,8 @@ class TestGNSS(TestBase):
 
         log = self.sim.getLogger()
 
-        pr = log.getRawValue("tkr_measurement_pr2")
-        vr = log.getRawValue("tkr_measurement_vr2")
+        log.getRawValue("tkr_measurement_pr2")
+        log.getRawValue("tkr_measurement_vr2")
 
         x = log.getRawValue("UE_estpos_px")[-1]
         y = log.getRawValue("UE_estpos_py")[-1]

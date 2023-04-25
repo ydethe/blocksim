@@ -1,7 +1,5 @@
 from datetime import datetime
-import sys
 from pathlib import Path
-import unittest
 
 import numpy as np
 from numpy import exp
@@ -9,8 +7,8 @@ from numpy import exp
 from blocksim import logger
 from blocksim.loggers.Logger import Logger
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestLogger(TestBase):
@@ -150,8 +148,8 @@ if __name__ == "__main__":
     # a.setUp()
     # a.test_save_load_csv()
 
-    # a.setUp()
-    # a.test_save_load_xls()
-
     a.setUp()
-    a.test_save_load_pickle()
+    a.test_save_load_xls()
+
+    # a.setUp()
+    # a.test_save_load_pickle()

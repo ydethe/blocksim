@@ -3,11 +3,13 @@ from typing import List, Union
 
 import numpy as np
 
+from ..utils import FloatArr
+
 
 __all__ = ["GNSScodegen"]
 
 
-def GNSScodegen(svnum: Union[int, List[int]], modulation: str, ld: bool = False) -> "array":
+def GNSScodegen(svnum: Union[int, List[int]], modulation: str, ld: bool = False) -> FloatArr:
     """Generate unsampled GNSS ranging code with values +/-1
     Chip length L1CA: 1023, L5I/L5Q/E5aI/EaQ/E5bI/E5bQ: 10230
                 E1B/E1C: 4092, B1I: 2047, L2CM: 10230, L2CL: 767250
@@ -220,7 +222,7 @@ def codegen_L1CA(svnum):
     return code
 
 
-def codegen_L5IQ(sv: int, modulation: str) -> "array":
+def codegen_L5IQ(sv: int, modulation: str) -> FloatArr:
     """
     Author: Raul Onrubia (onrubia [at] tsc.upc.es)
     Copyright 2014 Raul Onrubia
@@ -408,7 +410,7 @@ def codegen_L5IQ(sv: int, modulation: str) -> "array":
     return code
 
 
-def codegen_L2CMCL(svnum: int, code_type: str) -> "array":
+def codegen_L2CMCL(svnum: int, code_type: str) -> FloatArr:
     """
     Obtained from the python program of Scott Gleason's book
     "GNSS Applications and Methods" (ISBN-13: 978-1596933293)

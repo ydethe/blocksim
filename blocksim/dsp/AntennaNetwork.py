@@ -1,15 +1,11 @@
-from typing import Any
-
-from nptyping import NDArray, Shape
 import numpy as np
 from numpy import pi, cos, sin
 
 from ..core.Node import AComputer
 from .DSPMap import DSPPolarMap
 
-from .. import logger
 from ..constants import c
-from ..utils import build_local_matrix, cexp
+from ..utils import FloatArr, build_local_matrix, cexp
 
 __all__ = ["AntennaNetwork"]
 
@@ -24,7 +20,8 @@ class AntennaNetwork(AComputer):
     **tx_sig** is the RX signal
 
     Attributes:
-        th_profile: Function that associated to an off-axis angle the distance between the antenna and the receiver
+        th_profile: Function that associated to an off-axis angle the distance between the antenna
+                    and the receiver
         mapping: List of antennas coordinates (m)
         frequency: Frequency of the antenna (Hz)
         hpbw: Half Power Beam Width of the antenna (rad)
@@ -66,7 +63,7 @@ class AntennaNetwork(AComputer):
         self.createParameter(name="wavelength", value=c / ac.freq, read_only=True)
         self.createParameter(name="num_elem", value=N, read_only=True)
 
-    def getCoefficients(self) -> NDArray[Any, Any]:
+    def getCoefficients(self) -> FloatArr:
         """Returns the coefficients applied to each antenna
 
         Returns:
@@ -119,10 +116,10 @@ class AntennaNetwork(AComputer):
         self,
         t1: float,
         t2: float,
-        txpos: NDArray[Any, Any],
-        txsig: NDArray[Any, Any],
-        rxsig: NDArray[Any, Any],
-        elempos: NDArray[Any, Any],
+        txpos: FloatArr,
+        txsig: FloatArr,
+        rxsig: FloatArr,
+        elempos: FloatArr,
     ) -> dict:
         M = build_local_matrix(txpos[:3], xvec=txpos[3:])
 

@@ -1,10 +1,6 @@
-from typing import Any
-import logging
-
-from nptyping import NDArray, Shape
 import numpy as np
 
-from .. import logger
+from ..utils import FloatArr
 
 
 __all__ = ["CircularBuffer"]
@@ -40,7 +36,7 @@ class CircularBuffer(object):
         self.__offset = 0  # Index where the next element will be stored
         self.__nb_inserted_element = 0
 
-    def _getBuffer(self) -> NDArray[Any, Any]:
+    def _getBuffer(self) -> FloatArr:
         return self.__buffer.copy()
 
     def doubleBufferSize(self):
@@ -174,7 +170,7 @@ class CircularBuffer(object):
                 km = self.__size - 3
 
         if iloop >= self.__size:
-            raise ValueError(f"Boucle infinie: bug dans CircularBuffer.search")
+            raise ValueError("Boucle infinie: bug dans CircularBuffer.search")
 
         if value >= self[km + 1]:
             km += 1
@@ -253,7 +249,7 @@ class CircularBuffer(object):
         for k in range(self.__size):
             yield self.__buffer[(k + self.__offset) % self.__size]
 
-    def getAsArray(self) -> NDArray[Any, Any]:
+    def getAsArray(self) -> FloatArr:
         """Returns the content of the buffer in chronological order
 
         Returns:

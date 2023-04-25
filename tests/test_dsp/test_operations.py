@@ -1,15 +1,11 @@
-import sys
-from pathlib import Path
-import unittest
-
 import numpy as np
 from numpy.testing import assert_array_almost_equal_nulp
 from numpy import pi, exp
 
 from blocksim.dsp.DSPSignal import DSPSignal
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestSignalOperations(TestBase):
@@ -17,9 +13,6 @@ class TestSignalOperations(TestBase):
         tau = 10e-6
         bp = 5e6
         fs = bp * 3
-        eta = 0.1
-        nrep = 50
-        fdop = 1e3
 
         rep = DSPSignal.fromLinearFM(
             name="rep",

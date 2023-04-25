@@ -1,17 +1,10 @@
-import sys
-from pathlib import Path
-from typing import Any
-import unittest
-
 from scipy import linalg as lin
-from nptyping import NDArray
 import numpy as np
-import pytest
 
 from blocksim.utils import mean_variance_2dgauss_norm, mean_variance_3dgauss_norm
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestUtils(TestBase):

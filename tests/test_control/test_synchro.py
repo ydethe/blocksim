@@ -1,5 +1,3 @@
-import sys
-from pathlib import Path
 import unittest
 
 import numpy as np
@@ -10,8 +8,8 @@ from blocksim.control.SetPoint import Step
 from blocksim.Simulation import Simulation
 from blocksim.control.Sensors import LinearSensors
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestSynchro(TestBase):

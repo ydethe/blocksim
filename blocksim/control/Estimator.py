@@ -1,19 +1,22 @@
 from abc import abstractmethod
-from typing import Iterable, Any
+from typing import Iterable
 from functools import lru_cache
 
-from nptyping import NDArray
+
 import numpy as np
 from numpy import exp, pi
 from scipy import linalg as lin
 from scipy.signal import cont2discrete, TransferFunction
 
-from ..exceptions import *
+from ..exceptions import (
+    TooWeakAcceleration,
+    TooWeakMagneticField,
+)
 from ..core.Node import AComputer, Input, Output
 from ..loggers.Logger import Logger
 from ..dsp.DSPMap import DSPRectilinearMap
 from ..dsp.DSPFilter import ArbitraryDSPFilter
-from ..utils import quat_to_euler, assignVector
+from ..utils import FloatArr, quat_to_euler, assignVector
 
 
 __all__ = [
@@ -56,16 +59,14 @@ class ConvergedGainMatrix(Output):
         Ad, _, Cd, _ = estim.discretize(estim.dt)
 
         # We solve the Discrete Algebraic Riccati Equation (DARE)
-        # The matrix Pp is the prediction error covariance matrix in steady state which is the positive solution of the DARE
+        # The matrix Pp is the prediction error covariance matrix in steady state
+        # which is the positive solution of the DARE
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.solve_discrete_are.html
         Pp = dare(a=Ad.T, b=Cd.T, q=estim.matQ, r=estim.matR)
         a = Ad.T
         b = Cd.T
-        q = estim.matQ
-        r = estim.matR
-        x = Pp
-        aH = np.conj(a.T)
-        bH = np.conj(b.T)
+        np.conj(a.T)
+        np.conj(b.T)
 
         # v = aH @ x @ a - x - (aH @ x @ b) @ lin.inv(r + bH @ x @ b) @ (bH @ x @ a) + q
         # err = np.max(np.abs(v))
@@ -78,7 +79,7 @@ class ConvergedGainMatrix(Output):
         self.setData(self.__K)
         self.setInitialState(self.__K)
 
-    def getConvergedGainMatrix(self) -> NDArray[Any, Any]:
+    def getConvergedGainMatrix(self) -> FloatArr:
         """Returns the offline gain matrix K
 
         Returns:
@@ -118,7 +119,8 @@ class ConvergedStateCovariance(Output):
         Ad, _, Cd, _ = estim.discretize(estim.dt)
 
         # We solve the Discrete Algebraic Riccati Equation (DARE)
-        # The matrix Pp is the prediction error covariance matrix in steady state which is the positive solution of the DARE
+        # The matrix Pp is the prediction error covariance matrix in steady state
+        # which is the positive solution of the DARE
         Pp = dare(Ad.T, Cd.T, estim.matQ, estim.matR)
 
         # Converged gain matrix
@@ -130,7 +132,7 @@ class ConvergedStateCovariance(Output):
         self.setData(self.__P)
         self.setInitialState(self.__P)
 
-    def getConvergedStateCovariance(self) -> NDArray[Any, Any]:
+    def getConvergedStateCovariance(self) -> FloatArr:
         """Returns the offline covariance matrix P
 
         Returns:
@@ -261,7 +263,7 @@ class AKalmanFilter(AEstimator):
         otp.setInitialState(matK0)
 
     @abstractmethod
-    def A(self, t1: float, t2: float) -> NDArray[Any, Any]:  # pragma: no cover
+    def A(self, t1: float, t2: float) -> FloatArr:  # pragma: no cover
         """(n x n) State (or system) matrix
 
         Args:
@@ -275,7 +277,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def B(self, t1: float, t2: float) -> NDArray[Any, Any]:  # pragma: no cover
+    def B(self, t1: float, t2: float) -> FloatArr:  # pragma: no cover
         """(n x m) Input matrix
 
         Args:
@@ -289,7 +291,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def C(self, t: float) -> NDArray[Any, Any]:  # pragma: no cover
+    def C(self, t: float) -> FloatArr:  # pragma: no cover
         """(p x n) Output matrix
 
         Args:
@@ -303,7 +305,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def D(self, t: float) -> NDArray[Any, Any]:  # pragma: no cover
+    def D(self, t: float) -> FloatArr:  # pragma: no cover
         """(p x m) Feedthrough (or feedforward) matrix
 
         Args:
@@ -317,7 +319,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def Q(self, t: float) -> NDArray[Any, Any]:  # pragma: no cover
+    def Q(self, t: float) -> FloatArr:  # pragma: no cover
         """(n x n) Gaussian noise covariance for the state vector
 
         Args:
@@ -331,7 +333,7 @@ class AKalmanFilter(AEstimator):
         pass
 
     @abstractmethod
-    def R(self, t: float) -> NDArray[Any, Any]:  # pragma: no cover
+    def R(self, t: float) -> FloatArr:  # pragma: no cover
         """(n x n) Gaussian noise covariance for the measurement vector
 
         Args:
@@ -346,9 +348,9 @@ class AKalmanFilter(AEstimator):
 
     def _prediction(
         self,
-        xest: NDArray[Any, Any],
-        P: NDArray[Any, Any],
-        u: NDArray[Any, Any],
+        xest: FloatArr,
+        P: FloatArr,
+        u: FloatArr,
         t1: float,
         t2: float,
     ):
@@ -383,12 +385,12 @@ class AKalmanFilter(AEstimator):
         self,
         t1: float,
         t2: float,
-        command: NDArray[Any, Any],
-        measurement: NDArray[Any, Any],
-        state: NDArray[Any, Any],
-        output: NDArray[Any, Any],
-        statecov: NDArray[Any, Any],
-        matK: NDArray[Any, Any],
+        command: FloatArr,
+        measurement: FloatArr,
+        state: FloatArr,
+        output: FloatArr,
+        statecov: FloatArr,
+        matK: FloatArr,
     ) -> dict:
         xest_pred, meas_pred, P_pred = self._prediction(state, statecov, command, t1, t2)
         xest, K, P = self._update(xest_pred, meas_pred, P_pred, command, measurement, t1, t2)
@@ -483,7 +485,8 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
               * backward_diff: Backwards differencing (“gbt” with alpha=1.0)
               * zoh: zero-order hold (default)
             alpha: Parameter for the gbt method, within [0, 1]
-              The generalized bilinear transformation weighting parameter, which should only be specified with method=”gbt”, and is ignored otherwise
+              The generalized bilinear transformation weighting parameter,
+              which should only be specified with method=”gbt”, and is ignored otherwise
 
         Returns:
             A tuple of 4 matrices:
@@ -498,26 +501,26 @@ class TimeInvariantKalmanFilter(AKalmanFilter):
         Ad, Bd, Cd, Dd, dt = cont2discrete(sys, dt, method=method, alpha=alpha)
         return Ad, Bd, Cd, Dd
 
-    def A(self, t1: float, t2: float) -> NDArray[Any, Any]:
+    def A(self, t1: float, t2: float) -> FloatArr:
         dt = t2 - t1
         Ad, Bd, Cd, Dd = self.discretize(dt)
         return Ad
 
-    def B(self, t1: float, t2: float) -> NDArray[Any, Any]:
+    def B(self, t1: float, t2: float) -> FloatArr:
         dt = t2 - t1
         Ad, Bd, Cd, Dd = self.discretize(dt)
         return Bd
 
-    def C(self, t: float) -> NDArray[Any, Any]:
+    def C(self, t: float) -> FloatArr:
         return self.matC
 
-    def D(self, test_ss_kal: float) -> NDArray[Any, Any]:
+    def D(self, test_ss_kal: float) -> FloatArr:
         return self.matD
 
-    def Q(self, t: float) -> NDArray[Any, Any]:
+    def Q(self, t: float) -> FloatArr:
         return self.matQ
 
-    def R(self, t: float) -> NDArray[Any, Any]:
+    def R(self, t: float) -> FloatArr:
         return self.matR
 
 
@@ -604,7 +607,7 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
 
         self.createParameter("dt", value=dt)
 
-    def getConvergedStateCovariance(self) -> NDArray[Any, Any]:
+    def getConvergedStateCovariance(self) -> FloatArr:
         """Returns the offline covariance matrix P
 
         Returns:
@@ -614,7 +617,7 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         otp = self.getOutputByName("statecov")
         return otp.getConvergedStateCovariance()
 
-    def getConvergedGainMatrix(self) -> NDArray[Any, Any]:
+    def getConvergedGainMatrix(self) -> FloatArr:
         """Returns the offline gain matrix K
 
         Returns:
@@ -628,12 +631,12 @@ class SteadyStateKalmanFilter(TimeInvariantKalmanFilter):
         self,
         t1: float,
         t2: float,
-        command: NDArray[Any, Any],
-        measurement: NDArray[Any, Any],
-        state: NDArray[Any, Any],
-        output: NDArray[Any, Any],
-        statecov: NDArray[Any, Any],
-        matK: NDArray[Any, Any],
+        command: FloatArr,
+        measurement: FloatArr,
+        state: FloatArr,
+        output: FloatArr,
+        statecov: FloatArr,
+        matK: FloatArr,
     ) -> dict:
         xest_pred, meas_pred, P_pred = self._prediction(state, statecov, command, t1, t2)
 
@@ -681,7 +684,8 @@ class KalmanSpectrumEstimator(SteadyStateKalmanFilter):
 
     At each time step, the measurement is one complex signal sample.
     Applying Kalman filter theory to this system, we get at each time step an updated estimate of X.
-    We can extract from \( X \) the complex coefficients \( A_k \), which are amplitude and phase for each of the pulsations \( \omega_k \)
+    We can extract from \( X \) the complex coefficients \( A_k \),
+    which are amplitude and phase for each of the pulsations \( \omega_k \)
 
     The input of the element is **measurement**
 
@@ -704,7 +708,7 @@ class KalmanSpectrumEstimator(SteadyStateKalmanFilter):
         dt: float,
         snames_state: Iterable[str],
         sname_output: str,
-        tracks: NDArray[Any, Any],
+        tracks: FloatArr,
     ):
         SteadyStateKalmanFilter.__init__(
             self,
@@ -818,11 +822,11 @@ class KalmanSpectrumEstimator(SteadyStateKalmanFilter):
         self,
         t1: float,
         t2: float,
-        measurement: NDArray[Any, Any],
-        state: NDArray[Any, Any],
-        output: NDArray[Any, Any],
-        statecov: NDArray[Any, Any],
-        matK: NDArray[Any, Any],
+        measurement: FloatArr,
+        state: FloatArr,
+        output: FloatArr,
+        statecov: FloatArr,
+        matK: FloatArr,
     ) -> dict:
         xest_pred, meas_pred, P_pred = self._prediction(state, statecov, np.zeros(1), t1, t2)
 
@@ -872,9 +876,7 @@ class MadgwickFilter(AComputer):
         self.createParameter(name="mag_softiron_matrix", value=np.eye(3))
         self.createParameter(name="mag_offsets", value=np.zeros(3))
 
-    def setMagnetometerCalibration(
-        self, offset: NDArray[Any, Any], softiron_matrix: NDArray[Any, Any]
-    ):
+    def setMagnetometerCalibration(self, offset: FloatArr, softiron_matrix: FloatArr):
         """Sets the magnetometer calibration
 
         Args:
@@ -913,9 +915,9 @@ class MadgwickFilter(AComputer):
         self,
         t1: float,
         t2: float,
-        euler: NDArray[Any, Any],
-        measurement: NDArray[Any, Any],
-        state: NDArray[Any, Any],
+        euler: FloatArr,
+        measurement: FloatArr,
+        state: FloatArr,
     ) -> dict:
         q0, q1, q2, q3 = state
         gx, gy, gz, ax, ay, az, mx, my, mz = measurement
@@ -957,7 +959,8 @@ class MadgwickFilter(AComputer):
         qDot3 = 0.5 * (q0 * gy - q1 * gz + q3 * gx)
         qDot4 = 0.5 * (q0 * gz + q1 * gy - q2 * gx)
 
-        # Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisation)
+        # Compute feedback only if accelerometer measurement valid
+        # (avoids NaN in accelerometer normalisation)
 
         # Normalise accelerometer measurement
         recipNorm = 1.0 / np.sqrt(ax * ax + ay * ay + az * az)
@@ -1132,9 +1135,7 @@ class MahonyFilter(AComputer):
         self.createParameter(name="mag_softiron_matrix", value=np.eye(3))
         self.createParameter(name="mag_offsets", value=np.zeros(3))
 
-    def setMagnetometerCalibration(
-        self, offset: NDArray[Any, Any], softiron_matrix: NDArray[Any, Any]
-    ):
+    def setMagnetometerCalibration(self, offset: FloatArr, softiron_matrix: FloatArr):
         """Sets the magnetometer calibration
 
         Args:
@@ -1173,9 +1174,9 @@ class MahonyFilter(AComputer):
         self,
         t1: float,
         t2: float,
-        euler: NDArray[Any, Any],
-        measurement: NDArray[Any, Any],
-        state: NDArray[Any, Any],
+        euler: FloatArr,
+        measurement: FloatArr,
+        state: FloatArr,
     ) -> dict:
         q0, q1, q2, q3 = state
         gx, gy, gz, ax, ay, az, mx, my, mz = measurement

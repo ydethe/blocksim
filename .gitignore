@@ -1,25 +1,17 @@
 htmldoc
 test_results.xml
-examples/example_*.py
-blocksim/classes.png
-tests/quadri.csv
-blocksim/version.py
 .pdm-python
-__pypackages__
+pdm.lock
 
+*.db
+__pypackages__
 *.parq
 *.pkl
 .ipynb/
 *.bak
 .vscode/
 results/
-docs/blocksim*.rst
-docs/modules.rst
-docs/examples/
-tests/example.csv
-tests/test_foundation/test_ascii.csv
-tests/test_foundation/test_excel.xls
-tests/test_foundation/test_pkl.pkl
+examples/*.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

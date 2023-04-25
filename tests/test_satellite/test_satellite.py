@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -18,12 +17,14 @@ from blocksim.satellite.Satellite import (
     CircleSatellite,
     createSatellites,
 )
-from blocksim.utils import *
+from blocksim.utils import (
+    itrf_to_azeld,
+    azeld_to_itrf,
+    itrf_to_llavpa,
+    llavpa_to_itrf,
+)
 from blocksim.satellite.Trajectory import Trajectory
-from blocksim.utils import itrf_to_llavpa
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+from blocksim.testing import TestBase
 
 
 class TestSatellite(TestBase):

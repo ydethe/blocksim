@@ -1,21 +1,15 @@
-from os import fstat
-import sys
-from pathlib import Path
-from math import factorial
-import unittest
-
 import numpy as np
 from numpy import pi, exp
 import pytest
 
 from blocksim.graphics.BFigure import FigureFactory
-from blocksim.dsp import derivative_coeff, phase_unfold_deg
+from blocksim.dsp import phase_unfold_deg
 from blocksim.dsp.DSPFilter import ArbitraryDSPFilter, BandpassDSPFilter, DerivativeDSPFilter
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.Simulation import Simulation
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestFilter(TestBase):
@@ -107,7 +101,7 @@ class TestFilter(TestBase):
         bp = 40
         ns = 200
         tau = ns / fs
-        t1 = np.arange(ns) / fs
+        np.arange(ns) / fs
         s1 = DSPSignal.fromLinearFM(
             name="s1",
             samplingStart=0,
@@ -287,7 +281,7 @@ class TestFilter(TestBase):
     def test_transfer_function(self):
         # Study of H(z) = (-2.z + 1)/(z^2 + 1)
         # dt = 1/100.
-        from scipy.signal import dlti, dfreqresp
+        from scipy.signal import dlti
 
         dt = 1 / 100.02
         num = [1.4, -1.8, 1.4]

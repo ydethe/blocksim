@@ -1,6 +1,4 @@
-import os
 from pathlib import Path
-import sys
 
 from munch import munchify
 import numpy as np
@@ -14,8 +12,8 @@ from blocksim.loggers.Logger import Logger
 from blocksim.tools.config import load_config
 from blocksim.tools.plot import plot_polar_view, plot_histogram
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestGNSSSimPlot(TestBase):

@@ -1,5 +1,3 @@
-import sys
-from pathlib import Path
 import unittest
 
 import numpy as np
@@ -15,8 +13,8 @@ from blocksim.quadcopter.AttPilot import AttPilot
 from blocksim.quadcopter.Motor import Motor
 from blocksim.quadcopter.VTOLPilot import VTOLPilot
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestPVTOL(TestBase):

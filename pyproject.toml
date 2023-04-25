@@ -7,9 +7,11 @@ name = "blocksim"
 dynamic = ["version"]
 description = "A library to simulate a closed-loop system"
 authors = [
-    { name = "Yann BLAUDIN DE THE", email = "yann.blaudin-de-the@thalesaleniaspace.com" },
+    { name = "Yann de Thé", email = "yann@johncloud.fr" },
 ]
 dependencies = [
+    "rich>=13.3",
+    "setuptools-scm>=7.1",
     "ahrs~=0.3.0",
     "cartopy~=0.21.0",
     "control~=0.9.0",
@@ -19,7 +21,6 @@ dependencies = [
     "matplotlib~=3.5.0",
     "munch~=2.5.0",
     "networkx~=2.8",
-    "nptyping~=2.0.1",
     "numpy>=1.22.0",
     "openpyxl~=3.0.0",
     "panda3d==1.10.13",
@@ -32,20 +33,20 @@ dependencies = [
     "PyQtWebEngine~=5.15.6",
     "pyyaml~=6.0",
     "requests~=2.28.1",
-    "rich~=12.5.1",
     "scikit-commpy~=0.6.0",
     "scipy~=1.9.1",
     "sgp4==2.20",
     "singleton3~=1.0",
     "skyfield~=1.45",
     "typer~=0.6.1",
+    "pydantic~=1.10",
 ]
-requires-python = ">=3.8,<3.12"
+requires-python = ">=3.8"
 
 [project.urls]
-"Bug Tracker" = "https://git:8443/projects/DNFSND/repos/blocksim/browse/issues"
-Homepage = "https://git:8443/projects/DNFSND/repos/blocksim/browse"
-Source = "https://git:8443/projects/DNFSND/repos/blocksim/browse"
+"Bug Tracker" = "https://gitlab.com/ydethe/blocksim/issues"
+Homepage = "https://gitlab.com/ydethe/blocksim"
+Source = "https://gitlab.com/ydethe/blocksim"
 
 [tool.pylint.main]
 ignore-patterns = ["kt_*.py"]
@@ -55,7 +56,6 @@ max-line-length = 100
 
 [tool.black]
 line-length = 100
-target-version = ['py38']
 force-exclude = 'kt_.*.py'
 
 [project.scripts]
@@ -65,6 +65,31 @@ blocksim = "blocksim.__main__:main"
 logger_csv = "blocksim.loggers.CSVLogger"
 logger_pkl = "blocksim.loggers.PickleLogger"
 logger_xls = "blocksim.loggers.XlsLogger"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.per-file-ignores]
+"GNSScodegen.py" = ["E501"]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+    "--html=htmldoc/tests/report.html",
+    "--self-contained-html",
+    "--junitxml=htmldoc/junit.xml",
+    "--cov-config=tests/coverage.conf",
+    "--cov=blocksim",
+    "--doctest-modules",
+    "--mpl",
+    "--mpl-generate-summary=html",
+    "--mpl-results-always",
+    "--mpl-baseline-path=tests/baseline",
+    "--mpl-results-path=htmldoc/tests/results",
+]
+testpaths = [
+    "tests/",
+]
 
 [tool.pdm.version]
 source = "scm"
@@ -79,16 +104,27 @@ excludes = [
     "build",
     "dev",
     "dist",
-    "mockup"
+    "mockup",
+    "ksy"
 ]
+editable-backend = "editables"
 
 [tool.pdm.dev-dependencies]
 dev = [
-    "ipython~=7.23.1",
-    "black[jupyter]==22.3.0",
-    "docstr-coverage>=2.2.0",
     "coverage-badge>=1.1.0",
-    "pre-commit"
+    "docstr-coverage>=2.2.0",
+    "ipython~=7.23.1",
+    "pre-commit",
+    "snakeviz>=2.1.2",
+]
+maintain = [
+    "black[jupyter]==22.3.0",
+    "blacken-docs==1.12.1",
+    "git-changelog>=1.0",
+]
+quality = [
+    "mypy>=1.2.0",
+    "ruff>=0.0.246",
 ]
 doc = [
     "nbconvert~=7.0.0",
@@ -96,59 +132,31 @@ doc = [
     "jupyter~=1.0.0",
     "pylint~=2.15.3",
     "ipykernel",
-    "nbconvert~=7.0.0",
 ]
 test = [
     "pytest~=7.1.3",
     "pytest-cov~=3.0.0",
-    "pytest-mpl~=0.16.1",
-    "pytest-xdist~=2.5.0",
     "pytest-mock~=3.8.2",
     "pytest-instafail~=0.4.2",
     "pytest-picked~=0.4.6",
     "pytest-sugar~=0.9.5",
     "pytest-html~=3.1.1",
-]
-
-[tool.pytest.ini_options]
-# pythonpath = [
-#   "src/"
-# ]
-addopts = [
-    "--import-mode=importlib",
-    "--html=build/htmldoc/tests/report.html",
-    "--self-contained-html",
-    "--junitxml=build/junit.xml",
-    "--cov-config=tests/coverage.conf",
-    "--cov=blocksim",
-    "--doctest-modules",
-    "--mpl",
-    "--mpl-generate-summary=html",
-    "--mpl-results-always",
-    "--mpl-baseline-path=tests/baseline",
-    "--mpl-results-path=build/htmldoc/tests/results"
-]
-testpaths = [
-    "tests/",
+    "pytest-mpl~=0.16.1",
 ]
 
 [tool.pdm.scripts]
 site_packages = true
 doc.shell = """\
-    mkdir -p build/htmldoc/blocksim
-    mkdir -p build/htmldoc/examples
+    mkdir -p htmldoc/blocksim
+    mkdir -p htmldoc/examples
     python -m ipykernel install --user
     python examples/__init__.py
-    cp examples/quadcopter.png build/htmldoc/examples
-    pdoc --html --force --config latex_math=True --template-dir dev/template -o build/htmldoc blocksim examples
-    pyreverse -s0 blocksim -k --colorized -p blocksim -m no --ignore=exceptions.py,LogFormatter.py,CSVLogger.py,PickleLogger.py,XlsLogger.py -d build/htmldoc
-    dot -Tpng build/htmldoc/classes_blocksim.dot -o build/htmldoc/blocksim/classes.png
-    coverage html -d build/htmldoc/coverage --rcfile tests/coverage.conf
-    docstr-coverage blocksim -miP -sp -is -idel --skip-file-doc --exclude ".*/kt.*.py" --badge=build/htmldoc/doc_badge.svg
-    coverage-badge -f -o build/htmldoc/cov_badge.svg
+    cp examples/quadcopter.png htmldoc/examples
+    pdoc --html --force --config latex_math=True -o htmldoc blocksim examples
+    pyreverse -s0 blocksim -k --colorized -p blocksim -m no --ignore=exceptions.py,LogFormatter.py,CSVLogger.py,PickleLogger.py,XlsLogger.py -d htmldoc
+    dot -Tpng htmldoc/classes_blocksim.dot -o htmldoc/blocksim/classes.png
+    coverage html -d htmldoc/coverage --rcfile tests/coverage.conf
+    docstr-coverage blocksim -miP -sp -is -idel --skip-file-doc --exclude ".*/kt.*.py" --badge=htmldoc/doc_badge.svg
+    coverage-badge -f -o htmldoc/cov_badge.svg
 """
 baseline.shell = "pytest --mpl-generate-path=tests/baseline tests"
-inst_doc.shell = """\
-    mkdir -p /var/www/html/blocksim
-    cp -r build/htmldoc/* /var/www/html/blocksim
-"""

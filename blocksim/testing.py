@@ -4,8 +4,8 @@ import unittest
 import numpy as np
 from numpy import sqrt, cos, sin, exp
 
-from blocksim.graphics import plotVerif, showFigures
-from blocksim.graphics.BFigure import ABFigure
+from .graphics import plotVerif, showFigures
+from .graphics.BFigure import ABFigure
 
 
 def exact(t, yyp, vvp, u):
@@ -43,14 +43,14 @@ def plotAnalyticsolution(tps, xv0, cons, PID):
     ns = len(tps)
     dt = tps[1] - tps[0]
 
-    P, I, D = PID
+    Kprop, Kinteg, Kderiv = PID
     ix = 0
 
     x = np.empty(ns)
     yp, vp = xv0
     for k in range(ns):
         x[k] = yp
-        u = -P * (yp - cons) - I * ix - D * vp
+        u = -Kprop * (yp - cons) - Kinteg * ix - Kderiv * vp
         ix += dt * (yp - cons)
         yp, vp = exact(dt, yp, vp, u)
 

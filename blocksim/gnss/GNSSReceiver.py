@@ -1,7 +1,7 @@
-from typing import Tuple, Any
+from typing import Tuple
 from datetime import datetime, timedelta
 
-from nptyping import NDArray
+
 import numpy as np
 from numpy import sqrt
 import scipy.linalg as lin
@@ -10,7 +10,7 @@ from scipy.optimize import minimize, Bounds
 from ..core.Node import AComputer
 
 from .. import logger
-from ..utils import geodetic_to_itrf
+from ..utils import FloatArr, geodetic_to_itrf
 from .utils import computeDOP
 from ..constants import Req
 
@@ -60,12 +60,10 @@ class GNSSReceiver(AComputer):
         self.createParameter("optim", value="trust-constr")
         self.createParameter(name="tsync", value=tsync)
 
-    def getGeocentricITRFPositionAt(self, t: float) -> NDArray[Any, Any]:
+    def getGeocentricITRFPositionAt(self, t: float) -> FloatArr:
         return self.__itrf_pv.copy()
 
-    def getSatellitePositionFromEphem(
-        self, ephem: NDArray[Any, Any], isat: int
-    ) -> NDArray[Any, Any]:
+    def getSatellitePositionFromEphem(self, ephem: FloatArr, isat: int) -> FloatArr:
         """Given the array of all satellites ephemeris,
         returns the position for satellite number isat
 
@@ -79,9 +77,7 @@ class GNSSReceiver(AComputer):
         """
         return ephem[6 * isat : 6 * isat + 3]
 
-    def getSatelliteVelocityFromEphem(
-        self, ephem: NDArray[Any, Any], isat: int
-    ) -> NDArray[Any, Any]:
+    def getSatelliteVelocityFromEphem(self, ephem: FloatArr, isat: int) -> FloatArr:
         """Given the array of all satellites ephemeris,
         returns the velocity for satellite number isat
 
@@ -95,7 +91,7 @@ class GNSSReceiver(AComputer):
         """
         return ephem[6 * isat + 3 : 6 * isat + 6]
 
-    def getPseudorangeFromMeas(self, meas: NDArray[Any, Any], isat: int) -> float:
+    def getPseudorangeFromMeas(self, meas: FloatArr, isat: int) -> float:
         """Given the array of all measurements,
         returns the pseudo-range for satellite number isat
 
@@ -109,7 +105,7 @@ class GNSSReceiver(AComputer):
         """
         return meas[2 * isat]
 
-    def getRadialVelocityFromMeas(self, meas: NDArray[Any, Any], isat: int) -> float:
+    def getRadialVelocityFromMeas(self, meas: FloatArr, isat: int) -> float:
         """Given the array of all measurements,
         returns the pseudo-range rate for satellite number isat
 
@@ -124,8 +120,8 @@ class GNSSReceiver(AComputer):
         return meas[2 * isat + 1]
 
     def computeFromRadialVelocities(
-        self, ephem: NDArray[Any, Any], meas: NDArray[Any, Any]
-    ) -> Tuple[NDArray[Any, Any], float]:
+        self, ephem: FloatArr, meas: FloatArr
+    ) -> Tuple[FloatArr, float]:
         """Runs a PVT algorithm that uses only pseudo-range rate
 
         Args:
@@ -222,9 +218,7 @@ class GNSSReceiver(AComputer):
 
         return np.hstack((pos, np.zeros(3))), Xu[3]
 
-    def computeFromPRandVR(
-        self, ephem: NDArray[Any, Any], meas: NDArray[Any, Any]
-    ) -> Tuple[np.array, float]:
+    def computeFromPRandVR(self, ephem: FloatArr, meas: FloatArr) -> Tuple[np.array, float]:
         """Runs a PVT algorithm that uses peudo-range and pseudo-range rate
 
         Args:
@@ -331,9 +325,7 @@ class GNSSReceiver(AComputer):
 
         return np.hstack((pos, np.zeros(3))), Xu[3], Xu[4]
 
-    def computeFromPseudoRanges(
-        self, ephem: NDArray[Any, Any], meas: NDArray[Any, Any]
-    ) -> Tuple[np.array, float]:
+    def computeFromPseudoRanges(self, ephem: FloatArr, meas: FloatArr) -> Tuple[np.array, float]:
         """Runs a PVT algorithm that uses only peudo-range
 
         Args:
@@ -361,14 +353,14 @@ class GNSSReceiver(AComputer):
         if nvis == 0:
             sol = np.empty(6)
             sol[:] = np.nan
-            logger.warning(f"No SV visible")
+            logger.warning("No SV visible")
             return sol, np.nan
 
         d0 = lin.norm(sp0)
         if d0 < 1:
             sol = np.zeros(6)
             sol[0] = Req
-            logger.warning(f"Null values")
+            logger.warning("Null values")
             return sol, 0.0
         else:
             pos0 = sp0 / d0 * Req
@@ -473,12 +465,12 @@ class GNSSReceiver(AComputer):
         self,
         t1: float,
         t2: float,
-        measurements: NDArray[Any, Any],
-        ephemeris: NDArray[Any, Any],
-        realpos: NDArray[Any, Any],
-        estdop: NDArray[Any, Any],
-        estpos: NDArray[Any, Any],
-        estclkerror: NDArray[Any, Any],
+        measurements: FloatArr,
+        ephemeris: FloatArr,
+        realpos: FloatArr,
+        estdop: FloatArr,
+        estpos: FloatArr,
+        estclkerror: FloatArr,
     ) -> dict:
         realpos = self.__itrf_pv
 

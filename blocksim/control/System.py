@@ -1,21 +1,19 @@
 from abc import abstractmethod
-from typing import Iterable, Any
+from typing import Iterable
 from functools import lru_cache
 
-from nptyping import NDArray, Shape
+
 import numpy as np
-from numpy import sqrt
 from scipy.integrate import ode
 from scipy.signal import (
     cont2discrete,
     tf2ss,
     TransferFunction,
-    StateSpace,
 )
 import scipy.linalg as lin
 
-from ..exceptions import *
-from ..utils import vecBodyToEarth, vecEarthToBody, quat_to_euler
+from ..exceptions import DenormalizedQuaternion
+from ..utils import vecBodyToEarth, vecEarthToBody, quat_to_euler, FloatArr
 from ..core.Node import AComputer
 
 
@@ -68,9 +66,7 @@ class ASystem(AComputer):
         self.__integ.set_integrator(method, nsteps=10000)
 
     @abstractmethod
-    def transition(
-        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
-    ) -> NDArray[Any, Any]:  # pragma: no cover
+    def transition(self, t: float, x: FloatArr, u: FloatArr) -> FloatArr:  # pragma: no cover
         """Defines the transition function f(t,x,u) :
 
         $$ x' = f(t,x,u) $$
@@ -86,9 +82,7 @@ class ASystem(AComputer):
         """
         pass
 
-    def example_jacobian(
-        self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]
-    ) -> NDArray[Any, Any]:
+    def example_jacobian(self, t: float, x: FloatArr, u: FloatArr) -> FloatArr:
         """Defines the jacobian of
         the transition function f(t,x,u) with respect to x:
 
@@ -109,8 +103,8 @@ class ASystem(AComputer):
         self,
         t1: float,
         t2: float,
-        command: NDArray[Any, Any],
-        state: NDArray[Any, Any],
+        command: FloatArr,
+        state: FloatArr,
     ) -> dict:
         self.__integ.set_initial_value(state, t1).set_f_params(command).set_jac_params(command)
 
@@ -183,7 +177,7 @@ class LTISystem(ASystem):
 
     def getDiscreteMatrices(
         self, dt: float, method: str = "zoh", alpha: float = None
-    ) -> Iterable["array"]:
+    ) -> Iterable[FloatArr]:
         """
 
         Args:
@@ -196,7 +190,8 @@ class LTISystem(ASystem):
               * backward_diff: Backwards differencing (“gbt” with alpha=1.0)
               * zoh: zero-order hold (default)
             alpha: Parameter for the gbt method, within [0, 1]
-              The generalized bilinear transformation weighting parameter, which should only be specified with method=”gbt”, and is ignored otherwise
+              The generalized bilinear transformation weighting parameter,
+              which should only be specified with method=”gbt”, and is ignored otherwise
 
         Returns:
             A tuple containing:
@@ -230,11 +225,11 @@ class LTISystem(ASystem):
         Ad, Bd, _, _, _ = cont2discrete(sys, dt, method, alpha)
         return Ad, Bd
 
-    def transition(self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def transition(self, t: float, x: FloatArr, u: FloatArr) -> FloatArr:
         dX = self.matA @ x + self.matB @ u
         return dX
 
-    def jacobian(self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def jacobian(self, t: float, x: FloatArr, u: FloatArr) -> FloatArr:
         return self.matA
 
 
@@ -249,7 +244,8 @@ class G6DOFSystem(ASystem):
     Attributes:
         m : Mass of the body (kg). Default 1
         J : Inertia tensor of the body (kg.m^2). Default : \(( 10^{-3}.I_3 \))
-        max_q_denorm : If N the square norm of the attitude quaternion is N > 1+max_q_denorm or N<1-max_q_denorm, raise an exception
+        max_q_denorm : If N the square norm of the attitude quaternion is
+            N > 1+max_q_denorm or N<1-max_q_denorm, raise an exception
 
     command:
 
@@ -307,7 +303,7 @@ class G6DOFSystem(ASystem):
         self.createParameter("J", np.eye(3) * 1e-3)
         self.createParameter("max_q_denorm", 1e-6)
 
-    def vecBodyToEarth(self, x: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def vecBodyToEarth(self, x: FloatArr) -> FloatArr:
         """Expresses a vector from the body frame to the Earth's frame
 
         Args:
@@ -320,7 +316,7 @@ class G6DOFSystem(ASystem):
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = self.getDataForOutput(oname="state")
         return vecBodyToEarth(np.array([qw, qx, qy, qz]), x)
 
-    def vecEarthToBody(self, x: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def vecEarthToBody(self, x: FloatArr) -> FloatArr:
         """Expresses a vector from Earth's frame to the body's frame
 
         Args:
@@ -333,7 +329,7 @@ class G6DOFSystem(ASystem):
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = self.getDataForOutput(oname="state")
         return vecEarthToBody(np.array([qw, qx, qy, qz]), x)
 
-    def transition(self, t: float, x: NDArray[Any, Any], u: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def transition(self, t: float, x: FloatArr, u: FloatArr) -> FloatArr:
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = x
         force = u[:3]
         torque = u[3:6]
@@ -356,9 +352,9 @@ class G6DOFSystem(ASystem):
         self,
         t1: float,
         t2: float,
-        command: NDArray[Any, Any],
-        state: NDArray[Any, Any],
-        euler: NDArray[Any, Any],
+        command: FloatArr,
+        state: FloatArr,
+        euler: FloatArr,
     ) -> dict:
         # Crouch-Grossman method CG4
         # http://ancs.eng.buffalo.edu/pdf/ancs_papers/2013/geom_int.pdf
@@ -467,8 +463,8 @@ class TransferFunctionSystem(AComputer):
         self,
         name: str,
         sname: str,
-        num: NDArray[Any, Any],
-        den: NDArray[Any, Any],
+        num: FloatArr,
+        den: FloatArr,
         dt: float,
         dtype=np.float64,
     ):
@@ -502,7 +498,8 @@ class TransferFunctionSystem(AComputer):
               * backward_diff: Backwards differencing (“gbt” with alpha=1.0)
               * zoh: zero-order hold (default)
             alpha: Parameter for the gbt method, within [0, 1]
-              The generalized bilinear transformation weighting parameter, which should only be specified with method=”gbt”, and is ignored otherwise
+              The generalized bilinear transformation weighting parameter,
+              which should only be specified with method=”gbt”, and is ignored otherwise
 
         Returns:
             Ad: Discrete state matrix
@@ -519,9 +516,9 @@ class TransferFunctionSystem(AComputer):
         self,
         t1: float,
         t2: float,
-        command: NDArray[Any, Any],
-        state: NDArray[Any, Any],
-        inner: NDArray[Any, Any],
+        command: FloatArr,
+        state: FloatArr,
+        inner: FloatArr,
     ) -> dict:
         Ad, Bd, Cd, Dd = self.discretize()
 
@@ -534,7 +531,7 @@ class TransferFunctionSystem(AComputer):
 
         return outputs
 
-    def to_continuous_tf(self) -> "TransferFunctionContinuous":
+    def to_continuous_tf(self) -> TransferFunction:
         """Returns an instance of TransferFunctionContinuous from scipy.signal
         See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.TransferFunction.html
 
@@ -542,7 +539,7 @@ class TransferFunctionSystem(AComputer):
         sys = TransferFunction(self.num, self.den)
         return sys
 
-    def to_continuous_ss(self) -> "StateSpaceContinuous":
+    def to_continuous_ss(self) -> TransferFunction:
         """Returns an instance StateSpaceContinuous from scipy.signal
         See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.StateSpace.html
 
@@ -550,7 +547,7 @@ class TransferFunctionSystem(AComputer):
         sys = TransferFunction(self.num, self.den)
         return sys.to_ss()
 
-    def to_discrete_tf(self) -> "TransferFunctionDiscrete":
+    def to_discrete_tf(self) -> TransferFunction:
         """Returns an instance of TransferFunctionDiscrete from scipy.signal
         See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.TransferFunction.html
 
@@ -558,7 +555,7 @@ class TransferFunctionSystem(AComputer):
         sys = TransferFunction(self.num, self.den, dt=self.dt)
         return sys
 
-    def to_discrete_ss(self) -> "StateSpaceDiscrete":
+    def to_discrete_ss(self) -> TransferFunction:
         """Returns an instance StateSpaceDiscrete from scipy.signal
         See https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.StateSpace.html
 

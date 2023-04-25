@@ -2,20 +2,23 @@
 
 """
 
-from typing import Iterable, Tuple, Any
+from typing import Iterable, Tuple
 from uuid import UUID, uuid4
-from time import time
 from datetime import datetime
 
 import rich.progress as rp
-from nptyping import NDArray
-import numpy as np
+
 import networkx as nx
 
-from .exceptions import *
+from .exceptions import (
+    IncompatibleShapes,
+    DuplicateElement,
+    UnconnectedInput,
+)
 from .core.Node import AComputer
 from .loggers.Logger import Logger
 from . import logger
+from .utils import FloatArr
 
 __all__ = ["Simulation"]
 
@@ -26,7 +29,8 @@ class Simulation(object):
     Also logs all the simulated values
 
     Args:
-        computers: list of `blocksim.core.Node.AComputer` to add to the simulation. Can be done later with `blocksim.Simulation.Simulation.addComputer`
+        computers: list of `blocksim.core.Node.AComputer` to add to the simulation.
+                Can be done later with `blocksim.Simulation.Simulation.addComputer`
 
     """
 
@@ -184,7 +188,8 @@ class Simulation(object):
         # This loop keeps track of the state of the AComputer
         # Then it resets the AComputer
         # Then it restores the state of the AComputer.
-        # This allows reseting the DelayLines or CircularBuffers of any other internal state of the AComputer
+        # This allows reseting the DelayLines or CircularBuffers of any other internal state
+        # of the AComputer
         for cname in clist:
             comp = self.getComputerByName(cname)
             odata = {}
@@ -221,7 +226,8 @@ class Simulation(object):
             t1: Current simulation time (s)
             t2: New simulation time (s)
             error_on_unconnected: True to raise an exception is an input is not connected.
-                If an input is not connected and error_on_unconnected is False, the input will be padded with zeros
+                If an input is not connected and error_on_unconnected is False,
+                the input will be padded with zeros
 
         """
         for cname in clist:
@@ -233,7 +239,7 @@ class Simulation(object):
             # Check completness of input data
             for itp in comp.getListInputs():
                 iname = itp.getName()
-                if not iname in idata.keys():
+                if iname not in idata.keys():
                     if error_on_unconnected:
                         raise UnconnectedInput(cname, iname)
                     else:
@@ -256,7 +262,7 @@ class Simulation(object):
 
             for otp in comp.getListOutputs():
                 oname = otp.getName()
-                if not odata is None:
+                if odata is not None:
                     otp.setData(odata[oname])
                 for sname, unit, x in otp.iterScalarParameters():
                     if comp.isLogged and not nolog:
@@ -270,10 +276,10 @@ class Simulation(object):
 
     def simulate(
         self,
-        tps: NDArray[Any, Any],
+        tps: FloatArr,
         progress_bar: bool = True,
         error_on_unconnected: bool = True,
-    ) -> "FuncAnimation":
+    ):
         """Resets the simulator, and simulates the closed-loop system
         up to the date given as an argument :
 
@@ -282,7 +288,9 @@ class Simulation(object):
         Args:
             tps: Dates to be simulated (s)
             progress_bar: True to display a progress bar in the terminal
-            error_on_unconnected: True to raise an exception is an input is not connected. If an input is not connected and error_on_unconnected is False, the input will be padded with zeros
+            error_on_unconnected: True to raise an exception is an input is not connected.
+                                  If an input is not connected and error_on_unconnected is False,
+                                  the input will be padded with zeros
 
         """
         # Remove cycles in Simulation graph
@@ -317,7 +325,8 @@ class Simulation(object):
         return self.__logger
 
     def connect(self, src_name: str, dst_name: str):
-        """Links an computer with another, so that the state of the source is connected to the input of the destination.
+        """Links an computer with another, so that the state of the source is connected to
+        the input of the destination.
         Both src and dst must have been added with `blocksim.Simulation.Simulation.addComputer`
 
         Args:
@@ -334,7 +343,7 @@ class Simulation(object):
         otp = src.getOutputByName(src_out_name)
         inp = dst.getInputByName(dst_in_name)
 
-        if not inp.getDataShape() is None and not otp.getDataShape() is None:
+        if inp.getDataShape() is not None and otp.getDataShape() is not None:
             if inp.getDataShape() != otp.getDataShape():
                 raise IncompatibleShapes(src_name, otp.getDataShape(), dst_name, inp.getDataShape())
 
@@ -380,7 +389,7 @@ class Simulation(object):
 
         return sg
 
-    def getComputerOutputByName(self, name: str) -> NDArray[Any, Any]:
+    def getComputerOutputByName(self, name: str) -> FloatArr:
         """Returns the data of the computer's output
         The *name* of the data is designated by :
         <computer>.<output>[coord]

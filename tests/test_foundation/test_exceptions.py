@@ -1,22 +1,24 @@
-import sys
 from pathlib import Path
-from typing import Any
-import unittest
 
-from nptyping import NDArray
+
 import numpy as np
 
-from blocksim.exceptions import *
+from blocksim.exceptions import (
+    IncompatibleShapes,
+    DuplicateElement,
+    InvalidAssignedVector,
+    DuplicateInput,
+    UnknownInput,
+    DenormalizedQuaternion,
+)
 from blocksim.Simulation import Simulation
 from blocksim.control.System import LTISystem, G6DOFSystem
 from blocksim.control.SetPoint import Step
 from blocksim.core.Node import AComputer
 from blocksim.control.Sensors import LinearSensors
-from blocksim.utils import quat_to_euler
+from blocksim.utils import quat_to_euler, FloatArr
 from blocksim.graphics.BFigure import FigureFactory
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+from blocksim.testing import TestBase
 
 
 class DummyTestElement(AComputer):
@@ -31,9 +33,7 @@ class DummyTestElement(AComputer):
         self.createParameter("ns", 0)
         self.createParameter("no", 0)
 
-    def update(
-        self, t1: float, t2: float, output: NDArray[Any, Any], state: NDArray[Any, Any], **inputs
-    ) -> dict:
+    def update(self, t1: float, t2: float, output: FloatArr, state: FloatArr, **inputs) -> dict:
         n = self.getOutputByName("state").getDataShape()[0]
         if self.ns == 2:
             state = "foo"
@@ -53,8 +53,6 @@ class DummyTestElement(AComputer):
 class TestExceptions(TestBase):
     def setUp(self):
         super().setUp()
-
-        dt = 1e-2
 
         # Init système
         self.sys = LTISystem("sys", shape_command=(1,), snames_state=["x", "v"])

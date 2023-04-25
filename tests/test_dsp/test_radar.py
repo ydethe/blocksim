@@ -1,18 +1,12 @@
-import sys
-from pathlib import Path
-import unittest
-
 import pytest
 import numpy as np
 
 from blocksim.dsp.DSPSignal import DSPSignal
-from blocksim import logger
-from blocksim.constants import c
 from blocksim.graphics.BFigure import FigureFactory
 from blocksim.dsp import delay_doppler_analysis
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestRadar(TestBase):

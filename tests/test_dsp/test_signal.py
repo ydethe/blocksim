@@ -1,7 +1,3 @@
-import sys
-from pathlib import Path
-import unittest
-
 import numpy as np
 from numpy import testing, pi, exp
 import pytest
@@ -11,8 +7,8 @@ from blocksim.graphics.BFigure import FigureFactory
 from blocksim.loggers.Logger import Logger
 from blocksim.dsp.DSPSignal import DSPSignal
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from TestBase import TestBase
+
+from blocksim.testing import TestBase
 
 
 class TestSignal(TestBase):
@@ -94,7 +90,7 @@ class TestSignal(TestBase):
         rep = DSPSignal("rep", samplingStart=0, samplingPeriod=3 / fs, y_serie=x[::3])
         s = DSPSignal("s", samplingStart=-1e-3, samplingPeriod=1 / fs, y_serie=y)
 
-        acf = rep.autoCorrelation()
+        rep.autoCorrelation()
 
         y = rep.correlate(rep)
         y1 = rep.correlate(s)
@@ -291,8 +287,6 @@ class TestSignal(TestBase):
 if __name__ == "__main__":
     # unittest.main()
     # exit(0)
-
-    from blocksim.graphics import showFigures
 
     a = TestSignal()
     a.test_repeat_to_fit()

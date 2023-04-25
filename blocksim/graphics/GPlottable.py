@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
-from typing import Callable, List, Tuple
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Callable
 from datetime import timedelta
 
 from numpy.polynomial import Polynomial
@@ -9,6 +9,13 @@ from pandas import DataFrame, Timestamp
 
 from .. import logger
 from ..loggers.Logger import Logger
+
+if TYPE_CHECKING:
+    from .GPlottable import GPlottable
+    from .GPlottable import GVariable
+else:
+    GPlottable = "blocksim.graphics.GPlottable.GPlottable"
+    GVariable = "blocksim.graphics.GPlottable.GVariable"
 
 
 class GVariable(object):
@@ -74,7 +81,7 @@ class GVariable(object):
 
         return ret
 
-    def detrend(self, deg: int = 1) -> "blocksim.graphics.GPlottable.GVariable":
+    def detrend(self, deg: int = 1) -> GVariable:
         y = self.data
         ns = len(y)
         x = np.arange(ns)
@@ -86,9 +93,7 @@ class GVariable(object):
 
         return rdesc
 
-    def __add__(
-        self, y: "blocksim.graphics.GPlottable.GVariable"
-    ) -> "blocksim.graphics.GPlottable.GVariable":
+    def __add__(self, y: GVariable) -> GVariable:
         rdesc = GVariable(
             data=np.array(self.data) + np.array(y.data),
             name=self.name,
@@ -98,20 +103,16 @@ class GVariable(object):
 
         return rdesc
 
-    def __neg__(self) -> "blocksim.graphics.GPlottable.GVariable":
+    def __neg__(self) -> GVariable:
         rdesc = GVariable(data=-np.array(self.data), name=self.name, unit=self.unit, path=self.path)
 
         return rdesc
 
-    def __sub__(
-        self, y: "blocksim.graphics.GPlottable.GVariable"
-    ) -> "blocksim.graphics.GPlottable.GVariable":
+    def __sub__(self, y: GVariable) -> GVariable:
         my = -y
         return self + my
 
-    def __mul__(
-        self, y: "blocksim.graphics.GPlottable.GVariable"
-    ) -> "blocksim.graphics.GPlottable.GVariable":
+    def __mul__(self, y: GVariable) -> GVariable:
         rdesc = GVariable(
             data=np.array(self.data) * np.array(y.data),
             name=self.name,
@@ -121,9 +122,7 @@ class GVariable(object):
 
         return rdesc
 
-    def __div__(
-        self, y: "blocksim.graphics.GPlottable.GVariable"
-    ) -> "blocksim.graphics.GPlottable.GVariable":
+    def __div__(self, y: GVariable) -> GVariable:
         rdesc = GVariable(
             data=np.array(self.data) / np.array(y.data),
             name=self.name,
@@ -139,7 +138,7 @@ class GPlottable:
     xvar: GVariable
     yvar: GVariable
 
-    def detrend(self, deg: int = 1) -> "blocksim.graphics.GPlottable.GPlottable":
+    def detrend(self, deg: int = 1) -> GPlottable:
         rdesc = self.yvar.detrend(deg=deg)
 
         return GPlottable(xvar=self.xvar, yvar=rdesc)

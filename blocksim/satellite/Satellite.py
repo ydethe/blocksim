@@ -1,26 +1,30 @@
 from abc import abstractmethod
-from typing import Tuple, List, Union, Any
+from typing import Tuple, List, Union
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 import requests
 
-from nptyping import NDArray, Shape
+
 import numpy as np
 from numpy import cos, sin, tan, sqrt
 import scipy.linalg as lin
 from sgp4.api import Satrec, WGS84
 from sgp4.functions import days2mdhms
 
+from ..loggers.Logger import Logger
 from ..Simulation import Simulation
 from ..control.Route import Group
 from ..core.Node import AComputer
-from .. import logger
-from ..constants import *
+from ..constants import (
+    Req,
+    mu,
+    J2,
+)
 from ..utils import (
+    FloatArr,
     orbital_to_teme,
     itrf_to_geodetic,
     teme_to_orbital,
-    orbital_to_teme,
     teme_to_itrf,
     itrf_to_teme,
     time_to_jd_fraction,
@@ -31,7 +35,7 @@ from .Trajectory import Trajectory
 __all__ = ["ASatellite", "CircleSatellite", "SGP4Satellite", "createSatellites"]
 
 
-def sgp4_to_teme(satrec: Satrec, t_epoch: float) -> NDArray[Any, Any]:
+def sgp4_to_teme(satrec: Satrec, t_epoch: float) -> FloatArr:
     """
     TEME : https://en.wikipedia.org/wiki/Earth-centered_inertial#TEME
 
@@ -56,7 +60,9 @@ def sgp4_to_teme(satrec: Satrec, t_epoch: float) -> NDArray[Any, Any]:
         raise AssertionError("Length of the orbit’s semi-latus rectum has fallen below zero.")
     elif e == 6:
         raise AssertionError(
-            "Orbit has decayed: the computed position is underground. (The position is still returned, in case the vector is helpful to software that might be searching for the moment of re-entry.)"
+            "Orbit has decayed: the computed position is underground. "
+            "(The position is still returned, in case the vector is helpful "
+            "to software that might be searching for the moment of re-entry.)"
         )
 
     rTEME = np.array(rTEME)  # km
@@ -146,7 +152,7 @@ class ASatellite(AComputer):
         self.createParameter(name="orbital_precession")  # (rad/s)
         self.createParameter(name="orbit_period")  # (s)
 
-    def subpoint(self, itrf_pos_vel: NDArray[Any, Any]) -> Tuple[float, float]:
+    def subpoint(self, itrf_pos_vel: FloatArr) -> Tuple[float, float]:
         """
         Return the longitude and latitude directly beneath this position.
 
@@ -200,16 +206,14 @@ class ASatellite(AComputer):
 
         return traj
 
-    def update(
-        self, t1: float, t2: float, subpoint: NDArray[Any, Any], itrf: NDArray[Any, Any]
-    ) -> dict:
+    def update(self, t1: float, t2: float, subpoint: FloatArr, itrf: FloatArr) -> dict:
         outputs = {}
         outputs["itrf"] = self.getGeocentricITRFPositionAt(t2)
         outputs["subpoint"] = np.array(self.subpoint(outputs["itrf"]))
 
         return outputs
 
-    def getTrajectoryFromLogger(self, log: "Logger", color=(1, 0, 0, 1)) -> Trajectory:
+    def getTrajectoryFromLogger(self, log: Logger, color=(1, 0, 0, 1)) -> Trajectory:
         """Bulids a Trajectory for the ASatellite from a Logger
 
         Args:
@@ -239,7 +243,7 @@ class ASatellite(AComputer):
         return traj
 
     @abstractmethod
-    def getGeocentricITRFPositionAt(self, td: float) -> NDArray[Any, Any]:  # pragma: no cover
+    def getGeocentricITRFPositionAt(self, td: float) -> FloatArr:  # pragma: no cover
         """Abstract method that shall compute, for a simulation time td,
         an array with 3 cartesian position (m) and 3 cartesian velocity (m/s) in ITRF frame
 
@@ -247,7 +251,7 @@ class ASatellite(AComputer):
             td: Simulation time (s)
 
         Returns:
-            array: A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in ITRF frame
+            array: A 6-elements array with 3D position (m) and 3D velocity (m/s) in ITRF frame
 
         """
         pass
@@ -310,7 +314,7 @@ class SGP4Satellite(ASatellite):
         otp = self.getOutputByName("itrf")
         otp.setInitialState(pv0)
 
-    def getGeocentricITRFPositionAt(self, t_calc: float) -> NDArray[Any, Any]:
+    def getGeocentricITRFPositionAt(self, t_calc: float) -> FloatArr:
         # epoch time in days from jan 0, 1950. 0 hr
         dt = (self.tsync - self.getInitialEpoch()).total_seconds() + t_calc
 
@@ -333,7 +337,7 @@ class SGP4Satellite(ASatellite):
         bstar: float = 0,
         ndot: float = 0,
         nddot: float = 0,
-    ) -> "blocksim.satellite.Satellite.SGP4Satellite":
+    ) -> "SGP4Satellite":
         """Builds a SGP4Satellite from orbital elements.
         See https://rhodesmill.org/skyfield/earth-satellites.html#build-a-satellite-from-orbital-elements
 
@@ -387,7 +391,7 @@ class SGP4Satellite(ASatellite):
         tsync: datetime = None,
         iline: int = 0,
         name_prefix: str = "",
-    ) -> "blocksim.satellite.Satellite.SGP4Satellite":
+    ) -> "SGP4Satellite":
         """Builds a SGP4Satellite from a TLE file
         Returns None if the file was incorrect
         See https://en.wikipedia.org/wiki/Two-line_element_set
@@ -416,9 +420,9 @@ class SGP4Satellite(ASatellite):
 
         lines = []
         read_lines = data.split("\n")
-        for l in read_lines:
-            if not l.startswith("#"):
-                lines.append(l)
+        for line in read_lines:
+            if not line.startswith("#"):
+                lines.append(line)
 
         if iline * 3 + 2 >= len(lines):
             return None
@@ -479,7 +483,7 @@ class SGP4Satellite(ASatellite):
         hx: float,
         hy: float,
         lv: float,
-    ) -> "blocksim.satellite.Satellite.SGP4Satellite":
+    ) -> "SGP4Satellite":
         """Builds a SGP4Satellite from its equinoctial elements
 
         See https://www.orekit.org/static/apidocs/org/orekit/orbits/EquinoctialOrbit.html
@@ -543,14 +547,15 @@ class CircleSatellite(ASatellite):
     def __init__(self, name: str, tsync: datetime):
         ASatellite.__init__(self, name, tsync)
 
-    def setInitialITRF(self, t_epoch: float, pv: NDArray[Any, Any]):
+    def setInitialITRF(self, t_epoch: float, pv: FloatArr):
         """Set the initial position and velocity from in ITRF position / velocity
-        The velocity is used only to determine the orbit's plane. It is then modified so that the orbit eccentricity be 0
+        The velocity is used only to determine the orbit's plane.
+        It is then modified so that the orbit eccentricity be 0
         Also sets the attributes of the class
 
         Args:
             t_epoch: Time since 31/12/1949 00:00 UT (s)
-            pv: A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in ITRF frame
+            pv: A 6-elements array with 3D position (m) and 3D velocity (m/s) in ITRF frame
 
         """
         pv_teme = itrf_to_teme(t_epoch=t_epoch, pv_itrf=pv)
@@ -603,7 +608,7 @@ class CircleSatellite(ASatellite):
         argp: float,
         mano: float = 0.0,
         node: float = 0.0,
-    ) -> "blocksim.satellite.Satellite.CircleSatellite":
+    ) -> "CircleSatellite":
         """Builds an orbit from orbital elements. The eccentricity is forced to 0
 
         Args:
@@ -634,16 +639,16 @@ class CircleSatellite(ASatellite):
         return sat
 
     @classmethod
-    def fromITRF(
-        cls, name: str, tsync: datetime, pv_itrf: NDArray[Any, Any]
-    ) -> "blocksim.satellite.Satellite.CircleSatellite":
-        """Instanciates a CircleSatellite from an initial position and velocity from in ITRF position / velocity
-        The velocity is used only to determine the orbit's plane. It is then modified so that the orbit eccentricity be 0
+    def fromITRF(cls, name: str, tsync: datetime, pv_itrf: FloatArr) -> "CircleSatellite":
+        """Instanciates a CircleSatellite from an initial position and velocity
+        from in ITRF position / velocity
+        The velocity is used only to determine the orbit's plane.
+        It is then modified so that the orbit eccentricity be 0
         Also sets the attributes of the class
 
         Args:
             tsync: Time that corresponds to the simulation time zero
-            pv_itrf: A 6-elements array with 3 position scalars (m) and 3 velocity scalar (m/s) in ITRF frame
+            pv_itrf: A 6-elements array with 3D position (m) and 3D velocity (m/s) in ITRF frame
 
         Returns:
             A CircleSatellite instance
@@ -663,9 +668,10 @@ class CircleSatellite(ASatellite):
         tsync: datetime = None,
         iline: int = 0,
         name_prefix: str = "",
-    ) -> "blocksim.satellite.Satellite.CircleSatellite":
+    ) -> "CircleSatellite":
         """Builds a CircleSatellite from a TLE file
-        The velocity is used only to determine the orbit's plane. It is then modified so that the orbit eccentricity be 0
+        The velocity is used only to determine the orbit's plane.
+        It is then modified so that the orbit eccentricity be 0
         Returns None if the file was incorrect
         See https://en.wikipedia.org/wiki/Two-line_element_set
 
@@ -693,9 +699,9 @@ class CircleSatellite(ASatellite):
 
         lines = []
         read_lines = data.split("\n")
-        for l in read_lines:
-            if not l.startswith("#"):
-                lines.append(l)
+        for line in read_lines:
+            if not line.startswith("#"):
+                lines.append(line)
 
         if iline * 3 + 2 >= len(lines):
             return None
@@ -733,7 +739,7 @@ class CircleSatellite(ASatellite):
 
         return sat
 
-    def getGeocentricITRFPositionAt(self, td: float) -> NDArray[Any, Any]:
+    def getGeocentricITRFPositionAt(self, td: float) -> FloatArr:
         t_epoch = (self.tsync - self.getInitialEpoch()).total_seconds() + td
 
         th = self.__sat_puls * td
@@ -792,7 +798,7 @@ def createSatellites(
         iline += 1
 
     nom_coord = ["px", "py", "pz", "vx", "vy", "vz"]
-    if not sim is None and not connect_to == "":
+    if sim is not None and not connect_to == "":
         grp_snames = []
         grp_inp = dict()
         for k, sat in enumerate(satellites):

@@ -1,10 +1,7 @@
-from typing import Any
-
-from nptyping import NDArray
 import numpy as np
 
 from ..control.Sensors import ASensors
-from ..utils import quat_to_matrix
+from ..utils import FloatArr, quat_to_matrix
 from .Earth6DDLPosition import Earth6DDLPosition
 
 
@@ -30,8 +27,8 @@ class IMU(ASensors):
         self,
         t1: float,
         t2: float,
-        state: NDArray[Any, Any],
-        measurement: NDArray[Any, Any],
+        state: FloatArr,
+        measurement: FloatArr,
     ) -> dict:
         px, py, pz, vx, vy, vz, qw, qx, qy, qz, wx, wy, wz = state
 

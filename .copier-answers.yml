@@ -1,0 +1,15 @@
+# Changes here will be overwritten by Copier
+_commit: v0.1.6
+_src_path: gl:ydethe/pdm-copier.git
+author_email: yann@johncloud.fr
+author_name: Yann de Thé
+copyright_date: '2023'
+copyright_license: MIT License
+min_python_version: '3.8'
+project_description: A library to simulate a closed-loop system
+project_name: blocksim
+python_package_import_name: blocksim
+repository_name: blocksim
+repository_namespace: ydethe
+repository_provider: gitlab.com
+use_pytest_mpl: true

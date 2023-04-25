@@ -4,6 +4,35 @@
 import numpy as np
 import scipy.linalg as lin
 
+__all__ = [
+    "WrongDataType",
+    "IncompatibleShapes",
+    "InvalidLogFile",
+    "NameIsPythonKeyword",
+    "UnsetCommLink",
+    "IncorrectDataframe",
+    "FailedAcknowledgeCheck",
+    "TooWeakAcceleration",
+    "TooWeakMagneticField",
+    "SimulationGraphError",
+    "DuplicateElement",
+    "DuplicateStateOutputName",
+    "DuplicateStateName",
+    "InvalidAssignedVector",
+    "DuplicateOutputName",
+    "FileError",
+    "DuplicateInput",
+    "DuplicateOutput",
+    "InvalidSrcDataName",
+    "InvalidInputName",
+    "VectorLengthIncoherence",
+    "UnknownInput",
+    "UnknownState",
+    "UnknownOutput",
+    "DenormalizedQuaternion",
+    "UnconnectedInput",
+]
+
 
 class WrongDataType(Exception):
     def __init__(self, txt):

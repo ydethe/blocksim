@@ -1,12 +1,10 @@
 import bz2
-from enum import Enum
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 import pickle
-from typing import Callable, List, Any
+from typing import TYPE_CHECKING, Callable, List
 
 from lazy_property import LazyProperty
-from nptyping import NDArray
 import numpy as np
 from numpy.polynomial import Polynomial
 from scipy.interpolate import interp1d
@@ -14,9 +12,15 @@ from scipy import linalg as lin
 
 from . import derivative_coeff, phase_unfold_deg
 from .. import logger
-from ..utils import find1dpeak, Peak
+from ..utils import FloatArr, find1dpeak, Peak
 from ..graphics.GraphicSpec import AxeProjection, DSPLineType
 from ..loggers.Logger import Logger
+
+if TYPE_CHECKING:
+    from ..graphics.BAxe import ABaxe
+else:
+    ABaxe = "blocksim.graphics.BAxe.ABaxe"
+
 
 __all__ = [
     "ADSPLine",
@@ -132,7 +136,7 @@ class ADSPLine(metaclass=ABCMeta):
         name: str,
         samplingStart: float = None,
         samplingPeriod: float = None,
-        y_serie: NDArray[Any, Any] = None,
+        y_serie: FloatArr = None,
         default_transform=lambda x: x,
         name_of_x_var: str = "Samples",
         unit_of_x_var: str = "ech",
@@ -160,9 +164,9 @@ class ADSPLine(metaclass=ABCMeta):
             name_of_y_var: New name for the Y axis. Unchanged by default
 
         """
-        if not unit_of_y_var is None:
+        if unit_of_y_var is not None:
             self.unit_of_y_var = unit_of_y_var
-        if not name_of_y_var is None:
+        if name_of_y_var is not None:
             self.name_of_y_var = name_of_y_var
         self.__default_transform = fct
 
@@ -214,7 +218,7 @@ class ADSPLine(metaclass=ABCMeta):
         return self.__samplingPeriod
 
     @property
-    def y_serie(self) -> NDArray[Any, Any]:
+    def y_serie(self) -> FloatArr:
         return self.__y_serie.copy()
 
     @property
@@ -278,7 +282,7 @@ class ADSPLine(metaclass=ABCMeta):
 
         return x_serie
 
-    def generateXSerie(self, index: int = None) -> NDArray[Any, Any]:
+    def generateXSerie(self, index: int = None) -> FloatArr:
         """Generates the x samples of the line
 
         Args:
@@ -306,7 +310,7 @@ class ADSPLine(metaclass=ABCMeta):
         elif self.dspline_type == DSPLineType.NORTH_POLAR:
             return AxeProjection.NORTH_POLAR
 
-    def quickPlot(self, **kwargs) -> "blocksim.graphics.BAxe.ABaxe":
+    def quickPlot(self, **kwargs) -> ABaxe:
         """Quickly plots the line
 
         Args:
@@ -319,10 +323,12 @@ class ADSPLine(metaclass=ABCMeta):
         from ..graphics import quickPlot
 
         axe = quickPlot(self, **kwargs)
+
         return axe
 
     def polyfit(self, deg: int) -> Polynomial:
-        """Fits a polynomial to the DSPRectilinearLine. All the samples are considered in the computation.
+        """Fits a polynomial to the DSPRectilinearLine. All the samples are considered
+        in the computation.
         See https://numpy.org/doc/stable/reference/generated/numpy.polynomial.polynomial.Polynomial.html
         for the Polynomial object documentation.
 
@@ -353,7 +359,7 @@ class ADSPLine(metaclass=ABCMeta):
 
         return Polynomial(coef=c, domain=[x0, x1], window=[x0, x1])
 
-    def applyDelay(self, delay: float) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
+    def applyDelay(self, delay: float) -> "DSPRectilinearLine":
         """Applies a delay (in X axis unit) to the DSPRectilinearLine
 
         Args:
@@ -377,7 +383,7 @@ class ADSPLine(metaclass=ABCMeta):
         dsig.unit_of_x_var = self.unit_of_x_var
         return dsig
 
-    def repeat(self, repeats: int) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
+    def repeat(self, repeats: int) -> "DSPRectilinearLine":
         """Repeats the samples *repeats* time
 
         Args:
@@ -398,7 +404,7 @@ class ADSPLine(metaclass=ABCMeta):
         dsig.unit_of_x_var = self.unit_of_x_var
         return dsig
 
-    def repeatToFit(self, other: "ADSPLine") -> "blocksim.dsp.DSPLine.ADSPLine":
+    def repeatToFit(self, other: "ADSPLine") -> "ADSPLine":
         """Repeats the samples serie until it exactly covers the size of *other*.
         Resampling is done if needed to match *other* sampling
 
@@ -424,7 +430,8 @@ class ADSPLine(metaclass=ABCMeta):
 
     def findPeaksWithTransform(self, transform: Callable = None, nb_peaks: int = 3) -> List[Peak]:
         """Finds the peaks in a DSPRectilinearLine.
-        The search is performed on the transformed samples (with the argument *transform*, or the attribute *default_transform*)
+        The search is performed on the transformed samples (with the argument *transform*,
+        or the attribute *default_transform*)
 
         Args:
             transform: A callable applied on samples before looking for the peaks
@@ -450,9 +457,7 @@ class ADSPLine(metaclass=ABCMeta):
 
         return lpeak
 
-    def __interpolate(
-        self, new_x: NDArray[Any, Any], complex_output: bool = True
-    ) -> NDArray[Any, Any]:
+    def __interpolate(self, new_x: FloatArr, complex_output: bool = True) -> FloatArr:
         if complex_output:
             y_serie = 1j * self._itp_y(new_x)
             y_serie += self._itp_x(new_x)
@@ -506,13 +511,14 @@ class ADSPLine(metaclass=ABCMeta):
         samplingStop: float = None,
         zero_padding: bool = True,
         new_sampling_start: float = None,
-    ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
+    ) -> "DSPRectilinearLine":
         """Truncates a line between x=samplingStart and x=samplingStop.
 
         Args:
             samplingStart: Beginning abscissa of the new line
             samplingStop: End abscissa of the new line (included)
-            zero_padding: Add zero padding if samplingStart or samplingStop are beyond the bounds of the signal
+            zero_padding: Add zero padding if samplingStart or samplingStop
+                          are beyond the bounds of the signal
             new_sampling_start: Forces samplingStart in the new DSPLine
 
         Returns:
@@ -563,13 +569,14 @@ class ADSPLine(metaclass=ABCMeta):
 
     def isInSyncWith(self, y) -> bool:
         """Tests whether the line is synced with y.
-        In the following, we note dt the sampling period (self.samplingPeriod) and t0 the initial timestamp (self.samplingStart)
+        In the following, we note dt the sampling period (self.samplingPeriod)
+        and t0 the initial timestamp (self.samplingStart)
         y can be either:
 
-        * a scalar (float or int). In this case, y is a samplingPeriod and the test is successful if:
+        * a scalar (float or int). In this case, y is a samplingPeriod and the test is true if:
             $$ |dt - y| < 10^-6 * min(dt, y) $$
-        * a tuple of 2 scalars. In this case, y is noted (t0y, dty) which respectively stand for an initial time and a samplingPeriod.
-            The test is successful if:
+        * a tuple of 2 scalars. In this case, y is noted (t0y, dty) which respectively stand
+            for an initial time and a samplingPeriod. The test is successful if:
             $$ |dt - dty| < 10^-6 * min(dt, dty) $$
             $$ modf((t0 - t0y) / dt) < 10^-3 $$
         * a DSPRectilinearLine. In this case, t0y is y.samplingStart and dty is y.samplingPeriod
@@ -608,12 +615,12 @@ class ADSPLine(metaclass=ABCMeta):
         nech: int = None,
         zero_padding: bool = True,
         complex_output: bool = None,
-    ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
+    ) -> "DSPRectilinearLine":
         """Resamples the line using a cubic interpolation.
         If the new bounds are larger than the original ones, the line is filled with 0
         The resulting signal keeps the timestamp of samples
 
-        TODO: regarder l'effet du resample par interpolation temporelle sur le spectre (repliement ?)
+        TODO: regarder l'effet du resample par interpolation temporelle sur le spectre (repliement?)
 
         Args:
             samplingStart: First x-coord of the sample of the line after resampling
@@ -634,11 +641,11 @@ class ADSPLine(metaclass=ABCMeta):
             nech = int(
                 np.ceil((samplingStop + samplingPeriod / 2 - samplingStart) / samplingPeriod)
             )
-        elif not samplingStop is None and nech is None:
+        elif samplingStop is not None and nech is None:
             nech = int(
                 np.ceil((samplingStop + samplingPeriod / 2 - samplingStart) / samplingPeriod)
             )
-        elif samplingStop is None and not nech is None:
+        elif samplingStop is None and nech is not None:
             samplingStop = (nech - 1) * samplingPeriod + samplingStart
         else:
             raise AssertionError("nech and samplingStop cannot be set simultaneously")
@@ -679,7 +686,7 @@ class ADSPLine(metaclass=ABCMeta):
         return res
 
     @classmethod
-    def to_angle(cls, x: NDArray[Any, Any]) -> NDArray[Any, Any]:
+    def to_angle(cls, x: FloatArr) -> FloatArr:
         """Converts the samples into their phase, in degrees.
         The returned phae is unwrapped
 
@@ -722,7 +729,7 @@ class ADSPLine(metaclass=ABCMeta):
         return _to_db
 
     @classmethod
-    def to_db(cls, x: NDArray[Any, Any], lim_db: float = -100) -> NDArray[Any, Any]:
+    def to_db(cls, x: FloatArr, lim_db: float = -100) -> FloatArr:
         """Converts the samples into their power, in dB.
         If a sample's power is below *low*, the dB value in clamped to *low*.
 
@@ -765,9 +772,7 @@ class ADSPLine(metaclass=ABCMeta):
 
         return res
 
-    def derivate(
-        self, rank: int = 1, order: int = None
-    ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
+    def derivate(self, rank: int = 1, order: int = None) -> "DSPRectilinearLine":
         """Performs numerical derivation if the line
 
         Args:
@@ -796,7 +801,7 @@ class ADSPLine(metaclass=ABCMeta):
         res.unit_of_x_var = self.unit_of_x_var
         return res
 
-    def _prepareOperation(self, y: "blocksim.dsp.DSPLine.DSPRectilinearLine"):
+    def _prepareOperation(self, y: "DSPRectilinearLine"):
         t_start = min(self.samplingStart, y.samplingStart)
         dt = min(self.samplingPeriod, y.samplingPeriod)
         t_stop = max(self.samplingStop, y.samplingStop)
@@ -807,12 +812,10 @@ class ADSPLine(metaclass=ABCMeta):
 
         return t_start, dt, rx, ry
 
-    def __radd__(self, y) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
+    def __radd__(self, y) -> "DSPRectilinearLine":
         return self + y
 
-    def __add__(
-        self, y: "blocksim.dsp.DSPLine.DSPRectilinearLine"
-    ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
+    def __add__(self, y: "DSPRectilinearLine") -> "DSPRectilinearLine":
         if issubclass(y.__class__, DSPRectilinearLine):
             t_start, dt, rx, ry = self._prepareOperation(y)
 
@@ -834,7 +837,7 @@ class ADSPLine(metaclass=ABCMeta):
         res.unit_of_x_var = self.unit_of_x_var
         return res
 
-    def __neg__(self) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
+    def __neg__(self) -> "DSPRectilinearLine":
         res = self.__class__(
             name=self.name,
             samplingStart=self.samplingStart,
@@ -846,13 +849,11 @@ class ADSPLine(metaclass=ABCMeta):
         res.unit_of_x_var = self.unit_of_x_var
         return res
 
-    def __rsub__(self, y) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
+    def __rsub__(self, y) -> "DSPRectilinearLine":
         z = -self
         return y + z
 
-    def __sub__(
-        self, y: "blocksim.dsp.DSPLine.DSPRectilinearLine"
-    ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
+    def __sub__(self, y: "DSPRectilinearLine") -> "DSPRectilinearLine":
         z = -y
         return self + z
 
@@ -889,9 +890,7 @@ class ADSPLine(metaclass=ABCMeta):
         res.unit_of_x_var = self.unit_of_x_var
         return res
 
-    def __mul__(
-        self, y: "blocksim.dsp.DSPLine.DSPRectilinearLine"
-    ) -> "blocksim.dsp.DSPLine.DSPRectilinearLine":
+    def __mul__(self, y: "DSPRectilinearLine") -> "DSPRectilinearLine":
         if issubclass(y.__class__, DSPRectilinearLine):
             t_start, dt, rx, ry = self._prepareOperation(y)
 

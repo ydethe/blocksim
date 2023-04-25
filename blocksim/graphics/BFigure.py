@@ -1,12 +1,13 @@
+from typing import List
 from matplotlib.figure import Figure
 from singleton3 import Singleton
-import numpy as np
 from matplotlib import pyplot as plt
 from abc import ABCMeta, abstractmethod
 
+from .B3DPlotter import B3DPlotter
 from .GraphicSpec import AxeProjection, FigureProjection
 from .BLayout import BGridSpec, BGridElement
-from .BAxe import BAxeFactory, ABaxe
+from .BAxe import BAxeFactory, ABaxe, BAxePanda3D
 
 
 class ABFigure(metaclass=ABCMeta):
@@ -25,7 +26,7 @@ class ABFigure(metaclass=ABCMeta):
     def __init__(self, title: str):
         self.title = title
         self.grid_spec = None
-        self.axe_factories = []
+        self.axe_factories: List[ABaxe] = []
         self.mpl_fig = None
 
     def add_baxe(
@@ -98,7 +99,7 @@ class MplFigure(ABFigure):
     projection = FigureProjection.MPL
 
     def render(self, tight_layout: bool = False) -> "Figure":
-        if not self.mpl_fig is None:
+        if self.mpl_fig is not None:
             return self.mpl_fig
 
         mfig = plt.figure(
@@ -130,6 +131,13 @@ class B3DFigure(ABFigure):
     projection = FigureProjection.EARTH3D
 
     def add_baxe(self, title: str, spec: BGridElement, **kwargs) -> ABaxe:
+        from .. import logger
+
+        if "projection" in kwargs.keys():
+            axe_proj = kwargs.pop("projection")
+            if axe_proj != AxeProjection.PANDA3D:
+                logger.warning("Expected PANDA3D as AxeProjection")
+
         return super().add_baxe(
             title,
             spec,
@@ -142,7 +150,8 @@ class B3DFigure(ABFigure):
     def add_gridspec(self, nrow: int, ncol: int) -> BGridSpec:
         if ncol != 1 or nrow != 1:
             raise AssertionError(
-                f"With {FigureProjection.EARTH3D}, only (1,1) GridPsec are allowed. Got ({nrow},{ncol})"
+                f"With {FigureProjection.EARTH3D},"
+                "only (1,1) GridPsec are allowed. Got ({nrow},{ncol})"
             )
         return super().add_gridspec(nrow=nrow, ncol=ncol)
 
@@ -155,8 +164,9 @@ class B3DFigure(ABFigure):
         mfig = None
         mgs = None
 
+        axe: BAxePanda3D
         for axe in self.axe_factories:
-            maxe = axe.createMplAxe(mfig, mgs)
+            maxe: B3DPlotter = axe.createMplAxe(mfig, mgs)
             axe.render(maxe)
 
         return maxe
@@ -168,7 +178,7 @@ class FigureFactory(object, metaclass=Singleton):  # type: ignore
     __slots__ = ["figures"]
 
     def __init__(self):
-        self.figures = []
+        self.figures: List[ABFigure] = []
 
     @classmethod
     def create(
