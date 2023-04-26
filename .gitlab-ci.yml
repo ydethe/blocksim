@@ -39,20 +39,20 @@ pages:
     paths:
       - public
 
-package:
-  stage: deploy
-  dependencies:
-  - test
-  script:
-    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends python3-pip
-    - pip3 install pdm
-    - pdm config --global repository.gitlab.url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
-    - pdm config --global repository.gitlab.username gitlab-ci-token
-    - pdm config --global repository.gitlab.password ${CI_JOB_TOKEN}
-    # - PDM_BUILD_SCM_VERSION=${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"} pdm build
-    - pdm build
-    - ls dist/*
-    - pdm publish -r gitlab
-  only:
-    - tags
-    - master
+# package:
+#   stage: deploy
+#   dependencies:
+#   - test
+#   script:
+#     - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends python3-pip
+#     - pip3 install pdm
+#     - pdm config --global repository.gitlab.url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
+#     - pdm config --global repository.gitlab.username gitlab-ci-token
+#     - pdm config --global repository.gitlab.password ${CI_JOB_TOKEN}
+#     # - PDM_BUILD_SCM_VERSION=${CI_COMMIT_TAG:-"0.0.0.dev+$CI_COMMIT_SHORT_SHA"} pdm build
+#     - pdm build
+#     - ls dist/*
+#     - pdm publish -r gitlab
+#   only:
+#     - tags
+#     - master
