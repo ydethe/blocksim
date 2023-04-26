@@ -40,8 +40,10 @@ package:
   dependencies:
   - test
   script:
-    - apt-get update --allow-releaseinfo-change && apt-get install -yqq --no-install-recommends python3-pip
-    - pip3 install pdm
+    - apt-get update --allow-releaseinfo-change
+    - apt-get install -yqq --no-install-recommends git python3-venv curl
+    - curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -
+    - export PATH=/root/.local/bin:$PATH
     - pdm config --global repository.gitlab.url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
     - pdm config --global repository.gitlab.username gitlab-ci-token
     - pdm config --global repository.gitlab.password ${CI_JOB_TOKEN}
