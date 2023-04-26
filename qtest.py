@@ -9,14 +9,13 @@ from ahrs.filters import Madgwick
 from ahrs.filters import Tilt
 from ahrs.filters.aqua import AQUA
 from ahrs.filters.ekf import EKF
-from ahrs import Quaternion
 
 from blocksim.core.Node import AComputer
 from blocksim.Simulation import Simulation
 from blocksim.control.System import G6DOFSystem
 from blocksim.control.IMU import IMU
 from blocksim.control.SetPoint import Step
-from blocksim.utils import deg, euler_to_quat, geodetic_to_itrf, quat_to_euler, quat_to_matrix, rad
+from blocksim.utils import deg, euler_to_quat, geodetic_to_itrf, quat_to_euler, rad
 from blocksim.graphics import plotVerif, showFigures
 
 

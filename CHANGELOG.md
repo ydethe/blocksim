@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fixed pipeline ([caeb37f](https://gitlab.com/ydethe/blocksim/commit/caeb37f3ed73eea2d1d4f5a206f0134ae20667e1) by Yann de Thé).
 - Fixed python 3.8 compatibility issue ([524a92f](https://gitlab.com/ydethe/blocksim/commit/524a92fa6878f714b3a51bbd6560db98ee7decd9) by Yann BLAUDIN DE THE).
 - Fixed apt install in Gitlab CI ([1b89c68](https://gitlab.com/ydethe/blocksim/commit/1b89c68d88c54c75241fe959d8d617a5bf346379) by Yann BLAUDIN DE THE).
 

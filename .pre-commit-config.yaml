@@ -3,7 +3,7 @@ repos:
   - id: check-changelog
     args: [--version-regex, '<a href="[^"]+">(?P<version>[^<]+)', --bump-latest]
   repo: https://gitlab.com/ydethe/pdm-copier.git
-  rev: v0.4.0
+  rev: v0.4.2
 
 - hooks:
   - entry: found Copier update rejection files; review them and remove them
