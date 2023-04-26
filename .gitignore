@@ -1,7 +1,6 @@
 htmldoc
 test_results.xml
 .pdm-python
-pdm.lock
 
 *.db
 __pypackages__

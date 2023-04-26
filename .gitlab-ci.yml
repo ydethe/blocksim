@@ -49,6 +49,4 @@ package:
     - pdm config --global repository.gitlab.password ${CI_JOB_TOKEN}
     - pdm build
     - pdm publish -r gitlab
-  only:
-    - tags
-    - master
+    
