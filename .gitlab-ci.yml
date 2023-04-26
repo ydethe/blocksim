@@ -5,10 +5,6 @@ stages:
   - deploy
   - release
 
-variables:
-  GIT_DEPTH: 0
-  GIT_STRATEGY: fetch
-
 test:
   stage: test
   script:
