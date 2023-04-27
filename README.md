@@ -12,7 +12,6 @@ A library to simulate a closed-loop system
 
 Just run:
 
-    git-changelog --output CHANGELOG.md --in-place --version-regex '<a href="[^"]+">(?P<version>[^<]+)' --marker-line '<!-- new entries will be injected here -->'
     pdm doc
 
 This will create the doc in htmldoc
