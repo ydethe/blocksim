@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fixed doc generation ([f2f8aa9](https://gitlab.com/ydethe/blocksim/commit/f2f8aa93183151e89977bd31fbc123002875301b) by Yann BLAUDIN DE THE).
 
+### Removed
+
+- Removed pdm.lock ([381ed4a](https://gitlab.com/ydethe/blocksim/commit/381ed4a27dc7b7c431bb6d0fad3290b4f12c399d) by Yann BLAUDIN DE THE).
+
 ## [v0.3.1](https://gitlab.com/ydethe/blocksim/tags/v0.3.1) - 2023-04-27
 
 <small>[Compare with v0.3.0](https://gitlab.com/ydethe/blocksim/compare/v0.3.0...v0.3.1)</small>
