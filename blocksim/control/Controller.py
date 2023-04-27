@@ -281,8 +281,6 @@ class LQRegulator(AController):
         """
         import control
 
-        control.use_numpy_matrix(flag=False)
-
         Q = self.matQ
         R = self.matR
         A = self.matA

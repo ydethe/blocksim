@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from scipy import linalg as lin
 from scipy.interpolate import interp1d
 from scipy.optimize import root_scalar, minimize
-
 import numpy as np
 from numpy import pi, arcsin, arccos, arctan, arctan2, tan, sin, cos, sqrt, exp, log
 import numpy.typing as npt
@@ -35,9 +34,6 @@ from .exceptions import (
 
 
 __all__ = [
-    "ComplexArr",
-    "FloatArr",
-    "IntArr",
     "Peak",
     "find1dpeak",
     "find2dpeak",

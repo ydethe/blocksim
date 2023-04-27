@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <small>[Compare with v0.3.0](https://gitlab.com/ydethe/blocksim/compare/v0.3.0...v0.3.1)</small>
 
+### Added
+
+- Added conditional deploy (on tag) ([0847f8e](https://gitlab.com/ydethe/blocksim/commit/0847f8e89cf760afaed9f432db61ea35a72a5afa) by Yann BLAUDIN DE THE).
+
 ## [v0.3.0](https://gitlab.com/ydethe/blocksim/tags/v0.3.0) - 2023-04-26
 
 <small>[Compare with v0.2.1](https://gitlab.com/ydethe/blocksim/compare/v0.2.1...v0.3.0)</small>

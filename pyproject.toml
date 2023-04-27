@@ -142,6 +142,7 @@ test = [
     "pytest-sugar~=0.9.5",
     "pytest-html~=3.1.1",
     "pytest-mpl~=0.16.1",
+    "pytest-xdist[psutil]~=3.2",
 ]
 
 [tool.pdm.scripts]
@@ -156,7 +157,7 @@ doc.shell = """\
     pyreverse -s0 blocksim -k --colorized -p blocksim -m no --ignore=exceptions.py,LogFormatter.py,CSVLogger.py,PickleLogger.py,XlsLogger.py -d htmldoc
     dot -Tpng htmldoc/classes_blocksim.dot -o htmldoc/blocksim/classes.png
     coverage html -d htmldoc/coverage --rcfile tests/coverage.conf
-    docstr-coverage blocksim -miP -sp -is -idel --skip-file-doc --exclude ".*/kt.*.py" --badge=htmldoc/doc_badge.svg
-    coverage-badge -f -o htmldoc/cov_badge.svg
+    docstr-coverage blocksim -miP -sp -is -idel --skip-file-doc --exclude ".*/kt.*.py" --badge=htmldoc/blocksim/doc_badge.svg
+    coverage-badge -f -o htmldoc/blocksim/cov_badge.svg
 """
 baseline.shell = "pytest --mpl-generate-path=tests/baseline tests"
