@@ -39,6 +39,9 @@ package:
   stage: deploy
   dependencies:
   - test
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v(?:\d+.){2}(?:\d+)$/
+      when: manual
   script:
     - apt-get update --allow-releaseinfo-change
     - apt-get install -yqq --no-install-recommends git python3-venv curl
