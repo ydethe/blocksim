@@ -72,6 +72,18 @@ line-length = 100
 [tool.ruff.per-file-ignores]
 "GNSScodegen.py" = ["E501"]
 
+[tool.tox]
+legacy_tox_ini = """
+    [tox]
+    env_list = py{38,39,310}
+    isolated_build = true
+
+    [testenv]
+    groups = dev
+    commands =
+        pdm run pytest
+"""
+
 [tool.pytest.ini_options]
 addopts = [
     "--import-mode=importlib",
@@ -143,6 +155,7 @@ test = [
     "pytest-html~=3.1.1",
     "pytest-mpl~=0.16.1",
     "pytest-xdist[psutil]~=3.2",
+    "tox-pdm>=0.6.1,<1.0.0",
 ]
 
 [tool.pdm.scripts]
