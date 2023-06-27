@@ -752,6 +752,9 @@ def vecEarthToBody(attitude: FloatArr, x: FloatArr) -> FloatArr:
 
 
 def anomaly_mean_to_ecc(ecc: float, M: float) -> float:
+    if ecc == 0:
+        return M
+
     def _fun(E, ecc, M):
         return E - ecc * sin(E) - M
 

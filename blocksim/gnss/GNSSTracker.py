@@ -41,11 +41,6 @@ class GNSSTracker(ASensors):
     * Radial acceleration (m/s^2) in obscoord[6*k+4]
     * Radial jerk (m/s^3) in obscoord[6*k+5]
 
-    * satellite's position (m) in ITRF in meas[8*k:8*k+3]
-    * satellite's velocity (m/s) in ITRF in meas[8*k+3:8*k+6]
-    * pseudorange for the satellite (m) in meas[8*k+6]
-    * radial velocity for the satellite (m/s) in meas[8*k+7]
-
     The attributes are to be defined by the user :
 
     Attributes:
