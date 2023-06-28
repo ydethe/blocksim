@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Added naming of Plottables and pick event handling by default that prints the name of the Plottable. Removed color attribute in Trajectory class ([477b45f](https://gitlab.com/ydethe/blocksim/commit/477b45f2da84b8e6b88c2a85aacae79444fdca10) by Yann BLAUDIN DE THE).
 - Added link under coverage badge ([1833569](https://gitlab.com/ydethe/blocksim/commit/18335690bb16e37d13711d5f190bfca375b2ece4) by Yann BLAUDIN DE THE).
 
 ### Fixed

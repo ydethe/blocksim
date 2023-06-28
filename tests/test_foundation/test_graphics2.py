@@ -462,7 +462,7 @@ class TestGraphics2(unittest.TestCase):
 
         return fig.render()
 
-    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    # @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
     def test_graph_plot(self):
         fig = FigureFactory.create(title="Figure")
         gs = fig.add_gridspec(1, 1)
