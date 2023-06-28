@@ -1,6 +1,6 @@
 from scipy import linalg as lin
 import numpy as np
-from hypothesis import given, settings, reproduce_failure, strategies as st
+from hypothesis import given, settings, strategies as st
 
 from blocksim.utils import (
     mean_variance_2dgauss_norm,
@@ -19,7 +19,6 @@ class TestUtils(TestBase):
         mask=st_elev,
     )
     @settings(print_blob=True)
-    @reproduce_failure("6.80.0", b"AAAIAAAAAAAAAAAAAAMNQAA=")
     def test_elevation_mask(self, obs_ll, sat_lla, mask: float):
         obs = llavpa_to_itrf((obs_ll[0], obs_ll[1], 0, 0, 0, 0))
         sat = llavpa_to_itrf((sat_lla[0], sat_lla[1], sat_lla[2], 0, 0, 0))

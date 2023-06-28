@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v0.5.0](https://gitlab.com/ydethe/blocksim/tags/v0.5.0) - 2023-06-28
+
+<small>[Compare with v0.4.0](https://gitlab.com/ydethe/blocksim/compare/v0.4.0...v0.5.0)</small>
+
+### Added
+
+- Added hypothesis tests ([cef5881](https://gitlab.com/ydethe/blocksim/commit/cef58810bc023a9d6f2d1e73b3a93a56fa86a700) by Yann BLAUDIN DE THE).
+
 ## [v0.4.0](https://gitlab.com/ydethe/blocksim/tags/v0.4.0) - 2023-06-28
 
 <small>[Compare with v0.3.1](https://gitlab.com/ydethe/blocksim/compare/v0.3.1...v0.4.0)</small>
@@ -33,29 +41,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [v0.3.0](https://gitlab.com/ydethe/blocksim/tags/v0.3.0) - 2023-04-26
 
-<small>[Compare with v0.2.1](https://gitlab.com/ydethe/blocksim/compare/v0.2.1...v0.3.0)</small>
+<small>[Compare with v0.2.0](https://gitlab.com/ydethe/blocksim/compare/v0.2.0...v0.3.0)</small>
 
 ### Added
 
 - Added pdm-copier commit hook and updated gitlab CI ([e8c79d4](https://gitlab.com/ydethe/blocksim/commit/e8c79d443b8824c54e114a359a9279361dd3e5b0) by Yann BLAUDIN DE THE).
+- Added test for ionex reading ([b6f5585](https://gitlab.com/ydethe/blocksim/commit/b6f55858a10e53fede18d11155a342c770f05cd3) by Yann BLAUDIN DE THE).
+- Added doc and cov badges ([1f79ce3](https://gitlab.com/ydethe/blocksim/commit/1f79ce379ad05c7ce940eabc92d78bc396526f66) by Yann BLAUDIN DE THE).
 
 ### Fixed
 
 - Fixed pipeline ([caeb37f](https://gitlab.com/ydethe/blocksim/commit/caeb37f3ed73eea2d1d4f5a206f0134ae20667e1) by Yann de Thé).
 - Fixed python 3.8 compatibility issue ([524a92f](https://gitlab.com/ydethe/blocksim/commit/524a92fa6878f714b3a51bbd6560db98ee7decd9) by Yann BLAUDIN DE THE).
 - Fixed apt install in Gitlab CI ([1b89c68](https://gitlab.com/ydethe/blocksim/commit/1b89c68d88c54c75241fe959d8d617a5bf346379) by Yann BLAUDIN DE THE).
-
-## [v0.2.1](https://gitlab.com/ydethe/blocksim/tags/v0.2.1) - 2023-04-18
-
-<small>[Compare with v0.2.0](https://gitlab.com/ydethe/blocksim/compare/v0.2.0...v0.2.1)</small>
-
-### Added
-
-- Added test for ionex reading ([b6f5585](https://gitlab.com/ydethe/blocksim/commit/b6f55858a10e53fede18d11155a342c770f05cd3) by Yann BLAUDIN DE THE).
-- Added doc and cov badges ([1f79ce3](https://gitlab.com/ydethe/blocksim/commit/1f79ce379ad05c7ce940eabc92d78bc396526f66) by Yann BLAUDIN DE THE).
-
-### Fixed
-
 - Fixed pytest conf ([da5a04e](https://gitlab.com/ydethe/blocksim/commit/da5a04e3fca1b22961f220182d3acb9be5b4ae0c) by Yann BLAUDIN DE THE).
 - Fixed test compliance ([e9060c7](https://gitlab.com/ydethe/blocksim/commit/e9060c7a9b0ab932f631eaa70dc0ab3762b1d290) by Yann de The).
 
