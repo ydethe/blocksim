@@ -127,7 +127,7 @@ class TestSatellite(TestBase):
         ns = 200
         tps = np.linspace(0, 5 * 60, ns)
         for s in sats:
-            traj = Trajectory(name=s.getName(), color="red")
+            traj = Trajectory(name=s.getName())
             for t in tps:
                 dat = s.update(t1=t, t2=t, itrf=None, subpoint=None)
                 x, y, z, vx, vy, vz = dat["itrf"]
@@ -136,7 +136,7 @@ class TestSatellite(TestBase):
 
         sats = createSatellites(tle_file=tle_pth, tsync=t0, prop=CircleSatellite)
         for s in sats:
-            traj = Trajectory(name=s.getName(), color="blue")
+            traj = Trajectory(name=s.getName())
             for t in tps:
                 dat = s.update(t1=t, t2=t, itrf=None, subpoint=None)
                 x, y, z, vx, vy, vz = dat["itrf"]
@@ -247,7 +247,6 @@ class TestSatellite(TestBase):
             name="traj",
             npoint=ns,
             params=("t", "iss_itrf_px", "iss_itrf_py", "iss_itrf_pz"),
-            color="red",
         )
 
         fig = FigureFactory.create()

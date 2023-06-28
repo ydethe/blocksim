@@ -316,7 +316,8 @@ class ABaxe(metaclass=ABCMeta):
         """
         if plottable is None:
             return
-        res = PlottableFactory.create(plottable, kwargs=kwargs)
+        name = kwargs.pop("name", "")
+        res = PlottableFactory.create(plottable, name=name, kwargs=kwargs)
         self.registerPlottable(res)
         return res
 

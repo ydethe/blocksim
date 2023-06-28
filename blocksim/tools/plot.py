@@ -274,7 +274,6 @@ def plot_3d(cfg: Munch, npoint: int):
             npoint=npoint,
             name=sn,
             params=("%s_itrf_p%s" % (sn, c) for c in ("x", "y", "z")),
-            color=(1, 0, 0, 0),
         )
         axe.plot(traj)
 
@@ -301,7 +300,6 @@ def plot_ground_track(cfg: Munch, npoint: int):
             npoint=npoint,
             name=sn,
             params=("%s_itrf_p%s" % (sn, c) for c in ("x", "y", "z")),
-            color=(1, 0, 0, 0),
             raw_value=True,
         )
         axe.plot(traj)

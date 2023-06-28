@@ -4,10 +4,14 @@ from singleton3 import Singleton
 from matplotlib import pyplot as plt
 from abc import ABCMeta, abstractmethod
 
+from matplotlib.backend_bases import PickEvent
+from matplotlib.lines import Line2D
+
 from .B3DPlotter import B3DPlotter
 from .GraphicSpec import AxeProjection, FigureProjection
 from .BLayout import BGridSpec, BGridElement
 from .BAxe import BAxeFactory, ABaxe, BAxePanda3D
+from .Plottable import APlottable
 
 
 class ABFigure(metaclass=ABCMeta):
@@ -98,6 +102,12 @@ class MplFigure(ABFigure):
 
     projection = FigureProjection.MPL
 
+    @classmethod
+    def onpick(cls, event: PickEvent):
+        if isinstance(event.artist, Line2D):
+            plottable: APlottable = event.artist.info["plottable"]
+            print(plottable.name)
+
     def render(self, tight_layout: bool = False) -> "Figure":
         if self.mpl_fig is not None:
             return self.mpl_fig
@@ -108,6 +118,7 @@ class MplFigure(ABFigure):
             facecolor=None,  # defaults to rc figure.facecolor
             edgecolor=None,  # defaults to rc figure.edgecolor
         )
+        mfig.canvas.mpl_connect("pick_event", MplFigure.onpick)
         mfig.suptitle(self.title)
 
         gs = self.grid_spec

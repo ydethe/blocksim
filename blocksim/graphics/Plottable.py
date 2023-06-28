@@ -81,11 +81,12 @@ class APlottable(metaclass=ABCMeta):
 
     """
 
-    __slots__ = ["plottable", "kwargs", "twinx", "twiny"]
+    __slots__ = ["name", "plottable", "kwargs", "twinx", "twiny"]
 
     compatible_baxe = []
 
-    def __init__(self, plottable, kwargs: dict) -> None:
+    def __init__(self, plottable, name: str, kwargs: dict) -> None:
+        self.name = name
         self.plottable = plottable
         self.twinx = kwargs.pop("twinx", None)
         self.twiny = kwargs.pop("twiny", None)
@@ -303,10 +304,17 @@ class APlottable(metaclass=ABCMeta):
         info["y_mult"] = y_mult
         info["x_label"] = x_label
         info["y_label"] = y_label
-
-        kwargs = info["mpl_kwargs"]
         plt_mth = info["plot_method"]
         mth = getattr(maxe, plt_mth)
+
+        kwargs: dict = info["mpl_kwargs"]
+        picker = kwargs.pop("picker", True)
+        pickradius = kwargs.pop("pickradius", 5)
+
+        if axe.projection != AxeProjection.GRAPH:
+            kwargs["picker"] = picker
+        if plt_mth in ["scatter", "plot"] and axe.projection != AxeProjection.GRAPH:
+            kwargs["pickradius"] = pickradius
 
         # ax = axs[2]
         # ax.set_title('Manual DateFormatter', loc='left', y=0.85, x=0.02, fontsize='medium')
@@ -330,6 +338,9 @@ class APlottable(metaclass=ABCMeta):
             maxe.figure.colorbar(ret, ax=maxe)
         elif info["fill"] == "contour":
             maxe.clabel(ret, inline=True, fontsize=10)
+
+        if ret is not None:
+            info["mline"].info = info
 
         return info
 
@@ -383,25 +394,6 @@ class Plottable6DDLPosition(APlottable):
         }
 
         return info
-
-    # def render(
-    #     self,
-    #     axe: ABaxe,
-    #     maxe: Axes,
-    #     info: dict,
-    #     amp_x: float,
-    #     amp_y: float,
-    # ) -> dict:
-    #     info["scaled_args"] = info["args"]
-    #     info["scaled_peaks"] = info["peaks"]
-    #     info["scaled_annotations"] = info["annotations"]
-    #     info["x_mult"] = 1.0
-    #     info["y_mult"] = 1.0
-    #     info["x_label"] = 1.0
-    #     info["y_label"] = 1.0
-    #     info["mline"] = None
-
-    #     return info
 
 
 class PlottableGraph(APlottable):
@@ -585,9 +577,6 @@ class PlottableGeneric(APlottable):
         AxeProjection.PLATECARREE,
         AxeProjection.POLAR,
     ]
-
-    def __init__(self, plottable, kwargs: dict) -> None:
-        super().__init__(plottable, kwargs)
 
     def _make_mline(self, axe: ABaxe) -> Tuple[FloatArr, FloatArr, str, str, str, str]:
         transform = self.kwargs.get("transform", lambda x: x)
@@ -842,6 +831,8 @@ class APlottableDSPMap(APlottable):
         ]:
             maxe.coastlines()
 
+        info["mline"].info = info
+
         return info
 
 
@@ -972,7 +963,7 @@ class PlottableFactory(object):
     __slots__ = []
 
     @classmethod
-    def create(cls, mline, kwargs: dict) -> APlottable:
+    def create(cls, mline, name: str = "", kwargs: dict = {}) -> APlottable:
         """Creates the adapted daughter class of `APlottable` to handle the object to plot
 
         Args:
@@ -989,6 +980,7 @@ class PlottableFactory(object):
                 * name
                 * unit
 
+            name: Name of the plottable for identification
             kwargs: The plotting options for the object
 
         Returns:
@@ -996,37 +988,57 @@ class PlottableFactory(object):
 
         """
         if isinstance(mline, Graph):
-            ret = PlottableGraph(mline, kwargs)
+            ret = PlottableGraph(mline, name, kwargs)
 
         elif isinstance(mline, Trajectory):
-            ret = PlottableTrajectory(mline, kwargs)
+            if name == "" or name is None:
+                name = mline.name
+            ret = PlottableTrajectory(mline, name, kwargs)
 
         elif isinstance(mline, Earth6DDLPosition):
-            ret = Plottable6DDLPosition(mline, kwargs)
+            if name == "" or name is None:
+                name = mline.name
+            ret = Plottable6DDLPosition(mline, name, kwargs)
 
         elif isinstance(mline, DSPRectilinearLine):
-            ret = PlottableDSPRectilinearLine(mline, kwargs)
+            if name == "" or name is None:
+                name = mline.name
+            ret = PlottableDSPRectilinearLine(mline, name, kwargs)
 
         elif isinstance(mline, DSPPolarLine):
-            ret = PlottableDSPPolarLine(mline, kwargs)
+            if name == "" or name is None:
+                name = mline.name
+            ret = PlottableDSPPolarLine(mline, name, kwargs)
 
         elif isinstance(mline, DSPNorthPolarLine):
-            ret = PlottableDSPNorthPolarLine(mline, kwargs)
+            if name == "" or name is None:
+                name = mline.name
+            ret = PlottableDSPNorthPolarLine(mline, name, kwargs)
 
         elif isinstance(mline, DSPHistogram):
-            ret = PlottableDSPHistogram(mline, kwargs)
+            if name == "" or name is None:
+                name = mline.name
+            ret = PlottableDSPHistogram(mline, name, kwargs)
 
         elif isinstance(mline, DSPRectilinearMap):
-            ret = PlottableDSPRectilinearMap(mline, kwargs)
+            if name == "" or name is None:
+                name = mline.name
+            ret = PlottableDSPRectilinearMap(mline, name, kwargs)
 
         elif isinstance(mline, DSPBodeDiagram):
-            ret = PlottableBodeDiagram(mline, kwargs)
+            if name == "" or name is None:
+                name = mline.name
+            ret = PlottableBodeDiagram(mline, name, kwargs)
 
         elif isinstance(mline, DSPPolarMap):
-            ret = PlottableDSPPolarMap(mline, kwargs)
+            if name == "" or name is None:
+                name = mline.name
+            ret = PlottableDSPPolarMap(mline, name, kwargs)
 
         elif isinstance(mline, DSPNorthPolarMap):
-            ret = PlottableDSPNorthPolarMap(mline, kwargs)
+            if name == "" or name is None:
+                name = mline.name
+            ret = PlottableDSPNorthPolarMap(mline, name, kwargs)
 
         elif isinstance(mline, tuple):
             if len(mline) == 0:
@@ -1036,13 +1048,19 @@ class PlottableFactory(object):
                 gp = GPlottable.from_serie(sy=mline)
             else:
                 gp = GPlottable.from_tuple(mline)
-            ret = PlottableGeneric(gp, kwargs)
+            ret = PlottableGeneric(gp, name, kwargs)
 
-        elif isinstance(mline, (pd.Series, GPlottable, np.ndarray, list)):
+        elif isinstance(mline, (pd.Series, np.ndarray, list)):
             gp = GPlottable.from_serie(sy=mline)
-            ret = PlottableGeneric(gp, kwargs)
+            ret = PlottableGeneric(gp, name, kwargs)
+
+        elif isinstance(mline, GPlottable):
+            if name == "" or name is None:
+                name = mline.name
+            gp = GPlottable.from_serie(sy=mline)
+            ret = PlottableGeneric(gp, name, kwargs)
 
         elif isinstance(mline, Path):
-            ret = PlottableImage(mline, kwargs)
+            ret = PlottableImage(mline, name, kwargs)
 
         return ret

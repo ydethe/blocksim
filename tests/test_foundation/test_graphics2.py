@@ -3,6 +3,8 @@ import pytest
 
 import numpy as np
 from numpy import pi, sqrt
+import networkx as nx
+
 from blocksim.dsp.DSPLine import DSPPolarLine, DSPRectilinearLine
 from blocksim.dsp.DSPSignal import DSPSignal
 from blocksim.dsp.DSPMap import DSPPolarMap, DSPRectilinearMap, DSPNorthPolarMap
@@ -53,7 +55,7 @@ class TestGraphics2(unittest.TestCase):
 
         lon = np.linspace(-pi, pi, 50)
         lat = np.cos(lon)
-        axe.plot(plottable=(lon, lat), color="red")
+        axe.plot(plottable=(lon, lat), name="ground_track", color="red")
 
         self.assertRaises(AssertionError, axe.plot, self.sig)
 
@@ -460,6 +462,15 @@ class TestGraphics2(unittest.TestCase):
 
         return fig.render()
 
+    @pytest.mark.mpl_image_compare(tolerance=5, savefig_kwargs={"dpi": 150})
+    def test_graph_plot(self):
+        fig = FigureFactory.create(title="Figure")
+        gs = fig.add_gridspec(1, 1)
+        axe = fig.add_baxe(spec=gs[0, 0], title="axe", projection=AxeProjection.GRAPH)
+        G = nx.complete_graph(10)
+        axe.plot(G)
+        return fig.render()
+
 
 if __name__ == "__main__":
     # unittest.main()
@@ -472,7 +483,7 @@ if __name__ == "__main__":
     # a.test_multiple_plots()
     # a.test_t1_2dxy_platecarree()
     # a.test_t2_2dtr_platecarree()
-    a.test_t3_3dxyz_platecarree()
+    # a.test_t3_3dxyz_platecarree()
     # a.test_t4_3dtrz_platecarree()
     # a.test_t5_2dxy_polar()
     # a.test_t6_2dtr_polar()
@@ -487,5 +498,6 @@ if __name__ == "__main__":
     # a.test_t15_1_3dxyz_2d()
     # a.test_t15_2_3dxyz_2d()
     # a.test_t16_3dtr_rect()
+    a.test_graph_plot()
 
     showFigures()

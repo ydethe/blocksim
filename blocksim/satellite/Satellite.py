@@ -171,7 +171,6 @@ class ASatellite(AComputer):
         self,
         number_of_position: int = 200,
         number_of_periods: int = 1,
-        color=(1, 0, 0, 1),
     ) -> Trajectory:
         """
         Return the geocentric ITRF positions of the trajectory
@@ -179,12 +178,6 @@ class ASatellite(AComputer):
         Args:
             number_of_position: Number of points per orbital period
             number_of_periods: Number of orbit periods to plot
-            color: The color as a 4-elements tuple:
-
-            *  r between 0 and 1
-            *  g between 0 and 1
-            *  b between 0 and 1
-            *  alpha between 0 and 1 (use 1 for fully opaque)
 
         Returns:
             blocksim.satellite.Trajectory: The generated trajectory
@@ -202,7 +195,7 @@ class ASatellite(AComputer):
             output = self.update(t - dt, t, itrf=None, subpoint=None)
             x[i], y[i], z[i], _, _, _ = output["itrf"]
 
-        traj = Trajectory(name=self.getName(), x=x, y=y, z=z, color=color)
+        traj = Trajectory(name=self.getName(), x=x, y=y, z=z)
 
         return traj
 
@@ -213,17 +206,11 @@ class ASatellite(AComputer):
 
         return outputs
 
-    def getTrajectoryFromLogger(self, log: Logger, color=(1, 0, 0, 1)) -> Trajectory:
+    def getTrajectoryFromLogger(self, log: Logger) -> Trajectory:
         """Bulids a Trajectory for the ASatellite from a Logger
 
         Args:
             log: The logger to read
-            color: The color as a 4-elements tuple:
-
-            *  r between 0 and 1
-            *  g between 0 and 1
-            *  b between 0 and 1
-            *  alpha between 0 and 1 (use 1 for fully opaque)
 
         Returns:
             A Trajectory instance
@@ -238,7 +225,6 @@ class ASatellite(AComputer):
                 f"{self.getName()}_itrf_py",
                 f"{self.getName()}_itrf_pz",
             ),
-            color=color,
         )
         return traj
 

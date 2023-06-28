@@ -135,6 +135,7 @@ class GVariable(object):
 
 @dataclass(init=True)
 class GPlottable:
+    name: str
     xvar: GVariable
     yvar: GVariable
 
@@ -144,7 +145,7 @@ class GPlottable:
         return GPlottable(xvar=self.xvar, yvar=rdesc)
 
     @classmethod
-    def from_serie(cls, sy: pd.Series, sx: pd.Series = None) -> "GPlottable":
+    def from_serie(cls, sy: pd.Series, sx: pd.Series = None, name: str = "") -> "GPlottable":
         yvar = GVariable.from_serie(sy)
 
         if sx is None:
@@ -153,12 +154,12 @@ class GPlottable:
         else:
             xvar = GVariable.from_serie(sx)
 
-        ret = cls(xvar=xvar, yvar=yvar)
+        ret = cls(xvar=xvar, yvar=yvar, name=name)
 
         return ret
 
     @classmethod
-    def from_dict(cls, dy: dict, dx: dict = None) -> "GPlottable":
+    def from_dict(cls, dy: dict, dx: dict = None, name: str = "") -> "GPlottable":
         yvar = GVariable.from_dict(dy)
 
         if dx is None:
@@ -167,7 +168,7 @@ class GPlottable:
         else:
             xvar = GVariable.from_dict(dx)
 
-        ret = cls(xvar=xvar, yvar=yvar)
+        ret = cls(xvar=xvar, yvar=yvar, name=name)
 
         return ret
 
@@ -193,7 +194,7 @@ class GPlottable:
         elif isinstance(xname, pd.Series):
             xvar = GVariable.from_serie(xname)
 
-        ret = cls(xvar=xvar, yvar=yvar)
+        ret = cls(xvar=xvar, yvar=yvar, name=yname)
 
         return ret
 
@@ -207,12 +208,12 @@ class GPlottable:
         else:
             xvar = GVariable.from_dataframe(df, xname)
 
-        ret = cls(xvar=xvar, yvar=yvar)
+        ret = cls(xvar=xvar, yvar=yvar, name=yname)
 
         return ret
 
     @classmethod
-    def from_tuple(cls, mline: tuple) -> "GPlottable":
+    def from_tuple(cls, mline: tuple, name: str = "") -> "GPlottable":
         if len(mline) == 3:
             if isinstance(mline[0], Logger):
                 log, xdesc, ydesc = mline
@@ -225,7 +226,7 @@ class GPlottable:
             xdesc, ydesc = mline
             xvar = GVariable.from_desc(xdesc)
             yvar = GVariable.from_desc(ydesc)
-            ret = cls(xvar=xvar, yvar=yvar)
+            ret = cls(xvar=xvar, yvar=yvar, name=name)
 
         return ret
 

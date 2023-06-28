@@ -7,7 +7,7 @@ name = "blocksim"
 dynamic = ["version"]
 description = "A library to simulate a closed-loop system"
 authors = [
-    { name = "Yann de Thé", email = "yann@johncloud.fr" },
+    { name = "Yann BLAUDIN DE THÉ", email = "yann.blaudin-de-the@thalesaleniaspace.com" },
 ]
 dependencies = [
     "rich>=13.3",
@@ -44,9 +44,8 @@ dependencies = [
 requires-python = ">=3.8"
 
 [project.urls]
-"Bug Tracker" = "https://gitlab.com/ydethe/blocksim/issues"
-Homepage = "https://gitlab.com/ydethe/blocksim"
-Source = "https://gitlab.com/ydethe/blocksim"
+Homepage = "https://git.aes.alcatel.fr:8443/projects/DNFSND/repos/blocksim"
+Source = "https://git.aes.alcatel.fr:8443/projects/DNFSND/repos/blocksim"
 
 [tool.pylint.main]
 ignore-patterns = ["kt_*.py"]

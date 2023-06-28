@@ -12,11 +12,6 @@ class Trajectory(object):
 
     Args:
         name: Name of the trajectory
-        color: The color as a 4-elements tuple:
-            *  r between 0 and 1
-            *  g between 0 and 1
-            *  b between 0 and 1
-            *  alpha between 0 and 1 (use 1 for fully opaque)
         t: array of time stamps
         x: array of ITRF X position
         y: array of ITRF Y position
@@ -27,7 +22,6 @@ class Trajectory(object):
     def __init__(
         self,
         name: str,
-        color: tuple,
         t: FloatArr = np.array([]),
         x: FloatArr = np.array([]),
         y: FloatArr = np.array([]),
@@ -38,7 +32,6 @@ class Trajectory(object):
         self.x = x
         self.y = y
         self.z = z
-        self.color = color
 
     def ITRFToDataFrame(self) -> pd.DataFrame:
         """Converts the Trajectory into a pandas.DataFrame
@@ -83,7 +76,6 @@ class Trajectory(object):
         log: Logger,
         name: str,
         params: Tuple[str],
-        color: tuple,
         npoint: int = -1,
         raw_value: bool = True,
     ) -> "Trajectory":
@@ -96,12 +88,6 @@ class Trajectory(object):
                     If negative, all the points are read
             params: A tuple with the 4 names of values (T, X, Y, Z) to read in log.
                     These values shall be ITRF meter coordinates
-            color: The color as a 4-elements tuple:
-
-            *  r between 0 and 1
-            *  g between 0 and 1
-            *  b between 0 and 1
-            *  alpha between 0 and 1 (use 1 for fully opaque)
             raw_value: True to use log.getRawValue. Otherwise, log.getValue is used (much slower)
 
         Returns:
@@ -126,7 +112,7 @@ class Trajectory(object):
             y = mth(yname)
             z = mth(zname)
 
-        traj = Trajectory(name=name, t=t, x=x, y=y, z=z, color=color)
+        traj = Trajectory(name=name, t=t, x=x, y=y, z=z)
 
         return traj
 
