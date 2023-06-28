@@ -69,6 +69,8 @@ __all__ = [
     "rotation_matrix",
     "teme_to_itrf",
     "itrf_to_teme",
+    "itrf_to_enu",
+    "is_above_elevation_mask",
     "itrf_to_azeld",
     "azeld_to_itrf",
     "azelalt_to_itrf",
@@ -1251,6 +1253,49 @@ def azelalt_to_itrf(azelalt: FloatArr, sat: FloatArr) -> FloatArr:
     return X
 
 
+def itrf_to_enu(obs: FloatArr, sat: FloatArr) -> Tuple[FloatArr, FloatArr]:
+    """Compute the satellite's position and velocity in ENU frame relative to an observer
+
+    Args:
+        obs: Position (m) & velocity (m/s) of terrestrial observer in ITRF
+        sat: Position (m) & velocity (m/s) of the observed satellite in ITRF
+
+    Returns:
+
+        * Position in ENU (m)
+        * Velocity in ENU (m/s)
+
+    """
+    # Local ENV for the observer
+    obs_env = build_local_matrix(obs[:3])
+    deltap = sat[:3] - obs[:3]
+    deltav = sat[3:] - obs[3:]
+    pos_enu = obs_env.T @ deltap
+    vel_enu = obs_env.T @ deltav
+    return pos_enu, vel_enu
+
+
+def is_above_elevation_mask(obs: FloatArr, sat: FloatArr, mask: float) -> bool:
+    """Check if a satellite is above a given elevation angle threshold
+
+    Args:
+        obs: Position (m) & velocity (m/s) of terrestrial observer in ITRF
+        sat: Position (m) & velocity (m/s) of the observed satellite in ITRF
+        mask: Elevation angle threshold (rad)
+
+    Returns:
+        Result of the test
+
+    """
+    # Local ENV for the observer
+    pos_enu, vel_enu = itrf_to_enu(obs, sat)
+
+    d2 = pos_enu @ pos_enu
+    z = pos_enu[2]
+
+    return sin(mask) * sqrt(d2) < z
+
+
 def itrf_to_azeld(obs: FloatArr, sat: FloatArr) -> Tuple[float, float, float, float, float, float]:
     """Converts an ITRF position & velocity into
     azimut, elevation, distance, azimut rate, elevation rate, radial velocity
@@ -1273,13 +1318,11 @@ def itrf_to_azeld(obs: FloatArr, sat: FloatArr) -> Tuple[float, float, float, fl
     from . import logger
 
     # Local ENV for the observer
-    obs_env = build_local_matrix(obs[:3])
-    deltap = sat[:3] - obs[:3]
-    deltav = sat[3:] - obs[3:]
-    x, y, z = obs_env.T @ deltap
-    vx, vy, vz = obs_env.T @ deltav
+    pos_enu, vel_enu = itrf_to_enu(obs, sat)
+    x, y, z = pos_enu
+    vx, vy, vz = vel_enu
 
-    dist = lin.norm(deltap)
+    dist = lin.norm(pos_enu)
 
     if z > dist:
         z = dist
@@ -1292,11 +1335,14 @@ def itrf_to_azeld(obs: FloatArr, sat: FloatArr) -> Tuple[float, float, float, fl
     az = arctan2(x, y)
 
     # Local ENV for the satellite
+    vr = pos_enu @ vel_enu / dist
     rxy = sqrt(x**2 + y**2)
-    deltav = sat[3:] - obs[3:]
-    vr = deltav @ deltap / dist
-    azr = (-x * vy + y * vx) / rxy**2
-    elr = (vz - vr * z / dist) / rxy
+    if rxy == 0:
+        azr = np.nan
+        elr = np.nan
+    else:
+        azr = (-x * vy + y * vx) / rxy**2
+        elr = (vz - vr * z / dist) / rxy
 
     return az, el, dist, azr, elr, vr
 

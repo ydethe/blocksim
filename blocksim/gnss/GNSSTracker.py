@@ -6,7 +6,7 @@ from ..control.Sensors import ASensors
 from ..core.Node import AWGNOutput
 
 from ..constants import mu, omega
-from ..utils import FloatArr, itrf_to_azeld
+from ..utils import FloatArr, itrf_to_azeld, is_above_elevation_mask
 
 
 class GNSSTracker(ASensors):
@@ -34,12 +34,14 @@ class GNSSTracker(ASensors):
 
     The **obscoord** vector contains, for the satellite k:
 
-    * Azimut (rad) in obscoord[6*k]
-    * Elevation (rad) in obscoord[6*k+1]
-    * Distance (m) in obscoord[6*k+2]
-    * Radial velocity (m/s) in obscoord[6*k+3]
-    * Radial acceleration (m/s^2) in obscoord[6*k+4]
-    * Radial jerk (m/s^3) in obscoord[6*k+5]
+    * Azimut (rad) in obscoord[8*k]
+    * Elevation (rad) in obscoord[8*k+1]
+    * Distance (m) in obscoord[8*k+2]
+    * Azimut rate (rad/S) in obscoord[8*k+3]
+    * Elevation rate (rad/s) in obscoord[8*k+4]
+    * Radial velocity (m/s) in obscoord[8*k+5]
+    * Radial acceleration (m/s^2) in obscoord[8*k+6]
+    * Radial jerk (m/s^3) in obscoord[8*k+7]
 
     The attributes are to be defined by the user :
 
@@ -51,6 +53,8 @@ class GNSSTracker(ASensors):
         elev_mask: Elevation mask to determine if a satellite is visible (rad)
         dp: Systematic error on the ranging measurement (m)
         dv: Systematic error on the radial velocity measurement (m/s)
+        no_meas: Boolean to turn off **measurement** computation
+        no_obs: Boolean to turn off **obscoord** computation
 
     Args:
         name: Name of the element
@@ -63,7 +67,7 @@ class GNSSTracker(ASensors):
     def __init__(self, name: str, nsat: int):
         nom_meas = ["pr", "vr"]
         nom_ephem = ["px", "py", "pz", "vx", "vy", "vz"]
-        nom_obscoord = ["azim", "elev", "dist", "vrad", "arad", "jrad"]
+        nom_obscoord = ["azim", "elev", "dist", "vazim", "velev", "vrad", "arad", "jrad"]
 
         cpt_snames = []
         eph_snames = []
@@ -89,6 +93,8 @@ class GNSSTracker(ASensors):
         self.createParameter("elev_mask", value=0)
         self.createParameter("dp", value=0)
         self.createParameter("dv", value=0)
+        self.createParameter("no_meas", value=False)
+        self.createParameter("no_obs", value=False)
 
         self.setMean(np.zeros(2 * nsat), oname="measurement")
         self.setCovariance(np.zeros((2 * nsat, 2 * nsat)), oname="measurement")
@@ -109,10 +115,9 @@ class GNSSTracker(ASensors):
     ) -> dict:
         nsat = len(state) // 6
 
-        meas = np.empty(2 * nsat)
         ephemeris = np.empty(6 * nsat)
-        obscoord = np.empty(6 * nsat)
-
+        meas = np.full(2 * nsat, fill_value=np.nan)
+        obscoord = np.full(8 * nsat, fill_value=np.nan)
         vissat = np.array([0])
         for k in range(nsat):
             spv = state[6 * k : 6 * k + 6]
@@ -121,42 +126,49 @@ class GNSSTracker(ASensors):
             p_t = ueposition[:3]
 
             # Calcul elevation
-            azim, elev, dist, _, _, vrad = itrf_to_azeld(ueposition, spv)
+            if not self.no_obs or not self.no_meas:
+                azim, elev, dist, vazim, velev, vrad = itrf_to_azeld(ueposition, spv)
 
-            # Quelques variables auxiliaires
-            dst = p_s[:3] - p_t[:3]
-            u = dst / dist
-            r_s = lin.norm(p_s)
-            om = np.array([0, 0, omega])
+            if not self.no_obs:
+                # Quelques variables auxiliaires
+                dst = p_s[:3] - p_t[:3]
+                u = dst / dist
+                r_s = lin.norm(p_s)
+                om = np.array([0, 0, omega])
 
-            # Calcul des accélération et jerk du satellite en ECEF
-            a_s = -mu / r_s**3 * p_s - np.cross(om, np.cross(om, p_s)) - 2 * np.cross(om, v_s)
-            j_s = (
-                -mu / r_s**3 * v_s
-                + 3 * mu / r_s**5 * (p_s @ v_s) * p_s
-                - np.cross(om, np.cross(om, v_s))
-                - 2 * np.cross(om, a_s)
-            )
+                # Calcul des accélération et jerk du satellite en ECEF
+                a_s = -mu / r_s**3 * p_s - np.cross(om, np.cross(om, p_s)) - 2 * np.cross(om, v_s)
+                j_s = (
+                    -mu / r_s**3 * v_s
+                    + 3 * mu / r_s**5 * (p_s @ v_s) * p_s
+                    - np.cross(om, np.cross(om, v_s))
+                    - 2 * np.cross(om, a_s)
+                )
 
-            # Calcul arad et jrad
-            arad = -(vrad**2) / dist + v_s @ v_s / dist + a_s @ u
-            jrad = -3 * arad * vrad / dist + 3 * v_s @ a_s / dist + j_s @ u
+                # Calcul arad et jrad
+                arad = -(vrad**2) / dist + v_s @ v_s / dist + a_s @ u
+                jrad = -3 * arad * vrad / dist + 3 * v_s @ a_s / dist + j_s @ u
 
-            obscoord[6 * k] = azim
-            obscoord[6 * k + 1] = elev
-            obscoord[6 * k + 2] = dist
-            obscoord[6 * k + 3] = vrad
-            obscoord[6 * k + 4] = arad
-            obscoord[6 * k + 5] = jrad
+                obscoord[8 * k] = azim
+                obscoord[8 * k + 1] = elev
+                obscoord[8 * k + 2] = dist
+                obscoord[8 * k + 3] = vazim
+                obscoord[8 * k + 4] = velev
+                obscoord[8 * k + 5] = vrad
+                obscoord[8 * k + 6] = arad
+                obscoord[8 * k + 7] = jrad
 
-            # Calcul pseudo-distance
-            pr = dist + self.dp
+            if not self.no_meas:
+                # Calcul pseudo-distance
+                pr = dist + self.dp
 
-            # Calcul vitesse radiale
-            pvr = vrad + self.dv
+                # Calcul vitesse radiale
+                pvr = vrad + self.dv
+            else:
+                pr = pvr = np.nan
 
             # Validation avec le masque d'elevation
-            if elev > self.elev_mask:
+            if is_above_elevation_mask(ueposition, spv, self.elev_mask):
                 ephemeris[6 * k : 6 * k + 6] = state[6 * k : 6 * k + 6]
                 meas[2 * k] = pr
                 meas[2 * k + 1] = pvr

@@ -7,7 +7,7 @@ name = "blocksim"
 dynamic = ["version"]
 description = "A library to simulate a closed-loop system"
 authors = [
-    { name = "Yann BLAUDIN DE THÉ", email = "yann.blaudin-de-the@thalesaleniaspace.com" },
+    { name = "Yann de Thé", email = "ydethe@gmail.com" },
 ]
 dependencies = [
     "rich>=13.3",
@@ -44,8 +44,9 @@ dependencies = [
 requires-python = ">=3.8"
 
 [project.urls]
-Homepage = "https://git.aes.alcatel.fr:8443/projects/DNFSND/repos/blocksim"
-Source = "https://git.aes.alcatel.fr:8443/projects/DNFSND/repos/blocksim"
+Homepage = "https://gitlab.com/ydethe/blocksim"
+Source = "https://gitlab.com/ydethe/blocksim"
+Documentation = "https://gitlab.com/ydethe/blocksim"
 
 [tool.pylint.main]
 ignore-patterns = ["kt_*.py"]
@@ -92,6 +93,7 @@ addopts = [
     "--cov-config=tests/coverage.conf",
     "--cov=blocksim",
     "--doctest-modules",
+    "--hypothesis-show-statistics",
     "--mpl",
     "--mpl-generate-summary=html",
     "--mpl-results-always",
@@ -154,7 +156,7 @@ test = [
     "pytest-html~=3.1.1",
     "pytest-mpl~=0.16.1",
     "pytest-xdist[psutil]~=3.2",
-    "tox-pdm>=0.6.1,<1.0.0",
+    "hypothesis~=6.80",
 ]
 
 [tool.pdm.scripts]

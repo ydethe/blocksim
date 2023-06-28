@@ -21,7 +21,7 @@ from blocksim.dsp.DSPLine import DSPRectilinearLine
 from blocksim.testing import TestBase
 
 
-class TestGNSS(TestBase):
+class TestPVT(TestBase):
     def setUp(self):
         TestBase.setUp(self)
 
@@ -411,9 +411,9 @@ class TestGNSS(TestBase):
 
 
 if __name__ == "__main__":
-    a = TestGNSS()
-    # a.setUp()
-    # a.test_gnss_ranging()
+    a = TestPVT()
+    a.setUp()
+    a.test_gnss_ranging()
 
     # a.setUp()
     # a.test_gnss_doppler()
@@ -421,7 +421,7 @@ if __name__ == "__main__":
     # a.setUp()
     # a.test_gnss_dv()
 
-    a.setUp()
-    a.test_tkr_vaj(pb=True)
+    # a.setUp()
+    # a.test_tkr_vaj(pb=True)
 
     showFigures()

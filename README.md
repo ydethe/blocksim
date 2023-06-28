@@ -3,6 +3,7 @@
 ![Python](https://img.shields.io/badge/python-3.8-green)
 ![Doc](doc_badge.svg)
 [![Coverage](cov_badge.svg)](../coverage/index.html)
+[![Tested with Hypothesis](https://img.shields.io/badge/hypothesis-tested-brightgreen.svg)](https://hypothesis.readthedocs.io/)
 
 # Quick look
 

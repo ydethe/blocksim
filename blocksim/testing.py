@@ -1,11 +1,20 @@
 import os
 import unittest
 
+from hypothesis import strategies as st
 import numpy as np
-from numpy import sqrt, cos, sin, exp
+from numpy import sqrt, cos, sin, exp, pi
 
 from .graphics import plotVerif, showFigures
 from .graphics.BFigure import ABFigure
+
+
+st_lon = st.sampled_from(np.linspace(-pi, pi, 101))
+st_lat = st.sampled_from(np.linspace(-pi / 2, pi / 2, 101))
+st_leo_alt = st.floats(200e3, 1200e3, allow_nan=False, allow_subnormal=False)
+st_elev = st.sampled_from(np.linspace(0, pi / 2, 101))
+st_lonlatalt = st.tuples(st_lon, st_lat, st_leo_alt)
+st_latlonalt = st.tuples(st_lat, st_lon, st_leo_alt)
 
 
 def exact(t, yyp, vvp, u):

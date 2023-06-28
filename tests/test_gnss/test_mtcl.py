@@ -44,7 +44,7 @@ class TestGNSSSimMTCL(TestBase):
 if __name__ == "__main__":
     TestGNSSSimMTCL.setUpClass()
     a = TestGNSSSimMTCL()
-    # a.test_mtcl()
-    a.test_mtcl_vr()
+    a.test_mtcl()
+    # a.test_mtcl_vr()
     # a.test_polar_view()
     plt.show()

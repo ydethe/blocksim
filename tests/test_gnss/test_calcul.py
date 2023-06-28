@@ -5,8 +5,6 @@ import pytest
 from blocksim.tools.config import load_config
 from blocksim.tools.plot import plot_dop
 from blocksim.tools.computation import simu
-
-
 from blocksim.testing import TestBase
 
 
@@ -110,8 +108,8 @@ if __name__ == "__main__":
     from blocksim.graphics import showFigures
 
     a = TestGNSSSimCalcul()
-    # a.test_calcul()
+    a.test_calcul()
     # a.test_calcul_vr()
-    a.test_plot_dop()
+    # a.test_plot_dop()
 
     showFigures()
