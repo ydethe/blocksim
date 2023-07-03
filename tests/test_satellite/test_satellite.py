@@ -22,6 +22,7 @@ from blocksim.utils import (
     azeld_to_itrf,
     itrf_to_llavpa,
     llavpa_to_itrf,
+    rad,
 )
 from blocksim.satellite.Trajectory import Trajectory
 from blocksim.testing import TestBase
@@ -258,23 +259,81 @@ class TestSatellite(TestBase):
 
         return fig.render()
 
+    def test_culmination_circle(self):
+        h = 600e3
+        r = Req + h
+
+        tsync = datetime(2023, 1, 7, 13, 0, 0, tzinfo=timezone.utc)
+        sat = CircleSatellite.fromOrbitalElements(
+            name="sat", tsync=tsync, a=r, inc=45 * pi / 180, argp=0.5
+        )
+
+        lat = rad(43.60510103575826)
+        lon = rad(1.4439216490854043)
+        alt = 0
+        elev = rad(20)
+        pv_rx = llavpa_to_itrf(np.array([lon, lat, alt, 0, 0, 0]))
+
+        res = sat.find_events(
+            obs=pv_rx, t0=23045.848247451497, t1=24286.476834428515, elevation=elev
+        )
+
+        pv_test = sat.getGeocentricITRFPositionAt(res[0]["rise"])
+        _, el_test, _, _, _, _ = itrf_to_azeld(obs=pv_rx, sat=pv_test)
+        self.assertAlmostEqual(el_test, elev, delta=1e-2)
+
+        pv_test = sat.getGeocentricITRFPositionAt(res[0]["culmination"])
+        _, el_test, _, _, _, _ = itrf_to_azeld(obs=pv_rx, sat=pv_test)
+        self.assertAlmostEqual(el_test, res[0]["culmination_elevation"], delta=1e-2)
+
+        pv_test = sat.getGeocentricITRFPositionAt(res[0]["set"])
+        _, el_test, _, _, _, _ = itrf_to_azeld(obs=pv_rx, sat=pv_test)
+        self.assertAlmostEqual(el_test, elev, delta=1e-2)
+
+    def test_culmination_sgp4(self):
+        h = 600e3
+        r = Req + h
+
+        tsync = datetime(2023, 1, 7, 13, 0, 0, tzinfo=timezone.utc)
+        sat = SGP4Satellite.fromOrbitalElements(
+            name="sat", tsync=tsync, a=r, inc=45 * pi / 180, argp=0.5, ecc=0, mano=0, node=0
+        )
+
+        lat = rad(43.60510103575826)
+        lon = rad(1.4439216490854043)
+        alt = 0
+        elev = rad(20)
+        pv_rx = llavpa_to_itrf(np.array([lon, lat, alt, 0, 0, 0]))
+
+        res = sat.find_events(
+            obs=pv_rx, t0=23045.848247451497, t1=24286.476834428515, elevation=elev
+        )
+
+        pv_test = sat.getGeocentricITRFPositionAt(res[0]["rise"])
+        _, el_test, _, _, _, _ = itrf_to_azeld(obs=pv_rx, sat=pv_test)
+        self.assertAlmostEqual(el_test, elev, delta=1e-2)
+
+        pv_test = sat.getGeocentricITRFPositionAt(res[0]["set"])
+        _, el_test, _, _, _, _ = itrf_to_azeld(obs=pv_rx, sat=pv_test)
+        self.assertAlmostEqual(el_test, elev, delta=1e-2)
+
 
 if __name__ == "__main__":
     # unittest.main()
     # exit(0)
 
-    from blocksim.graphics import showFigures
-
     a = TestSatellite()
     # a.test_teme_itrf()
     # a.test_satellite()
-    a.test_iss()
-    a.test_ground_track()
+    # a.test_iss()
+    # a.test_ground_track()
     # a.test_geosynchronous()
     # a.test_circle_satellite()
     # a.test_azeld()
     # a.test_azeld2()
     # a.test_azeld3()
     # a.test_llavpa()
+    a.test_culmination_circle()
+    # a.test_culmination_sgp4()
 
-    showFigures()
+    # showFigures()

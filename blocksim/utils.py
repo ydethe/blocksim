@@ -6,7 +6,7 @@ import os
 import sys
 import glob
 import re
-from typing import Iterable, Tuple, List
+from typing import Iterable, Tuple, List, Union
 import importlib
 from dataclasses import dataclass
 
@@ -67,6 +67,7 @@ __all__ = [
     "itrf_to_geodetic",
     "time_to_jd_fraction",
     "rotation_matrix",
+    "teme_transition_matrix",
     "teme_to_itrf",
     "itrf_to_teme",
     "itrf_to_enu",
@@ -952,8 +953,17 @@ def time_to_jd_fraction(t_epoch: float) -> Tuple[float, float]:
     return jd, fraction
 
 
-def rotation_matrix(angle: float, axis: FloatArr):
+def rotation_matrix(angle: Union[float, FloatArr], axis: FloatArr):
     """Builds the 3D rotation matrix from axis and angle
+    If angle is an array with length N,
+    the shape of the returned matrix is (3, 3, N)
+    You can apply this to single vector M0 with:
+
+    np.einsum("ipj,p->ij", R, M0)
+
+    Or to another vector stack (shape (3, N)) with:
+
+    np.einsum("ip...,p...->i...", R, M)
 
     Args:
         angle: Rotation angle (rad)
@@ -963,9 +973,32 @@ def rotation_matrix(angle: float, axis: FloatArr):
         The rotation matrix
 
     """
-    kx, ky, kz = axis / lin.norm(axis)
+    n = axis / lin.norm(axis)
+    kx, ky, kz = n
     K = np.array([[0, -kz, ky], [kz, 0, -kx], [-ky, kx, 0]])
-    R = np.eye(3) + sin(angle) * K + (1 - cos(angle)) * K @ K
+    K2 = np.einsum("i,j", n, n)
+
+    if hasattr(angle, "__iter__"):
+        R = np.einsum("k,ij", cos(angle), np.eye(3))
+        R += np.einsum("k,ij", sin(angle), K)
+        R += np.einsum("k,ij", 1 - cos(angle), K2)
+    else:
+        R = cos(angle) * np.eye(3) + sin(angle) * K + (1 - cos(angle)) * K2
+
+    return R
+
+
+def teme_transition_matrix(t_epoch: float, reciprocal: bool = False) -> FloatArr:
+    jd, fraction = time_to_jd_fraction(t_epoch)
+
+    theta, theta_dot = theta_GMST1982(jd, fraction)
+    uz = np.array((0.0, 0.0, 1.0))
+
+    if reciprocal:
+        R = rotation_matrix(-theta, uz)
+    else:
+        R = rotation_matrix(theta, uz)
+
     return R
 
 

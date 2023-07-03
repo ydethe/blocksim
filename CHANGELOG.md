@@ -6,25 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
-## [v0.5.0](https://gitlab.com/ydethe/blocksim/tags/v0.5.0) - 2023-06-28
-
-<small>[Compare with v0.4.0](https://gitlab.com/ydethe/blocksim/compare/v0.4.0...v0.5.0)</small>
-
-### Added
-
-- Added hypothesis tests ([cef5881](https://gitlab.com/ydethe/blocksim/commit/cef58810bc023a9d6f2d1e73b3a93a56fa86a700) by Yann BLAUDIN DE THE).
-
 ## [v0.4.0](https://gitlab.com/ydethe/blocksim/tags/v0.4.0) - 2023-06-28
 
 <small>[Compare with v0.3.1](https://gitlab.com/ydethe/blocksim/compare/v0.3.1...v0.4.0)</small>
 
 ### Added
 
+- Added hypothesis tests ([cef5881](https://gitlab.com/ydethe/blocksim/commit/cef58810bc023a9d6f2d1e73b3a93a56fa86a700) by Yann BLAUDIN DE THE).
 - Added naming of Plottables and pick event handling by default that prints the name of the Plottable. Removed color attribute in Trajectory class ([477b45f](https://gitlab.com/ydethe/blocksim/commit/477b45f2da84b8e6b88c2a85aacae79444fdca10) by Yann BLAUDIN DE THE).
 - Added link under coverage badge ([1833569](https://gitlab.com/ydethe/blocksim/commit/18335690bb16e37d13711d5f190bfca375b2ece4) by Yann BLAUDIN DE THE).
 
 ### Fixed
 
+- Fixed test_elevation_mask ([1d9c285](https://gitlab.com/ydethe/blocksim/commit/1d9c285b636e78f4df8fb051b894bd4383be4375) by Yann BLAUDIN DE THE).
 - Fixed doc generation ([f2f8aa9](https://gitlab.com/ydethe/blocksim/commit/f2f8aa93183151e89977bd31fbc123002875301b) by Yann BLAUDIN DE THE).
 
 ### Removed

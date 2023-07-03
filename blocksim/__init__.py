@@ -28,7 +28,7 @@ blocksim comes with some CLI utilities.
 
 To run tests, just run:
 
-    pdm test
+    pdm run pytest
 
 ## Baseline images generation
 

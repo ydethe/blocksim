@@ -6,10 +6,12 @@ import requests
 
 
 import numpy as np
-from numpy import cos, sin, tan, sqrt
+from numpy import cos, sin, tan, sqrt, pi, arccos, arcsin
 import scipy.linalg as lin
+from scipy.optimize import minimize_scalar, root_scalar
 from sgp4.api import Satrec, WGS84
 from sgp4.functions import days2mdhms
+from skyfield.api import load, wgs84, EarthSatellite
 
 from ..loggers.Logger import Logger
 from ..Simulation import Simulation
@@ -24,10 +26,14 @@ from ..utils import (
     FloatArr,
     orbital_to_teme,
     itrf_to_geodetic,
+    itrf_to_llavpa,
     teme_to_orbital,
     teme_to_itrf,
     itrf_to_teme,
     time_to_jd_fraction,
+    deg,
+    rotation_matrix,
+    teme_transition_matrix,
 )
 from .Trajectory import Trajectory
 
@@ -242,6 +248,26 @@ class ASatellite(AComputer):
         """
         pass
 
+    @abstractmethod
+    def find_events(self, obs: FloatArr, t0: float, t1: float, elevation: float) -> List[dict]:
+        """Find rise, culmination and set events
+
+        Args:
+            obs: ITRF position & velocity of the observer (m & m/s)
+            t0: Begining of the search interval (s)
+            t1: End of the search interval (s)
+            elevation: Elevation threshold (rad)
+
+        Returns:
+            A list of dictionaries whose keys are:
+
+            * culmination: Date of culmination (s)
+            * rise: Date of rise in search simulation time interval **if found** (s)
+            * set: Date of set in search simulation time interval **if found** (s)
+
+        """
+        pass
+
 
 class SGP4Satellite(ASatellite):
     """Earth-orbiting satellite, using SGP4 propagator
@@ -299,6 +325,17 @@ class SGP4Satellite(ASatellite):
         pv0 = self.getGeocentricITRFPositionAt(0)
         otp = self.getOutputByName("itrf")
         otp.setInitialState(pv0)
+
+    def getSkyfieldSatellite(self) -> EarthSatellite:
+        """Build an instance of EarthSatellite
+        See https://rhodesmill.org/skyfield/earth-satellites.html
+
+        """
+        if self.__sgp4 is None:
+            return None
+        ts = load.timescale()
+        sat = EarthSatellite.from_satrec(self.__sgp4, ts)
+        return sat
 
     def getGeocentricITRFPositionAt(self, t_calc: float) -> FloatArr:
         # epoch time in days from jan 0, 1950. 0 hr
@@ -501,6 +538,34 @@ class SGP4Satellite(ASatellite):
         )
 
         return sat
+
+    def find_events(self, obs: FloatArr, t0: float, t1: float, elevation: float) -> List[dict]:
+        # https://rhodesmill.org/skyfield/earth-satellites.html#finding-when-a-satellite-rises-and-sets
+        satellite = self.getSkyfieldSatellite()
+        lon, lat, alt, _, _, _ = itrf_to_llavpa(obs)
+        topos = wgs84.latlon(deg(lat), deg(lon))
+        ts = load.timescale()
+        ut0 = ts.from_datetime(self.tsync + timedelta(seconds=t0))
+        ut1 = ts.from_datetime(self.tsync + timedelta(seconds=t1))
+        t, events = satellite.find_events(topos, ut0, ut1, altitude_degrees=deg(elevation))
+        res = list()
+        trise = None
+        tculm = None
+        tset = None
+        for ti, event in zip(t, events):
+            dt = (ti.utc_datetime() - self.tsync).total_seconds()
+            if event == 0:
+                trise = dt
+                if tset is not None:
+                    res.append({"rise": trise, "culmination": tculm, "set": tset})
+            elif event == 1:
+                tculm = dt
+            elif event == 2:
+                tset = dt
+
+        res.append({"rise": trise, "culmination": tculm, "set": tset})
+
+        return res
 
 
 class CircleSatellite(ASatellite):
@@ -733,17 +798,113 @@ class CircleSatellite(ASatellite):
         cth = cos(th)
         sth = sin(th)
 
-        # if hasattr(td, "__iter__"):
-        #     ns = len(td)
-        #     newpv_teme = np.outer(self.__R1, cth) + np.outer(self.__R2, sth)
-        #     newpv = np.empty_like(newpv_teme)
-        #     for k in range(ns):
-        #         newpv[:, k] = teme_to_itrf(t_epoch=t_epoch, pv_teme=newpv_teme[:, k])
-        # else:
         newpv_teme = self.__R1 * cth + self.__R2 * sth
         newpv = teme_to_itrf(t_epoch=t_epoch, pv_teme=newpv_teme)
 
         return newpv
+
+    def getTEMEOrbitRotationMatrix(self, t: float):
+        t_epoch = (self.tsync - ASatellite.getInitialEpoch()).total_seconds()
+        pv0 = self.getGeocentricITRFPositionAt(0)
+        pv_teme = itrf_to_teme(t_epoch=t_epoch, pv_itrf=pv0)
+        pos = pv_teme[:3]
+        vel = pv_teme[3:]
+        a = lin.norm(pos)
+        sat_puls = sqrt(mu / a**3)
+        angle = sat_puls * t
+        n = np.cross(pos, vel)
+        axe = n / lin.norm(n)
+
+        R = rotation_matrix(angle, axe)
+
+        return R
+
+    def _find_events(self, obs: FloatArr, t0: float, elevation: float) -> dict:
+        def fun(t, M0, pos_rx, s):
+            t_epoch = (self.tsync - ASatellite.getInitialEpoch()).total_seconds() + t
+            if hasattr(t, "__iter__"):
+                R1 = self.getTEMEOrbitRotationMatrix(t)
+                R2 = teme_transition_matrix(t_epoch, reciprocal=True)
+                Mt = np.einsum("ipj,p->ij", R1, M0)
+                M1 = np.einsum("ip...,p...->i...", R2, Mt)
+            else:
+                M1 = (
+                    teme_transition_matrix(t_epoch, reciprocal=True)
+                    @ self.getTEMEOrbitRotationMatrix(t)
+                    @ M0
+                )
+
+            x = pos_rx.T @ M1
+
+            return s - x
+
+        Torb = self.orbit_period.total_seconds()
+        pv0 = self.getGeocentricITRFPositionAt(0)
+        dt = (self.tsync - self.getInitialEpoch()).total_seconds()
+        R = teme_transition_matrix(dt)
+        r = lin.norm(pv0[:3])
+        M0 = R @ pv0[:3] / r  # Normalize the satellite position in TEME frame
+
+        r_obs = lin.norm(obs[:3])
+        M1 = obs[:3] / r_obs
+
+        d = -Req * sin(elevation) + sqrt(r**2 - Req**2 * cos(elevation) ** 2)
+        beta = arccos((d**2 + r**2 - Req**2) / (2 * r * d))
+        alpha = pi / 2 - (elevation + beta)
+        Tup_max = Torb * alpha / pi
+        s = cos(alpha)
+
+        culmination = minimize_scalar(
+            fun=fun,
+            args=(M0, M1, s),
+            method="bounded",
+            bracket=(t0, t0 + Torb),
+            bounds=(t0, t0 + Torb),
+        )
+        if culmination.status != 0:
+            raise AssertionError("Culmination search failed")
+        alpha_max = arccos(s - culmination.fun)
+        d_max = sqrt(Req**2 + r**2 - 2 * Req * r * cos(alpha_max))
+        elev_max = -arcsin((d_max**2 + Req**2 - r**2) / (2 * Req * d_max))
+
+        rise = set = None
+        if fun(culmination.x, M0, M1, s) < 0:
+            rise = root_scalar(
+                f=fun,
+                args=(M0, M1, s),
+                bracket=(culmination.x - Tup_max, culmination.x),
+            )
+            if not rise.converged:
+                raise AssertionError("Rise search failed")
+            set = root_scalar(
+                f=fun,
+                args=(M0, M1, s),
+                bracket=(culmination.x, culmination.x + Tup_max),
+            )
+            if not rise.converged:
+                raise AssertionError("Set search failed")
+
+        dat = dict(Tup_max=Tup_max)
+        if rise is not None:
+            dat["rise"] = rise.root
+        dat["culmination"] = culmination.x
+        dat["culmination_elevation"] = elev_max
+        if set is not None:
+            dat["set"] = set.root
+
+        return dat
+
+    def find_events(self, obs: FloatArr, t0: float, t1: float, elevation: float) -> List[dict]:
+        Tstart = t0
+        res = []
+        while True:
+            dat = self._find_events(obs, Tstart, elevation)
+            Tstart += dat["culmination"] + dat["Tup_max"] / 2
+            dat.pop("Tup_max", None)
+            if dat["culmination"] > t1:
+                break
+            res.append(dat)
+        return res
 
 
 def createSatellites(
