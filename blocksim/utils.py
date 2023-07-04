@@ -67,6 +67,7 @@ __all__ = [
     "itrf_to_geodetic",
     "time_to_jd_fraction",
     "rotation_matrix",
+    "compute_axis_angle",
     "teme_transition_matrix",
     "teme_to_itrf",
     "itrf_to_teme",
@@ -959,11 +960,11 @@ def rotation_matrix(angle: Union[float, FloatArr], axis: FloatArr):
     the shape of the returned matrix is (3, 3, N)
     You can apply this to single vector M0 with:
 
-    np.einsum("ipj,p->ij", R, M0)
+        np.einsum("ipj,p->ij", R, M0)
 
     Or to another vector stack (shape (3, N)) with:
 
-    np.einsum("ip...,p...->i...", R, M)
+        np.einsum("ip...,p...->i...", R, M)
 
     Args:
         angle: Rotation angle (rad)
@@ -986,6 +987,55 @@ def rotation_matrix(angle: Union[float, FloatArr], axis: FloatArr):
         R = cos(angle) * np.eye(3) + sin(angle) * K + (1 - cos(angle)) * K2
 
     return R
+
+
+def compute_axis_angle(R: FloatArr, prev_axe: FloatArr = None) -> Tuple[FloatArr, float]:
+    """From a rotation matrix, get axis and angle
+
+    Args:
+        R: Rotation matrix
+        prev_axe: Estimation of the axis, to allow angle continuity if called sequentially
+
+    Returns:
+
+        * Rotation axis
+        * Angle (rad)
+
+    """
+    # Angle determination
+    s = np.trace(R)
+    cos_angle = (s - 1) / 2
+    if cos_angle > 1:
+        cos_angle = 1
+    if cos_angle < -1:
+        cos_angle = -1
+    angle = arccos(cos_angle)
+
+    # Axe determination
+    # https://math.stackexchange.com/questions/2074316/calculating-rotation-axis-from-rotation-matrix
+    M = R + R.T - 2 * cos_angle * np.eye(3)
+    nc = lin.norm(M, axis=0)
+    ir = np.argmax(nc)
+    if nc[ir] < 1e-6:
+        axe = np.array([1, 0, 0])
+    else:
+        axe = M[ir, :]
+        axe /= lin.norm(axe)
+
+    # Matrix check
+    P = rotation_matrix(axis=axe, angle=angle)
+    if lin.norm(P - R) > 1e-3:
+        angle = -angle
+    P = rotation_matrix(axis=axe, angle=angle)
+    assert lin.norm(P - R) < 1e-3
+
+    # Continuity check
+    if prev_axe is not None:
+        if prev_axe @ axe < 0:
+            axe = -axe
+            angle = -angle
+
+    return axe, angle
 
 
 def teme_transition_matrix(t_epoch: float, reciprocal: bool = False) -> FloatArr:

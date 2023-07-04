@@ -16,6 +16,7 @@ from blocksim.satellite.Satellite import (
     SGP4Satellite,
     CircleSatellite,
     createSatellites,
+    generateWalkerDeltaConstellation,
 )
 from blocksim.utils import (
     itrf_to_azeld,
@@ -317,6 +318,21 @@ class TestSatellite(TestBase):
         _, el_test, _, _, _, _ = itrf_to_azeld(obs=pv_rx, sat=pv_test)
         self.assertAlmostEqual(el_test, elev, delta=1e-2)
 
+    def test_walker_delta(self):
+        nsat = 15
+        tsync = datetime(2023, 1, 7, 13, 0, 0, tzinfo=timezone.utc)
+        satellites = generateWalkerDeltaConstellation(
+            name_prefix="sat",
+            sma=Req + 600e3,
+            inc=rad(80),
+            firstraan=0,
+            t=nsat,
+            p=5,
+            f=0,
+            tsync=tsync,
+        )
+        self.assertEqual(len(satellites), nsat)
+
 
 if __name__ == "__main__":
     # unittest.main()
@@ -333,7 +349,8 @@ if __name__ == "__main__":
     # a.test_azeld2()
     # a.test_azeld3()
     # a.test_llavpa()
-    a.test_culmination_circle()
+    # a.test_culmination_circle()
     # a.test_culmination_sgp4()
+    a.test_walker_delta()
 
     # showFigures()

@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v0.5.0](https://gitlab.com/ydethe/blocksim/tags/v0.5.0) - 2023-07-04
+
+<small>[Compare with v0.4.0](https://gitlab.com/ydethe/blocksim/compare/v0.4.0...v0.5.0)</small>
+
+### Added
+
+- Added blocksim.satellite.Satellite.ASatellite.find_events ([c43a7b4](https://gitlab.com/ydethe/blocksim/commit/c43a7b45b681a1eba6ade331e5bf7fd22ea011fd) by Yann BLAUDIN DE THE).
+
 ## [v0.4.0](https://gitlab.com/ydethe/blocksim/tags/v0.4.0) - 2023-06-28
 
 <small>[Compare with v0.3.1](https://gitlab.com/ydethe/blocksim/compare/v0.3.1...v0.4.0)</small>

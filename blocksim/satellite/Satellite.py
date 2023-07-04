@@ -38,7 +38,13 @@ from ..utils import (
 from .Trajectory import Trajectory
 
 
-__all__ = ["ASatellite", "CircleSatellite", "SGP4Satellite", "createSatellites"]
+__all__ = [
+    "ASatellite",
+    "CircleSatellite",
+    "SGP4Satellite",
+    "generateWalkerDeltaConstellation",
+    "createSatellites",
+]
 
 
 def sgp4_to_teme(satrec: Satrec, t_epoch: float) -> FloatArr:
@@ -352,11 +358,11 @@ class SGP4Satellite(ASatellite):
         name: str,
         tsync: datetime,
         a: float,
-        ecc: float,
         argp: float,
         inc: float,
         mano: float,
         node: float,
+        ecc: float = 0.0,
         bstar: float = 0,
         ndot: float = 0,
         nddot: float = 0,
@@ -804,6 +810,16 @@ class CircleSatellite(ASatellite):
         return newpv
 
     def getTEMEOrbitRotationMatrix(self, t: float):
+        """Compute the transition matrix R from ITRF to TEME, i.e.
+        for X in ITRF, R @ X is the vector in TEME
+
+        Args:
+            t: Time from Satellite's tsync (s)
+
+        Returns:
+            See `blocksim.utils.rotation_matrix`
+
+        """
         t_epoch = (self.tsync - ASatellite.getInitialEpoch()).total_seconds()
         pv0 = self.getGeocentricITRFPositionAt(0)
         pv_teme = itrf_to_teme(t_epoch=t_epoch, pv_itrf=pv0)
@@ -858,8 +874,8 @@ class CircleSatellite(ASatellite):
             fun=fun,
             args=(M0, M1, s),
             method="bounded",
-            bracket=(t0, t0 + Torb),
-            bounds=(t0, t0 + Torb),
+            bracket=(t0, t0 + 1.2 * Torb),
+            bounds=(t0, t0 + 1.2 * Torb),
         )
         if culmination.status != 0:
             raise AssertionError("Culmination search failed")
@@ -899,12 +915,72 @@ class CircleSatellite(ASatellite):
         res = []
         while True:
             dat = self._find_events(obs, Tstart, elevation)
-            Tstart += dat["culmination"] + dat["Tup_max"] / 2
+            Tstart = dat["culmination"] + dat["Tup_max"] / 2
             dat.pop("Tup_max", None)
             if dat["culmination"] > t1:
                 break
-            res.append(dat)
+            if "rise" in dat.keys():
+                res.append(dat)
         return res
+
+
+def generateWalkerDeltaConstellation(
+    name_prefix: str,
+    sma: float,
+    inc: float,
+    firstraan: float,
+    t: int,
+    p: int,
+    f: int,
+    tsync: datetime,
+    prop: ASatellite = CircleSatellite,
+) -> List[ASatellite]:
+    """Generate a constellation according to the Walker Delta Pattern t:p:f
+
+    Args:
+        name: Name of the constellation
+        sma : Semi-major axis (m)
+        inc: Inclination of orbital planes (rad)
+        firstraan: RAAN of the first orbital plane (rad)
+        t: Number of satellites
+        p: Number of equally spaced planes
+        f: Relative spacing between satellites in adjacent planes
+        tsync: Initial absolute date of the simulation
+        prop: Propagator to use, as a subclass of ASatellite
+
+    Returns:
+        A list of instances of ASatellite (following prop argument)
+
+    """
+    satellites = []
+
+    # Number of satellites per plane
+    s = t / p
+    if s.is_integer():
+        s = int(s)
+    else:
+        raise (ValueError("Number of satellites per plane (t/p) should be integer"))
+
+    for idxP in range(p):
+        raan = firstraan * 180 / pi + idxP * 360.0 / p
+        for idxS in range(s):
+            meanAnomaly = idxP * f * 360.0 / t + idxS * 360.0 / s
+
+            nameSat = f"{name_prefix}{s * idxP + idxS}"
+
+            satCur = prop.fromOrbitalElements(
+                name=nameSat,
+                tsync=tsync,
+                a=sma,
+                inc=inc,
+                argp=0.0,
+                mano=meanAnomaly * pi / 180,
+                node=raan * pi / 180,
+            )
+
+            satellites.append(satCur)
+
+    return satellites
 
 
 def createSatellites(
