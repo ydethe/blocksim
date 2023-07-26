@@ -2,5 +2,6 @@ image:
     file: .gitpod.Dockerfile
     
 tasks:
-    - init: curl -sSL https://pdm.fming.dev/dev/install-pdm.py | python3 -
+    - init: pdm venv create && pdm use .venv/bin/python && pdm install
+
     
