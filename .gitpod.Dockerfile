@@ -1,7 +1,7 @@
 # You could use `gitpod/workspace-full` as well.
 FROM gitpod/workspace-full
 
-RUN pyenv install 3.8-dev && pyenv global 3.8-dev
+RUN pyenv install 3.8.17-dev && pyenv global 3.8.17-dev
 RUN sudo apt-get -q update && \
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -yq graphviz libblas-dev liblapack-dev cmake gfortran gcc g++ make libproj-dev proj-data proj-bin libgeos-dev curl
 RUN curl -sSL https://pdm.fming.dev/dev/install-pdm.py | python3.8 - && \
