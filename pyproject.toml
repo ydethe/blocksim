@@ -42,9 +42,9 @@ dependencies = [
 requires-python = ">=3.8"
 
 [project.urls]
-Homepage = "https://gitlab.com/ydethe/blocksim"
-Source = "https://gitlab.com/ydethe/blocksim"
-Documentation = "https://gitlab.com/ydethe/blocksim"
+Homepage = "https://github.com/ydethe/blocksim"
+Source = "https://github.com/ydethe/blocksim"
+Documentation = "https://github.com/ydethe/blocksim"
 
 [tool.pylint.main]
 ignore-patterns = ["kt_*.py"]
